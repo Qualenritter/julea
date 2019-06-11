@@ -337,7 +337,7 @@ j_smd_attr_read(void* _attribute, char* buf, JBatch* batch)
 	return FALSE;
 }
 gboolean
-j_smd_attr_write(void* _attribute, char* buf, JBatch* batch)
+j_smd_attr_write(void* _attribute, const char* buf, JBatch* batch)
 {
 	J_Metadata_t* attribute = _attribute;
 

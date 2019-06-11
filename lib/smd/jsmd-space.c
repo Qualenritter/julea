@@ -73,11 +73,9 @@ j_smd_space_from_bson(bson_iter_t* bson)
 	space = g_new(J_SMD_Space_t, 1);
 
 	j_trace_enter(G_STRFUNC, NULL);
-	J_INFO("j_smd_space_from_bson");
 	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "ndims", &b_ndims) && BSON_ITER_HOLDS_INT32(&b_ndims))
 	{
 		space->ndims = bson_iter_int32(&b_ndims);
-		J_INFO("j_smd_space_from_bson %d", space->ndims);
 		space->dims = g_new(guint, space->ndims);
 	}
 	else
@@ -92,7 +90,6 @@ j_smd_space_from_bson(bson_iter_t* bson)
 		for (guint i = 0; bson_iter_next(&b_dims) && i < space->ndims; i++)
 		{
 			space->dims[i] = bson_iter_int32(&b_dims);
-			J_INFO("j_smd_space_from_bson %d %d", i, space->dims[i]);
 		}
 	}
 	else

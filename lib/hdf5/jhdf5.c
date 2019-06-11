@@ -73,21 +73,29 @@ H5VL_julea_term(void)
 	return 0;
 }
 
-static bson_t*
-j_bson_from_space(hid_t space_id)
+static void*
+hdf5_space_export(hid_t space_id)
 {
-	bson_t* b_attr_space;
-	gint ndims;
-	hsize_t* dims;
-
+	void* b_attr_space;
+	guint ndims;
+	hsize_t* dims1;
+	guint* dims2;
+	guint i;
 	ndims = H5Sget_simple_extent_ndims(space_id);
-	dims = g_new(hsize_t, ndims);
-	b_attr_space = j_smd_space_create(ndims, dims);
-	g_free(dims);
+	dims1 = g_new(hsize_t, ndims);
+	dims2 = g_new(guint, ndims);
+	H5Sget_simple_extent_dims(space_id, dims1, NULL);
+	for (i = 0; i < ndims; i++)
+	{
+		dims2[i] = dims1[i];
+	}
+	b_attr_space = j_smd_space_create(ndims, dims2);
+	g_free(dims1);
+	g_free(dims2);
 	return b_attr_space;
 }
 static bson_t*
-j_bson_from_type(hid_t type_id)
+hdf5_type_export(hid_t type_id)
 {
 	bson_t* b_attr_type;
 
@@ -97,12 +105,14 @@ j_bson_from_type(hid_t type_id)
 	return b_attr_type;
 }
 static int
-j_bson_to_space(bson_t* bson, hid_t* type_id)
+hdf5_space_import(bson_t* bson, hid_t* type_id)
 {
+	return FALSE;
 }
 static int
-j_bson_to_type(bson_t* bson, hid_t* type_id)
+hdf5_type_import(bson_t* bson, hid_t* type_id)
 {
+	return FALSE;
 }
 /**
  * Creates a new attribute
@@ -116,15 +126,18 @@ H5VL_julea_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const cha
 	J_Metadata_t* attr;
 	bson_t* b_type;
 	bson_t* b_space;
+	g_autoptr(JBatch) batch = NULL;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	j_trace_enter(G_STRFUNC, NULL);
 
-	b_type = j_bson_from_type(type_id);
-	b_space = j_bson_from_space(space_id);
+	b_type = hdf5_type_export(type_id);
+	b_space = hdf5_space_export(space_id);
 
-	attr = j_smd_attr_create(attr_name, parent, b_type, b_space);
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	attr = j_smd_attr_create(attr_name, parent, b_type, b_space, batch);
+	j_batch_execute(batch);
 
 	bson_destroy(b_type);
 	bson_destroy(b_space);
@@ -145,13 +158,14 @@ H5VL_julea_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char*
 {
 	J_Metadata_t* parent = (J_Metadata_t*)obj;
 	J_Metadata_t* attr;
+	g_autoptr(JBatch) batch = NULL;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
-
-	attr = j_smd_attr_open(attr_name, parent);
-
+	attr = j_smd_attr_open(attr_name, parent, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return attr;
 }
@@ -162,18 +176,16 @@ H5VL_julea_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char*
 static herr_t
 H5VL_julea_attr_read(void* _attr, hid_t dtype_id __attribute__((unused)), void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
-	int len;
-
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* attr = (J_Metadata_t*)_attr;
 
 	if (!j_is_key_initialized(attr->key))
 		return 1;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	/*TODO calculate size of buf*/
-
-	j_smd_attr_read(attr, buf, len);
-
+	j_smd_attr_read(attr, buf, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
 	return 0;
@@ -183,16 +195,17 @@ H5VL_julea_attr_read(void* _attr, hid_t dtype_id __attribute__((unused)), void* 
  * Writes the data of the attribute
  **/
 static herr_t
-H5VL_julea_attr_write(void* attr, hid_t dtype_id __attribute__((unused)), const void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_attr_write(void* _attr, hid_t dtype_id __attribute__((unused)), const void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* attr = (J_Metadata_t*)_attr;
-	int len;
 
 	if (!j_is_key_initialized(attr->key))
 		return 1;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
-	/*TODO calculate size of buf*/
-	j_smd_attr_write(attr_name, buf, len);
+	j_smd_attr_write(attr, buf, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
 	return 0;
@@ -222,14 +235,14 @@ H5VL_julea_attr_get(void* _attr, H5VL_attr_get_t get_type, hid_t dxpl_id __attri
 		break;
 	case H5VL_ATTR_GET_SPACE:
 	{
-		j_bson_to_space(attr->bson, va_arg(arguments, hid_t*));
+		hdf5_space_import(attr->bson, va_arg(arguments, hid_t*));
 	}
 	break;
 	case H5VL_ATTR_GET_STORAGE_SIZE:
 		break;
 	case H5VL_ATTR_GET_TYPE:
 	{
-		j_bson_to_type(attr->bson, va_arg(arguments, hid_t*));
+		hdf5_type_import(attr->bson, va_arg(arguments, hid_t*));
 	}
 	break;
 	default:
@@ -247,7 +260,6 @@ static herr_t
 H5VL_julea_attr_close(void* _attr, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	J_Metadata_t* attr = (J_Metadata_t*)_attr;
-
 	if (!j_is_key_initialized(attr->key))
 		return 1;
 	j_trace_enter(G_STRFUNC, NULL);
@@ -265,9 +277,10 @@ static void*
 H5VL_julea_file_create(const char* fname, unsigned flags __attribute__((unused)), hid_t fcpl_id __attribute__((unused)), hid_t fapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	J_Metadata_t* file;
-
-	file = j_smd_file_create(fname);
-
+	g_autoptr(JBatch) batch = NULL;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	file = j_smd_file_create(fname, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return file;
 }
@@ -280,13 +293,14 @@ H5VL_julea_file_create(const char* fname, unsigned flags __attribute__((unused))
 static void*
 H5VL_julea_file_open(const char* fname, unsigned flags __attribute__((unused)), hid_t fapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* file;
 
-	if (!j_is_key_initialized(parent->key))
-		return 0;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	file = j_smd_file_open(fname);
+	file = j_smd_file_open(fname, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return file;
 }
@@ -297,12 +311,14 @@ H5VL_julea_file_open(const char* fname, unsigned flags __attribute__((unused)), 
 static herr_t
 H5VL_julea_file_close(void* _file, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* file = (J_Metadata_t*)_file;
-
 	if (!j_is_key_initialized(file->key))
 		return 1;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 	j_smd_file_close(file);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return 0;
 }
@@ -315,15 +331,17 @@ H5VL_julea_file_close(void* _file, hid_t dxpl_id __attribute__((unused)), void**
 static void*
 H5VL_julea_group_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t gcpl_id __attribute__((unused)), hid_t gapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* parent = (J_Metadata_t*)obj;
 	J_Metadata_t* attr;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
-
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	attr = j_smd_attr_create(attr_name, parent, 0, 0);
+	attr = j_smd_attr_create(name, parent, NULL, NULL, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
 	return attr;
@@ -337,6 +355,7 @@ H5VL_julea_group_create(void* obj, const H5VL_loc_params_t* loc_params, const ch
 static void*
 H5VL_julea_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t gapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* parent = (J_Metadata_t*)obj;
 	J_Metadata_t* attr;
 
@@ -345,9 +364,11 @@ H5VL_julea_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	attr = j_smd_attr_open(attr_name, parent);
+	attr = j_smd_attr_open(name, parent, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return attr;
 }
@@ -358,7 +379,8 @@ H5VL_julea_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char
 static herr_t
 H5VL_julea_group_close(void* grp, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
-	J_Metadata_t* attr = (J_Metadata_t*)_attr;
+	g_autoptr(JBatch) batch = NULL;
+	J_Metadata_t* attr = (J_Metadata_t*)grp;
 
 	if (!j_is_key_initialized(attr->key))
 		return 1;
@@ -378,9 +400,8 @@ H5VL_julea_group_close(void* grp, hid_t dxpl_id __attribute__((unused)), void** 
 static void*
 H5VL_julea_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id, hid_t dapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	j_trace_leave(G_STRFUNC);
-
-	return attr;
 
 	bson_t* b_type;
 	bson_t* b_space;
@@ -389,12 +410,13 @@ H5VL_julea_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
-	b_type = j_bson_from_type(type_id);
-	b_space = j_bson_from_space(space_id);
+	b_type = hdf5_type_export(type_id);
+	b_space = hdf5_space_export(space_id);
 
-	dataset = j_smd_dataset_create(dataset_name, parent, b_type, b_space, J_DISTRIBUTION_ROUND_ROBIN);
-
+	dataset = j_smd_dataset_create(name, parent, b_type, b_space, J_DISTRIBUTION_ROUND_ROBIN, batch);
+	j_batch_execute(batch);
 	bson_destroy(b_type);
 	bson_destroy(b_space);
 	g_free(b_type);
@@ -412,15 +434,16 @@ H5VL_julea_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 static void*
 H5VL_julea_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t dapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* parent = (J_Metadata_t*)obj;
 	J_Metadata_t* dataset;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	j_trace_enter(G_STRFUNC, NULL);
-
-	dataset = j_smd_dataset_open(name, parent);
-
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	dataset = j_smd_dataset_open(name, parent, batch);
+	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return dataset;
 }
@@ -431,7 +454,7 @@ H5VL_julea_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 static herr_t
 H5VL_julea_dataset_read(void* _dataset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), void* buf, void** req __attribute__((unused)))
 {
-	JBatch* batch;
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* dataset = (J_Metadata_t*)_dataset;
 	guint64 bytes_read;
 
@@ -443,12 +466,10 @@ H5VL_julea_dataset_read(void* _dataset, hid_t mem_type_id __attribute__((unused)
 
 	g_assert(buf != NULL);
 
-	g_assert(d->object != NULL);
+	g_assert(dataset->object != NULL);
 	int len_to_read = 4096; /*TODO specify which data and offset?*/
 	int off_to_read = 0; /*TODO specify which data and offset?*/
-
 	j_distributed_object_read(dataset->object, buf, len_to_read, off_to_read, &bytes_read, batch);
-
 	j_batch_execute(batch);
 
 	j_trace_leave(G_STRFUNC);
@@ -462,8 +483,8 @@ H5VL_julea_dataset_read(void* _dataset, hid_t mem_type_id __attribute__((unused)
 static herr_t
 H5VL_julea_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), const void* buf, void** req __attribute__((unused)))
 {
-	JBatch* batch;
-	J_Metadata_t* dataset = (J_Metadata_t*)_dataset;
+	g_autoptr(JBatch) batch = NULL;
+	J_Metadata_t* dataset = (J_Metadata_t*)dset;
 	guint64 bytes_written;
 
 	j_trace_enter(G_STRFUNC, NULL);
@@ -476,7 +497,6 @@ H5VL_julea_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)), 
 	int off_to_read = 0; /*TODO specify which data and offset?*/
 
 	j_distributed_object_write(dataset->object, buf, len_to_read, off_to_read, &bytes_written, batch);
-
 	j_batch_execute(batch);
 
 	j_trace_leave(G_STRFUNC);
@@ -491,6 +511,7 @@ H5VL_julea_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)), 
 static herr_t
 H5VL_julea_dataset_get(void* _dataset, H5VL_dataset_get_t get_type, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)), va_list arguments)
 {
+	g_autoptr(JBatch) batch = NULL;
 	J_Metadata_t* dataset = (J_Metadata_t*)_dataset;
 
 	if (!j_is_key_initialized(dataset->key))
@@ -507,14 +528,14 @@ H5VL_julea_dataset_get(void* _dataset, H5VL_dataset_get_t get_type, hid_t dxpl_i
 		break;
 	case H5VL_ATTR_GET_SPACE:
 	{
-		j_bson_to_space(dataset->bson, va_arg(arguments, hid_t*));
+		hdf5_space_import(dataset->bson, va_arg(arguments, hid_t*));
 	}
 	break;
 	case H5VL_ATTR_GET_STORAGE_SIZE:
 		break;
 	case H5VL_ATTR_GET_TYPE:
 	{
-		j_bson_to_type(dataset->bson, va_arg(arguments, hid_t*));
+		hdf5_type_import(dataset->bson, va_arg(arguments, hid_t*));
 	}
 	break;
 	default:

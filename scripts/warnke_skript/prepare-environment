@@ -6,9 +6,21 @@ mkdir /mnt/julea
 mkdir /mnt/julea/posix
 touch /mnt/julea/sqlite.db
 ln -s /mnt/julea /tmp/julea
+
 julea-config --user \
-  --object-servers="$(hostname)" --object-backend=posix --object-component=server --object-path=/tmp/julea/posix \
-  --kv-servers="$(hostname)"     --kv-backend=sqlite        --kv-component=server     --kv-path=/tmp/julea/sqlite.db
+  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
+  --smd-servers="$(hostname)" \
+  --object-backend=posix --object-component=server --object-path=/mnt/julea/object \
+  --kv-backend=sqlite --kv-component=server --kv-path=/mnt/julea/kv \
+  --smd-backend=sqlite --smd-component=server --smd-path=/mnt/julea/smd
+
+export ASAN_OPTIONS=fast_unwind_on_malloc=0
+
+exit
 
 
+./waf.sh clean
+./waf.sh configure --debug --sanitize --hdf5=/usr/local/hdf5
+./waf.sh build
+./waf.sh install
 

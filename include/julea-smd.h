@@ -75,7 +75,7 @@ void* j_smd_attr_create(const char* name, void* parent, void* _data_type, void* 
 gboolean j_smd_attr_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_attr_open(const char* name, void* parent, JBatch* batch);
 gboolean j_smd_attr_read(void* _attribute, char* buf, JBatch* batch);
-gboolean j_smd_attr_write(void* _attribute, char* buf, JBatch* batch);
+gboolean j_smd_attr_write(void* _attribute, const char* buf, JBatch* batch);
 gboolean j_smd_attr_close(void* attribute);
 void* j_smd_attr_get_type(void* attribute);
 void* j_smd_attr_get_space(void* attribute);
