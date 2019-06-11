@@ -1,0 +1,14 @@
+#!/bin/bash
+rm -rf /tmp/julea /mnt/julea
+
+mount /dev/sdb1 /mnt
+mkdir /mnt/julea
+mkdir /mnt/julea/posix
+touch /mnt/julea/sqlite.db
+ln -s /mnt/julea /tmp/julea
+julea-config --user \
+  --object-servers="$(hostname)" --object-backend=posix --object-component=server --object-path=/tmp/julea/posix \
+  --kv-servers="$(hostname)"     --kv-backend=sqlite        --kv-component=server     --kv-path=/tmp/julea/sqlite.db
+
+
+

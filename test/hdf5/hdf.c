@@ -139,7 +139,7 @@ test_hdf_read_write(void)
 
 	hid_t file;
 
-	const H5VL_class_t *h5vl_julea;
+	const H5VL_class_t* h5vl_julea;
 	hid_t native_vol_id;
 
 	native_vol_id = H5VLget_connector_id("native");

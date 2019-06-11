@@ -10,7 +10,7 @@ AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 UseTab:          Always
-DerivePointerAlignment: true
+DerivePointerAlignment: false
 AlignTrailingComments: false
 AlignOperands:   false
 AccessModifierOffset: -4
@@ -97,7 +97,7 @@ PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 0
 AlwaysBreakAfterDefinitionReturnType: All
-PointerAlignment: Right
+PointerAlignment: Left
 ReflowComments:  true
 SortIncludes:    false
 SortUsingDeclarations: true
