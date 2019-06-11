@@ -62,8 +62,7 @@ struct JConfiguration
 		 * The number of kv servers.
 		 */
 		guint32 kv_len;
-	}
-	servers;
+	} servers;
 
 	/**
 	 * The object configuration.
@@ -84,8 +83,7 @@ struct JConfiguration
 		 * The path.
 		 */
 		gchar* path;
-	}
-	object;
+	} object;
 
 	/**
 	 * The kv configuration.
@@ -106,8 +104,7 @@ struct JConfiguration
 		 * The path.
 		 */
 		gchar* path;
-	}
-	kv;
+	} kv;
 
 	guint64 max_operation_size;
 	guint32 max_connections;
@@ -128,7 +125,7 @@ struct JConfiguration
  * \return A new configuration. Should be freed with j_configuration_unref().
  **/
 JConfiguration*
-j_configuration_new (void)
+j_configuration_new(void)
 {
 	JConfiguration* configuration = NULL;
 	GKeyFile* key_file;
@@ -215,7 +212,7 @@ out:
  * \return A new configuration. Should be freed with j_configuration_unref().
  **/
 JConfiguration*
-j_configuration_new_for_data (GKeyFile* key_file)
+j_configuration_new_for_data(GKeyFile* key_file)
 {
 	JConfiguration* configuration;
 	gchar** servers_object;
@@ -244,14 +241,7 @@ j_configuration_new_for_data (GKeyFile* key_file)
 	kv_component = g_key_file_get_string(key_file, "kv", "component", NULL);
 	kv_path = g_key_file_get_string(key_file, "kv", "path", NULL);
 
-	if (servers_object == NULL || servers_object[0] == NULL
-	    || servers_kv == NULL || servers_kv[0] == NULL
-	    || object_backend == NULL
-	    || object_component == NULL
-	    || object_path == NULL
-	    || kv_backend == NULL
-	    || kv_component == NULL
-	    || kv_path == NULL)
+	if (servers_object == NULL || servers_object[0] == NULL || servers_kv == NULL || servers_kv[0] == NULL || object_backend == NULL || object_component == NULL || object_path == NULL || kv_backend == NULL || kv_component == NULL || kv_path == NULL)
 	{
 		g_free(kv_backend);
 		g_free(kv_component);
@@ -313,7 +303,7 @@ j_configuration_new_for_data (GKeyFile* key_file)
  * \return #configuration.
  **/
 JConfiguration*
-j_configuration_ref (JConfiguration* configuration)
+j_configuration_ref(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -332,7 +322,7 @@ j_configuration_ref (JConfiguration* configuration)
  * \param configuration A configuration.
  **/
 void
-j_configuration_unref (JConfiguration* configuration)
+j_configuration_unref(JConfiguration* configuration)
 {
 	if (g_atomic_int_dec_and_test(&(configuration->ref_count)))
 	{
@@ -352,7 +342,7 @@ j_configuration_unref (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_object_server (JConfiguration* configuration, guint32 index)
+j_configuration_get_object_server(JConfiguration* configuration, guint32 index)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 	g_return_val_if_fail(index < configuration->servers.object_len, NULL);
@@ -361,7 +351,7 @@ j_configuration_get_object_server (JConfiguration* configuration, guint32 index)
 }
 
 gchar const*
-j_configuration_get_kv_server (JConfiguration* configuration, guint32 index)
+j_configuration_get_kv_server(JConfiguration* configuration, guint32 index)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 	g_return_val_if_fail(index < configuration->servers.kv_len, NULL);
@@ -370,7 +360,7 @@ j_configuration_get_kv_server (JConfiguration* configuration, guint32 index)
 }
 
 guint32
-j_configuration_get_object_server_count (JConfiguration* configuration)
+j_configuration_get_object_server_count(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, 0);
 
@@ -378,7 +368,7 @@ j_configuration_get_object_server_count (JConfiguration* configuration)
 }
 
 guint32
-j_configuration_get_kv_server_count (JConfiguration* configuration)
+j_configuration_get_kv_server_count(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, 0);
 
@@ -386,7 +376,7 @@ j_configuration_get_kv_server_count (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_object_backend (JConfiguration* configuration)
+j_configuration_get_object_backend(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -394,7 +384,7 @@ j_configuration_get_object_backend (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_object_component (JConfiguration* configuration)
+j_configuration_get_object_component(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -402,7 +392,7 @@ j_configuration_get_object_component (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_object_path (JConfiguration* configuration)
+j_configuration_get_object_path(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -410,7 +400,7 @@ j_configuration_get_object_path (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_kv_backend (JConfiguration* configuration)
+j_configuration_get_kv_backend(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -418,7 +408,7 @@ j_configuration_get_kv_backend (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_kv_component (JConfiguration* configuration)
+j_configuration_get_kv_component(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -426,7 +416,7 @@ j_configuration_get_kv_component (JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_kv_path (JConfiguration* configuration)
+j_configuration_get_kv_path(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, NULL);
 
@@ -434,7 +424,7 @@ j_configuration_get_kv_path (JConfiguration* configuration)
 }
 
 guint64
-j_configuration_get_max_operation_size (JConfiguration* configuration)
+j_configuration_get_max_operation_size(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, 0);
 
@@ -442,7 +432,7 @@ j_configuration_get_max_operation_size (JConfiguration* configuration)
 }
 
 guint32
-j_configuration_get_max_connections (JConfiguration* configuration)
+j_configuration_get_max_connections(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, 0);
 
@@ -450,7 +440,7 @@ j_configuration_get_max_connections (JConfiguration* configuration)
 }
 
 guint64
-j_configuration_get_stripe_size (JConfiguration* configuration)
+j_configuration_get_stripe_size(JConfiguration* configuration)
 {
 	g_return_val_if_fail(configuration != NULL, 0);
 

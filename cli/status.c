@@ -23,7 +23,7 @@
 #include <item/jitem-internal.h>
 
 gboolean
-j_cmd_status (gchar const** arguments)
+j_cmd_status(gchar const** arguments)
 {
 	gboolean ret = TRUE;
 	g_autoptr(JBatch) batch = NULL;
@@ -151,9 +151,7 @@ j_cmd_status (gchar const** arguments)
 			j_credentials_unref(credentials);
 		}
 		else if (j_uri_get_collection(uri) != NULL)
-		{
-
-		}
+		{}
 		else
 		{
 			ret = FALSE;

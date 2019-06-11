@@ -75,7 +75,7 @@ struct JLock
  * \return A new item. Should be freed with j_lock_unref().
  **/
 JLock*
-j_lock_new (gchar const* namespace, gchar const* path)
+j_lock_new(gchar const* namespace, gchar const* path)
 {
 	JLock* lock;
 
@@ -109,7 +109,7 @@ j_lock_new (gchar const* namespace, gchar const* path)
  * \param lock A lock.
  **/
 void
-j_lock_free (JLock* lock)
+j_lock_free(JLock* lock)
 {
 	g_return_if_fail(lock != NULL);
 
@@ -131,7 +131,7 @@ j_lock_free (JLock* lock)
 }
 
 gboolean
-j_lock_acquire (JLock* lock)
+j_lock_acquire(JLock* lock)
 {
 	JBackend* kv_backend;
 	bson_t empty[1];
@@ -140,24 +140,24 @@ j_lock_acquire (JLock* lock)
 
 	g_return_val_if_fail(lock != NULL, FALSE);
 
-	//j_lock_serialize(lock, obj);
+	// j_lock_serialize(lock, obj);
 
-	//write_concern = mongoc_write_concern_new();
-	//write_concern->j = 1;
-	//mongoc_write_concern_set_w(write_concern, 1);
+	// write_concern = mongoc_write_concern_new();
+	// write_concern->j = 1;
+	// mongoc_write_concern_set_w(write_concern, 1);
 
-	//bson_init(index);
-	//bson_append_int32(index, "item", -1, 1);
+	// bson_init(index);
+	// bson_append_int32(index, "item", -1, 1);
 	// FIXME speed
-	//bson_append_int32(index, "blocks", -1, 1);
+	// bson_append_int32(index, "blocks", -1, 1);
 
-	//j_helper_create_index(J_STORE_COLLECTION_LOCKS, mongo_connection, index);
+	// j_helper_create_index(J_STORE_COLLECTION_LOCKS, mongo_connection, index);
 
 	bson_init(empty);
 
 	kv_backend = j_kv_backend();
 
-	//mongo_connection = j_connection_pool_pop_kv(0);
+	// mongo_connection = j_connection_pool_pop_kv(0);
 
 	if (lock->blocks->len > 0)
 	{
@@ -191,7 +191,7 @@ j_lock_acquire (JLock* lock)
 
 	lock->acquired = acquired;
 
-	//j_connection_pool_push_kv(0, mongo_connection);
+	// j_connection_pool_push_kv(0, mongo_connection);
 
 	bson_destroy(empty);
 
@@ -199,7 +199,7 @@ j_lock_acquire (JLock* lock)
 }
 
 gboolean
-j_lock_release (JLock* lock)
+j_lock_release(JLock* lock)
 {
 	JBackend* kv_backend;
 	gboolean released = TRUE;
@@ -208,16 +208,16 @@ j_lock_release (JLock* lock)
 	g_return_val_if_fail(lock != NULL, FALSE);
 	g_return_val_if_fail(lock->acquired, FALSE);
 
-	//write_concern = mongoc_write_concern_new();
-	//write_concern->j = 1;
-	//mongoc_write_concern_set_w(write_concern, 1);
+	// write_concern = mongoc_write_concern_new();
+	// write_concern->j = 1;
+	// mongoc_write_concern_set_w(write_concern, 1);
 
-	//bson_init(obj);
-	//bson_append_oid(obj, "_id", -1, &(lock->id));
-	//bson_finish(obj);
+	// bson_init(obj);
+	// bson_append_oid(obj, "_id", -1, &(lock->id));
+	// bson_finish(obj);
 
 	kv_backend = j_kv_backend();
-	//mongo_connection = j_connection_pool_pop_kv(0);
+	// mongo_connection = j_connection_pool_pop_kv(0);
 
 	if (lock->blocks->len > 0)
 	{
@@ -251,13 +251,13 @@ j_lock_release (JLock* lock)
 
 	lock->acquired = !released;
 
-	//j_connection_pool_push_kv(0, mongo_connection);
+	// j_connection_pool_push_kv(0, mongo_connection);
 
 	return !(lock->acquired);
 }
 
 void
-j_lock_add (JLock* lock, guint64 block)
+j_lock_add(JLock* lock, guint64 block)
 {
 	g_return_if_fail(lock != NULL);
 

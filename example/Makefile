@@ -1,7 +1,5 @@
-CFLAGS  += -fsanitize=address
-CFLAGS  += $(shell pkg-config --cflags julea-object)
-LDFLAGS += -fsanitize=address
-LDLIBS  += $(shell pkg-config --libs julea-object)
+CFLAGS  += -fsanitize=address $(shell pkg-config --cflags julea-object)
+LDFLAGS += -fsanitize=address $(shell pkg-config --libs julea-object)
 
 BIN = hello-world
 

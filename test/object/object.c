@@ -26,9 +26,8 @@
 
 #include "test.h"
 
-static
-void
-test_object_new_free (void)
+static void
+test_object_new_free(void)
 {
 	guint const n = 100000;
 
@@ -41,9 +40,8 @@ test_object_new_free (void)
 	}
 }
 
-static
-void
-test_object_create_delete (void)
+static void
+test_object_create_delete(void)
 {
 	guint const n = 100;
 
@@ -67,9 +65,8 @@ test_object_create_delete (void)
 	j_batch_execute(batch);
 }
 
-static
-void
-test_object_read_write (void)
+static void
+test_object_read_write(void)
 {
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JObject) object = NULL;
@@ -132,9 +129,8 @@ test_object_read_write (void)
 	j_batch_execute(batch);
 }
 
-static
-void
-test_object_status (void)
+static void
+test_object_status(void)
 {
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JObject) object = NULL;
@@ -165,7 +161,7 @@ test_object_status (void)
 }
 
 void
-test_object_object (void)
+test_object_object(void)
 {
 	g_test_add_func("/object/object/new_free", test_object_new_free);
 	g_test_add_func("/object/object/create_delete", test_object_create_delete);

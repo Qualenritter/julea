@@ -92,9 +92,8 @@ typedef struct JCachedBatch JCachedBatch;
 
 static JOperationCache* j_operation_cache = NULL;
 
-static
-gpointer
-j_operation_cache_thread (gpointer data)
+static gpointer
+j_operation_cache_thread(gpointer data)
 {
 	JOperationCache* cache = data;
 	JCachedBatch* cached_batch;
@@ -132,9 +131,8 @@ j_operation_cache_thread (gpointer data)
 	return NULL;
 }
 
-static
-gboolean
-j_operation_cache_test (JOperation* operation)
+static gboolean
+j_operation_cache_test(JOperation* operation)
 {
 	gboolean ret = FALSE;
 
@@ -171,9 +169,8 @@ j_operation_cache_test (JOperation* operation)
 	return ret;
 }
 
-static
-guint64
-j_operation_cache_get_required_size (JOperation* operation)
+static guint64
+j_operation_cache_get_required_size(JOperation* operation)
 {
 	guint64 ret = 0;
 
@@ -211,7 +208,7 @@ j_operation_cache_get_required_size (JOperation* operation)
 }
 
 void
-j_operation_cache_init (void)
+j_operation_cache_init(void)
 {
 	JOperationCache* cache;
 
@@ -234,7 +231,7 @@ j_operation_cache_init (void)
 }
 
 void
-j_operation_cache_fini (void)
+j_operation_cache_fini(void)
 {
 	JOperationCache* cache;
 
@@ -263,7 +260,7 @@ j_operation_cache_fini (void)
 }
 
 gboolean
-j_operation_cache_flush (void)
+j_operation_cache_flush(void)
 {
 	gboolean ret = TRUE;
 
@@ -284,7 +281,7 @@ j_operation_cache_flush (void)
 }
 
 gboolean
-j_operation_cache_add (JBatch* batch)
+j_operation_cache_add(JBatch* batch)
 {
 	gboolean ret = TRUE;
 	JCachedBatch* cached_batch;

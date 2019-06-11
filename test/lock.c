@@ -26,9 +26,8 @@
 
 #include "test.h"
 
-static
-void
-test_lock_new_free (void)
+static void
+test_lock_new_free(void)
 {
 	guint const n = 100;
 
@@ -42,9 +41,8 @@ test_lock_new_free (void)
 	}
 }
 
-static
-void
-test_lock_acquire_release (void)
+static void
+test_lock_acquire_release(void)
 {
 	guint const n = 1000;
 
@@ -64,9 +62,8 @@ test_lock_acquire_release (void)
 	}
 }
 
-static
-void
-test_lock_add (void)
+static void
+test_lock_add(void)
 {
 	guint const n = 1000;
 
@@ -89,7 +86,7 @@ test_lock_add (void)
 }
 
 void
-test_lock (void)
+test_lock(void)
 {
 	g_test_add_func("/lock/new_free", test_lock_new_free);
 	g_test_add_func("/lock/acquire_release", test_lock_acquire_release);

@@ -41,11 +41,11 @@ G_END_DECLS
 
 G_BEGIN_DECLS
 
-JKVIterator* j_kv_iterator_new (guint32, gchar const*, gchar const*);
-void j_kv_iterator_free (JKVIterator*);
+JKVIterator* j_kv_iterator_new(guint32, gchar const*, gchar const*);
+void j_kv_iterator_free(JKVIterator*);
 
-gboolean j_kv_iterator_next (JKVIterator*);
-gconstpointer j_kv_iterator_get (JKVIterator*, guint32*);
+gboolean j_kv_iterator_next(JKVIterator*);
+gconstpointer j_kv_iterator_get(JKVIterator*, guint32*);
 
 G_END_DECLS
 

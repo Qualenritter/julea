@@ -72,9 +72,8 @@ static JCommon* j_common = NULL;
  *
  * \return TRUE if JULEA has been initialized, FALSE otherwise.
  */
-static
-gboolean
-j_is_initialized (void)
+static gboolean
+j_is_initialized(void)
 {
 	JCommon* p;
 
@@ -92,9 +91,8 @@ j_is_initialized (void)
  *
  * \return The progran name if it can be determined, default_name otherwise.
  */
-static
-gchar*
-j_get_program_name (gchar const* default_name)
+static gchar*
+j_get_program_name(gchar const* default_name)
 {
 	gchar* program_name;
 
@@ -122,7 +120,7 @@ j_get_program_name (gchar const* default_name)
  * \param argv A pointer to \c argv.
  */
 void
-j_init (void)
+j_init(void)
 {
 	JCommon* common;
 	g_autofree gchar* basename = NULL;
@@ -209,7 +207,7 @@ error:
  * Shuts down JULEA.
  */
 void
-j_fini (void)
+j_fini(void)
 {
 	JCommon* common;
 
@@ -266,7 +264,7 @@ j_fini (void)
  * \return The configuration.
  */
 JConfiguration*
-j_configuration (void)
+j_configuration(void)
 {
 	JCommon* common;
 
@@ -285,7 +283,7 @@ j_configuration (void)
  * \return The data backend.
  */
 JBackend*
-j_object_backend (void)
+j_object_backend(void)
 {
 	JCommon* common;
 
@@ -304,7 +302,7 @@ j_object_backend (void)
  * \return The data backend.
  */
 JBackend*
-j_kv_backend (void)
+j_kv_backend(void)
 {
 	JCommon* common;
 

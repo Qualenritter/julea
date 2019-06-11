@@ -64,7 +64,7 @@ struct JKVIterator
  * \return A new JKVIterator.
  **/
 JKVIterator*
-j_kv_iterator_new (guint32 index, gchar const* namespace, gchar const* prefix)
+j_kv_iterator_new(guint32 index, gchar const* namespace, gchar const* prefix)
 {
 	JKVIterator* iterator;
 
@@ -74,7 +74,7 @@ j_kv_iterator_new (guint32 index, gchar const* namespace, gchar const* prefix)
 	g_return_val_if_fail(index < j_configuration_get_kv_server_count(configuration), NULL);
 
 	/* FIXME still necessary? */
-	//j_operation_cache_flush();
+	// j_operation_cache_flush();
 
 	iterator = g_slice_new(JKVIterator);
 	iterator->kv_backend = j_kv_backend();
@@ -139,7 +139,7 @@ j_kv_iterator_new (guint32 index, gchar const* namespace, gchar const* prefix)
  * \param iterator A JKVIterator.
  **/
 void
-j_kv_iterator_free (JKVIterator* iterator)
+j_kv_iterator_free(JKVIterator* iterator)
 {
 	g_return_if_fail(iterator != NULL);
 
@@ -162,7 +162,7 @@ j_kv_iterator_free (JKVIterator* iterator)
  * \return TRUE on success, FALSE if the end of the store is reached.
  **/
 gboolean
-j_kv_iterator_next (JKVIterator* iterator)
+j_kv_iterator_next(JKVIterator* iterator)
 {
 	gboolean ret = FALSE;
 
@@ -198,7 +198,7 @@ j_kv_iterator_next (JKVIterator* iterator)
  * \return A new collection. Should be freed with j_kv_unref().
  **/
 gconstpointer
-j_kv_iterator_get (JKVIterator* iterator, guint32* len)
+j_kv_iterator_get(JKVIterator* iterator, guint32* len)
 {
 	g_return_val_if_fail(iterator != NULL, NULL);
 	g_return_val_if_fail(len != NULL, NULL);

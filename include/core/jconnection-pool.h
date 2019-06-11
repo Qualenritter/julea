@@ -32,11 +32,11 @@
 
 G_BEGIN_DECLS
 
-GSocketConnection* j_connection_pool_pop_object (guint);
-void j_connection_pool_push_object (guint, GSocketConnection*);
+GSocketConnection* j_connection_pool_pop_object(guint);
+void j_connection_pool_push_object(guint, GSocketConnection*);
 
-GSocketConnection* j_connection_pool_pop_kv (guint);
-void j_connection_pool_push_kv (guint, GSocketConnection*);
+GSocketConnection* j_connection_pool_pop_kv(guint);
+void j_connection_pool_push_kv(guint, GSocketConnection*);
 
 G_END_DECLS
 

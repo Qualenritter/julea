@@ -48,7 +48,7 @@
  **/
 
 void
-j_helper_set_nodelay (GSocketConnection* connection, gboolean enable)
+j_helper_set_nodelay(GSocketConnection* connection, gboolean enable)
 {
 	gint const flag = (enable) ? 1 : 0;
 
@@ -68,7 +68,7 @@ j_helper_set_nodelay (GSocketConnection* connection, gboolean enable)
 }
 
 void
-j_helper_set_cork (GSocketConnection* connection, gboolean enable)
+j_helper_set_cork(GSocketConnection* connection, gboolean enable)
 {
 	gint const flag = (enable) ? 1 : 0;
 
@@ -88,7 +88,7 @@ j_helper_set_cork (GSocketConnection* connection, gboolean enable)
 }
 
 void
-j_helper_get_number_string (gchar* string, guint32 length, guint32 number)
+j_helper_get_number_string(gchar* string, guint32 length, guint32 number)
 {
 	gint ret;
 
@@ -98,7 +98,7 @@ j_helper_get_number_string (gchar* string, guint32 length, guint32 number)
 }
 
 gboolean
-j_helper_execute_parallel (JBackgroundOperationFunc func, gpointer* data, guint length)
+j_helper_execute_parallel(JBackgroundOperationFunc func, gpointer* data, guint length)
 {
 	JBackgroundOperation** operations;
 	guint data_count = 0;
@@ -147,7 +147,7 @@ j_helper_execute_parallel (JBackgroundOperationFunc func, gpointer* data, guint 
 }
 
 guint64
-j_helper_atomic_add (guint64 volatile* ptr, guint64 val)
+j_helper_atomic_add(guint64 volatile* ptr, guint64 val)
 {
 	guint64 ret;
 
@@ -167,7 +167,7 @@ j_helper_atomic_add (guint64 volatile* ptr, guint64 val)
 }
 
 guint32
-j_helper_hash (gchar const* str)
+j_helper_hash(gchar const* str)
 {
 	gchar c;
 	guint32 hash;

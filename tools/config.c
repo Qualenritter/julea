@@ -40,9 +40,8 @@ static gint64 opt_max_operation_size = 0;
 static gint opt_max_connections = 0;
 static gint64 opt_stripe_size = 0;
 
-static
-gchar**
-string_split (gchar const* string)
+static gchar**
+string_split(gchar const* string)
 {
 	guint i;
 	guint len;
@@ -59,9 +58,8 @@ string_split (gchar const* string)
 	return arr;
 }
 
-static
-gboolean
-read_config (gchar* path)
+static gboolean
+read_config(gchar* path)
 {
 	gboolean ret = TRUE;
 	g_autoptr(GFile) file = NULL;
@@ -85,9 +83,8 @@ end:
 	return ret;
 }
 
-static
-gboolean
-write_config (gchar* path)
+static gboolean
+write_config(gchar* path)
 {
 	g_autoptr(GKeyFile) key_file = NULL;
 	gboolean ret = TRUE;
@@ -132,31 +129,18 @@ write_config (gchar* path)
 }
 
 gint
-main (gint argc, gchar** argv)
+main(gint argc, gchar** argv)
 {
 	GError* error = NULL;
 	g_autoptr(GOptionContext) context = NULL;
 	gboolean ret;
 	g_autofree gchar* path = NULL;
 
-	GOptionEntry entries[] = {
-		{ "user", 0, 0, G_OPTION_ARG_NONE, &opt_user, "Write user configuration", NULL },
-		{ "system", 0, 0, G_OPTION_ARG_NONE, &opt_system, "Write system configuration", NULL },
-		{ "read", 0, 0, G_OPTION_ARG_NONE, &opt_read, "Read configuration", NULL },
-		{ "name", 0, 0, G_OPTION_ARG_STRING, &opt_name, "Configuration name", "julea" },
-		{ "object-servers", 0, 0, G_OPTION_ARG_STRING, &opt_servers_object, "Object servers to use", "host1,host2" },
-		{ "kv-servers", 0, 0, G_OPTION_ARG_STRING, &opt_servers_kv, "Key-value servers to use", "host1,host2" },
-		{ "object-backend", 0, 0, G_OPTION_ARG_STRING, &opt_object_backend, "Object backend to use", "posix|null|gio|…" },
-		{ "object-component", 0, 0, G_OPTION_ARG_STRING, &opt_object_component, "Object component to use", "client|server" },
-		{ "object-path", 0, 0, G_OPTION_ARG_STRING, &opt_object_path, "Object path to use", "/path/to/storage" },
-		{ "kv-backend", 0, 0, G_OPTION_ARG_STRING, &opt_kv_backend, "Key-value backend to use", "posix|null|gio|…" },
-		{ "kv-component", 0, 0, G_OPTION_ARG_STRING, &opt_kv_component, "Key-value component to use", "client|server" },
-		{ "kv-path", 0, 0, G_OPTION_ARG_STRING, &opt_kv_path, "Key-value path to use", "/path/to/storage" },
-		{ "max-operation-size", 0, 0, G_OPTION_ARG_INT64, &opt_max_operation_size, "Maximum size of an operation", "0" },
-		{ "max-connections", 0, 0, G_OPTION_ARG_INT, &opt_max_connections, "Maximum number of connections", "0" },
-		{ "stripe-size", 0, 0, G_OPTION_ARG_INT64, &opt_stripe_size, "Default stripe size", "0" },
-		{ NULL, 0, 0, 0, NULL, NULL, NULL }
-	};
+	GOptionEntry entries[] = { { "user", 0, 0, G_OPTION_ARG_NONE, &opt_user, "Write user configuration", NULL }, { "system", 0, 0, G_OPTION_ARG_NONE, &opt_system, "Write system configuration", NULL }, { "read", 0, 0, G_OPTION_ARG_NONE, &opt_read, "Read configuration", NULL }, { "name", 0, 0, G_OPTION_ARG_STRING, &opt_name, "Configuration name", "julea" },
+		{ "object-servers", 0, 0, G_OPTION_ARG_STRING, &opt_servers_object, "Object servers to use", "host1,host2" }, { "kv-servers", 0, 0, G_OPTION_ARG_STRING, &opt_servers_kv, "Key-value servers to use", "host1,host2" }, { "object-backend", 0, 0, G_OPTION_ARG_STRING, &opt_object_backend, "Object backend to use", "posix|null|gio|…" },
+		{ "object-component", 0, 0, G_OPTION_ARG_STRING, &opt_object_component, "Object component to use", "client|server" }, { "object-path", 0, 0, G_OPTION_ARG_STRING, &opt_object_path, "Object path to use", "/path/to/storage" }, { "kv-backend", 0, 0, G_OPTION_ARG_STRING, &opt_kv_backend, "Key-value backend to use", "posix|null|gio|…" },
+		{ "kv-component", 0, 0, G_OPTION_ARG_STRING, &opt_kv_component, "Key-value component to use", "client|server" }, { "kv-path", 0, 0, G_OPTION_ARG_STRING, &opt_kv_path, "Key-value path to use", "/path/to/storage" }, { "max-operation-size", 0, 0, G_OPTION_ARG_INT64, &opt_max_operation_size, "Maximum size of an operation", "0" },
+		{ "max-connections", 0, 0, G_OPTION_ARG_INT, &opt_max_connections, "Maximum number of connections", "0" }, { "stripe-size", 0, 0, G_OPTION_ARG_INT64, &opt_stripe_size, "Default stripe size", "0" }, { NULL, 0, 0, 0, NULL, NULL, NULL } };
 
 	context = g_option_context_new(NULL);
 	g_option_context_add_main_entries(context, entries, NULL);
@@ -172,14 +156,8 @@ main (gint argc, gchar** argv)
 		return 1;
 	}
 
-	if ((opt_user && opt_system)
-	    || (opt_read && (opt_servers_object != NULL || opt_servers_kv != NULL || opt_object_backend != NULL || opt_object_component != NULL || opt_object_path != NULL || opt_kv_backend != NULL || opt_kv_component != NULL || opt_kv_path != NULL))
-	    || (opt_read && !opt_user && !opt_system)
-	    || (!opt_read && (opt_servers_object == NULL || opt_servers_kv == NULL || opt_object_backend == NULL || opt_object_component == NULL || opt_object_path == NULL || opt_kv_backend == NULL || opt_kv_component == NULL || opt_kv_path == NULL))
-	    || opt_max_operation_size < 0
-	    || opt_max_connections < 0
-	    || opt_stripe_size < 0
-	)
+	if ((opt_user && opt_system) || (opt_read && (opt_servers_object != NULL || opt_servers_kv != NULL || opt_object_backend != NULL || opt_object_component != NULL || opt_object_path != NULL || opt_kv_backend != NULL || opt_kv_component != NULL || opt_kv_path != NULL)) || (opt_read && !opt_user && !opt_system) ||
+		(!opt_read && (opt_servers_object == NULL || opt_servers_kv == NULL || opt_object_backend == NULL || opt_object_component == NULL || opt_object_path == NULL || opt_kv_backend == NULL || opt_kv_component == NULL || opt_kv_path == NULL)) || opt_max_operation_size < 0 || opt_max_connections < 0 || opt_stripe_size < 0)
 	{
 		g_autofree gchar* help = NULL;
 

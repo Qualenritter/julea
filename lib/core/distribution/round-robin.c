@@ -85,9 +85,8 @@ typedef struct JDistributionRoundRobin JDistributionRoundRobin;
  *
  * \return TRUE on success, FALSE if the distribution is finished.
  **/
-static
-gboolean
-distribution_distribute (gpointer data, guint* index, guint64* new_length, guint64* new_offset, guint64* block_id)
+static gboolean
+distribution_distribute(gpointer data, guint* index, guint64* new_length, guint64* new_offset, guint64* block_id)
 {
 	JDistributionRoundRobin* distribution = data;
 
@@ -122,9 +121,8 @@ end:
 	return ret;
 }
 
-static
-gpointer
-distribution_new (guint server_count, guint64 stripe_size)
+static gpointer
+distribution_new(guint server_count, guint64 stripe_size)
 {
 	JDistributionRoundRobin* distribution;
 
@@ -152,9 +150,8 @@ distribution_new (guint server_count, guint64 stripe_size)
  *
  * \param distribution A distribution.
  **/
-static
-void
-distribution_free (gpointer data)
+static void
+distribution_free(gpointer data)
 {
 	JDistributionRoundRobin* distribution = data;
 
@@ -176,9 +173,8 @@ distribution_free (gpointer data)
  * \param distribution A distribution.
  * \param start_index  An index.
  */
-static
-void
-distribution_set (gpointer data, gchar const* key, guint64 value)
+static void
+distribution_set(gpointer data, gchar const* key, guint64 value)
 {
 	JDistributionRoundRobin* distribution = data;
 
@@ -208,9 +204,8 @@ distribution_set (gpointer data, gchar const* key, guint64 value)
  *
  * \return A new BSON object. Should be freed with g_slice_free().
  **/
-static
-void
-distribution_serialize (gpointer data, bson_t* b)
+static void
+distribution_serialize(gpointer data, bson_t* b)
 {
 	JDistributionRoundRobin* distribution = data;
 
@@ -235,9 +230,8 @@ distribution_serialize (gpointer data, bson_t* b)
  * \param distribution distribution.
  * \param b           A BSON object.
  **/
-static
-void
-distribution_deserialize (gpointer data, bson_t const* b)
+static void
+distribution_deserialize(gpointer data, bson_t const* b)
 {
 	JDistributionRoundRobin* distribution = data;
 
@@ -283,9 +277,8 @@ distribution_deserialize (gpointer data, bson_t const* b)
  *
  * \return A new distribution. Should be freed with j_distribution_unref().
  **/
-static
-void
-distribution_reset (gpointer data, guint64 length, guint64 offset)
+static void
+distribution_reset(gpointer data, guint64 length, guint64 offset)
 {
 	JDistributionRoundRobin* distribution = data;
 
@@ -300,7 +293,7 @@ distribution_reset (gpointer data, guint64 length, guint64 offset)
 }
 
 void
-j_distribution_round_robin_get_vtable (JDistributionVTable* vtable)
+j_distribution_round_robin_get_vtable(JDistributionVTable* vtable)
 {
 	vtable->distribution_new = distribution_new;
 	vtable->distribution_free = distribution_free;

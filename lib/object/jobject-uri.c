@@ -85,9 +85,8 @@ struct JObjectURI
  * \param uri  A URI.
  * \param uri_ A URI string.
  **/
-static
-gboolean
-j_object_uri_parse (JObjectURI* uri, gchar const* uri_)
+static gboolean
+j_object_uri_parse(JObjectURI* uri, gchar const* uri_)
 {
 	g_auto(GStrv) parts = NULL;
 	gchar const* illegal[2] = { "/", "/" };
@@ -98,29 +97,29 @@ j_object_uri_parse (JObjectURI* uri, gchar const* uri_)
 
 	switch (uri->scheme)
 	{
-		case J_OBJECT_URI_SCHEME_NAMESPACE:
-			// object://index/namespace
-			scheme_parts = 2;
-			scheme_prefix = "object://";
-			break;
-		case J_OBJECT_URI_SCHEME_OBJECT:
-			// object://index/namespace/object
-			scheme_parts = 3;
-			scheme_prefix = "object://";
-			break;
-		case J_OBJECT_URI_SCHEME_DISTRIBUTED_NAMESPACE:
-			// dobject://namespace
-			scheme_parts = 1;
-			scheme_prefix = "dobject://";
-			break;
-		case J_OBJECT_URI_SCHEME_DISTRIBUTED_OBJECT:
-			// dobject://namespace/object
-			scheme_parts = 2;
-			scheme_prefix = "dobject://";
-			break;
-		default:
-			g_warn_if_reached();
-			break;
+	case J_OBJECT_URI_SCHEME_NAMESPACE:
+		// object://index/namespace
+		scheme_parts = 2;
+		scheme_prefix = "object://";
+		break;
+	case J_OBJECT_URI_SCHEME_OBJECT:
+		// object://index/namespace/object
+		scheme_parts = 3;
+		scheme_prefix = "object://";
+		break;
+	case J_OBJECT_URI_SCHEME_DISTRIBUTED_NAMESPACE:
+		// dobject://namespace
+		scheme_parts = 1;
+		scheme_prefix = "dobject://";
+		break;
+	case J_OBJECT_URI_SCHEME_DISTRIBUTED_OBJECT:
+		// dobject://namespace/object
+		scheme_parts = 2;
+		scheme_prefix = "dobject://";
+		break;
+	default:
+		g_warn_if_reached();
+		break;
 	}
 
 	if (!g_str_has_prefix(uri_, scheme_prefix))
@@ -146,65 +145,65 @@ j_object_uri_parse (JObjectURI* uri, gchar const* uri_)
 
 	switch (uri->scheme)
 	{
-		case J_OBJECT_URI_SCHEME_NAMESPACE:
-		case J_OBJECT_URI_SCHEME_OBJECT:
-			for (i = 0; i < G_N_ELEMENTS(illegal); i++)
+	case J_OBJECT_URI_SCHEME_NAMESPACE:
+	case J_OBJECT_URI_SCHEME_OBJECT:
+		for (i = 0; i < G_N_ELEMENTS(illegal); i++)
+		{
+			if (strpbrk(parts[i], illegal[i]) != NULL)
 			{
-				if (strpbrk(parts[i], illegal[i]) != NULL)
-				{
-					goto error;
-				}
+				goto error;
 			}
-			break;
-		case J_OBJECT_URI_SCHEME_DISTRIBUTED_NAMESPACE:
-		case J_OBJECT_URI_SCHEME_DISTRIBUTED_OBJECT:
-			for (i = 1; i < G_N_ELEMENTS(illegal); i++)
+		}
+		break;
+	case J_OBJECT_URI_SCHEME_DISTRIBUTED_NAMESPACE:
+	case J_OBJECT_URI_SCHEME_DISTRIBUTED_OBJECT:
+		for (i = 1; i < G_N_ELEMENTS(illegal); i++)
+		{
+			if (strpbrk(parts[i - 1], illegal[i]) != NULL)
 			{
-				if (strpbrk(parts[i - 1], illegal[i]) != NULL)
-				{
-					goto error;
-				}
+				goto error;
 			}
-			break;
-		default:
-			g_warn_if_reached();
-			break;
+		}
+		break;
+	default:
+		g_warn_if_reached();
+		break;
 	}
 
 	switch (uri->scheme)
 	{
-		case J_OBJECT_URI_SCHEME_NAMESPACE:
-		case J_OBJECT_URI_SCHEME_OBJECT:
-			// FIXME check for errors
-			uri->index = g_ascii_strtoull(parts[0], NULL, 10);
-			uri->namespace = g_strdup(parts[1]);
+	case J_OBJECT_URI_SCHEME_NAMESPACE:
+	case J_OBJECT_URI_SCHEME_OBJECT:
+		// FIXME check for errors
+		uri->index = g_ascii_strtoull(parts[0], NULL, 10);
+		uri->namespace = g_strdup(parts[1]);
 
-			if (parts_len >= 3)
-			{
-				uri->name = g_strdup(parts[2]);
-				// FIXME index
-				uri->object = j_object_new_for_index(uri->index, uri->namespace, uri->name);
-			}
-			break;
-		case J_OBJECT_URI_SCHEME_DISTRIBUTED_NAMESPACE:
-		case J_OBJECT_URI_SCHEME_DISTRIBUTED_OBJECT:
-			uri->namespace = g_strdup(parts[0]);
+		if (parts_len >= 3)
+		{
+			uri->name = g_strdup(parts[2]);
+			// FIXME index
+			uri->object = j_object_new_for_index(uri->index, uri->namespace, uri->name);
+		}
+		break;
+	case J_OBJECT_URI_SCHEME_DISTRIBUTED_NAMESPACE:
+	case J_OBJECT_URI_SCHEME_DISTRIBUTED_OBJECT:
+		uri->namespace = g_strdup(parts[0]);
 
-			if (parts_len >= 2)
-			{
-				g_autoptr(JDistribution) distribution = NULL;
+		if (parts_len >= 2)
+		{
+			g_autoptr(JDistribution) distribution = NULL;
 
-				// FIXME
-				distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-				j_distribution_set(distribution, "start-index", 0);
+			// FIXME
+			distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
+			j_distribution_set(distribution, "start-index", 0);
 
-				uri->name = g_strdup(parts[1]);
-				uri->distributed_object = j_distributed_object_new(uri->namespace, uri->name, distribution);
-			}
-			break;
-		default:
-			g_warn_if_reached();
-			break;
+			uri->name = g_strdup(parts[1]);
+			uri->distributed_object = j_distributed_object_new(uri->namespace, uri->name, distribution);
+		}
+		break;
+	default:
+		g_warn_if_reached();
+		break;
 	}
 
 	return TRUE;
@@ -227,7 +226,7 @@ error:
  * \return A new URI. Should be freed with j_object_uri_free().
  **/
 JObjectURI*
-j_object_uri_new (gchar const* uri_, JObjectURIScheme scheme)
+j_object_uri_new(gchar const* uri_, JObjectURIScheme scheme)
 {
 	JObjectURI* uri;
 
@@ -264,7 +263,7 @@ j_object_uri_new (gchar const* uri_, JObjectURIScheme scheme)
  * \param uri A URI.
  **/
 void
-j_object_uri_free (JObjectURI* uri)
+j_object_uri_free(JObjectURI* uri)
 {
 	g_return_if_fail(uri != NULL);
 
@@ -300,7 +299,7 @@ j_object_uri_free (JObjectURI* uri)
  * \return The index.
  **/
 guint32
-j_object_uri_get_index (JObjectURI* uri)
+j_object_uri_get_index(JObjectURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, 0);
 
@@ -323,7 +322,7 @@ j_object_uri_get_index (JObjectURI* uri)
  * \return The namespace.
  **/
 gchar const*
-j_object_uri_get_namespace (JObjectURI* uri)
+j_object_uri_get_namespace(JObjectURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 
@@ -346,7 +345,7 @@ j_object_uri_get_namespace (JObjectURI* uri)
  * \return The name.
  **/
 gchar const*
-j_object_uri_get_name (JObjectURI* uri)
+j_object_uri_get_name(JObjectURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 
@@ -369,7 +368,7 @@ j_object_uri_get_name (JObjectURI* uri)
  * \return The object.
  **/
 JDistributedObject*
-j_object_uri_get_distributed_object (JObjectURI* uri)
+j_object_uri_get_distributed_object(JObjectURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 
@@ -392,7 +391,7 @@ j_object_uri_get_distributed_object (JObjectURI* uri)
  * \return The object.
  **/
 JObject*
-j_object_uri_get_object (JObjectURI* uri)
+j_object_uri_get_object(JObjectURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 
