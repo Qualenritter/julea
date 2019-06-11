@@ -31,30 +31,34 @@ main(int argc, char** argv)
 
 	g_test_init(&argc, &argv, NULL);
 
-	// Core
-	test_background_operation();
-	test_batch();
-	test_cache();
-	test_configuration();
-	test_distribution();
-	test_list();
-	test_list_iterator();
-	test_lock();
-	test_memory_chunk();
-	test_message();
-	test_semantics();
+	/*
+		// Core
+		test_background_operation();
+		test_batch();
+		test_cache();
+		test_configuration();
+		test_distribution();
+		test_list();
+		test_list_iterator();
+		test_lock();
+		test_memory_chunk();
+		test_message();
+		test_semantics();
 
-	// Object client
-	test_object_distributed_object();
-	test_object_object();
+		// Object client
+		test_object_distributed_object();
+		test_object_object();
 
-	// Item client
-	test_collection();
-	test_item();
-	test_uri();
+		// Item client
+		test_collection();
+		test_item();
+		test_uri();
 
-	// HDF5 client
-	test_hdf();
+		// HDF5 client
+		test_hdf();
+	*/
+	// SMD
+	test_smd();
 
 	ret = g_test_run();
 

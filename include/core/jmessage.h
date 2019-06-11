@@ -27,8 +27,8 @@
 #error "Only <julea.h> can be included directly."
 #endif
 
-#include <glib.h>
 #include <gio/gio.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 
@@ -47,6 +47,17 @@ enum JMessageType
 	J_MESSAGE_KV_GET,
 	J_MESSAGE_KV_GET_ALL,
 	J_MESSAGE_KV_GET_BY_PREFIX,
+	J_MESSAGE_SMD_ATTR_CREATE,
+	J_MESSAGE_SMD_ATTR_DELETE,
+	J_MESSAGE_SMD_ATTR_OPEN,
+	J_MESSAGE_SMD_ATTR_READ,
+	J_MESSAGE_SMD_ATTR_WRITE,
+	J_MESSAGE_SMD_FILE_CREATE,
+	J_MESSAGE_SMD_FILE_DELETE,
+	J_MESSAGE_SMD_FILE_OPEN,
+	J_MESSAGE_SMD_DATASET_CREATE,
+	J_MESSAGE_SMD_DATASET_DELETE,
+	J_MESSAGE_SMD_DATASET_OPEN,
 };
 
 typedef enum JMessageType JMessageType;

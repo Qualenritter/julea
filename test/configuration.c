@@ -43,17 +43,22 @@ test_configuration_new_for_data(void)
 {
 	JConfiguration* configuration;
 	GKeyFile* key_file;
+
 	gchar const* servers[] = { "localhost", NULL };
 
 	key_file = g_key_file_new();
 	g_key_file_set_string_list(key_file, "servers", "object", servers, 1);
 	g_key_file_set_string_list(key_file, "servers", "kv", servers, 1);
+	g_key_file_set_string_list(key_file, "servers", "smd", servers, 1);
 	g_key_file_set_string(key_file, "object", "backend", "null");
 	g_key_file_set_string(key_file, "object", "component", "server");
 	g_key_file_set_string(key_file, "object", "path", "");
 	g_key_file_set_string(key_file, "kv", "backend", "null");
 	g_key_file_set_string(key_file, "kv", "component", "server");
 	g_key_file_set_string(key_file, "kv", "path", "");
+	g_key_file_set_string(key_file, "smd", "backend", "null");
+	g_key_file_set_string(key_file, "smd", "component", "server");
+	g_key_file_set_string(key_file, "smd", "path", "");
 
 	configuration = j_configuration_new_for_data(key_file);
 	g_assert(configuration != NULL);
@@ -67,18 +72,24 @@ test_configuration_get(void)
 {
 	JConfiguration* configuration;
 	GKeyFile* key_file;
+
 	gchar const* object_servers[] = { "localhost", "local.host", NULL };
 	gchar const* kv_servers[] = { "localhost", NULL };
+	gchar const* smd_servers[] = { "hostlocal", "local.host", NULL };
 
 	key_file = g_key_file_new();
 	g_key_file_set_string_list(key_file, "servers", "object", object_servers, 2);
 	g_key_file_set_string_list(key_file, "servers", "kv", kv_servers, 1);
+	g_key_file_set_string_list(key_file, "servers", "smd", smd_servers, 2);
 	g_key_file_set_string(key_file, "object", "backend", "null");
 	g_key_file_set_string(key_file, "object", "component", "server");
 	g_key_file_set_string(key_file, "object", "path", "NULL");
-	g_key_file_set_string(key_file, "kv", "backend", "null2");
+	g_key_file_set_string(key_file, "kv", "backend", "null");
 	g_key_file_set_string(key_file, "kv", "component", "client");
-	g_key_file_set_string(key_file, "kv", "path", "NULL2");
+	g_key_file_set_string(key_file, "kv", "path", "NULL");
+	g_key_file_set_string(key_file, "smd", "backend", "null");
+	g_key_file_set_string(key_file, "smd", "component", "server");
+	g_key_file_set_string(key_file, "smd", "path", "NULL");
 
 	configuration = j_configuration_new_for_data(key_file);
 	g_assert(configuration != NULL);
@@ -90,13 +101,21 @@ test_configuration_get(void)
 	g_assert_cmpstr(j_configuration_get_kv_server(configuration, 0), ==, "localhost");
 	g_assert_cmpuint(j_configuration_get_kv_server_count(configuration), ==, 1);
 
+	g_assert_cmpstr(j_configuration_get_smd_server(configuration, 0), ==, "hostlocal");
+	g_assert_cmpstr(j_configuration_get_smd_server(configuration, 1), ==, "local.host");
+	g_assert_cmpuint(j_configuration_get_smd_server_count(configuration), ==, 2);
+
 	g_assert_cmpstr(j_configuration_get_object_backend(configuration), ==, "null");
 	g_assert_cmpstr(j_configuration_get_object_component(configuration), ==, "server");
 	g_assert_cmpstr(j_configuration_get_object_path(configuration), ==, "NULL");
 
-	g_assert_cmpstr(j_configuration_get_kv_backend(configuration), ==, "null2");
+	g_assert_cmpstr(j_configuration_get_kv_backend(configuration), ==, "null");
 	g_assert_cmpstr(j_configuration_get_kv_component(configuration), ==, "client");
-	g_assert_cmpstr(j_configuration_get_kv_path(configuration), ==, "NULL2");
+	g_assert_cmpstr(j_configuration_get_kv_path(configuration), ==, "NULL");
+
+	g_assert_cmpstr(j_configuration_get_smd_backend(configuration), ==, "null");
+	g_assert_cmpstr(j_configuration_get_smd_component(configuration), ==, "server");
+	g_assert_cmpstr(j_configuration_get_smd_path(configuration), ==, "NULL");
 
 	j_configuration_unref(configuration);
 

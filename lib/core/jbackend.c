@@ -56,6 +56,9 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	case J_BACKEND_TYPE_KV:
 		type_str = "kv";
 		break;
+	case J_BACKEND_TYPE_SMD:
+		type_str = "smd";
+		break;
 	default:
 		g_warn_if_reached();
 	}
@@ -105,8 +108,7 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 
 	if (type == J_BACKEND_TYPE_OBJECT)
 	{
-		if (tmp_backend->object.backend_init == NULL || tmp_backend->object.backend_fini == NULL || tmp_backend->object.backend_create == NULL || tmp_backend->object.backend_delete == NULL || tmp_backend->object.backend_open == NULL || tmp_backend->object.backend_close == NULL || tmp_backend->object.backend_status == NULL || tmp_backend->object.backend_sync == NULL ||
-			tmp_backend->object.backend_read == NULL || tmp_backend->object.backend_write == NULL)
+		if (tmp_backend->object.backend_init == NULL || tmp_backend->object.backend_fini == NULL || tmp_backend->object.backend_create == NULL || tmp_backend->object.backend_delete == NULL || tmp_backend->object.backend_open == NULL || tmp_backend->object.backend_close == NULL || tmp_backend->object.backend_status == NULL || tmp_backend->object.backend_sync == NULL || tmp_backend->object.backend_read == NULL || tmp_backend->object.backend_write == NULL)
 		{
 			goto error;
 		}
@@ -114,8 +116,16 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 
 	if (type == J_BACKEND_TYPE_KV)
 	{
-		if (tmp_backend->kv.backend_init == NULL || tmp_backend->kv.backend_fini == NULL || tmp_backend->kv.backend_batch_start == NULL || tmp_backend->kv.backend_batch_execute == NULL || tmp_backend->kv.backend_put == NULL || tmp_backend->kv.backend_delete == NULL || tmp_backend->kv.backend_get == NULL || tmp_backend->kv.backend_get_all == NULL ||
-			tmp_backend->kv.backend_get_by_prefix == NULL || tmp_backend->kv.backend_iterate == NULL)
+		if (tmp_backend->kv.backend_init == NULL || tmp_backend->kv.backend_fini == NULL || tmp_backend->kv.backend_batch_start == NULL || tmp_backend->kv.backend_batch_execute == NULL || tmp_backend->kv.backend_put == NULL || tmp_backend->kv.backend_delete == NULL || tmp_backend->kv.backend_get == NULL || tmp_backend->kv.backend_get_all == NULL || tmp_backend->kv.backend_get_by_prefix == NULL || tmp_backend->kv.backend_iterate == NULL)
+		{
+			goto error;
+		}
+	}
+
+	if (type == J_BACKEND_TYPE_SMD)
+	{
+		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_attr_create == NULL || tmp_backend->smd.backend_attr_delete == NULL || tmp_backend->smd.backend_attr_open == NULL || tmp_backend->smd.backend_attr_read == NULL || tmp_backend->smd.backend_attr_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_dataset_create == NULL || tmp_backend->smd.backend_dataset_delete == NULL ||
+			tmp_backend->smd.backend_dataset_open == NULL)
 		{
 			goto error;
 		}
@@ -141,7 +151,7 @@ j_backend_load_client(gchar const* name, gchar const* component, JBackendType ty
 {
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(component != NULL, FALSE);
-	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV || type == J_BACKEND_TYPE_SMD, FALSE);
 	g_return_val_if_fail(module != NULL, FALSE);
 	g_return_val_if_fail(backend != NULL, FALSE);
 
@@ -163,7 +173,7 @@ j_backend_load_server(gchar const* name, gchar const* component, JBackendType ty
 {
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(component != NULL, FALSE);
-	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV || type == J_BACKEND_TYPE_SMD, FALSE);
 	g_return_val_if_fail(module != NULL, FALSE);
 	g_return_val_if_fail(backend != NULL, FALSE);
 
@@ -344,7 +354,6 @@ j_backend_object_write(JBackend* backend, gpointer data, gconstpointer buffer, g
 
 	return ret;
 }
-
 gboolean
 j_backend_kv_init(JBackend* backend, gchar const* path)
 {
@@ -508,6 +517,197 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gconstpointer* value,
 	ret = backend->kv.backend_iterate(iterator, value, value_len);
 	j_trace_leave("backend_iterate");
 
+	return ret;
+}
+
+gboolean
+j_backend_smd_init(JBackend* backend, gchar const* path)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(path != NULL, FALSE);
+
+	j_trace_enter("backend_init", "%s", path);
+	ret = backend->smd.backend_init(path);
+	j_trace_leave("backend_init");
+
+	return ret;
+}
+
+void
+j_backend_smd_fini(JBackend* backend)
+{
+	g_return_if_fail(backend != NULL);
+	g_return_if_fail(backend->type == J_BACKEND_TYPE_SMD);
+
+	j_trace_enter("backend_fini", NULL);
+	backend->smd.backend_fini();
+	j_trace_leave("backend_fini");
+}
+
+gboolean
+j_backend_smd_attr_create(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
+	ret = backend->smd.backend_attr_create(name, parent, bson, key);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_attr_delete(JBackend* backend, const char* name, char* parent)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
+	ret = backend->smd.backend_attr_delete(name, parent);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_attr_open(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
+	ret = backend->smd.backend_attr_open(name, parent, bson, key);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_attr_read(JBackend* backend, char* key, bson_t* bson)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s", key);
+	ret = backend->smd.backend_attr_read(key, bson);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_attr_write(JBackend* backend, char* key, bson_t* bson)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s", key);
+	ret = backend->smd.backend_attr_write(key, bson);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_file_create(JBackend* backend, const char* name, bson_t* bson, char* key)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s", name);
+	ret = backend->smd.backend_file_create(name, bson, key);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_file_delete(JBackend* backend, const char* name)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s", name);
+	ret = backend->smd.backend_file_delete(name);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_file_open(JBackend* backend, const char* name, bson_t* bson, char* key)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s", name);
+	ret = backend->smd.backend_file_open(name, bson, key);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_dataset_create(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
+	ret = backend->smd.backend_dataset_create(name, parent, bson, key);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_dataset_delete(JBackend* backend, const char* name, char* parent)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
+	ret = backend->smd.backend_dataset_delete(name, parent);
+	j_trace_leave(G_STRFUNC);
+	return ret;
+}
+gboolean
+j_backend_smd_dataset_open(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
+	ret = backend->smd.backend_dataset_open(name, parent, bson, key);
+	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 

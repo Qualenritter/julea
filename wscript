@@ -351,6 +351,7 @@ def configure(ctx):
 			'-Wuninitialized',
 			'-Wwrite-strings'
 		])
+		check_and_add_cflags(ctx, '-fno-omit-frame-pointer')
 		check_and_add_cflags(ctx, '-ggdb')
 
 		ctx.define('G_DISABLE_DEPRECATED', 1)
@@ -389,6 +390,7 @@ def build(ctx):
 	use_julea_backend = use_julea_core + ['GMODULE']
 	use_julea_object = use_julea_core + ['lib/julea', 'lib/julea-object']
 	use_julea_kv = use_julea_core + ['lib/julea', 'lib/julea-kv']
+	use_julea_smd = use_julea_core + ['lib/julea', 'lib/julea-smd']
 	use_julea_item = use_julea_core + ['lib/julea', 'lib/julea-item']
 	use_julea_hdf = use_julea_core + ['lib/julea'] + ['lib/julea-hdf5'] if ctx.env.JULEA_HDF else []
 
@@ -404,7 +406,7 @@ def build(ctx):
 		install_path='${LIBDIR}'
 	)
 
-	clients = ['object', 'kv', 'item']
+	clients = ['object', 'kv', 'item', 'smd']
 
 	if ctx.env.JULEA_HDF:
 		clients.append('hdf5')
@@ -434,7 +436,7 @@ def build(ctx):
 	ctx.program(
 		source=ctx.path.ant_glob('test/**/*.c'),
 		target='test/julea-test',
-		use=use_julea_object + use_julea_item + use_julea_hdf,
+		use=use_julea_object + use_julea_item + use_julea_hdf + use_julea_smd,
 		includes=include_julea_core + ['test'],
 		rpath=get_rpath(ctx),
 		install_path=None
@@ -444,7 +446,7 @@ def build(ctx):
 	ctx.program(
 		source=ctx.path.ant_glob('benchmark/**/*.c'),
 		target='benchmark/julea-benchmark',
-		use=use_julea_item + use_julea_hdf,
+		use=use_julea_item + use_julea_hdf + use_julea_smd,
 		includes=include_julea_core + ['benchmark'],
 		rpath=get_rpath(ctx),
 		install_path=None
@@ -523,6 +525,24 @@ def build(ctx):
 			install_path='${LIBDIR}/julea/backend/kv'
 		)
 
+	smd_backends = ['null']
+	if ctx.env.JULEA_SQLITE:
+		smd_backends.append('sqlite')
+	for backend in smd_backends:
+		use_extra = []
+		cflags = []
+		if backend == 'sqlite':
+			use_extra = ['SQLITE']
+		ctx.shlib(
+			source = ['backend/smd/{0}.c'.format(backend)],
+			target = 'backend/smd/{0}'.format(backend),
+			use = use_julea_smd + use_julea_backend + ['lib/julea'] + use_extra,
+			includes = include_julea_core,
+			cflags = cflags,
+			rpath = get_rpath(ctx),
+			install_path = '${LIBDIR}/julea/backend/smd'
+		)
+
 	# Command line
 	ctx.program(
 		source=ctx.path.ant_glob('cli/*.c'),
@@ -561,7 +581,7 @@ def build(ctx):
 		)
 
 	# pkg-config
-	for lib in ('', 'object', 'kv', 'item'):
+	for lib in ('', 'object', 'kv', 'item', 'smd'):
 		suffix = '-{0}'.format(lib) if lib else ''
 
 		ctx(

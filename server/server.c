@@ -18,17 +18,19 @@
 
 #include <julea-config.h>
 
+#include <gio/gio.h>
+#include <glib-object.h>
+#include <glib-unix.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <glib-unix.h>
-#include <glib-object.h>
-#include <gio/gio.h>
 #include <gmodule.h>
 
 #include <string.h>
 
 #include <julea.h>
+
 #include <julea-internal.h>
+#include <julea-smd.h>
 
 static JStatistics* jd_statistics;
 
@@ -38,8 +40,9 @@ static JConfiguration* jd_configuration;
 
 static JBackend* jd_object_backend;
 static JBackend* jd_kv_backend;
+static JBackend* jd_smd_backend;
 
-static guint jd_thread_num = 0;
+static guint jd_thread_num;
 
 static gboolean
 jd_signal(gpointer data)
@@ -84,6 +87,7 @@ static gboolean
 jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObject* source_object, gpointer user_data)
 {
 	JMemoryChunk* memory_chunk;
+
 	g_autoptr(JMessage) message = NULL;
 	JStatistics* statistics;
 	GInputStream* input;
@@ -433,6 +437,11 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_message_add_operation(reply, 3);
 				j_message_append_n(reply, "kv", 3);
 			}
+			if (jd_smd_backend != NULL)
+			{
+				j_message_add_operation(reply, 4);
+				j_message_append_n(reply, "smd", 4);
+			}
 
 			j_message_send(reply, connection);
 		}
@@ -600,6 +609,289 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
+		case J_MESSAGE_SMD_ATTR_CREATE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			char* parent;
+			uint8_t* bson_data;
+			int bson_len;
+			char _key[SMD_KEY_LENGTH];
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			bson_len = j_message_get_4(message);
+			bson_data = j_message_get_n(message, bson_len);
+			j_message_add_operation(reply, SMD_KEY_LENGTH);
+			bson_init_static(bson, bson_data, bson_len);
+			if (j_backend_smd_attr_create(jd_smd_backend, name, parent, bson, _key))
+			{
+				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+			}
+			else
+			{
+				char buf[SMD_KEY_LENGTH];
+
+				memset(buf, 0, SMD_KEY_LENGTH);
+				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
+
+		case J_MESSAGE_SMD_ATTR_DELETE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			char* parent;
+			char buf[SMD_KEY_LENGTH];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			j_backend_smd_attr_delete(jd_smd_backend, name, parent);
+			j_message_add_operation(reply, SMD_KEY_LENGTH);
+			memset(buf, 0, SMD_KEY_LENGTH);
+			j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			j_message_send(reply, connection);
+		}
+		break;
+
+		case J_MESSAGE_SMD_ATTR_OPEN:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			char* parent;
+			int bson_len;
+			char _key[SMD_KEY_LENGTH];
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			if (j_backend_smd_attr_open(jd_smd_backend, name, parent, bson, _key))
+			{
+				bson_len = bson->len;
+				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
+				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+				j_message_append_4(reply, &bson_len);
+				j_message_append_n(reply, bson_get_data(bson), bson_len);
+			}
+			else
+			{
+				char buf[SMD_KEY_LENGTH];
+
+				memset(buf, 0, SMD_KEY_LENGTH);
+				j_message_add_operation(reply, SMD_KEY_LENGTH);
+				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
+		case J_MESSAGE_SMD_ATTR_READ:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			char _key[SMD_KEY_LENGTH];
+			int bson_len;
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+			if (j_backend_smd_attr_read(jd_smd_backend, _key, bson))
+			{
+				bson_len = bson->len;
+				j_message_add_operation(reply, 4 + bson_len);
+				j_message_append_4(reply, &bson_len);
+				j_message_append_n(reply, bson_get_data(bson), bson_len);
+			}
+			else
+			{
+				int zero = 0;
+
+				j_message_add_operation(reply, 4);
+				j_message_append_4(reply, &zero);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
+		case J_MESSAGE_SMD_ATTR_WRITE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			char _key[SMD_KEY_LENGTH];
+			int bson_len;
+			bson_t bson[1];
+			uint8_t* bson_data;
+			int zero = 0;
+
+			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+			bson_len = j_message_get_4(message);
+			bson_data = j_message_get_n(message, bson_len);
+			bson_init_static(bson, bson_data, bson_len);
+			j_backend_smd_attr_write(jd_smd_backend, _key, bson);
+			j_message_add_operation(reply, 4);
+			j_message_append_4(reply, &zero);
+			j_message_send(reply, connection);
+		}
+		break;
+		case J_MESSAGE_SMD_FILE_CREATE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			uint8_t* bson_data;
+			int bson_len;
+			char _key[SMD_KEY_LENGTH];
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			bson_len = j_message_get_4(message);
+			bson_data = j_message_get_n(message, bson_len);
+			j_message_add_operation(reply, SMD_KEY_LENGTH);
+			bson_init_static(bson, bson_data, bson_len);
+			if (j_backend_smd_file_create(jd_smd_backend, name, bson, _key))
+			{
+				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+			}
+			else
+			{
+				char buf[SMD_KEY_LENGTH];
+
+				memset(buf, 0, SMD_KEY_LENGTH);
+				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
+
+		case J_MESSAGE_SMD_FILE_DELETE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			j_backend_smd_file_delete(jd_smd_backend, name);
+			j_message_add_operation(reply, 0);
+			j_message_send(reply, connection);
+		}
+		break;
+
+		case J_MESSAGE_SMD_FILE_OPEN:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			int bson_len;
+			char _key[SMD_KEY_LENGTH];
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			if (j_backend_smd_file_open(jd_smd_backend, name, bson, _key))
+			{
+				bson_len = bson->len;
+				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
+				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+				j_message_append_4(reply, &bson_len);
+				j_message_append_n(reply, bson_get_data(bson), bson_len);
+			}
+			else
+			{
+				char buf[SMD_KEY_LENGTH];
+
+				j_message_add_operation(reply, SMD_KEY_LENGTH);
+				memset(buf, 0, SMD_KEY_LENGTH);
+				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
+		case J_MESSAGE_SMD_DATASET_CREATE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			char* parent;
+			uint8_t* bson_data;
+			int bson_len;
+			char _key[SMD_KEY_LENGTH];
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			bson_len = j_message_get_4(message);
+			bson_data = j_message_get_n(message, bson_len);
+			bson_init_static(bson, bson_data, bson_len);
+			j_message_add_operation(reply, SMD_KEY_LENGTH);
+			if (j_backend_smd_dataset_create(jd_smd_backend, name, parent, bson, _key))
+			{
+				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+			}
+			else
+			{
+				char buf[SMD_KEY_LENGTH];
+
+				memset(buf, 0, SMD_KEY_LENGTH);
+				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
+
+		case J_MESSAGE_SMD_DATASET_DELETE:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			char* parent;
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			j_backend_smd_dataset_delete(jd_smd_backend, name, parent);
+			j_message_add_operation(reply, 0);
+			j_message_send(reply, connection);
+		}
+		break;
+
+		case J_MESSAGE_SMD_DATASET_OPEN:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			const char* name;
+			char* parent;
+			int bson_len;
+			char _key[SMD_KEY_LENGTH];
+			bson_t bson[1];
+
+			reply = j_message_new_reply(message);
+			name = j_message_get_string(message);
+			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			if (j_backend_smd_dataset_open(jd_smd_backend, name, parent, bson, _key))
+			{
+				bson_len = bson->len;
+				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
+				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+				j_message_append_4(reply, &bson_len);
+				j_message_append_n(reply, bson_get_data(bson), bson_len);
+			}
+			else
+			{
+				char buf[SMD_KEY_LENGTH];
+
+				j_message_add_operation(reply, SMD_KEY_LENGTH);
+				memset(buf, 0, SMD_KEY_LENGTH);
+				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+			}
+			bson_destroy(bson);
+			j_message_send(reply, connection);
+		}
+		break;
 		default:
 			g_warn_if_reached();
 			break;
@@ -692,9 +984,12 @@ main(int argc, char** argv)
 	gint opt_port = 4711;
 
 	GError* error = NULL;
+
 	g_autoptr(GMainLoop) main_loop = NULL;
 	GModule* object_module = NULL;
 	GModule* kv_module = NULL;
+	GModule* smd_module = NULL;
+
 	g_autoptr(GOptionContext) context = NULL;
 	g_autoptr(GSocketService) socket_service = NULL;
 	gchar const* object_backend;
@@ -703,9 +998,13 @@ main(int argc, char** argv)
 	gchar const* kv_backend;
 	gchar const* kv_component;
 	gchar const* kv_path;
+	gchar const* smd_backend;
+	gchar const* smd_component;
+	gchar const* smd_path;
 #ifdef JULEA_DEBUG
 	g_autofree gchar* object_path_port = NULL;
 	g_autofree gchar* kv_path_port = NULL;
+	g_autofree gchar* smd_path_port = NULL;
 #endif
 
 	GOptionEntry entries[] = { { "daemon", 0, 0, G_OPTION_ARG_NONE, &opt_daemon, "Run as daemon", NULL }, { "port", 0, 0, G_OPTION_ARG_INT, &opt_port, "Port to use", "4711" }, { NULL, 0, 0, 0, NULL, NULL, NULL } };
@@ -766,12 +1065,18 @@ main(int argc, char** argv)
 	kv_component = j_configuration_get_kv_component(jd_configuration);
 	kv_path = j_configuration_get_kv_path(jd_configuration);
 
+	smd_backend = j_configuration_get_smd_backend(jd_configuration);
+	smd_component = j_configuration_get_smd_component(jd_configuration);
+	smd_path = j_configuration_get_smd_path(jd_configuration);
+
 #ifdef JULEA_DEBUG
 	object_path_port = g_strdup_printf("%s/%d", object_path, opt_port);
 	kv_path_port = g_strdup_printf("%s/%d", kv_path, opt_port);
+	smd_path_port = g_strdup_printf("%s/%d", smd_path, opt_port);
 
 	object_path = object_path_port;
 	kv_path = kv_path_port;
+	smd_path = smd_path_port;
 #endif
 
 	if (j_backend_load_server(object_backend, object_component, J_BACKEND_TYPE_OBJECT, &object_module, &jd_object_backend))
@@ -788,6 +1093,15 @@ main(int argc, char** argv)
 		if (jd_kv_backend == NULL || !j_backend_kv_init(jd_kv_backend, kv_path))
 		{
 			J_CRITICAL("Could not initialize kv backend %s.\n", kv_backend);
+			return 1;
+		}
+	}
+
+	if (j_backend_load_server(smd_backend, smd_component, J_BACKEND_TYPE_SMD, &smd_module, &jd_smd_backend))
+	{
+		if (jd_smd_backend == NULL || !j_backend_smd_init(jd_smd_backend, smd_path))
+		{
+			J_CRITICAL("Could not initialize smd backend %s.\n", smd_backend);
 			return 1;
 		}
 	}
@@ -814,6 +1128,11 @@ main(int argc, char** argv)
 		j_backend_kv_fini(jd_kv_backend);
 	}
 
+	if (jd_smd_backend != NULL)
+	{
+		j_backend_smd_fini(jd_smd_backend);
+	}
+
 	if (jd_object_backend != NULL)
 	{
 		j_backend_object_fini(jd_object_backend);
@@ -822,6 +1141,11 @@ main(int argc, char** argv)
 	if (kv_module != NULL)
 	{
 		g_module_close(kv_module);
+	}
+
+	if (smd_module != NULL)
+	{
+		g_module_close(smd_module);
 	}
 
 	if (object_module)

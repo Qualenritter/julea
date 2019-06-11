@@ -1,6 +1,6 @@
 /*
  * JULEA - Flexible storage framework
- * Copyright (C) 2010-2019 Michael Kuhn
+ * Copyright (C) 2019 Benjamin Warnke
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -16,29 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * \file
- **/
-
-#ifndef JULEA_INTERNAL_H
-#define JULEA_INTERNAL_H
-
-#if !defined(JULEA_H) && !defined(JULEA_COMPILATION)
-#error "Only <julea.h> can be included directly."
-#endif
+#include <julea-config.h>
 
 #include <glib.h>
 
-#include <core/jtrace-internal.h>
+#include <string.h>
 
-G_BEGIN_DECLS
+#include <julea-smd.h>
+#include <julea.h>
 
-#define J_CRITICAL(format, ...) g_critical("%s:%s: " format, G_STRLOC, G_STRFUNC, __VA_ARGS__);
-#define J_WARNING(format, ...) g_warning("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__);
-#define J_INFO(format, ...) g_info("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__);
-#define J_DEBUG(format, ...) g_debug("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__);
-/* FIXME j_sync() for benchmarks */
-
-G_END_DECLS
-
-#endif
+#include "benchmark.h"
+void
+benchmark_smd(void)
+{
+}

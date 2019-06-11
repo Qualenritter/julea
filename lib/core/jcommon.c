@@ -30,13 +30,13 @@
 
 #include <jbackend.h>
 #include <jbackground-operation-internal.h>
+#include <jbatch-internal.h>
+#include <jbatch.h>
 #include <jconfiguration.h>
 #include <jconnection-pool-internal.h>
 #include <jdistribution-internal.h>
-#include <jlist.h>
 #include <jlist-iterator.h>
-#include <jbatch.h>
-#include <jbatch-internal.h>
+#include <jlist.h>
 #include <joperation-cache-internal.h>
 #include <joperation-internal.h>
 #include <jtrace-internal.h>
@@ -58,12 +58,14 @@ struct JCommon
 
 	JBackend* object_backend;
 	JBackend* kv_backend;
+	JBackend* smd_backend;
 
 	GModule* object_module;
 	GModule* kv_module;
+	GModule* smd_module;
 };
 
-static JCommon* j_common = NULL;
+static JCommon* j_common;
 
 /**
  * Returns whether JULEA has been initialized.
@@ -123,6 +125,7 @@ void
 j_init(void)
 {
 	JCommon* common;
+
 	g_autofree gchar* basename = NULL;
 	gchar const* object_backend;
 	gchar const* object_component;
@@ -130,6 +133,9 @@ j_init(void)
 	gchar const* kv_backend;
 	gchar const* kv_component;
 	gchar const* kv_path;
+	gchar const* smd_backend;
+	gchar const* smd_component;
+	gchar const* smd_path;
 
 	if (j_is_initialized())
 	{
@@ -159,6 +165,10 @@ j_init(void)
 	kv_component = j_configuration_get_kv_component(common->configuration);
 	kv_path = j_configuration_get_kv_path(common->configuration);
 
+	smd_backend = j_configuration_get_smd_backend(common->configuration);
+	smd_component = j_configuration_get_smd_component(common->configuration);
+	smd_path = j_configuration_get_smd_path(common->configuration);
+
 	if (j_backend_load_client(object_backend, object_component, J_BACKEND_TYPE_OBJECT, &(common->object_module), &(common->object_backend)))
 	{
 		if (common->object_backend == NULL || !j_backend_object_init(common->object_backend, object_path))
@@ -173,6 +183,14 @@ j_init(void)
 		if (common->kv_backend == NULL || !j_backend_kv_init(common->kv_backend, kv_path))
 		{
 			J_CRITICAL("Could not initialize kv backend %s.\n", kv_backend);
+			goto error;
+		}
+	}
+	if (j_backend_load_client(smd_backend, smd_component, J_BACKEND_TYPE_SMD, &(common->smd_module), &(common->smd_backend)))
+	{
+		if (common->smd_backend == NULL || !j_backend_smd_init(common->smd_backend, smd_path))
+		{
+			J_CRITICAL("Could not initialize smd backend %s.\n", kv_backend);
 			goto error;
 		}
 	}
@@ -311,6 +329,24 @@ j_kv_backend(void)
 	common = g_atomic_pointer_get(&j_common);
 
 	return common->kv_backend;
+}
+/**
+ * Returns the data backend.
+ *
+ * \private
+ *
+ * \return The data backend.
+ */
+JBackend*
+j_smd_backend(void)
+{
+	JCommon* common;
+
+	g_return_val_if_fail(j_is_initialized(), NULL);
+
+	common = g_atomic_pointer_get(&j_common);
+
+	return common->smd_backend;
 }
 
 /**
