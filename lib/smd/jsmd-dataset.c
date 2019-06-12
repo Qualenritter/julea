@@ -41,7 +41,7 @@ struct JSMDDatasetOperation
 typedef struct JSMDDatasetOperation JSMDDatasetOperation;
 
 static gboolean
-j_smd_dataset_create_exec(JList* operations, JSemantics* semantics)
+j_smd_create_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDDatasetOperation* operation;
@@ -105,7 +105,7 @@ j_smd_dataset_create_exec(JList* operations, JSemantics* semantics)
 	return TRUE;
 }
 static void
-j_smd_dataset_create_free(gpointer data)
+j_smd_create_free(gpointer data)
 {
 	JSMDDatasetOperation* operation = data;
 
@@ -139,8 +139,8 @@ j_smd_dataset_create(const char* name, void* parent, void* _data_type, void* _sp
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
-	op->exec_func = j_smd_dataset_create_exec;
-	op->free_func = j_smd_dataset_create_free;
+	op->exec_func = j_smd_create_exec;
+	op->free_func = j_smd_create_free;
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	smd_op->metadata->distribution = j_distribution_new(distribution);
@@ -150,7 +150,7 @@ j_smd_dataset_create(const char* name, void* parent, void* _data_type, void* _sp
 	return smd_op->metadata;
 }
 static gboolean
-j_smd_dataset_delete_exec(JList* operations, JSemantics* semantics)
+j_smd_delete_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDDatasetOperation* operation;
@@ -201,7 +201,7 @@ j_smd_dataset_delete_exec(JList* operations, JSemantics* semantics)
 	return TRUE;
 }
 static void
-j_smd_dataset_delete_free(gpointer data)
+j_smd_delete_free(gpointer data)
 {
 	JSMDDatasetOperation* operation = data;
 
@@ -228,8 +228,8 @@ j_smd_dataset_delete(const char* name, void* parent, JBatch* batch)
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
-	op->exec_func = j_smd_dataset_delete_exec;
-	op->free_func = j_smd_dataset_delete_free;
+	op->exec_func = j_smd_delete_exec;
+	op->free_func = j_smd_delete_free;
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	j_batch_add(batch, op);
@@ -237,7 +237,7 @@ j_smd_dataset_delete(const char* name, void* parent, JBatch* batch)
 	return TRUE;
 }
 static gboolean
-j_smd_dataset_open_exec(JList* operations, JSemantics* semantics)
+j_smd_open_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDDatasetOperation* operation;
@@ -341,7 +341,7 @@ j_smd_dataset_open_exec(JList* operations, JSemantics* semantics)
 	return TRUE;
 }
 static void
-j_smd_dataset_open_free(gpointer data)
+j_smd_open_free(gpointer data)
 {
 	JSMDDatasetOperation* operation = data;
 
@@ -363,8 +363,8 @@ j_smd_dataset_open(const char* name, void* parent, JBatch* batch)
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
-	op->exec_func = j_smd_dataset_open_exec;
-	op->free_func = j_smd_dataset_open_free;
+	op->exec_func = j_smd_open_exec;
+	op->free_func = j_smd_open_free;
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	j_batch_add(batch, op);
@@ -372,47 +372,47 @@ j_smd_dataset_open(const char* name, void* parent, JBatch* batch)
 	return smd_op->metadata;
 }
 gboolean
-j_smd_dataset_close(void* _dataset)
+j_smd_dataset_close(void* _metadata)
 {
-	J_Metadata_t* dataset = _dataset;
+	J_Metadata_t* metadata = _metadata;
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (dataset->bson)
-		bson_destroy(dataset->bson);
-	if (dataset->bson_requires_free)
-		g_free(dataset->bson);
-	g_free(dataset);
+	if (metadata->bson)
+		bson_destroy(metadata->bson);
+	if (metadata->bson_requires_free)
+		g_free(metadata->bson);
+	g_free(metadata);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 
 gboolean
-j_smd_dataset_read(void* _dataset, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch)
+j_smd_dataset_read(void* _metadata, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch)
 {
-	J_Metadata_t* dataset = _dataset;
+	J_Metadata_t* metadata = _metadata;
 
 	j_trace_enter(G_STRFUNC, NULL);
-	j_distributed_object_read(dataset->object, buf, len, off, bytes_read, batch);
+	j_distributed_object_read(metadata->object, buf, len, off, bytes_read, batch);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 gboolean
-j_smd_dataset_write(void* _dataset, char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch)
+j_smd_dataset_write(void* _metadata, const char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch)
 {
-	J_Metadata_t* dataset = _dataset;
+	J_Metadata_t* metadata = _metadata;
 
 	j_trace_enter(G_STRFUNC, NULL);
-	j_distributed_object_write(dataset->object, buf, len, off, bytes_written, batch);
+	j_distributed_object_write(metadata->object, buf, len, off, bytes_written, batch);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 void*
-j_smd_dataset_get_type(void* dataset)
+j_smd_dataset_get_type(void* metadata)
 {
-	return j_smd_get_type(dataset);
+	return j_smd_get_type(metadata);
 }
 void*
-j_smd_dataset_get_space(void* dataset)
+j_smd_dataset_get_space(void* metadata)
 {
-	return j_smd_get_space(dataset);
+	return j_smd_get_space(metadata);
 }

@@ -41,7 +41,7 @@ struct JSMDAttributeOperation
 typedef struct JSMDAttributeOperation JSMDAttributeOperation;
 
 static gboolean
-j_smd_attr_create_exec(JList* operations, JSemantics* semantics)
+j_smd_create_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDAttributeOperation* operation;
@@ -103,7 +103,7 @@ j_smd_attr_create_exec(JList* operations, JSemantics* semantics)
 	return TRUE;
 }
 static void
-j_smd_attr_create_free(gpointer data)
+j_smd_create_free(gpointer data)
 {
 	JSMDAttributeOperation* operation = data;
 
@@ -123,15 +123,21 @@ j_smd_attr_create(const char* name, void* parent, void* _data_type, void* _space
 	space_type = j_smd_space_to_bson(_space_type);
 	smd_op = g_new(JSMDAttributeOperation, 1);
 	smd_op->metadata = g_new(J_Metadata_t, 1);
+	smd_op->metadata->bson = g_new(bson_t, 1);
+	smd_op->metadata->bson_requires_free = TRUE;
 	bson_init(smd_op->metadata->bson);
 	bson_append_document(smd_op->metadata->bson, "space_type", -1, space_type);
 	bson_append_document(smd_op->metadata->bson, "data_type", -1, data_type);
+	bson_destroy(data_type);
+	bson_destroy(space_type);
+	g_free(data_type);
+	g_free(space_type);
 	memset(smd_op->metadata->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
-	op->exec_func = j_smd_attr_create_exec;
-	op->free_func = j_smd_attr_create_free;
+	op->exec_func = j_smd_create_exec;
+	op->free_func = j_smd_create_free;
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 
@@ -140,7 +146,7 @@ j_smd_attr_create(const char* name, void* parent, void* _data_type, void* _space
 	return smd_op->metadata;
 }
 static gboolean
-j_smd_attr_delete_exec(JList* operations, JSemantics* semantics)
+j_smd_delete_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDAttributeOperation* operation;
@@ -191,7 +197,7 @@ j_smd_attr_delete_exec(JList* operations, JSemantics* semantics)
 	return TRUE;
 }
 static void
-j_smd_attr_delete_free(gpointer data)
+j_smd_delete_free(gpointer data)
 {
 	JSMDAttributeOperation* operation = data;
 
@@ -210,8 +216,8 @@ j_smd_attr_delete(const char* name, void* parent, JBatch* batch)
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
-	op->exec_func = j_smd_attr_delete_exec;
-	op->free_func = j_smd_attr_delete_free;
+	op->exec_func = j_smd_delete_exec;
+	op->free_func = j_smd_delete_free;
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	j_batch_add(batch, op);
@@ -219,7 +225,7 @@ j_smd_attr_delete(const char* name, void* parent, JBatch* batch)
 	return TRUE;
 }
 static gboolean
-j_smd_attr_open_exec(JList* operations, JSemantics* semantics)
+j_smd_open_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDAttributeOperation* operation;
@@ -244,14 +250,17 @@ j_smd_attr_open_exec(JList* operations, JSemantics* semantics)
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
 		{
+			operation->metadata->bson = g_new(bson_t, 1);
+			operation->metadata->bson_requires_free = TRUE;
+			bson_init(operation->metadata->bson);
 			j_backend_smd_attr_open(smd_backend, operation->name, operation->parent->key, operation->metadata->bson, operation->metadata->key);
 		}
 		else
 		{
-			int message_size = strlen(operation->name) + 1;
-
+			int message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH;
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
+			j_message_append_n(message, operation->parent->key, SMD_KEY_LENGTH);
 		}
 	}
 	if (smd_backend == NULL)
@@ -275,6 +284,7 @@ j_smd_attr_open_exec(JList* operations, JSemantics* semantics)
 				bson_len = j_message_get_4(reply);
 				bson_data = j_message_get_n(reply, bson_len);
 				operation->metadata->bson = bson_new_from_data(bson_data, bson_len);
+				operation->metadata->bson_requires_free = FALSE;
 			}
 		}
 		j_connection_pool_push_smd(index, smd_connection);
@@ -283,7 +293,7 @@ j_smd_attr_open_exec(JList* operations, JSemantics* semantics)
 	return TRUE;
 }
 static void
-j_smd_attr_open_free(gpointer data)
+j_smd_open_free(gpointer data)
 {
 	JSMDAttributeOperation* operation = data;
 
@@ -300,11 +310,13 @@ j_smd_attr_open(const char* name, void* parent, JBatch* batch)
 	smd_op = g_new(JSMDAttributeOperation, 1);
 	smd_op->metadata = g_new(J_Metadata_t, 1);
 	memset(smd_op->metadata->key, 0, SMD_KEY_LENGTH);
+	smd_op->metadata->bson = NULL;
+	smd_op->metadata->bson_requires_free = FALSE;
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
-	op->exec_func = j_smd_attr_open_exec;
-	op->free_func = j_smd_attr_open_free;
+	op->exec_func = j_smd_open_exec;
+	op->free_func = j_smd_open_free;
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	j_batch_add(batch, op);
@@ -312,47 +324,47 @@ j_smd_attr_open(const char* name, void* parent, JBatch* batch)
 	return smd_op->metadata;
 }
 gboolean
-j_smd_attr_close(void* _attribute)
+j_smd_attr_close(void* _metadata)
 {
-	J_Metadata_t* attribute = _attribute;
+	J_Metadata_t* metadata = _metadata;
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (j_is_key_initialized(attribute->key))
-	{
-		bson_destroy(attribute->bson);
-	}
-	g_free(attribute);
+	if (metadata->bson)
+		bson_destroy(metadata->bson);
+	if (metadata->bson_requires_free)
+		g_free(metadata->bson);
+	g_free(metadata);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 
 gboolean
-j_smd_attr_read(void* _attribute, char* buf, JBatch* batch)
+j_smd_attr_read(void* _metadata, char* buf, JBatch* batch)
 {
-	J_Metadata_t* attribute = _attribute;
+	J_Metadata_t* metadata = _metadata;
 
 	j_trace_enter(G_STRFUNC, NULL);
-	/*TODO*/
+	//TODO
 	j_trace_leave(G_STRFUNC);
-	return FALSE;
+	return TRUE;
 }
 gboolean
-j_smd_attr_write(void* _attribute, const char* buf, JBatch* batch)
+j_smd_attr_write(void* _metadata, const char* buf, JBatch* batch)
 {
-	J_Metadata_t* attribute = _attribute;
+	J_Metadata_t* metadata = _metadata;
 
 	j_trace_enter(G_STRFUNC, NULL);
-	/*TODO*/
+	//TODO
 	j_trace_leave(G_STRFUNC);
-	return FALSE;
+	return TRUE;
 }
 void*
-j_smd_attr_get_type(void* attribute)
+j_smd_attr_get_type(void* metadata)
 {
-	return j_smd_get_type(attribute);
+	return j_smd_get_type(metadata);
 }
 void*
-j_smd_attr_get_space(void* attribute)
+j_smd_attr_get_space(void* metadata)
 {
-	return j_smd_get_space(attribute);
+	return j_smd_get_space(metadata);
 }

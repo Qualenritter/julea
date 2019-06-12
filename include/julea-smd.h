@@ -97,7 +97,7 @@ void* j_smd_dataset_create(const char* name, void* parent, void* data_type, void
 gboolean j_smd_dataset_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_dataset_open(const char* name, void* parent, JBatch* batch);
 gboolean j_smd_dataset_read(void* dataset, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
-gboolean j_smd_dataset_write(void* dataset, char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
+gboolean j_smd_dataset_write(void* dataset, const char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
 gboolean j_smd_dataset_close(void* dataset);
 void* j_smd_dataset_get_type(void* dataset);
 void* j_smd_dataset_get_space(void* dataset);
