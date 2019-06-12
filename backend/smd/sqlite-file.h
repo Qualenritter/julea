@@ -18,7 +18,7 @@ backend_file_delete(const char* name)
 	}
 	else
 	{
-		J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	}
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE file_key = ?1;", -1, &stmt, NULL);
@@ -26,7 +26,7 @@ backend_file_delete(const char* name)
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_OK)
 	{
-		J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	}
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_types WHERE file_key = ?1;", -1, &stmt, NULL);
@@ -34,7 +34,7 @@ backend_file_delete(const char* name)
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_OK)
 	{
-		J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	}
 	sqlite3_finalize(stmt);
 	J_CRITICAL("%s", name);
@@ -61,7 +61,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		}
 		else
 		{
-			J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -72,7 +72,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_OK)
 		{
-			J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -89,7 +89,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		}
 		else
 		{
-			J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -99,7 +99,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_OK)
 		{
-			J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		}
 		sqlite3_finalize(stmt);
 	}
@@ -129,7 +129,7 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	}
 	else
 	{
-		J_CRITICAL("sql_error %s", sqlite3_errmsg(backend_db));
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	}
 	sqlite3_finalize(stmt);
 	bson_init(bson);

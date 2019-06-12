@@ -84,11 +84,7 @@ struct J_SMD_Variable_t
 	JSMDType type;
 	char name[SMD_MAX_NAME_LENGTH + 1]; /*+1 for nulltermination*/
 	J_SMD_Space_t space;
-	union
-	{ /*for serializing to buffer*/
-		J_SMD_Type_t* sub_type;
-		int sub_type_off;
-	};
+	J_SMD_Type_t* sub_type;
 };
 typedef struct J_SMD_Variable_t J_SMD_Variable_t;
 

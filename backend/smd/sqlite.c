@@ -41,6 +41,7 @@ typedef enum J_SMD_Metadata_Type J_SMD_Metadata_Type;
 
 static sqlite3* backend_db;
 
+#include "sqlite-type.h"
 #include "sqlite-file.h"
 #include "sqlite-attribute.h"
 #include "sqlite-dataset.h"
@@ -68,6 +69,7 @@ backend_init(gchar const* path)
 		    "file_key INTEGER, " // reference to file for fast delete|fetch
 		    "name TEXT NOT NULL, " // name of attribute|file|dataset
 		    "meta_type INTEGER," // file|dataset|attribute
+		    "type_key," //the key in the smd_type_header table
 		    "ndims INTEGER," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
 		    "dims0 INTEGER," // number of dimension[0]
 		    "dims1 INTEGER," // number of dimension[1]
@@ -82,10 +84,21 @@ backend_init(gchar const* path)
 		goto error;
 	}
 	if (sqlite3_exec(backend_db,
+		    "CREATE TABLE IF NOT EXISTS smd_type_header (" //
+		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //used to reserve unique ids for subtypes
+		    "hash INTEGER" // for reuseing it
+		    ");", /*TODO add hash or sth to reuse existing ones*/
+		    NULL, /*TODO if last file using this is removed*/
+		    NULL,
+		    NULL) != SQLITE_OK)
+	{
+		goto error;
+	}
+	if (sqlite3_exec(backend_db,
 		    "CREATE TABLE IF NOT EXISTS smd_types (" //
 		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //
-		    "meta_key INTEGER, " // reference to the attribute|dataset
-		    "file_key INTEGER, " // reference to file for fast delete|fetch
+		    "header_key INTEGER, " // identify variables belonging together
+		    "subtype_key INTEGER, " // reference to subtype if required
 		    "name TEXT NOT NULL, " // name of variable
 		    "type INTEGER," // type of variable
 		    "offset INTEGER," // offset within binary

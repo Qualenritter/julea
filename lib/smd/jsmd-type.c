@@ -43,6 +43,8 @@ j_smd_type_equals(void* _type1, void* _type2)
 	J_SMD_Variable_t* var1;
 	J_SMD_Variable_t* var2;
 
+	J_DEBUG("j_smd_type_equals %p %p", type1, type2);
+
 	g_return_val_if_fail(type1 != NULL, FALSE);
 	g_return_val_if_fail(type2 != NULL, FALSE);
 	g_return_val_if_fail(type1->arr->len == type2->arr->len, FALSE);
@@ -85,6 +87,7 @@ j_smd_type_to_bson(void* _type)
 	char key_buf[16];
 	const char* key;
 	bson_t* bson;
+	bson_t* bson_subtype;
 	bson_t b_arr[1];
 	bson_t b_var[1];
 	bson_t b_dims[1];
@@ -109,6 +112,13 @@ j_smd_type_to_bson(void* _type)
 			bson_append_int32(b_dims, key, -1, var->space.dims[j]);
 		}
 		bson_append_array_end(b_var, b_dims);
+		if (var->type == SMD_TYPE_SUB_TYPE)
+		{
+			bson_subtype = j_smd_type_to_bson(var->sub_type);
+			bson_append_document(b_var, "subtype", -1, bson_subtype);
+			bson_destroy(bson_subtype);
+			g_free(bson_subtype);
+		}
 		bson_append_document_end(b_arr, b_var);
 	}
 	bson_append_array_end(bson, b_arr);
@@ -141,6 +151,7 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 			var.name[0] = 0;
 			var.space.ndims = 0;
 			var.space.dims[0] = 0;
+			var.sub_type = NULL;
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "offset", &iter_val) && BSON_ITER_HOLDS_INT32(&iter_val))
 			{
 				var.offset = bson_iter_int32(&iter_val);
@@ -165,6 +176,10 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 			{
 				var.space.ndims = bson_iter_int32(&iter_val);
 			}
+			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "subtype", &iter_val) && BSON_ITER_HOLDS_DOCUMENT(&iter_val))
+			{
+				var.sub_type = j_smd_type_from_bson(&iter_val);
+			}
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "dims", &iter_val) && BSON_ITER_HOLDS_ARRAY(&iter_val))
 			{
 
@@ -179,8 +194,14 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 					}
 				}
 			}
-
-			j_smd_type_add_atomic_type(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
+			if (var.type == SMD_TYPE_SUB_TYPE)
+			{
+				j_smd_type_add_compound_type(type, var.name, var.offset, var.size, var.sub_type, var.space.ndims, var.space.dims);
+			}
+			else
+			{
+				j_smd_type_add_atomic_type(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
+			}
 		}
 	}
 
