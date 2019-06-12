@@ -36,6 +36,7 @@
 
 enum JSMDType
 {
+	SMD_TYPE_UNKNOWN,
 	SMD_TYPE_INT,
 	SMD_TYPE_FLOAT,
 	SMD_TYPE_STRING,
@@ -43,6 +44,18 @@ enum JSMDType
 	SMD_TYPE_SUB_TYPE,
 };
 typedef enum JSMDType JSMDType;
+
+/*helper makro to obtain the type of a given variable*/
+#define J_SMD_GET_TYPE_HELPER(a) _Generic((a),              \
+					  int               \
+					  : SMD_TYPE_INT,   \
+					  float             \
+					  : SMD_TYPE_FLOAT, \
+					  char*             \
+					  : SMD_TYPE_BLOB,  \
+					  default           \
+					  : SMD_TYPE_UNKNOWN)
+
 /*TODO make all structs internal*/
 struct J_Metadata_t
 {
@@ -107,9 +120,29 @@ gboolean j_smd_space_get(void* space_type, guint* ndims, guint** dims);
 gboolean j_smd_space_free(void* space_type);
 gboolean j_smd_space_equals(void* space_type1, void* space_type2);
 
+#define J_SMD_TYPE_ADD_ATOMIC(type, parent, var_name) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(((parent*)0)->var_name), J_SMD_GET_TYPE_HELPER(((parent*)0)->var_name), 1, &_one);
+#define J_SMD_TYPE_ADD_ATOMIC_STRING(type, parent, var_name) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(((parent*)0)->var_name), SMD_TYPE_STRING, 1, &_one);
+#define J_SMD_TYPE_ADD_ATOMIC_DIMS1(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(*((parent*)0)->var_name), J_SMD_GET_TYPE_HELPER(*((parent*)0)->var_name), 1, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS1(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(*((parent*)0)->var_name), SMD_TYPE_STRING, 1, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_DIMS2(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(**((parent*)0)->var_name), J_SMD_GET_TYPE_HELPER(**((parent*)0)->var_name), 2, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS2(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(**((parent*)0)->var_name), SMD_TYPE_STRING, 2, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_DIMS3(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(***((parent*)0)->var_name), J_SMD_GET_TYPE_HELPER(***((parent*)0)->var_name), 3, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS3(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(***((parent*)0)->var_name), SMD_TYPE_STRING, 3, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_DIMS4(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(****((parent*)0)->var_name), J_SMD_GET_TYPE_HELPER(****((parent*)0)->var_name), 4, var_dims);
+#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS4(type, parent, var_name, var_dims) \
+	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(****((parent*)0)->var_name), SMD_TYPE_STRING, 4, var_dims);
+
 gboolean j_smd_type_equals(void* type1, void* type2);
 void* j_smd_type_create(void);
-gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
 gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_offset, int var_size, void* var_type, guint var_ndims, guint* var_dims);
 guint j_smd_type_get_variable_count(void* type);
 gboolean j_smd_type_free(void* type);
@@ -117,6 +150,7 @@ gboolean j_smd_type_remove_variable(void* type, const char* name);
 
 /*not public interface functions below*/
 /*TODO move to internal header file*/
+gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
 void* j_smd_get_type(void* matedata);

@@ -26,6 +26,7 @@
 #include <julea-smd.h>
 
 #include "test.h"
+#include "smd-type-helper.h"
 
 static void
 test_attribute_create_destroy_single(void)
@@ -149,31 +150,6 @@ test_attribute_create_destroy_many(void)
 	j_smd_type_free(type);
 }
 
-static void
-_create_test_types(void*** _types, int* count)
-{
-	guint one[] = { 1 };
-	guint two[] = { 2, 3 };
-	guint three[] = { 2, 3, 4 };
-	int i;
-	void** types;
-	*count = 6;
-	*_types = g_new(void*, *count);
-	types = *_types;
-	for (i = 0; i < *count; i++)
-	{
-		types[i] = j_smd_type_create();
-	}
-	j_smd_type_add_atomic_type(types[0], "a", 0, 4, SMD_TYPE_INT, 1, one);
-	j_smd_type_add_atomic_type(types[1], "a", 0, 4, SMD_TYPE_FLOAT, 1, one);
-	j_smd_type_add_atomic_type(types[2], "a", 0, 4, SMD_TYPE_STRING, 1, one);
-	j_smd_type_add_atomic_type(types[3], "a", 0, 4, SMD_TYPE_BLOB, 1, one);
-	j_smd_type_add_atomic_type(types[4], "a", 0, 4, SMD_TYPE_INT, 1, one);
-	j_smd_type_add_atomic_type(types[4], "b", 4, 4, SMD_TYPE_FLOAT, 2, two);
-	j_smd_type_add_atomic_type(types[5], "a", 0, 4, SMD_TYPE_INT, 1, one);
-	j_smd_type_add_atomic_type(types[5], "b", 4, 4, SMD_TYPE_FLOAT, 2, two);
-	j_smd_type_add_atomic_type(types[5], "c", 28, 4, SMD_TYPE_INT, 1, one);
-}
 static void
 _create_test_spaces(void*** _spaces, int* count)
 {
