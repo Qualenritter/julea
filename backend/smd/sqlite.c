@@ -182,12 +182,11 @@ backend_file_delete(const char* name)
 		result = sqlite3_column_int64(stmt, 0);
 	}
 	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE file_key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE file_key = ?1;DELETE FROM smd_types WHERE file_key = ?1;", -1, &stmt, NULL);
 	sqlite3_bind_int64(stmt, 1, result);
 	sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 	J_CRITICAL("%s", name);
-	/*TODO delete all datasets and attributes too*/
 	return TRUE;
 }
 static gboolean

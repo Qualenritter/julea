@@ -279,7 +279,11 @@ j_smd_dataset_open_exec(JList* operations, JSemantics* semantics)
 				}
 				else
 				{
-					// TODO destroy it due to error
+					if (operation->metadata->bson)
+						bson_destroy(operation->metadata->bson);
+					if (operation->metadata->bson_requires_free)
+						g_free(operation->metadata->bson);
+					memset(operation->metadata->key, 0, SMD_KEY_LENGTH);
 				}
 			}
 		}
@@ -323,7 +327,11 @@ j_smd_dataset_open_exec(JList* operations, JSemantics* semantics)
 				}
 				else
 				{
-					// TODO destroy it due to error
+					if (operation->metadata->bson)
+						bson_destroy(operation->metadata->bson);
+					if (operation->metadata->bson_requires_free)
+						g_free(operation->metadata->bson);
+					memset(operation->metadata->key, 0, SMD_KEY_LENGTH);
 				}
 			}
 		}
