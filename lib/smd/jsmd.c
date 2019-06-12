@@ -55,7 +55,7 @@ j_smd_is_initialized(void* data)
 }
 
 void*
-_j_smd_get_type(void* _dataset)
+j_smd_get_type(void* _dataset)
 {
 	J_Metadata_t* dataset = _dataset;
 	bson_iter_t b_iter;
@@ -69,7 +69,7 @@ _j_smd_get_type(void* _dataset)
 }
 
 void*
-_j_smd_get_space(void* _dataset)
+j_smd_get_space(void* _dataset)
 {
 	J_Metadata_t* dataset = _dataset;
 	bson_iter_t b_iter;

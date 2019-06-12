@@ -31,16 +31,19 @@
 #include <julea-object.h>
 
 #define SMD_KEY_LENGTH 32
+#define SMD_MAX_NAME_LENGTH 30
+#define SMD_MAX_NDIMS 4
 
 enum JSMDType
 {
 	SMD_TYPE_INT,
 	SMD_TYPE_FLOAT,
 	SMD_TYPE_STRING,
-	SMD_TYPE_BLOB
+	SMD_TYPE_BLOB,
+	SMD_TYPE_SUB_TYPE,
 };
 typedef enum JSMDType JSMDType;
-
+/*TODO make all structs internal*/
 struct J_Metadata_t
 {
 	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
@@ -53,29 +56,34 @@ typedef struct J_Metadata_t J_Metadata_t;
 struct J_SMD_Space_t
 {
 	guint ndims;
-	guint* dims;
+	guint dims[SMD_MAX_NDIMS];
 };
 typedef struct J_SMD_Space_t J_SMD_Space_t;
-struct J_SMD_Variable_t
-{
-	int offset;
-	int size;
-	JSMDType type;
-	char* name;
-	J_SMD_Space_t space;
-};
-typedef struct J_SMD_Variable_t J_SMD_Variable_t;
 struct J_SMD_Type_t
 {
 	GArray* arr;
 };
 typedef struct J_SMD_Type_t J_SMD_Type_t;
+struct J_SMD_Variable_t
+{
+	int offset;
+	int size;
+	JSMDType type;
+	char name[SMD_MAX_NAME_LENGTH + 1]; /*+1 for nulltermination*/
+	J_SMD_Space_t space;
+	union
+	{ /*for serializing to buffer*/
+		J_SMD_Type_t* sub_type;
+		int sub_type_off;
+	};
+};
+typedef struct J_SMD_Variable_t J_SMD_Variable_t;
 
-void* j_smd_attr_create(const char* name, void* parent, void* _data_type, void* space_type, JBatch* batch);
+void* j_smd_attr_create(const char* name, void* parent, void* data_type, void* space_type, JBatch* batch);
 gboolean j_smd_attr_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_attr_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_attr_read(void* _attribute, char* buf, JBatch* batch);
-gboolean j_smd_attr_write(void* _attribute, const char* buf, JBatch* batch);
+gboolean j_smd_attr_read(void* attribute, char* buf, JBatch* batch);
+gboolean j_smd_attr_write(void* attribute, const char* buf, JBatch* batch);
 gboolean j_smd_attr_close(void* attribute);
 void* j_smd_attr_get_type(void* attribute);
 void* j_smd_attr_get_space(void* attribute);
@@ -85,11 +93,11 @@ gboolean j_smd_file_delete(const char* name, JBatch* batch);
 void* j_smd_file_open(const char* name, JBatch* batch);
 gboolean j_smd_file_close(void* file);
 
-void* j_smd_dataset_create(const char* name, void* parent, void* _data_type, void* space_type, JDistributionType distribution, JBatch* batch);
+void* j_smd_dataset_create(const char* name, void* parent, void* data_type, void* space_type, JDistributionType distribution, JBatch* batch);
 gboolean j_smd_dataset_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_dataset_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_dataset_read(void* _dataset, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
-gboolean j_smd_dataset_write(void* _dataset, char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
+gboolean j_smd_dataset_read(void* dataset, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
+gboolean j_smd_dataset_write(void* dataset, char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
 gboolean j_smd_dataset_close(void* dataset);
 void* j_smd_dataset_get_type(void* dataset);
 void* j_smd_dataset_get_space(void* dataset);
@@ -98,20 +106,23 @@ void* j_smd_space_create(guint ndims, guint* dims);
 gboolean j_smd_space_get(void* space_type, guint* ndims, guint** dims);
 gboolean j_smd_space_free(void* space_type);
 gboolean j_smd_space_equals(void* space_type1, void* space_type2);
-bson_t* j_smd_space_to_bson(void* space);
-void* j_smd_space_from_bson(bson_iter_t* bson);
 
-gboolean j_smd_type_equals(void* _type1, void* _type2);
-bson_t* j_smd_type_to_bson(void* _type);
-void* j_smd_type_from_bson(bson_iter_t* bson);
+gboolean j_smd_type_equals(void* type1, void* type2);
 void* j_smd_type_create(void);
-gboolean j_smd_type_add_variable(void* _type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
-guint j_smd_type_get_variable_count(void* _type);
-gboolean j_smd_type_free(void* _type);
-gboolean j_smd_type_remove_variable(void* _type, const char* name);
+gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
+gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_offset, int var_size, void* var_type, guint var_ndims, guint* var_dims);
+guint j_smd_type_get_variable_count(void* type);
+gboolean j_smd_type_free(void* type);
+gboolean j_smd_type_remove_variable(void* type, const char* name);
 
+/*not public interface functions below*/
+/*TODO move to internal header file*/
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
-void* _j_smd_get_type(void* dataset);
-void* _j_smd_get_space(void* dataset);
+void* j_smd_get_type(void* matedata);
+void* j_smd_get_space(void* metadata);
+bson_t* j_smd_space_to_bson(void* space);
+void* j_smd_space_from_bson(bson_iter_t* bson);
+bson_t* j_smd_type_to_bson(void* type);
+void* j_smd_type_from_bson(bson_iter_t* bson);
 #endif

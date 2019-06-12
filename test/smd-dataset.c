@@ -166,15 +166,15 @@ _create_test_types(void*** _types, int* count)
 	{
 		types[i] = j_smd_type_create();
 	}
-	j_smd_type_add_variable(types[0], "a", 0, 4, SMD_TYPE_INT, 1, one);
-	j_smd_type_add_variable(types[1], "a", 0, 4, SMD_TYPE_FLOAT, 1, one);
-	j_smd_type_add_variable(types[2], "a", 0, 4, SMD_TYPE_STRING, 1, one);
-	j_smd_type_add_variable(types[3], "a", 0, 4, SMD_TYPE_BLOB, 1, one);
-	j_smd_type_add_variable(types[4], "a", 0, 4, SMD_TYPE_INT, 1, one);
-	j_smd_type_add_variable(types[4], "b", 4, 4, SMD_TYPE_FLOAT, 2, two);
-	j_smd_type_add_variable(types[5], "a", 0, 4, SMD_TYPE_INT, 1, one);
-	j_smd_type_add_variable(types[5], "b", 4, 4, SMD_TYPE_FLOAT, 2, two);
-	j_smd_type_add_variable(types[5], "c", 28, 4, SMD_TYPE_INT, 1, one);
+	j_smd_type_add_atomic_type(types[0], "a", 0, 4, SMD_TYPE_INT, 1, one);
+	j_smd_type_add_atomic_type(types[1], "a", 0, 4, SMD_TYPE_FLOAT, 1, one);
+	j_smd_type_add_atomic_type(types[2], "a", 0, 4, SMD_TYPE_STRING, 1, one);
+	j_smd_type_add_atomic_type(types[3], "a", 0, 4, SMD_TYPE_BLOB, 1, one);
+	j_smd_type_add_atomic_type(types[4], "a", 0, 4, SMD_TYPE_INT, 1, one);
+	j_smd_type_add_atomic_type(types[4], "b", 4, 4, SMD_TYPE_FLOAT, 2, two);
+	j_smd_type_add_atomic_type(types[5], "a", 0, 4, SMD_TYPE_INT, 1, one);
+	j_smd_type_add_atomic_type(types[5], "b", 4, 4, SMD_TYPE_FLOAT, 2, two);
+	j_smd_type_add_atomic_type(types[5], "c", 28, 4, SMD_TYPE_INT, 1, one);
 }
 static void
 _create_test_spaces(void*** _spaces, int* count)

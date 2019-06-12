@@ -349,10 +349,10 @@ j_smd_attr_write(void* _attribute, const char* buf, JBatch* batch)
 void*
 j_smd_attr_get_type(void* attribute)
 {
-	return _j_smd_get_type(attribute);
+	return j_smd_get_type(attribute);
 }
 void*
 j_smd_attr_get_space(void* attribute)
 {
-	return _j_smd_get_space(attribute);
+	return j_smd_get_space(attribute);
 }

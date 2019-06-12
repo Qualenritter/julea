@@ -76,7 +76,6 @@ j_smd_space_from_bson(bson_iter_t* bson)
 	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "ndims", &b_ndims) && BSON_ITER_HOLDS_INT32(&b_ndims))
 	{
 		space->ndims = bson_iter_int32(&b_ndims);
-		space->dims = g_new(guint, space->ndims);
 	}
 	else
 	{
@@ -106,12 +105,20 @@ j_smd_space_from_bson(bson_iter_t* bson)
 void*
 j_smd_space_create(guint ndims, guint* dims)
 {
+	guint i;
 	J_SMD_Space_t* space;
-
+	if (ndims > SMD_MAX_NDIMS)
+	{
+		J_CRITICAL("ndims > %d not supported", SMD_MAX_NDIMS);
+		return NULL;
+	}
 	space = g_new(J_SMD_Space_t, 1);
 	space->ndims = ndims;
-	space->dims = g_new(guint, ndims);
-	memcpy(space->dims, dims, sizeof(*space->dims) * ndims);
+	for (i = 0; i < ndims; i++)
+	{
+		space->dims[i] = dims[i];
+	}
+
 	return space;
 }
 gboolean
@@ -128,7 +135,6 @@ j_smd_space_free(void* _space)
 {
 	J_SMD_Space_t* space = _space;
 
-	g_free(space->dims);
 	g_free(space);
 	return TRUE;
 }

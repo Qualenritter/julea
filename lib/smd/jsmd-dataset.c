@@ -409,10 +409,10 @@ j_smd_dataset_write(void* _dataset, char* buf, guint64 len, guint64 off, guint64
 void*
 j_smd_dataset_get_type(void* dataset)
 {
-	return _j_smd_get_type(dataset);
+	return j_smd_get_type(dataset);
 }
 void*
 j_smd_dataset_get_space(void* dataset)
 {
-	return _j_smd_get_space(dataset);
+	return j_smd_get_space(dataset);
 }
