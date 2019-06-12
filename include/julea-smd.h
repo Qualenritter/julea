@@ -81,15 +81,19 @@ struct J_SMD_Variable_t
 	JSMDType type;
 	char name[SMD_MAX_NAME_LENGTH + 1]; /*+1 for nulltermination*/
 	J_SMD_Space_t space;
-	J_SMD_Type_t* sub_type;
+	union
+	{
+		J_SMD_Type_t* sub_type; /*client side*/
+		char sub_type_key[SMD_KEY_LENGTH + 1]; /*server side*/
+	};
 };
 typedef struct J_SMD_Variable_t J_SMD_Variable_t;
 
 void* j_smd_attr_create(const char* name, void* parent, void* data_type, void* space_type, JBatch* batch);
 gboolean j_smd_attr_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_attr_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_attr_read(void* attribute, char* buf, JBatch* batch);
-gboolean j_smd_attr_write(void* attribute, const char* buf, JBatch* batch);
+gboolean j_smd_attr_read(void* attribute, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
+gboolean j_smd_attr_write(void* attribute, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
 gboolean j_smd_attr_close(void* attribute);
 void* j_smd_attr_get_type(void* attribute);
 void* j_smd_attr_get_space(void* attribute);
@@ -102,8 +106,8 @@ gboolean j_smd_file_close(void* file);
 void* j_smd_dataset_create(const char* name, void* parent, void* data_type, void* space_type, JDistributionType distribution, JBatch* batch);
 gboolean j_smd_dataset_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_dataset_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_dataset_read(void* dataset, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
-gboolean j_smd_dataset_write(void* dataset, const char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
+gboolean j_smd_dataset_read(void* dataset, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
+gboolean j_smd_dataset_write(void* dataset, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
 gboolean j_smd_dataset_close(void* dataset);
 void* j_smd_dataset_get_type(void* dataset);
 void* j_smd_dataset_get_space(void* dataset);

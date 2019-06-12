@@ -256,12 +256,13 @@ test_attribute_datatypes_read_write(void)
 	void* attribute;
 	void* space;
 	void* type;
+	struct test_type_7* test_var_rec;
 	guint types_count;
 	struct test_type_7* test_var;
 	g_autoptr(JBatch) batch = NULL;
-
 	array_len = 20;
 	test_var = g_new(struct test_type_7, array_len);
+	test_var_rec = g_new(struct test_type_7, array_len);
 	for (i = 0; i < array_len; i++)
 	{
 		test_var[i].a = i * 2;
@@ -273,7 +274,6 @@ test_attribute_datatypes_read_write(void)
 		test_var[i].b[1][2].a = i * 2 + 6;
 		test_var[i].c = i * 4;
 	}
-
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	file = j_smd_file_create(filename, batch);
 	j_batch_execute(batch);
@@ -287,13 +287,20 @@ test_attribute_datatypes_read_write(void)
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
+	J_DEBUG("test-var-content %ld", *((guint64*)test_var));
+	ret = j_smd_attr_write(attribute, test_var, 0, sizeof(struct test_type_7) * array_len, batch);
+	g_assert_cmpuint(ret, !=, FALSE);
+	j_batch_execute(batch);
 	ret = j_smd_attr_close(attribute);
 	g_assert_cmpuint(ret, !=, FALSE);
-	//TODO read back and compare
 	attribute = j_smd_attr_open(attributename, file, batch);
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
+	ret = j_smd_attr_read(attribute, test_var_rec, 0, sizeof(struct test_type_7) * array_len, batch);
+	g_assert_cmpuint(ret, !=, FALSE);
+	j_batch_execute(batch);
+	g_assert_cmpuint(memcmp(test_var, test_var_rec, sizeof(struct test_type_7) * array_len), ==, 0);
 	ret = j_smd_attr_close(attribute);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_attr_delete(attributename, file, batch);
@@ -312,7 +319,6 @@ test_attribute_datatypes_read_write(void)
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	g_free(test_var);
 	g_free(types);
 }

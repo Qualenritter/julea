@@ -68,14 +68,14 @@ backend_init(gchar const* path)
 		    "parent_key INTEGER, " // reference to parent
 		    "file_key INTEGER, " // reference to file for fast delete|fetch
 		    "name TEXT NOT NULL, " // name of attribute|file|dataset
-		    "meta_type INTEGER," // file|dataset|attribute
+		    "meta_type BIGINT," // file|dataset|attribute
 		    "type_key," //the key in the smd_type_header table
-		    "ndims INTEGER," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
-		    "dims0 INTEGER," // number of dimension[0]
-		    "dims1 INTEGER," // number of dimension[1]
-		    "dims2 INTEGER," // number of dimension[2]
-		    "dims3 INTEGER," // number of dimension[3]
-		    "distribution INTEGER" // only valid for datasets
+		    "ndims BIGINT," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
+		    "dims0 BIGINT," // number of dimension[0]
+		    "dims1 BIGINT," // number of dimension[1]
+		    "dims2 BIGINT," // number of dimension[2]
+		    "dims3 BIGINT," // number of dimension[3]
+		    "distribution BIGINT" // only valid for datasets
 		    ");",
 		    NULL,
 		    NULL,
@@ -86,7 +86,7 @@ backend_init(gchar const* path)
 	if (sqlite3_exec(backend_db,
 		    "CREATE TABLE IF NOT EXISTS smd_type_header (" //
 		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //used to reserve unique ids for subtypes
-		    "hash INTEGER" // for reuseing it
+		    "hash BIGINT" // for reuseing it
 		    ");", /*TODO add hash or sth to reuse existing ones*/
 		    NULL, /*TODO if last file using this is removed*/
 		    NULL,
@@ -100,15 +100,15 @@ backend_init(gchar const* path)
 		    "header_key INTEGER, " // identify variables belonging together
 		    "subtype_key INTEGER, " // reference to subtype if required
 		    "name TEXT NOT NULL, " // name of variable
-		    "type INTEGER," // type of variable
-		    "offset INTEGER," // offset within binary
-		    "size INTEGER," // size of singleelement within binary
-		    "count INTEGER," // element count within binary
-		    "ndims INTEGER," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
-		    "dims0 INTEGER," // number of dimension[0]
-		    "dims1 INTEGER," // number of dimension[1]
-		    "dims2 INTEGER," // number of dimension[2]
-		    "dims3 INTEGER" // number of dimension[3]
+		    "type BIGINT," // type of variable
+		    "offset BIGINT," // offset within binary
+		    "size BIGINT," // size of singleelement within binary
+		    "count BIGINT," // element count within binary
+		    "ndims BIGINT," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
+		    "dims0 BIGINT," // number of dimension[0]
+		    "dims1 BIGINT," // number of dimension[1]
+		    "dims2 BIGINT," // number of dimension[2]
+		    "dims3 BIGINT" // number of dimension[3]
 		    ");",
 		    NULL,
 		    NULL,
@@ -120,8 +120,8 @@ backend_init(gchar const* path)
 		    "CREATE TABLE IF NOT EXISTS smd_attributes (" //
 		    "attribute_key INTEGER, " //identiy which attribute belongs to this variable
 		    "type_key INTEGER, " //identify the type whithin attribute
-		    "offset INTEGER, " //offset within attribute
-		    "value_int INTEGER, " //value
+		    "offset BIGINT, " //offset within attribute
+		    "value_int BIGINT, " //value
 		    "value_float FLOAT, " //value
 		    "value_text TEXT, " //value
 		    "value_blob BLOB " //value

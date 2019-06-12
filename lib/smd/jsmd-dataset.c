@@ -387,7 +387,7 @@ j_smd_dataset_close(void* _metadata)
 }
 
 gboolean
-j_smd_dataset_read(void* _metadata, char* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch)
+j_smd_dataset_read(void* _metadata, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch)
 {
 	J_Metadata_t* metadata = _metadata;
 
@@ -397,7 +397,7 @@ j_smd_dataset_read(void* _metadata, char* buf, guint64 len, guint64 off, guint64
 	return TRUE;
 }
 gboolean
-j_smd_dataset_write(void* _metadata, const char* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch)
+j_smd_dataset_write(void* _metadata, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch)
 {
 	J_Metadata_t* metadata = _metadata;
 

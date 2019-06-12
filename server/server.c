@@ -729,12 +729,12 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			gint64 buf_offset;
 			gint64 buf_size;
 			char* buf;
-
+			reply = j_message_new_reply(message);
 			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
 			buf_offset = j_message_get_8(message);
 			buf_size = j_message_get_8(message);
 			buf = j_message_get_n(message, buf_size);
-
+			J_DEBUG("test-var-content %ld", *((const guint64*)buf));
 			j_backend_smd_attr_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
 			j_message_add_operation(reply, 8);
 			j_message_append_8(reply, &buf_size);
