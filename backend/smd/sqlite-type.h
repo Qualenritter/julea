@@ -383,7 +383,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 					{
 						guint calc_offset;
 						calc_offset = location - buf;
-						write_type(*((sqlite3_int64*)var->sub_type_key), attribute_key, buf + calc_offset, buf_offset + calc_offset, buf_len - calc_offset, struct_size, parent_offset + calc_offset);
+						write_type(*((sqlite3_int64*)var->sub_type_key), attribute_key, buf, buf_offset, buf_len, struct_size, parent_offset + calc_offset);
 					}
 					break;
 				default:
