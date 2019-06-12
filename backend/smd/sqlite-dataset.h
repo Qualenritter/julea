@@ -5,7 +5,7 @@ backend_dataset_delete(const char* name, char* parent)
 	gint ret;
 	sqlite3_int64 result = 0;
 
-	J_CRITICAL("%s", name);
+	J_DEBUG("%s", name);
 
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
@@ -30,7 +30,7 @@ backend_dataset_delete(const char* name, char* parent)
 	}
 	sqlite3_finalize(stmt);
 	/*TODO delete everything below*/
-	J_CRITICAL("%s", name);
+	J_DEBUG("%s", name);
 	return TRUE;
 }
 static gboolean
@@ -50,7 +50,7 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 	guint i;
 	guint distribution;
 
-	J_CRITICAL("%s %s", name, bson_as_json(bson, NULL));
+	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
 
 	g_return_val_if_fail(name != NULL, FALSE);
 
@@ -170,7 +170,7 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 		}
 		sqlite3_finalize(stmt);
 	}
-	J_CRITICAL("%s", name);
+	J_DEBUG("%s", name);
 	return TRUE;
 }
 static gboolean
@@ -185,7 +185,7 @@ backend_dataset_open(const char* name, char* parent, bson_t* bson, char* key)
 	char key_buf[16];
 	const char* _key;
 
-	J_CRITICAL("%s", name);
+	J_DEBUG("%s", name);
 	bson_init(bson);
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key, ndims, dims0, dims1, dims2, dims3, distribution,type_key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
@@ -213,6 +213,11 @@ backend_dataset_open(const char* name, char* parent, bson_t* bson, char* key)
 		bson_append_int32(bson, "distribution", -1, sqlite3_column_int(stmt, 6));
 		type_key = sqlite3_column_int64(stmt, 7);
 	}
+	else if (ret == SQLITE_DONE)
+	{
+		sqlite3_finalize(stmt);
+		return FALSE;
+	}
 	else
 	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
@@ -222,6 +227,6 @@ backend_dataset_open(const char* name, char* parent, bson_t* bson, char* key)
 	load_type(b_datatype, type_key);
 	bson_append_document_end(bson, b_datatype);
 
-	J_CRITICAL("%s %s", name, bson_as_json(bson, NULL));
+	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
 	return TRUE;
 }

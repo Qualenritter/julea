@@ -182,7 +182,6 @@ test_dataset_datatypes(void)
 	void* space;
 	void* type;
 	JDistributionType distribution = J_DISTRIBUTION_ROUND_ROBIN;
-	guint one = 1;
 
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);

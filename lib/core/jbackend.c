@@ -594,30 +594,30 @@ j_backend_smd_attr_open(JBackend* backend, const char* name, char* parent, bson_
 	return ret;
 }
 gboolean
-j_backend_smd_attr_read(JBackend* backend, char* key, bson_t* bson)
+j_backend_smd_attr_read(JBackend* backend, char* key, char* buf, guint offset, guint size)
 {
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
 	g_return_val_if_fail(key != NULL, FALSE);
-	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(buf != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s", key);
-	ret = backend->smd.backend_attr_read(key, bson);
+	ret = backend->smd.backend_attr_read(key, buf, offset, size);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 gboolean
-j_backend_smd_attr_write(JBackend* backend, char* key, bson_t* bson)
+j_backend_smd_attr_write(JBackend* backend, char* key, const char* buf, guint offset, guint size)
 {
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
 	g_return_val_if_fail(key != NULL, FALSE);
-	g_return_val_if_fail(bson != NULL, FALSE);
+	g_return_val_if_fail(buf != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s", key);
-	ret = backend->smd.backend_attr_write(key, bson);
+	ret = backend->smd.backend_attr_write(key, buf, offset, size);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }

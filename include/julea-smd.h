@@ -36,10 +36,8 @@
 
 enum JSMDType
 {
-	SMD_TYPE_UNKNOWN,
 	SMD_TYPE_INT,
 	SMD_TYPE_FLOAT,
-	SMD_TYPE_STRING,
 	SMD_TYPE_BLOB,
 	SMD_TYPE_SUB_TYPE,
 };
@@ -51,10 +49,8 @@ typedef enum JSMDType JSMDType;
 					  : SMD_TYPE_INT,   \
 					  float             \
 					  : SMD_TYPE_FLOAT, \
-					  char*             \
-					  : SMD_TYPE_BLOB,  \
 					  default           \
-					  : SMD_TYPE_UNKNOWN)
+					  : SMD_TYPE_BLOB)
 
 /*TODO make all structs internal*/
 struct J_Metadata_t
@@ -127,17 +123,6 @@ gboolean j_smd_space_equals(void* space_type1, void* space_type2);
 	j_smd_type_add_compound_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(***((parent*)0)->var_name), var_subtype, 3, var_dims);
 #define J_SMD_TYPE_ADD_COMPOUND_DIMS4(type, parent, var_name, var_dims, var_subtype) \
 	j_smd_type_add_compound_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(****((parent*)0)->var_name), var_subtype, 4, var_dims);
-
-#define J_SMD_TYPE_ADD_ATOMIC_STRING(type, parent, var_name) \
-	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(((parent*)0)->var_name), SMD_TYPE_STRING, 1, &_one);
-#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS1(type, parent, var_name, var_dims) \
-	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(*((parent*)0)->var_name), SMD_TYPE_STRING, 1, var_dims);
-#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS2(type, parent, var_name, var_dims) \
-	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(**((parent*)0)->var_name), SMD_TYPE_STRING, 2, var_dims);
-#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS3(type, parent, var_name, var_dims) \
-	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(***((parent*)0)->var_name), SMD_TYPE_STRING, 3, var_dims);
-#define J_SMD_TYPE_ADD_ATOMIC_STRING_DIMS4(type, parent, var_name, var_dims) \
-	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(****((parent*)0)->var_name), SMD_TYPE_STRING, 4, var_dims);
 
 #define J_SMD_TYPE_ADD_ATOMIC(type, parent, var_name) \
 	j_smd_type_add_atomic_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(((parent*)0)->var_name), J_SMD_GET_TYPE_HELPER(((parent*)0)->var_name), 1, &_one);

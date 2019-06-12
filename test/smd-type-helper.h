@@ -13,11 +13,12 @@ struct test_type_1
 };
 struct test_type_2
 {
-	char* a;
+	char a[20];
 };
 struct test_type_3
 {
-	char* a;
+	char a[10];
+	char b[20];
 };
 struct test_type_4
 {
@@ -44,16 +45,6 @@ struct test_type_7
 };
 static guint _one = 1;
 
-#define J_SMD_GET_TYPE_HELPER(a) _Generic((a),              \
-					  int               \
-					  : SMD_TYPE_INT,   \
-					  float             \
-					  : SMD_TYPE_FLOAT, \
-					  char*             \
-					  : SMD_TYPE_BLOB,  \
-					  default           \
-					  : SMD_TYPE_UNKNOWN)
-
 static void
 _create_test_types(void*** _types, int* count)
 {
@@ -77,7 +68,7 @@ _create_test_types(void*** _types, int* count)
 		J_SMD_TYPE_ADD_ATOMIC(types[2], struct test_type_2, a);
 	}
 	{
-		J_SMD_TYPE_ADD_ATOMIC_STRING(types[3], struct test_type_3, a);
+		J_SMD_TYPE_ADD_ATOMIC(types[3], struct test_type_2, a);
 	}
 	{
 		J_SMD_TYPE_ADD_ATOMIC(types[4], struct test_type_4, a);

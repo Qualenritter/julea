@@ -696,26 +696,29 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 			g_autoptr(JMessage) reply = NULL;
 			char _key[SMD_KEY_LENGTH];
-			int bson_len;
-			bson_t bson[1];
+			gint64 buf_offset;
+			gint64 buf_size;
+			char* buf;
 
 			reply = j_message_new_reply(message);
 			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			if (j_backend_smd_attr_read(jd_smd_backend, _key, bson))
+			buf_offset = j_message_get_8(message);
+			buf_size = j_message_get_8(message);
+			buf = g_malloc(buf_size);
+			if (j_backend_smd_attr_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
 			{
-				bson_len = bson->len;
-				j_message_add_operation(reply, 4 + bson_len);
-				j_message_append_4(reply, &bson_len);
-				j_message_append_n(reply, bson_get_data(bson), bson_len);
+				j_message_add_operation(reply, 8 + buf_size);
+				j_message_append_8(reply, &buf_size);
+				j_message_append_n(reply, buf, buf_size);
 			}
 			else
 			{
-				int zero = 0;
+				gint64 zero = 0;
 
-				j_message_add_operation(reply, 4);
-				j_message_append_4(reply, &zero);
+				j_message_add_operation(reply, 8);
+				j_message_append_8(reply, &zero);
 			}
-			bson_destroy(bson);
+			g_free(buf);
 			j_message_send(reply, connection);
 		}
 		break;
@@ -723,18 +726,18 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 			g_autoptr(JMessage) reply = NULL;
 			char _key[SMD_KEY_LENGTH];
-			int bson_len;
-			bson_t bson[1];
-			uint8_t* bson_data;
-			int zero = 0;
+			gint64 buf_offset;
+			gint64 buf_size;
+			char* buf;
 
 			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			bson_len = j_message_get_4(message);
-			bson_data = j_message_get_n(message, bson_len);
-			bson_init_static(bson, bson_data, bson_len);
-			j_backend_smd_attr_write(jd_smd_backend, _key, bson);
-			j_message_add_operation(reply, 4);
-			j_message_append_4(reply, &zero);
+			buf_offset = j_message_get_8(message);
+			buf_size = j_message_get_8(message);
+			buf = j_message_get_n(message, buf_size);
+
+			j_backend_smd_attr_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
+			j_message_add_operation(reply, 8);
+			j_message_append_8(reply, &buf_size);
 			j_message_send(reply, connection);
 		}
 		break;

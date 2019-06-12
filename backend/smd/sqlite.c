@@ -116,6 +116,22 @@ backend_init(gchar const* path)
 	{
 		goto error;
 	}
+	if (sqlite3_exec(backend_db,
+		    "CREATE TABLE IF NOT EXISTS smd_attributes (" //
+		    "attribute_key INTEGER, " //identiy which attribute belongs to this variable
+		    "type_key INTEGER, " //identify the type whithin attribute
+		    "offset INTEGER, " //offset within attribute
+		    "value_int INTEGER, " //value
+		    "value_float FLOAT, " //value
+		    "value_text TEXT, " //value
+		    "value_blob BLOB " //value
+		    ");",
+		    NULL,
+		    NULL,
+		    NULL) != SQLITE_OK)
+	{
+		goto error;
+	}
 	J_CRITICAL("%s", path);
 	return (backend_db != NULL);
 error:

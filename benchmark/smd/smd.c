@@ -27,6 +27,8 @@
 
 #include "benchmark.h"
 void
+benchmark_smd(void);
+void
 benchmark_smd(void)
 {
 }

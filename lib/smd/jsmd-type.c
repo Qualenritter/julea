@@ -228,11 +228,6 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 		J_CRITICAL("var_ndims > %d not supported", SMD_MAX_NDIMS);
 		return FALSE;
 	}
-	if (var_type == SMD_TYPE_UNKNOWN)
-	{
-		J_CRITICAL("var_type SMD_TYPE_UNKNOWN = %d not supported", SMD_TYPE_UNKNOWN);
-		return FALSE;
-	}
 	if (strlen(var_name) > SMD_MAX_NAME_LENGTH)
 	{
 		J_CRITICAL("var_names longer than  %d not supported", SMD_MAX_NAME_LENGTH);

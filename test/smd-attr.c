@@ -180,7 +180,6 @@ test_attribute_datatypes(void)
 	void* attribute;
 	void* space;
 	void* type;
-	guint one = 1;
 
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
