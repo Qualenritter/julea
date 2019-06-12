@@ -277,8 +277,8 @@ backend_attr_write(char* key, const char* buf, guint offset, guint size)
 {
 	sqlite3_stmt* stmt;
 	gint ret;
-	J_DEBUG("test-var-content %ld", *((const guint64*)buf));
 	sqlite3_int64 type_key;
+	J_DEBUG("test-var-content %ld", *((const guint64*)buf));
 	sqlite3_prepare_v2(backend_db, "SELECT type_key FROM smd WHERE key = ?;", -1, &stmt, NULL);
 	ret = sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)key));
 	if (ret != SQLITE_OK)
@@ -293,6 +293,6 @@ backend_attr_write(char* key, const char* buf, guint offset, guint size)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	}
 	sqlite3_finalize(stmt);
-	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0);
+	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0, 0);
 	return TRUE;
 }

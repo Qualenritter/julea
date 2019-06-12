@@ -67,25 +67,15 @@ create_type(bson_iter_t* iter_data_type)
 				while (bson_iter_next(&iter_data_var))
 				{
 					if (strcmp("offset", bson_iter_key(&iter_data_var)) == 0)
-					{
 						var_offset = bson_iter_int32(&iter_data_var);
-					}
 					else if (strcmp("size", bson_iter_key(&iter_data_var)) == 0)
-					{
 						var_size = bson_iter_int32(&iter_data_var);
-					}
 					else if (strcmp("type", bson_iter_key(&iter_data_var)) == 0)
-					{
 						var_type = bson_iter_int32(&iter_data_var);
-					}
 					else if (strcmp("ndims", bson_iter_key(&iter_data_var)) == 0)
-					{
 						var_ndims = bson_iter_int32(&iter_data_var);
-					}
 					else if (strcmp("name", bson_iter_key(&iter_data_var)) == 0)
-					{
 						var_name = bson_iter_utf8(&iter_data_var, NULL);
-					}
 					else if (strcmp("subtype", bson_iter_key(&iter_data_var)) == 0)
 					{
 						bson_iter_recurse(&iter_data_var, &iter_data_val);
@@ -110,58 +100,39 @@ create_type(bson_iter_t* iter_data_type)
 				ret = sqlite3_bind_text(stmt, 2, var_name, -1, NULL);
 				if (ret != SQLITE_OK)
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-
-				ret = sqlite3_bind_int(stmt, 3, var_type);
+				ret = sqlite3_bind_int64(stmt, 3, var_type);
 				if (ret != SQLITE_OK)
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				ret = sqlite3_bind_int(stmt, 4, var_offset);
+				ret = sqlite3_bind_int64(stmt, 4, var_offset);
 				if (ret != SQLITE_OK)
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				ret = sqlite3_bind_int(stmt, 5, var_size);
+				ret = sqlite3_bind_int64(stmt, 5, var_size);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				ret = sqlite3_bind_int(stmt, 6, var_count);
+				ret = sqlite3_bind_int64(stmt, 6, var_count);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				ret = sqlite3_bind_int(stmt, 7, var_ndims);
+				ret = sqlite3_bind_int64(stmt, 7, var_ndims);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				ret = sqlite3_bind_int(stmt, 8, var_dims[0]);
+				ret = sqlite3_bind_int64(stmt, 8, var_dims[0]);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				ret = sqlite3_bind_int(stmt, 9, var_dims[1]);
+				ret = sqlite3_bind_int64(stmt, 9, var_dims[1]);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				ret = sqlite3_bind_int(stmt, 10, var_dims[2]);
+				ret = sqlite3_bind_int64(stmt, 10, var_dims[2]);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				ret = sqlite3_bind_int(stmt, 11, var_dims[3]);
+				ret = sqlite3_bind_int64(stmt, 11, var_dims[3]);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
 				ret = sqlite3_bind_int64(stmt, 12, subtype_key);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
 				ret = sqlite3_step(stmt);
 				if (ret != SQLITE_DONE)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
 				sqlite3_finalize(stmt);
 			}
 		}
@@ -183,9 +154,7 @@ load_type(bson_t* b_datatype, sqlite3_int64 type_key)
 	sqlite3_prepare_v2(backend_db, "SELECT name, type, offset, size, ndims, dims0, dims1, dims2, dims3, subtype_key FROM smd_types WHERE header_key = ?;", -1, &stmt, NULL);
 	ret = sqlite3_bind_int64(stmt, 1, type_key);
 	if (ret != SQLITE_OK)
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	bson_append_array_begin(b_datatype, "arr", -1, b_arr);
 	i = 0;
 	do
@@ -217,19 +186,16 @@ load_type(bson_t* b_datatype, sqlite3_int64 type_key)
 			i++;
 		}
 		else if (ret != SQLITE_DONE)
-		{
-			return FALSE;
-		}
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
 	bson_append_array_end(b_datatype, b_arr);
-
 	sqlite3_finalize(stmt);
 	return TRUE;
 }
+const char* buf_root;
 static gboolean
-write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size)
+write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint parent_offset)
 {
-	J_DEBUG("test-var-content %ld %ld", *((const guint64*)buf), sizeof(guint64));
 	gint64 value_int;
 	gdouble value_float;
 	sqlite3_stmt* stmt;
@@ -237,7 +203,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 	const guint buf_end = buf_offset + buf_len;
 	const char* location;
 	guint array_length;
-	guint i;
+	guint i, j, k;
 	guint offset;
 	guint64 offset_local;
 	GArray* arr;
@@ -245,35 +211,27 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 	arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t*));
 	if (struct_size == 0)
 	{
+		buf_root = buf;
 		sqlite3_prepare_v2(backend_db, "SELECT t.size, t.offset, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3 FROM smd_types t WHERE header_key = ?1 ORDER BY t.offset DESC LIMIT 1", -1, &stmt, NULL);
 		ret = sqlite3_bind_int64(stmt, 1, type_key);
 		if (ret != SQLITE_OK)
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
 		{
 			struct_size = sqlite3_column_int64(stmt, 0);
 			for (i = 0; i < sqlite3_column_int64(stmt, 2); i++)
-			{
 				struct_size *= sqlite3_column_int64(stmt, 3 + i);
-			}
 			struct_size += sqlite3_column_int64(stmt, 1);
 		}
 		else
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	sqlite3_prepare_v2(backend_db, "SELECT t.type, t.offset, t.size, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3, t.subtype_key FROM smd_types t WHERE header_key = ?1 ORDER BY t.offset;", -1, &stmt, NULL);
 	ret = sqlite3_bind_int64(stmt, 1, type_key);
 	if (ret != SQLITE_OK)
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
-
 	do
 	{
 		ret = sqlite3_step(stmt);
@@ -289,50 +247,42 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 			var->space.dims[2] = sqlite3_column_int64(stmt, 6);
 			var->space.dims[3] = sqlite3_column_int64(stmt, 7);
 			(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt, 8);
+			g_array_append_val(arr, var);
 		}
 		else if (ret != SQLITE_DONE)
-		{
-			return FALSE;
-		}
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
-
 	sqlite3_finalize(stmt);
-
-	sqlite3_prepare_v2(backend_db, "INSERT INTO smd_attributes (attribute_key,type_key,offset,value_int,value_float,value_text,value_blob) VALUES (?1,?2,?3,?4,?5,?6,?7)", -1, &stmt, NULL);
-	ret = sqlite3_bind_int64(stmt, 1, attribute_key);
-	if (ret != SQLITE_OK)
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
-	ret = sqlite3_bind_int64(stmt, 2, type_key);
-	if (ret != SQLITE_OK)
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	for (i = 0; i < arr->len; i++)
 	{
 		var = g_array_index(arr, J_SMD_Variable_t*, i);
 		array_length = var->space.dims[0];
-		for (i = 1; i < var->space.ndims; i++)
-		{
-			array_length *= var->space.dims[1];
-		}
+		for (j = 1; j < var->space.ndims; j++)
+			array_length *= var->space.dims[j];
 		offset = var->offset;
 		while (offset < buf_offset)
 			offset += struct_size; /*TODO faster required???*/
-
+		k = 0;
 		while (offset + var->size < buf_end)
 		{
 			offset_local = offset;
-			for (i = 0; i < array_length; i++)
+			for (j = 0; j < array_length; j++)
 			{
 				/*only write complete objects TODO maybe allow writing of half variables?*/
-				ret = sqlite3_bind_int64(stmt, 3, offset_local);
+
+				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_attributes (attribute_key,type_key,offset,value_int,value_float,value_text,value_blob) VALUES (?1,?2,?3,?4,?5,?6,?7)", -1, &stmt, NULL);
+				ret = sqlite3_bind_int64(stmt, 1, attribute_key);
 				if (ret != SQLITE_OK)
-				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				}
-				location = buf + offset_local - buf_offset;
+				ret = sqlite3_bind_int64(stmt, 2, type_key);
+				if (ret != SQLITE_OK)
+					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+
+				ret = sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);
+				if (ret != SQLITE_OK)
+					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+				location = buf + offset_local - buf_offset + parent_offset + j * var->size;
+				J_DEBUG("location read : %ld displayed : %d", location - buf_root, offset_local + parent_offset + j * var->size);
 				switch (var->type)
 				{
 				case SMD_TYPE_INT:
@@ -352,32 +302,25 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 						value_int = *((const gint8*)location);
 						break;
 					default:
-					{
 						J_CRITICAL("this should never happen type=%d", var->type);
 					}
-						value_float = value_int;
-					}
-					ret = sqlite3_bind_int(stmt, 4, value_int);
+					value_float = value_int;
+					ret = sqlite3_bind_int64(stmt, 4, value_int);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
-					ret = sqlite3_bind_int(stmt, 5, value_float);
+					ret = sqlite3_bind_double(stmt, 5, value_float);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_null(stmt, 6);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_null(stmt, 7);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_step(stmt);
+					if (ret != SQLITE_DONE)
+						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+					sqlite3_finalize(stmt);
 				}
 				break;
 				case SMD_TYPE_FLOAT:
@@ -391,75 +334,68 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 						value_float = *((const gfloat*)location);
 						break;
 					default:
-					{
 						J_CRITICAL("this should never happen type=%d", var->type);
-					}
 					}
 					value_int = value_float;
 					ret = sqlite3_bind_int64(stmt, 4, value_int);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
-					ret = sqlite3_bind_int64(stmt, 5, value_float);
+					ret = sqlite3_bind_double(stmt, 5, value_float);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_null(stmt, 6);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_null(stmt, 7);
 					if (ret != SQLITE_OK)
 					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+						exit(0);
 					}
 					ret = sqlite3_step(stmt);
+					if (ret != SQLITE_DONE)
+						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+					sqlite3_finalize(stmt);
 				}
 				break;
 				case SMD_TYPE_BLOB:
 				{
 					ret = sqlite3_bind_null(stmt, 4);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_null(stmt, 5);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_text(stmt, 6, location, strnlen_s(location, var->size), NULL);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_bind_blob(stmt, 7, location, var->size, NULL);
 					if (ret != SQLITE_OK)
-					{
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					}
 					ret = sqlite3_step(stmt);
+					if (ret != SQLITE_DONE)
+						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+					sqlite3_finalize(stmt);
 				}
 				break;
 				case SMD_TYPE_SUB_TYPE:
-
-					write_type(*((sqlite3_int64*)var->sub_type_key), attribute_key, buf, buf_offset, buf_len, struct_size);
+					if ((k == 0)) /*subtypes calculate the offset themselves - only call them once*/
+					{
+						guint calc_offset;
+						calc_offset = location - buf;
+						write_type(*((sqlite3_int64*)var->sub_type_key), attribute_key, buf + calc_offset, buf_offset + calc_offset, buf_len - calc_offset, struct_size, parent_offset + calc_offset);
+					}
 					break;
 				default:
 					J_CRITICAL("this should never happen type=%d", var->type);
 				}
-				if (ret != SQLITE_DONE)
-					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				offset_local += var->size;
+				//	offset_local += var->size;
 			}
 			offset += struct_size;
+			k++;
 		}
 	}
 	for (i = 0; i < arr->len; i++)
 		g_free(g_array_index(arr, J_SMD_Variable_t*, i));
-	sqlite3_finalize(stmt);
 	return TRUE;
 }
