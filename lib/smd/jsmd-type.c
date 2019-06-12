@@ -63,6 +63,14 @@ j_smd_type_equals(void* _type1, void* _type2)
 		{
 			return FALSE;
 		}
+		if (var1->type == SMD_TYPE_SUB_TYPE)
+		{
+			ret = j_smd_type_equals(var1->sub_type, var2->sub_type);
+			if (!ret)
+			{
+				return FALSE;
+			}
+		}
 	}
 
 	return TRUE;
