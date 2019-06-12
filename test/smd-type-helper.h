@@ -41,15 +41,16 @@ struct test_type_7
 {
 	int a;
 	struct test_type_0 b[2][3];
-	int c;
+	float c;
 };
 static guint _one = 1;
 
 static void
-_create_test_types(void*** _types, int* count)
+
+_create_test_types(void*** _types, guint* count)
 {
 	guint two[] = { 2, 3 };
-	int i;
+	guint i;
 	void** types;
 	*count = 8;
 	*_types = g_new(void*, *count);

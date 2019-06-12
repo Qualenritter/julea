@@ -151,7 +151,7 @@ test_attribute_create_destroy_many(void)
 }
 
 static void
-_create_test_spaces(void*** _spaces, int* count)
+_create_test_spaces(void*** _spaces, guint* count)
 {
 	guint one[] = { 1 };
 	guint two[] = { 1, 2 };
@@ -169,14 +169,14 @@ static void
 test_attribute_datatypes(void)
 {
 	gboolean ret;
-	int i, j;
+	guint i, j;
 	const char* filename = "filename";
 	const char* attributename = "attributename";
 	void* file;
 	void** types;
-	int types_count;
+	guint types_count;
 	void** spaces;
-	int spaces_count;
+	guint spaces_count;
 	void* attribute;
 	void* space;
 	void* type;
@@ -206,7 +206,6 @@ test_attribute_datatypes(void)
 			j_smd_space_free(space);
 			ret = j_smd_attr_close(attribute);
 			g_assert_cmpuint(ret, !=, FALSE);
-			//
 			attribute = j_smd_attr_open(attributename, file, batch);
 			j_batch_execute(batch);
 			type = j_smd_attr_get_type(attribute);
@@ -245,6 +244,78 @@ test_attribute_datatypes(void)
 	g_free(types);
 	g_free(spaces);
 }
+static void
+test_attribute_datatypes_read_write(void)
+{
+	gboolean ret;
+	guint i, array_len;
+	const char* filename = "filename";
+	const char* attributename = "attributename";
+	void** types;
+	void* file;
+	void* attribute;
+	void* space;
+	void* type;
+	guint types_count;
+	struct test_type_7* test_var;
+	g_autoptr(JBatch) batch = NULL;
+
+	array_len = 20;
+	test_var = g_new(struct test_type_7, array_len);
+	for (i = 0; i < array_len; i++)
+	{
+		test_var[i].a = i * 2;
+		test_var[i].b[0][0].a = i * 2 + 1;
+		test_var[i].b[0][1].a = i * 2 + 2;
+		test_var[i].b[0][2].a = i * 2 + 3;
+		test_var[i].b[1][0].a = i * 2 + 4;
+		test_var[i].b[1][1].a = i * 2 + 5;
+		test_var[i].b[1][2].a = i * 2 + 6;
+		test_var[i].c = i * 4;
+	}
+
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	file = j_smd_file_create(filename, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(file);
+	g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
+	_create_test_types(&types, &types_count);
+	space = j_smd_space_create(1, &array_len);
+	///
+	type = types[7];
+	attribute = j_smd_attr_create(attributename, file, type, space, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(attribute);
+	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
+	ret = j_smd_attr_close(attribute);
+	g_assert_cmpuint(ret, !=, FALSE);
+	//TODO read back and compare
+	attribute = j_smd_attr_open(attributename, file, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(attribute);
+	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
+	ret = j_smd_attr_close(attribute);
+	g_assert_cmpuint(ret, !=, FALSE);
+	ret = j_smd_attr_delete(attributename, file, batch);
+	g_assert_cmpuint(ret, !=, FALSE);
+	j_batch_execute(batch);
+	for (i = 0; i < types_count; i++)
+	{
+		ret = j_smd_type_free(types[i]);
+		g_assert_cmpuint(ret, !=, FALSE);
+	}
+	ret = j_smd_space_free(space);
+	g_assert_cmpuint(ret, !=, FALSE);
+	///
+	ret = j_smd_file_close(file);
+	g_assert_cmpuint(ret, !=, FALSE);
+	ret = j_smd_file_delete(filename, batch);
+	g_assert_cmpuint(ret, !=, FALSE);
+	j_batch_execute(batch);
+
+	g_free(test_var);
+	g_free(types);
+}
 
 void test_smd_attribute(void);
 void
@@ -253,4 +324,5 @@ test_smd_attribute(void)
 	g_test_add_func("/smd/attribute/create_destroy_single", test_attribute_create_destroy_single);
 	g_test_add_func("/smd/attribute/create_destroy_many", test_attribute_create_destroy_many);
 	g_test_add_func("/smd/attribute/datatypes", test_attribute_datatypes);
+	g_test_add_func("/smd/attribute/datatypes_read_write", test_attribute_datatypes_read_write);
 }

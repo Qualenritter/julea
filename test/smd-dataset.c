@@ -152,7 +152,7 @@ test_dataset_create_destroy_many(void)
 	j_smd_type_free(type);
 }
 static void
-_create_test_spaces(void*** _spaces, int* count)
+_create_test_spaces(void*** _spaces, guint* count)
 {
 	guint one[] = { 1 };
 	guint two[] = { 1, 2 };
@@ -170,14 +170,14 @@ static void
 test_dataset_datatypes(void)
 {
 	gboolean ret;
-	int i, j;
+	guint i, j;
 	const char* filename = "filename";
 	const char* datasetname = "datasetname";
 	void* file;
 	void** types;
-	int types_count;
+	guint types_count;
 	void** spaces;
-	int spaces_count;
+	guint spaces_count;
 	void* dataset;
 	void* space;
 	void* type;
