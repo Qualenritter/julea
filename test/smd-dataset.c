@@ -195,20 +195,16 @@ test_dataset_datatypes(void)
 	///
 	for (i = 0; i < types_count; i++)
 	{
-		J_DEBUG("%d", i);
 		for (j = 0; j < spaces_count; j++)
 		{
-			J_DEBUG("%d", j);
 			dataset = j_smd_dataset_create(datasetname, file, types[i], spaces[j], distribution, batch);
 			j_batch_execute(batch);
 			g_assert_nonnull(dataset);
 			g_assert_cmpuint(j_smd_is_initialized(dataset), !=, FALSE);
 			type = j_smd_dataset_get_type(dataset);
-			J_DEBUG("%d", 0);
 			g_assert_cmpuint(j_smd_type_equals(types[i], type), !=, FALSE);
 			j_smd_type_free(type);
 			space = j_smd_dataset_get_space(dataset);
-			J_DEBUG("%d", 0);
 			g_assert_cmpuint(j_smd_space_equals(spaces[j], space), !=, FALSE);
 			j_smd_space_free(space);
 			ret = j_smd_dataset_close(dataset);
@@ -217,11 +213,9 @@ test_dataset_datatypes(void)
 			dataset = j_smd_dataset_open(datasetname, file, batch);
 			j_batch_execute(batch);
 			type = j_smd_dataset_get_type(dataset);
-			J_DEBUG("%d", 0);
 			g_assert_cmpuint(j_smd_type_equals(types[i], type), !=, FALSE);
 			j_smd_type_free(type);
 			space = j_smd_dataset_get_space(dataset);
-			J_DEBUG("%d", 0);
 			g_assert_cmpuint(j_smd_space_equals(spaces[j], space), !=, FALSE);
 			j_smd_space_free(space);
 			g_assert_nonnull(dataset);

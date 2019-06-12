@@ -43,8 +43,6 @@ j_smd_type_equals(void* _type1, void* _type2)
 	J_SMD_Variable_t* var1;
 	J_SMD_Variable_t* var2;
 
-	J_DEBUG("j_smd_type_equals %p %p", type1, type2);
-
 	g_return_val_if_fail(type1 != NULL, FALSE);
 	g_return_val_if_fail(type2 != NULL, FALSE);
 	g_return_val_if_fail(type1->arr->len == type2->arr->len, FALSE);
@@ -138,7 +136,7 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 	J_SMD_Variable_t var;
 
 	type = j_smd_type_create();
-
+	type->recieved_from_server = TRUE;
 	if (bson_iter_recurse(iter_arr, &iter_loc) && bson_iter_find_descendant(&iter_loc, "arr", &iter_loc2) && BSON_ITER_HOLDS_ARRAY(&iter_loc2))
 	{
 		bson_iter_recurse(&iter_loc2, &iter);
@@ -179,6 +177,7 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "subtype", &iter_val) && BSON_ITER_HOLDS_DOCUMENT(&iter_val))
 			{
 				var.sub_type = j_smd_type_from_bson(&iter_val);
+				var.sub_type->recieved_from_server = TRUE;
 			}
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "dims", &iter_val) && BSON_ITER_HOLDS_ARRAY(&iter_val))
 			{
@@ -214,6 +213,7 @@ j_smd_type_create(void)
 	J_SMD_Type_t* type;
 
 	type = g_new(J_SMD_Type_t, 1);
+	type->recieved_from_server = FALSE;
 	type->arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t*));
 	return type;
 }
@@ -319,7 +319,15 @@ j_smd_type_free(void* _type)
 
 	for (i = 0; i < type->arr->len; i++)
 	{
-		g_free(g_array_index(type->arr, J_SMD_Variable_t*, i));
+		if (type->recieved_from_server)
+		{
+			if (g_array_index(type->arr, J_SMD_Variable_t*, i)->type == SMD_TYPE_SUB_TYPE)
+				j_smd_type_free(g_array_index(type->arr, J_SMD_Variable_t*, i)->sub_type);
+		}
+		else
+		{
+			g_free(g_array_index(type->arr, J_SMD_Variable_t*, i));
+		}
 	}
 	g_free(type);
 	return TRUE;

@@ -74,6 +74,7 @@ struct J_SMD_Space_t
 typedef struct J_SMD_Space_t J_SMD_Space_t;
 struct J_SMD_Type_t
 {
+	gboolean recieved_from_server; /*if recieved from server delete recoursive -- TODO maybe reference counting for this*/
 	GArray* arr;
 };
 typedef struct J_SMD_Type_t J_SMD_Type_t;
