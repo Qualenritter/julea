@@ -4,30 +4,22 @@ backend_dataset_delete(const char* name, char* parent)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-
 	J_DEBUG("%s", name);
-
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
-	{
 		result = sqlite3_column_int64(stmt, 0);
-	}
 	else
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, result);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	sqlite3_finalize(stmt);
 	/*TODO delete everything below*/
 	J_DEBUG("%s", name);
@@ -49,13 +41,9 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 	bson_iter_t iter_data_dims;
 	guint i;
 	guint distribution;
-
 	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
-
 	g_return_val_if_fail(name != NULL, FALSE);
-
 	bson_iter_init(&iter, bson);
-
 	var_ndims = 0;
 	var_dims[0] = 0;
 	var_dims[1] = 0;
@@ -74,26 +62,18 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 					{
 						var_ndims = bson_iter_int32(&iter_space_type);
 						if (var_ndims > 4)
-						{
 							return FALSE;
-						}
 					}
 					else if (strcmp("dims", bson_iter_key(&iter_space_type)) == 0)
 					{
 						bson_iter_recurse(&iter_space_type, &iter_data_dims);
-						i = 0;
-						while (bson_iter_next(&iter_data_dims) && i < 4)
-						{
+						for (i = 0; bson_iter_next(&iter_data_dims) && i < 4; i++)
 							var_dims[i] = bson_iter_int32(&iter_data_dims);
-							i++;
-						}
 					}
 				}
 			}
 			else if (strcmp("distribution", bson_iter_key(&iter)) == 0)
-			{
 				distribution = bson_iter_int32(&iter);
-			}
 			else if (strcmp("data_type", bson_iter_key(&iter)) == 0)
 			{
 				bson_iter_recurse(&iter, &iter_data_type);
@@ -106,13 +86,9 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 		j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)parent));
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
-		{
 			file_key = sqlite3_column_int64(stmt, 0);
-		}
 		else
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	{ /*delete old dataset first*/
@@ -122,18 +98,13 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 		j_sqlite3_bind_int64(stmt, 3, file_key);
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
-		{
 			backend_dataset_delete(name, parent);
-		}
 		else if (ret != SQLITE_DONE)
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	{ // insert new dataset
-		sqlite3_prepare_v2(backend_db, "INSERT INTO smd (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key) VALUES (?,?,?,?,?,?,?,?,?,?,?);",
-			-1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "INSERT INTO smd (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key) VALUES (?,?,?,?,?,?,?,?,?,?,?);", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_DATA);
 		j_sqlite3_bind_int64(stmt, 3, *((sqlite3_int64*)parent));
@@ -147,9 +118,7 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 		j_sqlite3_bind_int64(stmt, 11, type_key);
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_DONE)
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	{ // extract the primary key
@@ -165,9 +134,7 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 			memcpy(key, &metadata_key, sizeof(metadata_key));
 		}
 		else
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	J_DEBUG("%s", name);
@@ -184,7 +151,6 @@ backend_dataset_open(const char* name, char* parent, bson_t* bson, char* key)
 	bson_t b_arr[1];
 	char key_buf[16];
 	const char* _key;
-
 	J_DEBUG("%s", name);
 	bson_init(bson);
 	g_return_val_if_fail(name != NULL, FALSE);
@@ -219,14 +185,11 @@ backend_dataset_open(const char* name, char* parent, bson_t* bson, char* key)
 		return FALSE;
 	}
 	else
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	sqlite3_finalize(stmt);
 	bson_append_document_begin(bson, "data_type", -1, b_datatype);
 	load_type(b_datatype, type_key);
 	bson_append_document_end(bson, b_datatype);
-
 	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
 	return TRUE;
 }

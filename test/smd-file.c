@@ -15,18 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
-
 #include "test.h"
-
 static void
 test_file_create_destroy_single(void)
 {
@@ -35,7 +29,6 @@ test_file_create_destroy_single(void)
 	int i;
 	const char* filename = "filename";
 	void* file;
-
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	for (i = 0; i < n; i++)
@@ -70,7 +63,6 @@ test_file_create_destroy_many(void)
 	int n = 10;
 	int i;
 	void* file;
-
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	for (i = 0; i < n; i++)

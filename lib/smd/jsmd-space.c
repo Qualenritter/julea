@@ -19,20 +19,13 @@
 /**
  * \file
  **/
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <string.h>
-
 #include <bson.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
-
 bson_t*
 j_smd_space_to_bson(void* _space)
 {
@@ -41,15 +34,11 @@ j_smd_space_to_bson(void* _space)
 	const char* key;
 	bson_t* b_attr_space;
 	bson_t b_attr_space_dims[1];
-
 	guint i;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	b_attr_space = g_new(bson_t, 1);
 	bson_init(b_attr_space);
-
 	bson_append_int32(b_attr_space, "ndims", -1, space->ndims);
-
 	bson_append_array_begin(b_attr_space, "dims", -1, b_attr_space_dims);
 	for (i = 0; i < space->ndims; i++)
 	{
@@ -65,18 +54,13 @@ void*
 j_smd_space_from_bson(bson_iter_t* bson)
 {
 	J_SMD_Space_t* space;
-
 	bson_iter_t iter;
 	bson_iter_t b_ndims;
 	bson_iter_t b_dims;
-
 	space = g_new(J_SMD_Space_t, 1);
-
 	j_trace_enter(G_STRFUNC, NULL);
 	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "ndims", &b_ndims) && BSON_ITER_HOLDS_INT32(&b_ndims))
-	{
 		space->ndims = bson_iter_int32(&b_ndims);
-	}
 	else
 	{
 		j_trace_leave(G_STRFUNC);
@@ -87,9 +71,7 @@ j_smd_space_from_bson(bson_iter_t* bson)
 	{
 		bson_iter_recurse(&b_ndims, &b_dims);
 		for (guint i = 0; bson_iter_next(&b_dims) && i < space->ndims; i++)
-		{
 			space->dims[i] = bson_iter_int32(&b_dims);
-		}
 	}
 	else
 	{
@@ -101,7 +83,6 @@ j_smd_space_from_bson(bson_iter_t* bson)
 	j_trace_leave(G_STRFUNC);
 	return space;
 }
-
 void*
 j_smd_space_create(guint ndims, guint* dims)
 {
@@ -115,10 +96,7 @@ j_smd_space_create(guint ndims, guint* dims)
 	space = g_new(J_SMD_Space_t, 1);
 	space->ndims = ndims;
 	for (i = 0; i < ndims; i++)
-	{
 		space->dims[i] = dims[i];
-	}
-
 	return space;
 }
 gboolean
@@ -134,7 +112,6 @@ gboolean
 j_smd_space_free(void* _space)
 {
 	J_SMD_Space_t* space = _space;
-
 	g_free(space);
 	return TRUE;
 }
@@ -144,12 +121,10 @@ j_smd_space_equals(void* _space1, void* _space2)
 	J_SMD_Space_t* space1 = _space1;
 	J_SMD_Space_t* space2 = _space2;
 	guint i;
-
 	if (space1 == NULL && space2 == NULL)
 		return TRUE;
 	if (space1 == NULL || space2 == NULL)
 		return FALSE;
-
 	if (space1->ndims != space2->ndims)
 		return FALSE;
 	for (i = 0; i < space1->ndims; i++)

@@ -15,16 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
-
 #include "test.h"
 static void
 test_type_create0(void)
@@ -33,7 +28,6 @@ test_type_create0(void)
 	int n = 1000;
 	int i;
 	void* type;
-
 	for (i = 0; i < n; i++)
 	{
 		type = j_smd_type_create();
@@ -42,14 +36,12 @@ test_type_create0(void)
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 }
-
 static void
 test_type_create1(void)
 {
 	guint one = 1;
 	gboolean ret;
 	void* type;
-
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 0);
@@ -65,7 +57,6 @@ test_type_create2(void)
 	guint one = 1;
 	gboolean ret;
 	void* type;
-
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 0);
@@ -84,7 +75,6 @@ test_type_delete0(void)
 	guint one = 1;
 	gboolean ret;
 	void* type;
-
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 0);
@@ -109,7 +99,6 @@ test_type_delete1(void)
 	guint one = 1;
 	gboolean ret;
 	void* type;
-
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 0);
@@ -134,7 +123,6 @@ test_type_delete2(void)
 	guint one = 1;
 	gboolean ret;
 	void* type;
-
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 0);
@@ -159,7 +147,6 @@ test_type_delete3(void)
 	guint one = 1;
 	gboolean ret;
 	void* type;
-
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 0);
@@ -178,7 +165,6 @@ test_type_delete3(void)
 	ret = j_smd_type_free(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
-
 void test_smd_type(void);
 void
 test_smd_type(void)

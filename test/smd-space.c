@@ -15,18 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
-
 #include "test.h"
-
 static void
 test_space_create_destroy(void)
 {
@@ -34,11 +28,10 @@ test_space_create_destroy(void)
 	guint one = 1;
 	int n = 1000;
 	int i;
-
+	void* space;
 	for (i = 0; i < n; i++)
 	{
-		void* space = j_smd_space_create(one, &one);
-
+		space = j_smd_space_create(one, &one);
 		g_assert_nonnull(space);
 		ret = j_smd_space_free(space);
 		g_assert_cmpuint(ret, !=, FALSE);
@@ -54,16 +47,12 @@ test_space_read(void)
 	guint* out_dims;
 	guint i;
 	void* space;
-
 	space = j_smd_space_create(in_ndims, in_dims);
-
 	ret = j_smd_space_get(space, &out_ndims, &out_dims);
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(in_ndims, ==, out_ndims);
 	for (i = 0; i < in_ndims && i < out_ndims; i++)
-	{
 		g_assert_cmpuint(in_dims[i], ==, out_dims[i]);
-	}
 	g_free(out_dims);
 	ret = j_smd_space_free(space);
 	g_assert_cmpuint(ret, !=, FALSE);

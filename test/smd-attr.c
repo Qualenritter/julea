@@ -15,19 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
-
 #include "test.h"
 #include "smd-type-helper.h"
-
 static void
 test_attribute_create_destroy_single(void)
 {
@@ -41,7 +35,6 @@ test_attribute_create_destroy_single(void)
 	void* space;
 	void* attribute;
 	guint one = 1;
-
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
@@ -52,7 +45,6 @@ test_attribute_create_destroy_single(void)
 	j_batch_execute(batch);
 	g_assert_nonnull(file);
 	g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
-
 	for (i = 0; i < n; i++)
 	{
 		attribute = j_smd_attr_create(attributename, file, type, space, batch);
@@ -81,7 +73,6 @@ test_attribute_create_destroy_single(void)
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	ret = j_smd_space_free(space);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_type_free(type);
@@ -100,7 +91,6 @@ test_attribute_create_destroy_many(void)
 	void* space;
 	void* attribute;
 	guint one = 1;
-
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
@@ -144,12 +134,9 @@ test_attribute_create_destroy_many(void)
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	j_smd_space_free(space);
-
 	j_smd_type_free(type);
 }
-
 static void
 _create_test_spaces(void*** _spaces, guint* count)
 {
@@ -164,7 +151,6 @@ _create_test_spaces(void*** _spaces, guint* count)
 	spaces[1] = j_smd_space_create(2, two);
 	spaces[2] = j_smd_space_create(3, three);
 }
-
 static void
 test_attribute_datatypes(void)
 {
@@ -180,7 +166,6 @@ test_attribute_datatypes(void)
 	void* attribute;
 	void* space;
 	void* type;
-
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	file = j_smd_file_create(filename, batch);
@@ -234,13 +219,11 @@ test_attribute_datatypes(void)
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 	///
-
 	ret = j_smd_file_close(file);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	g_free(types);
 	g_free(spaces);
 }
@@ -287,7 +270,6 @@ test_attribute_datatypes_read_write(void)
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
-	J_DEBUG("test-var-content %ld", *((guint64*)test_var));
 	ret = j_smd_attr_write(attribute, test_var, 0, sizeof(struct test_type_7) * array_len, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
@@ -297,21 +279,10 @@ test_attribute_datatypes_read_write(void)
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
-
 	ret = j_smd_attr_read(attribute, test_var_rec, 0, sizeof(struct test_type_7) * array_len, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-	J_DEBUG("test-var-content %ld");
-	for (i = 0; i < (array_len * sizeof(struct test_type_7)) / sizeof(guint32); i++)
-	{
-		if (((guint*)test_var)[i] != ((guint*)test_var_rec)[i])
-		{
-			J_DEBUG("difference %d %d %d : %x %x", i, (array_len * sizeof(struct test_type_7)) / sizeof(guint32), i * 4, ((guint*)test_var)[i], ((guint*)test_var_rec)[i]);
-		}
-	}
-
 	g_assert_cmpuint(memcmp(test_var, test_var_rec, sizeof(struct test_type_7) * array_len), ==, 0);
-
 	ret = j_smd_attr_close(attribute);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_attr_delete(attributename, file, batch);
@@ -333,7 +304,6 @@ test_attribute_datatypes_read_write(void)
 	g_free(test_var);
 	g_free(types);
 }
-
 void test_smd_attribute(void);
 void
 test_smd_attribute(void)

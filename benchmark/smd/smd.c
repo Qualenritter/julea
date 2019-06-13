@@ -15,16 +15,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <string.h>
-
 #include <julea-smd.h>
 #include <julea.h>
-
 #include "benchmark.h"
 void
 benchmark_smd(void);

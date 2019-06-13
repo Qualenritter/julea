@@ -8,7 +8,6 @@ strnlen_s(const char* b, guint64 maxlen)
 		len++;
 	return len;
 }
-
 static sqlite3_int64
 create_type(bson_iter_t* iter_data_type)
 {
@@ -164,7 +163,6 @@ load_type(bson_t* b_datatype, sqlite3_int64 type_key)
 }
 const char* buf_root;
 guint64 buf_root_offset;
-
 static guint
 calculate_struct_size(sqlite3_int64 type_key)
 {
@@ -212,13 +210,9 @@ get_type_structure(sqlite3_int64 type_key)
 			var->space.dims[2] = sqlite3_column_int64(stmt, 6);
 			var->space.dims[3] = sqlite3_column_int64(stmt, 7);
 			if (var->type == SMD_TYPE_SUB_TYPE)
-			{
 				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt, 8);
-			}
 			else
-			{
 				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt, 9);
-			}
 			g_array_append_val(arr, var);
 		}
 		else if (ret != SQLITE_DONE)
@@ -227,7 +221,6 @@ get_type_structure(sqlite3_int64 type_key)
 	sqlite3_finalize(stmt);
 	return arr;
 }
-
 static gboolean
 write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint parent_offset)
 {
@@ -274,7 +267,6 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 				switch (var->type)
 				{
 				case SMD_TYPE_INT:
-				{
 					switch (var->size)
 					{ /*TODO signed|unsigned*/
 					case 8:
@@ -301,11 +293,8 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 					if (ret != SQLITE_DONE)
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 					sqlite3_finalize(stmt);
-					J_DEBUG("location read : %ld displayed : %ld", location - buf_root + buf_root_offset, offset_local + parent_offset + j * var->size);
-				}
-				break;
+					break;
 				case SMD_TYPE_FLOAT:
-				{
 					switch (var->size)
 					{
 					case 8:
@@ -326,11 +315,8 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 					if (ret != SQLITE_DONE)
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 					sqlite3_finalize(stmt);
-					J_DEBUG("location read : %ld displayed : %ld", location - buf_root + buf_root_offset, offset_local + parent_offset + j * var->size);
-				}
-				break;
+					break;
 				case SMD_TYPE_BLOB:
-				{
 					j_sqlite3_bind_null(stmt, 4);
 					j_sqlite3_bind_null(stmt, 5);
 					j_sqlite3_bind_text(stmt, 6, location, strnlen_s(location, var->size));
@@ -339,9 +325,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 					if (ret != SQLITE_DONE)
 						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 					sqlite3_finalize(stmt);
-					J_DEBUG("location read : %ld displayed : %ld", location - buf_root + buf_root_offset, offset_local + parent_offset + j * var->size);
-				}
-				break;
+					break;
 				case SMD_TYPE_SUB_TYPE:
 					if ((k == 0)) /*subtypes calculate the offset themselves - only call them once*/
 					{
@@ -384,7 +368,6 @@ read_type(sqlite3_int64 attribute_key, char* buf, guint buf_offset, guint buf_le
 		{
 			offset = sqlite3_column_int64(stmt, 0) - buf_offset;
 			location = buf + offset;
-			J_DEBUG("writeing at %lld -> %ld", sqlite3_column_int64(stmt, 0), offset);
 			switch (sqlite3_column_int64(stmt, 4))
 			{
 			case SMD_TYPE_INT:
@@ -430,6 +413,5 @@ read_type(sqlite3_int64 attribute_key, char* buf, guint buf_offset, guint buf_le
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
 	sqlite3_finalize(stmt);
-	J_DEBUG("test-var-content %ld", *((guint64*)buf));
 	return TRUE;
 }

@@ -1,8 +1,6 @@
 #ifndef SMD_TYPE_TESTING_HELPER
 #define SMD_TYPE_TESTING_HELPER
-
 #include <julea-smd.h>
-
 struct test_type_0
 {
 	int a;
@@ -44,9 +42,7 @@ struct test_type_7
 	float c;
 };
 static guint _one = 1;
-
 static void
-
 _create_test_types(void*** _types, guint* count)
 {
 	guint two[] = { 2, 3 };
@@ -56,9 +52,7 @@ _create_test_types(void*** _types, guint* count)
 	*_types = g_new(void*, *count);
 	types = *_types;
 	for (i = 0; i < *count; i++)
-	{
 		types[i] = j_smd_type_create();
-	}
 	{
 		J_SMD_TYPE_ADD_ATOMIC(types[0], struct test_type_0, a);
 	}

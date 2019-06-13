@@ -19,17 +19,11 @@
 /**
  * \file
  **/
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <string.h>
-
 #include <bson.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
 struct JSMDAttributeOperation
@@ -46,7 +40,6 @@ struct JSMDAttributeOperation
 	guint64 buf_size;
 };
 typedef struct JSMDAttributeOperation JSMDAttributeOperation;
-
 static gboolean
 j_smd_create_exec(JList* operations, JSemantics* semantics)
 {
@@ -74,9 +67,7 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-		{
 			j_backend_smd_attr_create(smd_backend, operation->name, operation->parent->key, operation->metadata->bson, operation->metadata->key);
-		}
 		else
 		{
 			message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH + 4 + operation->metadata->bson->len;
@@ -172,9 +163,7 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-		{
 			j_backend_smd_attr_delete(smd_backend, operation->name, operation->parent->key);
-		}
 		else
 		{
 			message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH;
@@ -354,9 +343,7 @@ j_smd_read_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-		{
 			j_backend_smd_attr_read(smd_backend, operation->metadata->key, operation->buf_read, operation->buf_offset, operation->buf_size);
-		}
 		else
 		{
 			message_size = 8 + 8 + SMD_KEY_LENGTH;
@@ -378,7 +365,6 @@ j_smd_read_exec(JList* operations, JSemantics* semantics)
 			operation = j_list_iterator_get(iter);
 			ret = j_message_get_8(reply);
 			memcpy(operation->buf_read, j_message_get_n(reply, ret), ret);
-			J_DEBUG("test-var-content %ld", *((guint64*)operation->buf_read));
 			//TODO ASSERT ret==operation->buf_size
 		}
 		j_connection_pool_push_smd(index, smd_connection);
@@ -438,9 +424,7 @@ j_smd_write_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-		{
 			j_backend_smd_attr_write(smd_backend, operation->metadata->key, operation->buf_write, operation->buf_offset, operation->buf_size);
-		}
 		else
 		{
 			message_size = 8 + 8 + SMD_KEY_LENGTH + operation->buf_size;

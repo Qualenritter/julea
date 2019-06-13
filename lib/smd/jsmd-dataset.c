@@ -19,17 +19,11 @@
 /**
  * \file
  **/
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <string.h>
-
 #include <bson.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
 struct JSMDDatasetOperation
@@ -39,16 +33,19 @@ struct JSMDDatasetOperation
 	J_Metadata_t* parent;
 };
 typedef struct JSMDDatasetOperation JSMDDatasetOperation;
-
 static gboolean
 j_smd_create_exec(JList* operations, JSemantics* semantics)
 {
+	int message_size;
 	JBackend* smd_backend;
 	JSMDDatasetOperation* operation;
-
 	g_autoptr(JListIterator) it = NULL;
+	g_autoptr(JListIterator) iter = NULL;
+	g_autoptr(JMessage) reply = NULL;
+	int index = 0;
+	GSocketConnection* smd_connection;
+	JBatch* batch;
 	g_autoptr(JMessage) message = NULL;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
@@ -63,13 +60,10 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-		{
 			j_backend_smd_dataset_create(smd_backend, operation->name, operation->parent->key, operation->metadata->bson, operation->metadata->key);
-		}
 		else
 		{
-			int message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH + 4 + operation->metadata->bson->len;
-
+			message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH + 4 + operation->metadata->bson->len;
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
 			j_message_append_n(message, operation->parent->key, SMD_KEY_LENGTH);
@@ -79,12 +73,6 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 	}
 	if (smd_backend == NULL)
 	{
-		g_autoptr(JListIterator) iter = NULL;
-		g_autoptr(JMessage) reply = NULL;
-		int index = 0;
-		GSocketConnection* smd_connection;
-		JBatch* batch;
-
 		smd_connection = j_connection_pool_pop_smd(index);
 		j_message_send(message, smd_connection);
 		reply = j_message_new_reply(message);
@@ -108,7 +96,6 @@ static void
 j_smd_create_free(gpointer data)
 {
 	JSMDDatasetOperation* operation = data;
-
 	g_free(operation->name);
 	g_free(data);
 }
@@ -119,7 +106,6 @@ j_smd_dataset_create(const char* name, void* parent, void* _data_type, void* _sp
 	JSMDDatasetOperation* smd_op;
 	bson_t* data_type;
 	bson_t* space_type;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	data_type = j_smd_type_to_bson(_data_type);
 	space_type = j_smd_space_to_bson(_space_type);
@@ -144,7 +130,6 @@ j_smd_dataset_create(const char* name, void* parent, void* _data_type, void* _sp
 	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	smd_op->metadata->distribution = j_distribution_new(distribution);
-
 	j_batch_add(batch, op);
 	j_trace_leave(G_STRFUNC);
 	return smd_op->metadata;
@@ -153,11 +138,14 @@ static gboolean
 j_smd_delete_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
+	int message_size;
+	g_autoptr(JListIterator) iter = NULL;
+	g_autoptr(JMessage) reply = NULL;
+	int index = 0;
+	GSocketConnection* smd_connection;
 	JSMDDatasetOperation* operation;
-
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
@@ -172,13 +160,10 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-		{
 			j_backend_smd_dataset_delete(smd_backend, operation->name, operation->parent->key);
-		}
 		else
 		{
-			int message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH;
-
+			message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH;
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
 			j_message_append_n(message, operation->parent->key, SMD_KEY_LENGTH);
@@ -186,11 +171,6 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 	}
 	if (smd_backend == NULL)
 	{
-		g_autoptr(JListIterator) iter = NULL;
-		g_autoptr(JMessage) reply = NULL;
-		int index = 0;
-		GSocketConnection* smd_connection;
-
 		smd_connection = j_connection_pool_pop_smd(index);
 		j_message_send(message, smd_connection);
 		reply = j_message_new_reply(message);
@@ -204,7 +184,6 @@ static void
 j_smd_delete_free(gpointer data)
 {
 	JSMDDatasetOperation* operation = data;
-
 	g_free(operation->name);
 	g_free(data);
 }
@@ -213,18 +192,12 @@ j_smd_dataset_delete(const char* name, void* parent, JBatch* batch)
 {
 	JOperation* op;
 	JSMDDatasetOperation* smd_op;
-
 	j_trace_enter(G_STRFUNC, NULL);
-
 	smd_op = g_new(JSMDDatasetOperation, 1);
-
 	smd_op->metadata = j_smd_dataset_open(name, parent, batch);
-
 	j_batch_execute(batch);
 	j_distributed_object_delete(smd_op->metadata->object, batch);
-
 	j_smd_dataset_close(smd_op->metadata);
-
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
@@ -241,14 +214,18 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	JSMDDatasetOperation* operation;
-
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
 	int bson_len;
 	uint8_t* bson_data;
 	bson_iter_t b_iter;
+	gint distribution;
+	int message_size;
 	bson_iter_t b_distribution;
-
+	g_autoptr(JListIterator) iter = NULL;
+	g_autoptr(JMessage) reply = NULL;
+	int index = 0;
+	GSocketConnection* smd_connection;
 	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
@@ -272,8 +249,7 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 			{
 				if (bson_iter_init(&b_iter, operation->metadata->bson) && bson_iter_find_descendant(&b_iter, "distribution", &b_distribution) && BSON_ITER_HOLDS_INT32(&b_distribution))
 				{
-					gint distribution = bson_iter_int32(&b_distribution);
-
+					distribution = bson_iter_int32(&b_distribution);
 					operation->metadata->distribution = j_distribution_new(distribution);
 					operation->metadata->object = j_distributed_object_new("smd", operation->metadata->key, operation->metadata->distribution);
 				}
@@ -289,8 +265,7 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 		}
 		else
 		{
-			int message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH;
-
+			message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH;
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
 			j_message_append_n(message, operation->parent->key, SMD_KEY_LENGTH);
@@ -298,11 +273,6 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 	}
 	if (smd_backend == NULL)
 	{
-		g_autoptr(JListIterator) iter = NULL;
-		g_autoptr(JMessage) reply = NULL;
-		int index = 0;
-		GSocketConnection* smd_connection;
-
 		smd_connection = j_connection_pool_pop_smd(index);
 		j_message_send(message, smd_connection);
 		reply = j_message_new_reply(message);
@@ -320,8 +290,7 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				operation->metadata->bson_requires_free = FALSE;
 				if (bson_iter_init(&b_iter, operation->metadata->bson) && bson_iter_find_descendant(&b_iter, "distribution", &b_distribution) && BSON_ITER_HOLDS_INT32(&b_distribution))
 				{
-					gint distribution = bson_iter_int32(&b_distribution);
-
+					distribution = bson_iter_int32(&b_distribution);
 					operation->metadata->distribution = j_distribution_new(distribution);
 					operation->metadata->object = j_distributed_object_new("smd", operation->metadata->key, operation->metadata->distribution);
 				}
@@ -344,7 +313,6 @@ static void
 j_smd_open_free(gpointer data)
 {
 	JSMDDatasetOperation* operation = data;
-
 	g_free(operation->name);
 	g_free(data);
 }
@@ -353,7 +321,6 @@ j_smd_dataset_open(const char* name, void* parent, JBatch* batch)
 {
 	JOperation* op;
 	JSMDDatasetOperation* smd_op;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDDatasetOperation, 1);
 	smd_op->metadata = g_new(J_Metadata_t, 1);
@@ -375,7 +342,6 @@ gboolean
 j_smd_dataset_close(void* _metadata)
 {
 	J_Metadata_t* metadata = _metadata;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	if (metadata->bson)
 		bson_destroy(metadata->bson);
@@ -385,12 +351,10 @@ j_smd_dataset_close(void* _metadata)
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
-
 gboolean
 j_smd_dataset_read(void* _metadata, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch)
 {
 	J_Metadata_t* metadata = _metadata;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	j_distributed_object_read(metadata->object, buf, len, off, bytes_read, batch);
 	j_trace_leave(G_STRFUNC);
@@ -400,7 +364,6 @@ gboolean
 j_smd_dataset_write(void* _metadata, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch)
 {
 	J_Metadata_t* metadata = _metadata;
-
 	j_trace_enter(G_STRFUNC, NULL);
 	j_distributed_object_write(metadata->object, buf, len, off, bytes_written, batch);
 	j_trace_leave(G_STRFUNC);

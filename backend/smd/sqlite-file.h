@@ -4,30 +4,22 @@ backend_file_delete(const char* name)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-
 	J_DEBUG("%s", name);
-
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
-	{
 		result = sqlite3_column_int64(stmt, 0);
-	}
 	else
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE file_key = ?1;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, result);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	sqlite3_finalize(stmt);
 	/*TODO delete type if no file uses it*/
 	J_DEBUG("%s", name);
@@ -39,9 +31,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-
 	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
-
 	g_return_val_if_fail(name != NULL, FALSE);
 	{ /*delete old file first*/
 		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
@@ -49,13 +39,9 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
-		{
 			backend_file_delete(name);
-		}
 		else if (ret != SQLITE_DONE)
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	{ // insert new file
@@ -64,9 +50,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_DONE)
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	{ // extract the primary key
@@ -81,9 +65,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 			memcpy(key, &result, sizeof(result));
 		}
 		else
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	{ // set the parent pointers to this file
@@ -91,9 +73,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		j_sqlite3_bind_int64(stmt, 1, result);
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_DONE)
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
 		sqlite3_finalize(stmt);
 	}
 	(void)bson;
@@ -125,9 +105,7 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 		return FALSE;
 	}
 	else
-	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	}
 	sqlite3_finalize(stmt);
 	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
 	return TRUE;

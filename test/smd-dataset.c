@@ -15,19 +15,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <julea-config.h>
-
 #include <glib.h>
-
 #include <julea.h>
-
 #include <julea-internal.h>
 #include <julea-smd.h>
-
 #include "test.h"
 #include "smd-type-helper.h"
-
 static void
 test_dataset_create_destroy_single(void)
 {
@@ -42,7 +36,6 @@ test_dataset_create_destroy_single(void)
 	void* dataset;
 	JDistributionType distribution = J_DISTRIBUTION_ROUND_ROBIN;
 	guint one = 1;
-
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
@@ -53,7 +46,6 @@ test_dataset_create_destroy_single(void)
 	j_batch_execute(batch);
 	g_assert_nonnull(file);
 	g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
-
 	for (i = 0; i < n; i++)
 	{
 		dataset = j_smd_dataset_create(datasetname, file, type, space, distribution, batch);
@@ -82,7 +74,6 @@ test_dataset_create_destroy_single(void)
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	ret = j_smd_space_free(space);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_type_free(type);
@@ -102,7 +93,6 @@ test_dataset_create_destroy_many(void)
 	void* dataset;
 	JDistributionType distribution = J_DISTRIBUTION_ROUND_ROBIN;
 	guint one = 1;
-
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
 	g_assert_nonnull(type);
@@ -146,9 +136,7 @@ test_dataset_create_destroy_many(void)
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	j_smd_space_free(space);
-
 	j_smd_type_free(type);
 }
 static void
@@ -165,7 +153,6 @@ _create_test_spaces(void*** _spaces, guint* count)
 	spaces[1] = j_smd_space_create(2, two);
 	spaces[2] = j_smd_space_create(3, three);
 }
-
 static void
 test_dataset_datatypes(void)
 {
@@ -182,7 +169,6 @@ test_dataset_datatypes(void)
 	void* space;
 	void* type;
 	JDistributionType distribution = J_DISTRIBUTION_ROUND_ROBIN;
-
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	file = j_smd_file_create(filename, batch);
@@ -237,17 +223,14 @@ test_dataset_datatypes(void)
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 	///
-
 	ret = j_smd_file_close(file);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-
 	g_free(types);
 	g_free(spaces);
 }
-
 void test_smd_dataset(void);
 void
 test_smd_dataset(void)
