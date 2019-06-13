@@ -48,13 +48,9 @@ backend_attr_create(const char* name, char* parent, bson_t* bson, char* key)
 	bson_iter_t iter_data_type;
 	bson_iter_t iter_data_dims;
 	guint i;
-
 	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
-
 	g_return_val_if_fail(name != NULL, FALSE);
-
 	bson_iter_init(&iter, bson);
-
 	var_ndims = 0;
 	var_dims[0] = 0;
 	var_dims[1] = 0;
@@ -72,9 +68,7 @@ backend_attr_create(const char* name, char* parent, bson_t* bson, char* key)
 					{
 						var_ndims = bson_iter_int32(&iter_space_type);
 						if (var_ndims > 4)
-						{
 							return FALSE;
-						}
 					}
 					else if (strcmp("dims", bson_iter_key(&iter_space_type)) == 0)
 					{
@@ -100,13 +94,10 @@ backend_attr_create(const char* name, char* parent, bson_t* bson, char* key)
 		j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)parent));
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
-		{
 			file_key = sqlite3_column_int64(stmt, 0);
-		}
 		else
-		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		}
+		//TODO check exactly one row returned
 		sqlite3_finalize(stmt);
 	}
 	{ /*delete old attr first*/
@@ -224,8 +215,8 @@ backend_attr_open(const char* name, char* parent, bson_t* bson, char* key)
 static gboolean
 backend_attr_read(char* key, char* buf, guint offset, guint size)
 {
-	J_CRITICAL("%d", *((int*)key));
-	//TODO
+	read_type(*((sqlite3_int64*)key), buf, offset, size);
+	J_DEBUG("test-var-content %ld", *((guint64*)buf));
 	return TRUE;
 }
 static gboolean
@@ -234,7 +225,6 @@ backend_attr_write(char* key, const char* buf, guint offset, guint size)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 type_key;
-	J_DEBUG("test-var-content %ld", *((const guint64*)buf));
 	sqlite3_prepare_v2(backend_db, "SELECT type_key FROM smd WHERE key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)key));
 	ret = sqlite3_step(stmt);
@@ -243,6 +233,7 @@ backend_attr_write(char* key, const char* buf, guint offset, guint size)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
+	J_DEBUG("test-var-content %ld", *((guint64*)buf));
 	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0, 0);
 	return TRUE;
 }

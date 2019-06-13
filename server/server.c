@@ -668,7 +668,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-
 			reply = j_message_new_reply(message);
 			name = j_message_get_string(message);
 			parent = j_message_get_n(message, SMD_KEY_LENGTH);
@@ -699,7 +698,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			gint64 buf_offset;
 			gint64 buf_size;
 			char* buf;
-
 			reply = j_message_new_reply(message);
 			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
 			buf_offset = j_message_get_8(message);
@@ -707,6 +705,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			buf = g_malloc(buf_size);
 			if (j_backend_smd_attr_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
 			{
+				J_DEBUG("test-var-content %ld", *((guint64*)buf));
 				j_message_add_operation(reply, 8 + buf_size);
 				j_message_append_8(reply, &buf_size);
 				j_message_append_n(reply, buf, buf_size);
@@ -714,7 +713,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			else
 			{
 				gint64 zero = 0;
-
 				j_message_add_operation(reply, 8);
 				j_message_append_8(reply, &zero);
 			}

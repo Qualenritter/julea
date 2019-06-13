@@ -297,10 +297,21 @@ test_attribute_datatypes_read_write(void)
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
+
 	ret = j_smd_attr_read(attribute, test_var_rec, 0, sizeof(struct test_type_7) * array_len, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
+	J_DEBUG("test-var-content %ld");
+	for (i = 0; i < (array_len * sizeof(struct test_type_7)) / sizeof(guint32); i++)
+	{
+		if (((guint*)test_var)[i] != ((guint*)test_var_rec)[i])
+		{
+			J_DEBUG("difference %d %d %d : %x %x", i, (array_len * sizeof(struct test_type_7)) / sizeof(guint32), i * 4, ((guint*)test_var)[i], ((guint*)test_var_rec)[i]);
+		}
+	}
+
 	g_assert_cmpuint(memcmp(test_var, test_var_rec, sizeof(struct test_type_7) * array_len), ==, 0);
+
 	ret = j_smd_attr_close(attribute);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_attr_delete(attributename, file, batch);
