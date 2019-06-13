@@ -9,12 +9,8 @@ backend_dataset_delete(const char* name, char* parent)
 
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
-	ret = sqlite3_bind_text(stmt, 1, name, -1, NULL);
-	if (ret != SQLITE_OK)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	ret = sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
-	if (ret != SQLITE_OK)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	j_sqlite3_bind_text(stmt, 1, name, -1);
+	j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
 	{
@@ -26,9 +22,7 @@ backend_dataset_delete(const char* name, char* parent)
 	}
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE key = ?;", -1, &stmt, NULL);
-	ret = sqlite3_bind_int64(stmt, 1, result);
-	if (ret != SQLITE_OK)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	j_sqlite3_bind_int64(stmt, 1, result);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
 	{
@@ -109,9 +103,7 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 	}
 	{ // extract the file key
 		sqlite3_prepare_v2(backend_db, "SELECT file_key FROM smd WHERE key = ?;", -1, &stmt, NULL);
-		ret = sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)parent));
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)parent));
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
 		{
@@ -125,15 +117,9 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 	}
 	{ /*delete old dataset first*/
 		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
-		ret = sqlite3_bind_text(stmt, 1, name, -1, NULL);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 3, file_key);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		j_sqlite3_bind_text(stmt, 1, name, -1);
+		j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
+		j_sqlite3_bind_int64(stmt, 3, file_key);
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
 		{
@@ -148,39 +134,17 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 	{ // insert new dataset
 		sqlite3_prepare_v2(backend_db, "INSERT INTO smd (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key) VALUES (?,?,?,?,?,?,?,?,?,?,?);",
 			-1, &stmt, NULL);
-		ret = sqlite3_bind_text(stmt, 1, name, -1, NULL);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 2, SMD_METATYPE_DATA);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 3, *((sqlite3_int64*)parent));
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 4, file_key);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 5, var_ndims);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 6, var_dims[0]);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 7, var_dims[1]);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 8, var_dims[2]);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 9, var_dims[3]);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int(stmt, 10, distribution);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 11, type_key);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		j_sqlite3_bind_text(stmt, 1, name, -1);
+		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_DATA);
+		j_sqlite3_bind_int64(stmt, 3, *((sqlite3_int64*)parent));
+		j_sqlite3_bind_int64(stmt, 4, file_key);
+		j_sqlite3_bind_int(stmt, 5, var_ndims);
+		j_sqlite3_bind_int(stmt, 6, var_dims[0]);
+		j_sqlite3_bind_int(stmt, 7, var_dims[1]);
+		j_sqlite3_bind_int(stmt, 8, var_dims[2]);
+		j_sqlite3_bind_int(stmt, 9, var_dims[3]);
+		j_sqlite3_bind_int(stmt, 10, distribution);
+		j_sqlite3_bind_int64(stmt, 11, type_key);
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_DONE)
 		{
@@ -190,15 +154,9 @@ backend_dataset_create(const char* name, char* parent, bson_t* bson, char* key)
 	}
 	{ // extract the primary key
 		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
-		ret = sqlite3_bind_text(stmt, 1, name, -1, NULL);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		ret = sqlite3_bind_int64(stmt, 3, file_key);
-		if (ret != SQLITE_OK)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		j_sqlite3_bind_text(stmt, 1, name, -1);
+		j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
+		j_sqlite3_bind_int64(stmt, 3, file_key);
 		ret = sqlite3_step(stmt);
 		memset(key, 0, SMD_KEY_LENGTH);
 		if (ret == SQLITE_ROW)
@@ -231,12 +189,8 @@ backend_dataset_open(const char* name, char* parent, bson_t* bson, char* key)
 	bson_init(bson);
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key, ndims, dims0, dims1, dims2, dims3, distribution,type_key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
-	ret = sqlite3_bind_text(stmt, 1, name, -1, NULL);
-	if (ret != SQLITE_OK)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	ret = sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
-	if (ret != SQLITE_OK)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	j_sqlite3_bind_text(stmt, 1, name, -1);
+	j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt);
 	memset(key, 0, SMD_KEY_LENGTH);
 	if (ret == SQLITE_ROW)

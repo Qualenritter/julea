@@ -41,6 +41,49 @@ typedef enum J_SMD_Metadata_Type J_SMD_Metadata_Type;
 
 static sqlite3* backend_db;
 
+#define j_sqlite3_bind_null(stmt, idx)                                                                                       \
+	do                                                                                                                   \
+	{                                                                                                                    \
+		gint _ret_ = sqlite3_bind_null(stmt, idx);                                                                   \
+		if (_ret_ != SQLITE_OK)                                                                                      \
+			J_CRITICAL("sqlite3_bind_null errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
+#define j_sqlite3_bind_int64(stmt, idx, val)                                                                                  \
+	do                                                                                                                    \
+	{                                                                                                                     \
+		gint _ret_ = sqlite3_bind_int64(stmt, idx, val);                                                              \
+		if (_ret_ != SQLITE_OK)                                                                                       \
+			J_CRITICAL("sqlite3_bind_int64 errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
+#define j_sqlite3_bind_int(stmt, idx, val)                                                                                  \
+	do                                                                                                                  \
+	{                                                                                                                   \
+		gint _ret_ = sqlite3_bind_int(stmt, idx, val);                                                              \
+		if (_ret_ != SQLITE_OK)                                                                                     \
+			J_CRITICAL("sqlite3_bind_int errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
+#define j_sqlite3_bind_blob(stmt, idx, val, val_len)                                                                         \
+	do                                                                                                                   \
+	{                                                                                                                    \
+		gint _ret_ = sqlite3_bind_blob(stmt, idx, val, val_len, NULL);                                               \
+		if (_ret_ != SQLITE_OK)                                                                                      \
+			J_CRITICAL("sqlite3_bind_blob errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
+#define j_sqlite3_bind_double(stmt, idx, val)                                                                                  \
+	do                                                                                                                     \
+	{                                                                                                                      \
+		gint _ret_ = sqlite3_bind_double(stmt, idx, val);                                                              \
+		if (_ret_ != SQLITE_OK)                                                                                        \
+			J_CRITICAL("sqlite3_bind_double errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
+#define j_sqlite3_bind_text(stmt, idx, val, val_len)                                                                         \
+	do                                                                                                                   \
+	{                                                                                                                    \
+		gint _ret_ = sqlite3_bind_text(stmt, idx, val, val_len, NULL);                                               \
+		if (_ret_ != SQLITE_OK)                                                                                      \
+			J_CRITICAL("sqlite3_bind_text errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
+
 #include "sqlite-type.h"
 #include "sqlite-file.h"
 #include "sqlite-attribute.h"
