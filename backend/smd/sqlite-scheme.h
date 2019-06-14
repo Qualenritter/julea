@@ -41,7 +41,11 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 	bson_iter_t iter_data_dims;
 	guint i;
 	guint distribution;
-	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
+	{
+		char* _t = bson_as_json(bson, NULL);
+		J_DEBUG("%s %s", name, _t);
+		free(_t);
+	}
 	g_return_val_if_fail(name != NULL, FALSE);
 	bson_iter_init(&iter, bson);
 	var_ndims = 0;
@@ -190,7 +194,11 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, char* key)
 	bson_append_document_begin(bson, "data_type", -1, b_datatype);
 	load_type(b_datatype, type_key);
 	bson_append_document_end(bson, b_datatype);
-	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
+	{
+		char* _t = bson_as_json(bson, NULL);
+		J_DEBUG("%s %s", name, _t);
+		free(_t);
+	}
 	return TRUE;
 }
 static gboolean

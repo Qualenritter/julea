@@ -31,7 +31,11 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
+	{
+		char* _t = bson_as_json(bson, NULL);
+		J_DEBUG("%s %s", name, _t);
+		free(_t);
+	}
 	g_return_val_if_fail(name != NULL, FALSE);
 	{ /*delete old file first*/
 		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
@@ -107,6 +111,10 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	J_DEBUG("%s %s", name, bson_as_json(bson, NULL));
+	{
+		char* _t = bson_as_json(bson, NULL);
+		J_DEBUG("%s %s", name, _t);
+		free(_t);
+	}
 	return TRUE;
 }
