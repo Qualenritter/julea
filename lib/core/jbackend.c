@@ -124,8 +124,8 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 
 	if (type == J_BACKEND_TYPE_SMD)
 	{
-		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_attr_create == NULL || tmp_backend->smd.backend_attr_delete == NULL || tmp_backend->smd.backend_attr_open == NULL || tmp_backend->smd.backend_attr_read == NULL || tmp_backend->smd.backend_attr_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_dataset_create == NULL || tmp_backend->smd.backend_dataset_delete == NULL ||
-			tmp_backend->smd.backend_dataset_open == NULL)
+		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_scheme_read == NULL || tmp_backend->smd.backend_scheme_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_scheme_create == NULL || tmp_backend->smd.backend_scheme_delete == NULL ||
+			tmp_backend->smd.backend_scheme_open == NULL)
 		{
 			goto error;
 		}
@@ -548,53 +548,7 @@ j_backend_smd_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_smd_attr_create(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
-{
-	gboolean ret;
-
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(parent != NULL, FALSE);
-	g_return_val_if_fail(bson != NULL, FALSE);
-	g_return_val_if_fail(key != NULL, FALSE);
-	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
-	ret = backend->smd.backend_attr_create(name, parent, bson, key);
-	j_trace_leave(G_STRFUNC);
-	return ret;
-}
-gboolean
-j_backend_smd_attr_delete(JBackend* backend, const char* name, char* parent)
-{
-	gboolean ret;
-
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(parent != NULL, FALSE);
-	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
-	ret = backend->smd.backend_attr_delete(name, parent);
-	j_trace_leave(G_STRFUNC);
-	return ret;
-}
-gboolean
-j_backend_smd_attr_open(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
-{
-	gboolean ret;
-
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(parent != NULL, FALSE);
-	g_return_val_if_fail(bson != NULL, FALSE);
-	g_return_val_if_fail(key != NULL, FALSE);
-	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
-	ret = backend->smd.backend_attr_open(name, parent, bson, key);
-	j_trace_leave(G_STRFUNC);
-	return ret;
-}
-gboolean
-j_backend_smd_attr_read(JBackend* backend, char* key, char* buf, guint offset, guint size)
+j_backend_smd_scheme_read(JBackend* backend, char* key, char* buf, guint offset, guint size)
 {
 	gboolean ret;
 
@@ -603,12 +557,12 @@ j_backend_smd_attr_read(JBackend* backend, char* key, char* buf, guint offset, g
 	g_return_val_if_fail(key != NULL, FALSE);
 	g_return_val_if_fail(buf != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s", key);
-	ret = backend->smd.backend_attr_read(key, buf, offset, size);
+	ret = backend->smd.backend_scheme_read(key, buf, offset, size);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 gboolean
-j_backend_smd_attr_write(JBackend* backend, char* key, const char* buf, guint offset, guint size)
+j_backend_smd_scheme_write(JBackend* backend, char* key, const char* buf, guint offset, guint size)
 {
 	gboolean ret;
 
@@ -617,7 +571,7 @@ j_backend_smd_attr_write(JBackend* backend, char* key, const char* buf, guint of
 	g_return_val_if_fail(key != NULL, FALSE);
 	g_return_val_if_fail(buf != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s", key);
-	ret = backend->smd.backend_attr_write(key, buf, offset, size);
+	ret = backend->smd.backend_scheme_write(key, buf, offset, size);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }
@@ -665,7 +619,7 @@ j_backend_smd_file_open(JBackend* backend, const char* name, bson_t* bson, char*
 	return ret;
 }
 gboolean
-j_backend_smd_dataset_create(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
+j_backend_smd_scheme_create(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
 {
 	gboolean ret;
 
@@ -676,12 +630,12 @@ j_backend_smd_dataset_create(JBackend* backend, const char* name, char* parent, 
 	g_return_val_if_fail(key != NULL, FALSE);
 	g_return_val_if_fail(parent != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
-	ret = backend->smd.backend_dataset_create(name, parent, bson, key);
+	ret = backend->smd.backend_scheme_create(name, parent, bson, key);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 gboolean
-j_backend_smd_dataset_delete(JBackend* backend, const char* name, char* parent)
+j_backend_smd_scheme_delete(JBackend* backend, const char* name, char* parent)
 {
 	gboolean ret;
 
@@ -690,12 +644,12 @@ j_backend_smd_dataset_delete(JBackend* backend, const char* name, char* parent)
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(parent != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
-	ret = backend->smd.backend_dataset_delete(name, parent);
+	ret = backend->smd.backend_scheme_delete(name, parent);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 gboolean
-j_backend_smd_dataset_open(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
+j_backend_smd_scheme_open(JBackend* backend, const char* name, char* parent, bson_t* bson, char* key)
 {
 	gboolean ret;
 
@@ -706,7 +660,7 @@ j_backend_smd_dataset_open(JBackend* backend, const char* name, char* parent, bs
 	g_return_val_if_fail(key != NULL, FALSE);
 	g_return_val_if_fail(parent != NULL, FALSE);
 	j_trace_enter(G_STRFUNC, "%s %s", name, parent);
-	ret = backend->smd.backend_dataset_open(name, parent, bson, key);
+	ret = backend->smd.backend_scheme_open(name, parent, bson, key);
 	j_trace_leave(G_STRFUNC);
 	return ret;
 }

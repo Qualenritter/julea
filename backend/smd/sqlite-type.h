@@ -27,19 +27,19 @@ create_type(bson_iter_t* iter_data_type)
 	const char* var_name;
 	sqlite3_int64 header_key;
 	sqlite3_int64 subtype_key;
-	sqlite3_prepare_v2(backend_db, "INSERT INTO smd_type_header ( hash ) VALUES(0)", -1, &stmt, NULL); /*TODO something else here*/
+	sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_type_header ( hash ) VALUES(0)", -1, &stmt, NULL); /*TODO something else here*/
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_type_header WHERE hash = 0", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_scheme_type_header WHERE hash = 0", -1, &stmt, NULL);
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
 		header_key = sqlite3_column_int64(stmt, 0);
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "UPDATE smd_type_header SET hash = key where hash = 0", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "UPDATE smd_scheme_type_header SET hash = key where hash = 0", -1, &stmt, NULL);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
@@ -90,7 +90,7 @@ create_type(bson_iter_t* iter_data_type)
 						}
 					}
 				}
-				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_types ( header_key, name, type, offset, size, count, ndims, dims0, dims1, dims2, dims3, subtype_key) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12);", -1, &stmt, NULL);
+				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_type ( header_key, name, type, offset, size, count, ndims, dims0, dims1, dims2, dims3, subtype_key) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12);", -1, &stmt, NULL);
 				j_sqlite3_bind_int64(stmt, 1, header_key);
 				j_sqlite3_bind_text(stmt, 2, var_name, -1);
 				j_sqlite3_bind_int64(stmt, 3, var_type);
@@ -122,7 +122,7 @@ load_type(bson_t* b_datatype, sqlite3_int64 type_key)
 	char key_buf[16];
 	const char* _key;
 	guint i, j;
-	sqlite3_prepare_v2(backend_db, "SELECT name, type, offset, size, ndims, dims0, dims1, dims2, dims3, subtype_key FROM smd_types WHERE header_key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT name, type, offset, size, ndims, dims0, dims1, dims2, dims3, subtype_key FROM smd_scheme_type WHERE header_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, type_key);
 	bson_append_array_begin(b_datatype, "arr", -1, b_arr);
 	i = 0;
@@ -170,7 +170,7 @@ calculate_struct_size(sqlite3_int64 type_key)
 	guint i;
 	sqlite3_stmt* stmt;
 	guint struct_size;
-	sqlite3_prepare_v2(backend_db, "SELECT t.size, t.offset, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3 FROM smd_types t WHERE header_key = ?1 ORDER BY t.offset DESC LIMIT 1", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT t.size, t.offset, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3 FROM smd_scheme_type t WHERE header_key = ?1 ORDER BY t.offset DESC LIMIT 1", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, type_key);
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
@@ -193,7 +193,7 @@ get_type_structure(sqlite3_int64 type_key)
 	sqlite3_stmt* stmt;
 	J_SMD_Variable_t* var;
 	arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t*));
-	sqlite3_prepare_v2(backend_db, "SELECT t.type, t.offset, t.size, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3, t.subtype_key, t.key FROM smd_types t WHERE header_key = ?1 ORDER BY t.offset;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT t.type, t.offset, t.size, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3, t.subtype_key, t.key FROM smd_scheme_type t WHERE header_key = ?1 ORDER BY t.offset;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, type_key);
 	do
 	{
@@ -222,7 +222,7 @@ get_type_structure(sqlite3_int64 type_key)
 	return arr;
 }
 static gboolean
-write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint parent_offset)
+write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint parent_offset)
 {
 	gint64 value_int;
 	gdouble value_float;
@@ -259,8 +259,8 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 			for (j = 0; j < array_length; j++)
 			{
 				/*only write complete objects TODO maybe allow writing of half variables?*/
-				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_attributes (attribute_key, type_key, offset, value_int, value_float, value_text, value_blob) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
-				j_sqlite3_bind_int64(stmt, 1, attribute_key);
+				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
+				j_sqlite3_bind_int64(stmt, 1, scheme_key);
 				j_sqlite3_bind_int64(stmt, 2, (*((sqlite3_int64*)var->sub_type_key)));
 				j_sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);
 				location = buf + offset_local - buf_offset + parent_offset + j * var->size;
@@ -331,7 +331,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 					{
 						guint calc_offset;
 						calc_offset = location - buf;
-						write_type(*((sqlite3_int64*)var->sub_type_key), attribute_key, buf, buf_offset, buf_len, struct_size, parent_offset + calc_offset);
+						write_type(*((sqlite3_int64*)var->sub_type_key), scheme_key, buf, buf_offset, buf_len, struct_size, parent_offset + calc_offset);
 					}
 					break;
 				default:
@@ -348,17 +348,17 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 attribute_key, const char* buf,
 	return TRUE;
 }
 static gboolean
-read_type(sqlite3_int64 attribute_key, char* buf, guint buf_offset, guint buf_len)
+read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 {
 	sqlite3_stmt* stmt;
 	gint ret;
 	char* location;
 	guint64 offset;
 	sqlite3_prepare_v2(backend_db, "SELECT a.offset, a.value_int, a.value_float, a.value_blob, t.type, t.size " //
-				       "FROM smd_attributes a, smd_types t " //
-				       "WHERE a.attribute_key = ?1 AND t.key = a.type_key AND a.offset >= ?2 AND (a.offset + t.size) <= ?3",
+				       "FROM smd_scheme_data a, smd_scheme_type t " //
+				       "WHERE a.scheme_key = ?1 AND t.key = a.type_key AND a.offset >= ?2 AND (a.offset + t.size) <= ?3",
 		-1, &stmt, NULL);
-	j_sqlite3_bind_int64(stmt, 1, attribute_key);
+	j_sqlite3_bind_int64(stmt, 1, scheme_key);
 	j_sqlite3_bind_int64(stmt, 2, buf_offset);
 	j_sqlite3_bind_int64(stmt, 3, buf_offset + buf_len);
 	do

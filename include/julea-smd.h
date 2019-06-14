@@ -58,8 +58,9 @@ struct J_Metadata_t
 	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
 	bson_t* bson;
 	gboolean bson_requires_free; /*if bson requires gfree*/
-	JDistribution* distribution; /*only if dataset*/
-	JDistributedObject* object; /*only if dataset*/
+	JDistributionType distribution_type;
+	JDistribution* distribution; /*only if scheme*/
+	JDistributedObject* object; /*only if scheme*/
 };
 typedef struct J_Metadata_t J_Metadata_t;
 struct J_SMD_Space_t
@@ -89,28 +90,23 @@ struct J_SMD_Variable_t
 };
 typedef struct J_SMD_Variable_t J_SMD_Variable_t;
 
-void* j_smd_attr_create(const char* name, void* parent, void* data_type, void* space_type, JBatch* batch);
-gboolean j_smd_attr_delete(const char* name, void* parent, JBatch* batch);
-void* j_smd_attr_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_attr_read(void* attribute, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
-gboolean j_smd_attr_write(void* attribute, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
-gboolean j_smd_attr_close(void* attribute);
-void* j_smd_attr_get_type(void* attribute);
-void* j_smd_attr_get_space(void* attribute);
-
 void* j_smd_file_create(const char* name, JBatch* batch);
 gboolean j_smd_file_delete(const char* name, JBatch* batch);
 void* j_smd_file_open(const char* name, JBatch* batch);
 gboolean j_smd_file_close(void* file);
 
-void* j_smd_dataset_create(const char* name, void* parent, void* data_type, void* space_type, JDistributionType distribution, JBatch* batch);
-gboolean j_smd_dataset_delete(const char* name, void* parent, JBatch* batch);
-void* j_smd_dataset_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_dataset_read(void* dataset, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
-gboolean j_smd_dataset_write(void* dataset, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
-gboolean j_smd_dataset_close(void* dataset);
-void* j_smd_dataset_get_type(void* dataset);
-void* j_smd_dataset_get_space(void* dataset);
+void* j_smd_scheme_create(const char* name, void* parent, void* data_type, void* space_type, JDistributionType distribution, JBatch* batch);
+gboolean j_smd_scheme_delete(const char* name, void* parent, JBatch* batch);
+void* j_smd_scheme_open(const char* name, void* parent, JBatch* batch);
+gboolean j_smd_scheme_close(void* scheme);
+void* j_smd_scheme_get_type(void* scheme);
+void* j_smd_scheme_get_space(void* scheme);
+
+gboolean j_smd_scheme_read(void* scheme, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
+gboolean j_smd_scheme_write(void* scheme, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
+
+gboolean j_smd_dataset_read(void* scheme, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
+gboolean j_smd_dataset_write(void* scheme, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
 
 void* j_smd_space_create(guint ndims, guint* dims);
 gboolean j_smd_space_get(void* space_type, guint* ndims, guint** dims);
@@ -151,8 +147,6 @@ gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_
 gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
-void* j_smd_get_type(void* matedata);
-void* j_smd_get_space(void* metadata);
 bson_t* j_smd_space_to_bson(void* space);
 void* j_smd_space_from_bson(bson_iter_t* bson);
 bson_t* j_smd_type_to_bson(void* type);

@@ -43,23 +43,3 @@ j_smd_is_initialized(void* data)
 	J_Metadata_t* mdata = data;
 	return j_is_key_initialized(mdata->key);
 }
-void*
-j_smd_get_type(void* _dataset)
-{
-	J_Metadata_t* dataset = _dataset;
-	bson_iter_t b_iter;
-	bson_iter_t b_dataset;
-	if (bson_iter_init(&b_iter, dataset->bson) && bson_iter_find_descendant(&b_iter, "data_type", &b_dataset) && BSON_ITER_HOLDS_DOCUMENT(&b_dataset))
-		return j_smd_type_from_bson(&b_dataset);
-	return NULL;
-}
-void*
-j_smd_get_space(void* _dataset)
-{
-	J_Metadata_t* dataset = _dataset;
-	bson_iter_t b_iter;
-	bson_iter_t b_dataset;
-	if (bson_iter_init(&b_iter, dataset->bson) && bson_iter_find_descendant(&b_iter, "space_type", &b_dataset) && BSON_ITER_HOLDS_DOCUMENT(&b_dataset))
-		return j_smd_space_from_bson(&b_dataset);
-	return NULL;
-}

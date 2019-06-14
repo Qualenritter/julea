@@ -77,8 +77,7 @@ static sqlite3* backend_db;
 	} while (0)
 #include "sqlite-type.h"
 #include "sqlite-file.h"
-#include "sqlite-attribute.h"
-#include "sqlite-dataset.h"
+#include "sqlite-scheme.h"
 static gboolean
 backend_init(gchar const* path)
 {
@@ -90,26 +89,26 @@ backend_init(gchar const* path)
 	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
 		goto error;
 	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd (" //
+		    "CREATE TABLE IF NOT EXISTS smd_schemes (" //
 		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //
 		    "parent_key INTEGER, " // reference to parent
 		    "file_key INTEGER, " // reference to file for fast delete|fetch
-		    "name TEXT NOT NULL, " // name of attribute|file|dataset
-		    "meta_type BIGINT," // file|dataset|attribute
+		    "name TEXT NOT NULL, " // name of |file|scheme
+		    "meta_type BIGINT," // file|scheme
 		    "type_key," //the key in the smd_type_header table
 		    "ndims BIGINT," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
 		    "dims0 BIGINT," // number of dimension[0]
 		    "dims1 BIGINT," // number of dimension[1]
 		    "dims2 BIGINT," // number of dimension[2]
 		    "dims3 BIGINT," // number of dimension[3]
-		    "distribution BIGINT" // only valid for datasets
+		    "distribution BIGINT" //if this is stored within DB or the distribution in the object store
 		    ");",
 		    NULL,
 		    NULL,
 		    NULL) != SQLITE_OK)
 		goto error;
 	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd_type_header (" //
+		    "CREATE TABLE IF NOT EXISTS smd_scheme_type_header (" //
 		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //used to reserve unique ids for subtypes
 		    "hash BIGINT" // for reuseing it
 		    ");", /*TODO add hash or sth to reuse existing ones*/
@@ -118,7 +117,7 @@ backend_init(gchar const* path)
 		    NULL) != SQLITE_OK)
 		goto error;
 	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd_types (" //
+		    "CREATE TABLE IF NOT EXISTS smd_scheme_type (" //
 		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //
 		    "header_key INTEGER, " // identify variables belonging together
 		    "subtype_key INTEGER, " // reference to subtype if required
@@ -138,10 +137,10 @@ backend_init(gchar const* path)
 		    NULL) != SQLITE_OK)
 		goto error;
 	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd_attributes (" //
-		    "attribute_key INTEGER, " //identiy which attribute belongs to this variable
-		    "type_key INTEGER, " //identify the type whithin attribute
-		    "offset BIGINT, " //offset within attribute
+		    "CREATE TABLE IF NOT EXISTS smd_scheme_data (" //
+		    "scheme_key INTEGER, " //identiy which scheme belongs to this variable
+		    "type_key INTEGER, " //identify the type whithin scheme
+		    "offset BIGINT, " //offset within scheme
 		    "value_int BIGINT, " //value
 		    "value_float FLOAT, " //value
 		    "value_text TEXT, " //value
@@ -171,17 +170,14 @@ static JBackend sqlite_backend = { .type = J_BACKEND_TYPE_SMD, //
 	.smd = { //
 		.backend_init = backend_init, //
 		.backend_fini = backend_fini, //
-		.backend_attr_create = backend_attr_create, //
-		.backend_attr_delete = backend_attr_delete, //
-		.backend_attr_open = backend_attr_open, //
-		.backend_attr_read = backend_attr_read, //
-		.backend_attr_write = backend_attr_write, //
+		.backend_scheme_read = backend_scheme_read, //
+		.backend_scheme_write = backend_scheme_write, //
 		.backend_file_create = backend_file_create, //
 		.backend_file_delete = backend_file_delete, //
 		.backend_file_open = backend_file_open, //
-		.backend_dataset_create = backend_dataset_create, //
-		.backend_dataset_delete = backend_dataset_delete, //
-		.backend_dataset_open = backend_dataset_open } };
+		.backend_scheme_create = backend_scheme_create, //
+		.backend_scheme_delete = backend_scheme_delete, //
+		.backend_scheme_open = backend_scheme_open } };
 G_MODULE_EXPORT
 JBackend*
 backend_info(void)

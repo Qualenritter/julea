@@ -100,17 +100,14 @@ struct JBackend
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
 
-			gboolean (*backend_attr_create)(const char* name, char* parent, bson_t* bson, char* key);
-			gboolean (*backend_attr_delete)(const char* name, char* parent);
-			gboolean (*backend_attr_open)(const char* name, char* parent, bson_t* bson, char* key);
-			gboolean (*backend_attr_read)(char* key, char* buf, guint offset, guint size);
-			gboolean (*backend_attr_write)(char* key, const char* buf, guint offset, guint size);
+			gboolean (*backend_scheme_read)(char* key, char* buf, guint offset, guint size);
+			gboolean (*backend_scheme_write)(char* key, const char* buf, guint offset, guint size);
 			gboolean (*backend_file_create)(const char* name, bson_t* bson, char* key);
 			gboolean (*backend_file_delete)(const char* name);
 			gboolean (*backend_file_open)(const char* name, bson_t* bson, char* key);
-			gboolean (*backend_dataset_create)(const char* name, char* parent, bson_t* bson, char* key);
-			gboolean (*backend_dataset_open)(const char* name, char* parent, bson_t* bson, char* key);
-			gboolean (*backend_dataset_delete)(const char* name, char* parent);
+			gboolean (*backend_scheme_create)(const char* name, char* parent, bson_t* bson, char* key);
+			gboolean (*backend_scheme_open)(const char* name, char* parent, bson_t* bson, char* key);
+			gboolean (*backend_scheme_delete)(const char* name, char* parent);
 		} smd;
 	};
 };
@@ -153,17 +150,14 @@ gboolean j_backend_kv_iterate(JBackend*, gpointer, gconstpointer*, guint32*);
 
 gboolean j_backend_smd_init(JBackend* backend, gchar const*);
 void j_backend_smd_fini(JBackend* backend);
-gboolean j_backend_smd_attr_create(JBackend*, const char* name, char* parent, bson_t* bson, char* key);
-gboolean j_backend_smd_attr_delete(JBackend*, const char* name, char* parent);
-gboolean j_backend_smd_attr_open(JBackend*, const char* name, char* parent, bson_t* bson, char* key);
-gboolean j_backend_smd_attr_read(JBackend*, char* key, char* buf, guint offset, guint size);
-gboolean j_backend_smd_attr_write(JBackend*, char* key, const char* buf, guint offset, guint size);
+gboolean j_backend_smd_scheme_read(JBackend*, char* key, char* buf, guint offset, guint size);
+gboolean j_backend_smd_scheme_write(JBackend*, char* key, const char* buf, guint offset, guint size);
 gboolean j_backend_smd_file_create(JBackend*, const char* name, bson_t* bson, char* key);
 gboolean j_backend_smd_file_delete(JBackend*, const char* name);
 gboolean j_backend_smd_file_open(JBackend*, const char* name, bson_t* bson, char* key);
-gboolean j_backend_smd_dataset_create(JBackend*, const char* name, char* parent, bson_t* bson, char* key);
-gboolean j_backend_smd_dataset_open(JBackend*, const char* name, char* parent, bson_t* bson, char* key);
-gboolean j_backend_smd_dataset_delete(JBackend*, const char* name, char* parent);
+gboolean j_backend_smd_scheme_create(JBackend*, const char* name, char* parent, bson_t* bson, char* key);
+gboolean j_backend_smd_scheme_open(JBackend*, const char* name, char* parent, bson_t* bson, char* key);
+gboolean j_backend_smd_scheme_delete(JBackend*, const char* name, char* parent);
 G_END_DECLS
 
 #endif

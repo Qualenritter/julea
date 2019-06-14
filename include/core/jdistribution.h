@@ -37,7 +37,8 @@ enum JDistributionType
 {
 	J_DISTRIBUTION_ROUND_ROBIN,
 	J_DISTRIBUTION_SINGLE_SERVER,
-	J_DISTRIBUTION_WEIGHTED
+	J_DISTRIBUTION_WEIGHTED,
+	J_DISTRIBUTION_DATABASE /*only for smd - TODO cleanup?*/
 };
 
 typedef enum JDistributionType JDistributionType;

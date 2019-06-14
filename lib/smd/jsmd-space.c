@@ -32,23 +32,23 @@ j_smd_space_to_bson(void* _space)
 	J_SMD_Space_t* space = _space;
 	char key_buf[16];
 	const char* key;
-	bson_t* b_attr_space;
-	bson_t b_attr_space_dims[1];
+	bson_t* b_space;
+	bson_t b_space_dims[1];
 	guint i;
 	j_trace_enter(G_STRFUNC, NULL);
-	b_attr_space = g_new(bson_t, 1);
-	bson_init(b_attr_space);
-	bson_append_int32(b_attr_space, "ndims", -1, space->ndims);
-	bson_append_array_begin(b_attr_space, "dims", -1, b_attr_space_dims);
+	b_space = g_new(bson_t, 1);
+	bson_init(b_space);
+	bson_append_int32(b_space, "ndims", -1, space->ndims);
+	bson_append_array_begin(b_space, "dims", -1, b_space_dims);
 	for (i = 0; i < space->ndims; i++)
 	{
 		bson_uint32_to_string(i, &key, key_buf, sizeof(key_buf));
-		bson_append_int32(b_attr_space_dims, key, -1, space->dims[i]);
+		bson_append_int32(b_space_dims, key, -1, space->dims[i]);
 	}
-	bson_append_array_end(b_attr_space, b_attr_space_dims);
-	bson_destroy(b_attr_space_dims);
+	bson_append_array_end(b_space, b_space_dims);
+	bson_destroy(b_space_dims);
 	j_trace_leave(G_STRFUNC);
-	return b_attr_space;
+	return b_space;
 }
 void*
 j_smd_space_from_bson(bson_iter_t* bson)

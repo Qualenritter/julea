@@ -24,14 +24,12 @@
 void test_smd_space(void);
 void test_smd_type(void);
 void test_smd_file(void);
-void test_smd_dataset(void);
-void test_smd_attribute(void);
+void test_smd_scheme(void);
 void
 test_smd(void)
 {
 	test_smd_space();
 	test_smd_type();
 	test_smd_file();
-	test_smd_dataset();
-	test_smd_attribute();
+	test_smd_scheme();
 }

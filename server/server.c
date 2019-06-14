@@ -609,89 +609,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
-		case J_MESSAGE_SMD_ATTR_CREATE:
-		{
-			g_autoptr(JMessage) reply = NULL;
-			const char* name;
-			char* parent;
-			uint8_t* bson_data;
-			int bson_len;
-			char _key[SMD_KEY_LENGTH];
-			bson_t bson[1];
-
-			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			bson_len = j_message_get_4(message);
-			bson_data = j_message_get_n(message, bson_len);
-			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			bson_init_static(bson, bson_data, bson_len);
-			if (j_backend_smd_attr_create(jd_smd_backend, name, parent, bson, _key))
-			{
-				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-			}
-			else
-			{
-				char buf[SMD_KEY_LENGTH];
-
-				memset(buf, 0, SMD_KEY_LENGTH);
-				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
-			}
-			bson_destroy(bson);
-			j_message_send(reply, connection);
-		}
-		break;
-
-		case J_MESSAGE_SMD_ATTR_DELETE:
-		{
-			g_autoptr(JMessage) reply = NULL;
-			const char* name;
-			char* parent;
-			char buf[SMD_KEY_LENGTH];
-
-			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			j_backend_smd_attr_delete(jd_smd_backend, name, parent);
-			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			memset(buf, 0, SMD_KEY_LENGTH);
-			j_message_append_n(reply, buf, SMD_KEY_LENGTH);
-			j_message_send(reply, connection);
-		}
-		break;
-
-		case J_MESSAGE_SMD_ATTR_OPEN:
-		{
-			g_autoptr(JMessage) reply = NULL;
-			const char* name;
-			char* parent;
-			int bson_len;
-			char _key[SMD_KEY_LENGTH];
-			bson_t bson[1];
-			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			if (j_backend_smd_attr_open(jd_smd_backend, name, parent, bson, _key))
-			{
-				bson_len = bson->len;
-				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
-				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-				j_message_append_4(reply, &bson_len);
-				j_message_append_n(reply, bson_get_data(bson), bson_len);
-			}
-			else
-			{
-				char buf[SMD_KEY_LENGTH];
-
-				memset(buf, 0, SMD_KEY_LENGTH);
-				j_message_add_operation(reply, SMD_KEY_LENGTH);
-				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
-			}
-			bson_destroy(bson);
-			j_message_send(reply, connection);
-		}
-		break;
-		case J_MESSAGE_SMD_ATTR_READ:
+		case J_MESSAGE_SMD_SCHEME_READ:
 		{
 			g_autoptr(JMessage) reply = NULL;
 			char _key[SMD_KEY_LENGTH];
@@ -703,7 +621,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			buf_offset = j_message_get_8(message);
 			buf_size = j_message_get_8(message);
 			buf = g_malloc(buf_size);
-			if (j_backend_smd_attr_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
+			if (j_backend_smd_scheme_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
 			{
 				J_DEBUG("test-var-content %ld", *((guint64*)buf));
 				j_message_add_operation(reply, 8 + buf_size);
@@ -720,7 +638,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
-		case J_MESSAGE_SMD_ATTR_WRITE:
+		case J_MESSAGE_SMD_SCHEME_WRITE:
 		{
 			g_autoptr(JMessage) reply = NULL;
 			char _key[SMD_KEY_LENGTH];
@@ -733,7 +651,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			buf_size = j_message_get_8(message);
 			buf = j_message_get_n(message, buf_size);
 			J_DEBUG("test-var-content %ld", *((const guint64*)buf));
-			j_backend_smd_attr_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
+			j_backend_smd_scheme_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
 			j_message_add_operation(reply, 8);
 			j_message_append_8(reply, &buf_size);
 			j_message_send(reply, connection);
@@ -813,7 +731,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
-		case J_MESSAGE_SMD_DATASET_CREATE:
+		case J_MESSAGE_SMD_SCHEME_CREATE:
 		{
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
@@ -830,7 +748,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			bson_data = j_message_get_n(message, bson_len);
 			bson_init_static(bson, bson_data, bson_len);
 			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			if (j_backend_smd_dataset_create(jd_smd_backend, name, parent, bson, _key))
+			if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, bson, _key))
 			{
 				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
 			}
@@ -846,7 +764,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		}
 		break;
 
-		case J_MESSAGE_SMD_DATASET_DELETE:
+		case J_MESSAGE_SMD_SCHEME_DELETE:
 		{
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
@@ -855,13 +773,13 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			reply = j_message_new_reply(message);
 			name = j_message_get_string(message);
 			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			j_backend_smd_dataset_delete(jd_smd_backend, name, parent);
+			j_backend_smd_scheme_delete(jd_smd_backend, name, parent);
 			j_message_add_operation(reply, 0);
 			j_message_send(reply, connection);
 		}
 		break;
 
-		case J_MESSAGE_SMD_DATASET_OPEN:
+		case J_MESSAGE_SMD_SCHEME_OPEN:
 		{
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
@@ -873,7 +791,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			reply = j_message_new_reply(message);
 			name = j_message_get_string(message);
 			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			if (j_backend_smd_dataset_open(jd_smd_backend, name, parent, bson, _key))
+			if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, bson, _key))
 			{
 				bson_len = bson->len;
 				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
