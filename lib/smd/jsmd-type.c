@@ -290,11 +290,11 @@ j_smd_type_unref(void* _type)
 {
 	guint i;
 	J_SMD_Type_t* type = _type;
-	g_atomic_int_inc(&(type->ref_count));
 	if (g_atomic_int_dec_and_test(&(type->ref_count)))
 	{
 		for (i = 0; i < type->arr->len; i++)
 			j_smd_variable_unref(g_array_index(type->arr, J_SMD_Variable_t*, i));
+		g_free(type);
 	}
 	return TRUE;
 }

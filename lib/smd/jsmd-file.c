@@ -289,7 +289,6 @@ gboolean
 j_smd_file_unref(void* _file)
 {
 	J_Scheme_t* file = _file;
-	g_atomic_int_inc(&(file->ref_count));
 	if (g_atomic_int_dec_and_test(&(file->ref_count)))
 	{
 		if (file->bson)
