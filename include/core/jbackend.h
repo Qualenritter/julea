@@ -99,7 +99,6 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
-
 			gboolean (*backend_scheme_read)(char* key, char* buf, guint offset, guint size);
 			gboolean (*backend_scheme_write)(char* key, const char* buf, guint offset, guint size);
 			gboolean (*backend_file_create)(const char* name, bson_t* bson, char* key);

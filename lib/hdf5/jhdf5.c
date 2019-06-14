@@ -122,8 +122,8 @@ hdf5_type_import(bson_t* bson, hid_t* type_id)
 static void*
 H5VL_julea_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name, hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id, hid_t dxpl_id, void** req)
 {
-	J_Metadata_t* parent = (J_Metadata_t*)obj;
-	J_Metadata_t* attr;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* attr;
 	bson_t* b_type;
 	bson_t* b_space;
 	g_autoptr(JBatch) batch = NULL;
@@ -136,7 +136,7 @@ H5VL_julea_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const cha
 	b_space = hdf5_space_export(space_id);
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	attr = j_smd_attr_create(attr_name, parent, b_type, b_space, batch);
+	attr = j_smd_scheme_create(attr_name, parent, b_type, b_space, J_DISTRIBUTION_DATABASE,batch);
 	j_batch_execute(batch);
 
 	bson_destroy(b_type);
@@ -156,15 +156,15 @@ H5VL_julea_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const cha
 static void*
 H5VL_julea_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name, hid_t aapl_id, hid_t dxpl_id, void** req)
 {
-	J_Metadata_t* parent = (J_Metadata_t*)obj;
-	J_Metadata_t* attr;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* attr;
 	g_autoptr(JBatch) batch = NULL;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
-	attr = j_smd_attr_open(attr_name, parent, batch);
+	attr = j_smd_scheme_open(attr_name, parent, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return attr;
@@ -177,14 +177,14 @@ static herr_t
 H5VL_julea_attr_read(void* _attr, hid_t dtype_id __attribute__((unused)), void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* attr = (J_Metadata_t*)_attr;
-
+	J_Scheme_t* attr = (J_Scheme_t*)_attr;
+guint size=0;/*TODO calculate it correctly*/
 	if (!j_is_key_initialized(attr->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	j_smd_attr_read(attr, buf, batch);
+	j_smd_scheme_read(attr, buf,0,size, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
@@ -198,13 +198,13 @@ static herr_t
 H5VL_julea_attr_write(void* _attr, hid_t dtype_id __attribute__((unused)), const void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* attr = (J_Metadata_t*)_attr;
-
+	J_Scheme_t* attr = (J_Scheme_t*)_attr;
+guint size=0;/*TODO calculate it correctly*/
 	if (!j_is_key_initialized(attr->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
-	j_smd_attr_write(attr, buf, batch);
+	j_smd_scheme_write(attr, buf,0,size, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
@@ -219,7 +219,7 @@ H5VL_julea_attr_write(void* _attr, hid_t dtype_id __attribute__((unused)), const
 static herr_t
 H5VL_julea_attr_get(void* _attr, H5VL_attr_get_t get_type, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)), va_list arguments)
 {
-	J_Metadata_t* attr = (J_Metadata_t*)_attr;
+	J_Scheme_t* attr = (J_Scheme_t*)_attr;
 
 	if (!j_is_key_initialized(attr->key))
 		return 1;
@@ -259,11 +259,11 @@ H5VL_julea_attr_get(void* _attr, H5VL_attr_get_t get_type, hid_t dxpl_id __attri
 static herr_t
 H5VL_julea_attr_close(void* _attr, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
-	J_Metadata_t* attr = (J_Metadata_t*)_attr;
+	J_Scheme_t* attr = (J_Scheme_t*)_attr;
 	if (!j_is_key_initialized(attr->key))
 		return 1;
 	j_trace_enter(G_STRFUNC, NULL);
-	j_smd_attr_close(attr);
+	j_smd_scheme_close(attr);
 	j_trace_leave(G_STRFUNC);
 	return 0;
 }
@@ -276,7 +276,7 @@ H5VL_julea_attr_close(void* _attr, hid_t dxpl_id __attribute__((unused)), void**
 static void*
 H5VL_julea_file_create(const char* fname, unsigned flags __attribute__((unused)), hid_t fcpl_id __attribute__((unused)), hid_t fapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
-	J_Metadata_t* file;
+	J_Scheme_t* file;
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	file = j_smd_file_create(fname, batch);
@@ -294,7 +294,7 @@ static void*
 H5VL_julea_file_open(const char* fname, unsigned flags __attribute__((unused)), hid_t fapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* file;
+	J_Scheme_t* file;
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
@@ -312,7 +312,7 @@ static herr_t
 H5VL_julea_file_close(void* _file, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* file = (J_Metadata_t*)_file;
+	J_Scheme_t* file = (J_Scheme_t*)_file;
 	if (!j_is_key_initialized(file->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -332,15 +332,15 @@ static void*
 H5VL_julea_group_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t gcpl_id __attribute__((unused)), hid_t gapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* parent = (J_Metadata_t*)obj;
-	J_Metadata_t* attr;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* attr;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	attr = j_smd_attr_create(name, parent, NULL, NULL, batch);
+	attr = j_smd_scheme_create(name, parent, NULL, NULL, J_DISTRIBUTION_DATABASE,batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
@@ -356,8 +356,8 @@ static void*
 H5VL_julea_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t gapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* parent = (J_Metadata_t*)obj;
-	J_Metadata_t* attr;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* attr;
 
 	int bson_len;
 	char* bson_buf;
@@ -367,7 +367,7 @@ H5VL_julea_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	attr = j_smd_attr_open(name, parent, batch);
+	attr = j_smd_scheme_open(name, parent, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return attr;
@@ -380,7 +380,7 @@ static herr_t
 H5VL_julea_group_close(void* grp, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* attr = (J_Metadata_t*)grp;
+	J_Scheme_t* attr = (J_Scheme_t*)grp;
 
 	if (!j_is_key_initialized(attr->key))
 		return 1;
@@ -405,8 +405,8 @@ H5VL_julea_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 
 	bson_t* b_type;
 	bson_t* b_space;
-	J_Metadata_t* parent = (J_Metadata_t*)obj;
-	J_Metadata_t* dataset;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* dataset;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
@@ -415,7 +415,7 @@ H5VL_julea_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	b_type = hdf5_type_export(type_id);
 	b_space = hdf5_space_export(space_id);
 
-	dataset = j_smd_dataset_create(name, parent, b_type, b_space, J_DISTRIBUTION_ROUND_ROBIN, batch);
+	dataset = j_smd_scheme_create(name, parent, b_type, b_space, J_DISTRIBUTION_ROUND_ROBIN, batch);
 	j_batch_execute(batch);
 	bson_destroy(b_type);
 	bson_destroy(b_space);
@@ -435,14 +435,14 @@ static void*
 H5VL_julea_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t dapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* parent = (J_Metadata_t*)obj;
-	J_Metadata_t* dataset;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* dataset;
 
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	j_trace_enter(G_STRFUNC, NULL);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	dataset = j_smd_dataset_open(name, parent, batch);
+	dataset = j_smd_scheme_open(name, parent, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 	return dataset;
@@ -455,7 +455,7 @@ static herr_t
 H5VL_julea_dataset_read(void* _dataset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), void* buf, void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* dataset = (J_Metadata_t*)_dataset;
+	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
 	guint64 bytes_read;
 
 	j_trace_enter(G_STRFUNC, NULL);
@@ -484,7 +484,7 @@ static herr_t
 H5VL_julea_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), const void* buf, void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* dataset = (J_Metadata_t*)dset;
+	J_Scheme_t* dataset = (J_Scheme_t*)dset;
 	guint64 bytes_written;
 
 	j_trace_enter(G_STRFUNC, NULL);
@@ -512,7 +512,7 @@ static herr_t
 H5VL_julea_dataset_get(void* _dataset, H5VL_dataset_get_t get_type, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)), va_list arguments)
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Metadata_t* dataset = (J_Metadata_t*)_dataset;
+	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
 
 	if (!j_is_key_initialized(dataset->key))
 		return 1;
@@ -552,13 +552,13 @@ H5VL_julea_dataset_get(void* _dataset, H5VL_dataset_get_t get_type, hid_t dxpl_i
 static herr_t
 H5VL_julea_dataset_close(void* _dataset, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
-	J_Metadata_t* dataset = (J_Metadata_t*)_dataset;
+	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
 
 	if (!j_is_key_initialized(dataset->key))
 		return 1;
 	j_trace_enter(G_STRFUNC, NULL);
 
-	j_smd_dataset_close(dataset);
+	j_smd_scheme_close(dataset);
 	j_trace_leave(G_STRFUNC);
 	return 0;
 }
