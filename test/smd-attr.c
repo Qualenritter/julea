@@ -47,25 +47,25 @@ test_attribute_create_destroy_single(void)
 	g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
 	for (i = 0; i < n; i++)
 	{
-		attribute = j_smd_attr_create(attributename, file, type, space, batch);
+		attribute = j_smd_dataset_create(attributename, file, type, space, J_DISTRIBUTION_ROUND_ROBIN,batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(attribute);
-		ret = j_smd_attr_close(attribute);
+		ret = j_smd_dataset_close(attribute);
 		g_assert_cmpuint(ret, !=, FALSE);
-		attribute = j_smd_attr_open(attributename, file, batch);
+		attribute = j_smd_dataset_open(attributename, file, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(attribute);
 		g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
-		ret = j_smd_attr_close(attribute);
+		ret = j_smd_dataset_close(attribute);
 		g_assert_cmpuint(ret, !=, FALSE);
-		ret = j_smd_attr_delete(attributename, file, batch);
+		ret = j_smd_dataset_delete(attributename, file, batch);
 		g_assert_cmpuint(ret, !=, FALSE);
 		j_batch_execute(batch);
-		attribute = j_smd_attr_open(attributename, file, batch);
+		attribute = j_smd_dataset_open(attributename, file, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(attribute);
 		g_assert_cmpuint(j_smd_is_initialized(attribute), ==, FALSE);
-		ret = j_smd_attr_close(attribute);
+		ret = j_smd_dataset_close(attribute);
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 	ret = j_smd_file_close(file);
@@ -104,29 +104,29 @@ test_attribute_create_destroy_many(void)
 	for (i = 0; i < n; i++)
 	{
 		sprintf(attributename, "attributename_%d", i);
-		attribute = j_smd_attr_create(attributename, file, type, space, batch);
+		attribute = j_smd_dataset_create(attributename, file, type, space, J_DISTRIBUTION_ROUND_ROBIN,batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(attribute);
-		ret = j_smd_attr_close(attribute);
+		ret = j_smd_dataset_close(attribute);
 		g_assert_cmpuint(ret, !=, FALSE);
 		j_batch_execute(batch);
-		attribute = j_smd_attr_open(attributename, file, batch);
+		attribute = j_smd_dataset_open(attributename, file, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(attribute);
 		g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
-		ret = j_smd_attr_close(attribute);
+		ret = j_smd_dataset_close(attribute);
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 	for (i = 0; i < n; i++)
 	{
 		sprintf(attributename, "attributename_%d", i);
-		j_smd_attr_delete(attributename, file, batch);
+		j_smd_dataset_delete(attributename, file, batch);
 		j_batch_execute(batch);
-		attribute = j_smd_attr_open(attributename, file, batch);
+		attribute = j_smd_dataset_open(attributename, file, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(attribute);
 		g_assert_cmpuint(j_smd_is_initialized(attribute), ==, FALSE);
-		ret = j_smd_attr_close(attribute);
+		ret = j_smd_dataset_close(attribute);
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 	ret = j_smd_file_close(file);
@@ -179,31 +179,31 @@ test_attribute_datatypes(void)
 	{
 		for (j = 0; j < spaces_count; j++)
 		{
-			attribute = j_smd_attr_create(attributename, file, types[i], spaces[j], batch);
+			attribute = j_smd_dataset_create(attributename, file, types[i], spaces[j],J_DISTRIBUTION_ROUND_ROBIN, batch);
 			j_batch_execute(batch);
 			g_assert_nonnull(attribute);
 			g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
-			type = j_smd_attr_get_type(attribute);
+			type = j_smd_dataset_get_type(attribute);
 			g_assert_cmpuint(j_smd_type_equals(types[i], type), !=, FALSE);
 			j_smd_type_free(type);
-			space = j_smd_attr_get_space(attribute);
+			space = j_smd_dataset_get_space(attribute);
 			g_assert_cmpuint(j_smd_space_equals(spaces[j], space), !=, FALSE);
 			j_smd_space_free(space);
-			ret = j_smd_attr_close(attribute);
+			ret = j_smd_dataset_close(attribute);
 			g_assert_cmpuint(ret, !=, FALSE);
-			attribute = j_smd_attr_open(attributename, file, batch);
+			attribute = j_smd_dataset_open(attributename, file, batch);
 			j_batch_execute(batch);
-			type = j_smd_attr_get_type(attribute);
+			type = j_smd_dataset_get_type(attribute);
 			g_assert_cmpuint(j_smd_type_equals(types[i], type), !=, FALSE);
 			j_smd_type_free(type);
-			space = j_smd_attr_get_space(attribute);
+			space = j_smd_dataset_get_space(attribute);
 			g_assert_cmpuint(j_smd_space_equals(spaces[j], space), !=, FALSE);
 			j_smd_space_free(space);
 			g_assert_nonnull(attribute);
 			g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
-			ret = j_smd_attr_close(attribute);
+			ret = j_smd_dataset_close(attribute);
 			g_assert_cmpuint(ret, !=, FALSE);
-			ret = j_smd_attr_delete(attributename, file, batch);
+			ret = j_smd_dataset_delete(attributename, file, batch);
 			g_assert_cmpuint(ret, !=, FALSE);
 			j_batch_execute(batch);
 		}
@@ -266,16 +266,16 @@ test_attribute_datatypes_read_write(void)
 	space = j_smd_space_create(1, &array_len);
 	///
 	type = types[7];
-	attribute = j_smd_attr_create(attributename, file, type, space, batch);
+	attribute = j_smd_dataset_create(attributename, file, type, space, J_DISTRIBUTION_ROUND_ROBIN,batch);
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
 	ret = j_smd_attr_write(attribute, test_var, 0, sizeof(struct test_type_7) * array_len, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
-	ret = j_smd_attr_close(attribute);
+	ret = j_smd_dataset_close(attribute);
 	g_assert_cmpuint(ret, !=, FALSE);
-	attribute = j_smd_attr_open(attributename, file, batch);
+	attribute = j_smd_dataset_open(attributename, file, batch);
 	j_batch_execute(batch);
 	g_assert_nonnull(attribute);
 	g_assert_cmpuint(j_smd_is_initialized(attribute), !=, FALSE);
@@ -283,9 +283,9 @@ test_attribute_datatypes_read_write(void)
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
 	g_assert_cmpuint(memcmp(test_var, test_var_rec, sizeof(struct test_type_7) * array_len), ==, 0);
-	ret = j_smd_attr_close(attribute);
+	ret = j_smd_dataset_close(attribute);
 	g_assert_cmpuint(ret, !=, FALSE);
-	ret = j_smd_attr_delete(attributename, file, batch);
+	ret = j_smd_dataset_delete(attributename, file, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
 	for (i = 0; i < types_count; i++)
