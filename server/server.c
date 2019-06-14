@@ -623,7 +623,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			buf = g_malloc(buf_size);
 			if (j_backend_smd_scheme_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
 			{
-				J_DEBUG("test-var-content %ld", *((guint64*)buf));
 				j_message_add_operation(reply, 8 + buf_size);
 				j_message_append_8(reply, &buf_size);
 				j_message_append_n(reply, buf, buf_size);
@@ -650,7 +649,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			buf_offset = j_message_get_8(message);
 			buf_size = j_message_get_8(message);
 			buf = j_message_get_n(message, buf_size);
-			J_DEBUG("test-var-content %ld", *((const guint64*)buf));
 			j_backend_smd_scheme_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
 			j_message_add_operation(reply, 8);
 			j_message_append_8(reply, &buf_size);

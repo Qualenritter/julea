@@ -55,6 +55,7 @@ struct J_HDF_Scheme_t
 {
 	hid_t type_id;
 	hid_t space_id;
+	guint type_size;
 };
 typedef struct J_HDF_Scheme_t J_HDF_Scheme_t;
 
@@ -146,6 +147,7 @@ hdf5_type_export_recourse(hid_t type_id __attribute__((unused)), const char* nam
 	case H5T_NCLASSES:
 	default:
 		J_CRITICAL("unsupported class type=%d", H5Tget_class(type_id));
+		exit(1);
 	}
 	return TRUE;
 }
@@ -253,6 +255,25 @@ hdf5_type_import(J_SMD_Type_t* type __attribute__((unused)), hid_t* type_id __at
 	}
 	return TRUE;
 }
+static gboolean
+calculate_constants(J_Scheme_t* scheme)
+{
+	guint type_size;
+	guint i, j;
+	J_SMD_Variable_t* var;
+	J_HDF_Scheme_t* user_data = scheme->user_data;
+	user_data->type_size = 0;
+	for (j = 0; j < scheme->type->arr->len; j++)
+	{
+		var = g_array_index(scheme->type->arr, J_SMD_Variable_t*, j);
+		type_size = var->size;
+		for (i = 0; i < var->space.ndims; i++)
+			type_size *= var->space.dims[i];
+		type_size += var->offset;
+		user_data->type_size = user_data->type_size < type_size ? type_size : user_data->type_size;
+	}
+	return TRUE;
+}
 static void*
 H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
 	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
@@ -279,6 +300,7 @@ H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
 	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
 	((J_HDF_Scheme_t*)scheme->user_data)->type_id = type_id;
 	((J_HDF_Scheme_t*)scheme->user_data)->space_id = space_id;
+	calculate_constants(scheme);
 	j_smd_type_unref(type);
 	j_smd_space_unref(space);
 	return scheme;
@@ -292,11 +314,10 @@ H5VL_julea_attr_read(void* _scheme __attribute__((unused)), //
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	guint size = 0; /*TODO calculate it correctly*/
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_smd_scheme_read(scheme, buf, 0, size, batch);
+	j_smd_scheme_read(scheme, buf, 0, ((J_HDF_Scheme_t*)scheme->user_data)->type_size, batch);
 	j_batch_execute(batch);
 	return 0;
 }
@@ -309,16 +330,44 @@ H5VL_julea_attr_write(void* _scheme __attribute__((unused)), //
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	guint size = 0; /*TODO calculate it correctly*/
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_smd_scheme_write(scheme, buf, 0, size, batch);
+	j_smd_scheme_write(scheme, buf, 0, ((J_HDF_Scheme_t*)scheme->user_data)->type_size, batch);
 	j_batch_execute(batch);
 	return 0;
 }
 static herr_t
-H5VL_julea_scheme_get(void* _scheme __attribute__((unused)), //
+H5VL_julea_dataset_get(void* _scheme, //
+	H5VL_dataset_get_t get_type, //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments)
+{
+	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
+	if (!j_is_key_initialized(scheme->key))
+		return 1;
+	switch (get_type)
+	{
+	case H5VL_DATASET_GET_SPACE:
+		hdf5_space_import(scheme->space, va_arg(arguments, hid_t*));
+		break;
+	case H5VL_DATASET_GET_TYPE:
+		hdf5_type_import(scheme->type, va_arg(arguments, hid_t*));
+		break;
+	case H5VL_DATASET_GET_DCPL:
+	case H5VL_DATASET_GET_STORAGE_SIZE:
+	case H5VL_DATASET_GET_OFFSET:
+	case H5VL_DATASET_GET_SPACE_STATUS:
+	case H5VL_DATASET_GET_DAPL:
+	default:
+		printf("ERROR: unsupported type %s:%d\n", __FILE__, __LINE__);
+		exit(1);
+	}
+	return 0;
+}
+static herr_t
+H5VL_julea_attr_get(void* _scheme __attribute__((unused)), //
 	H5VL_attr_get_t get_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
@@ -329,20 +378,16 @@ H5VL_julea_scheme_get(void* _scheme __attribute__((unused)), //
 		return 1;
 	switch (get_type)
 	{
-	case H5VL_ATTR_GET_ACPL:
-		break;
-	case H5VL_ATTR_GET_INFO:
-		break;
-	case H5VL_ATTR_GET_NAME:
-		break;
 	case H5VL_ATTR_GET_SPACE:
 		hdf5_space_import(scheme->space, va_arg(arguments, hid_t*));
-		break;
-	case H5VL_ATTR_GET_STORAGE_SIZE:
 		break;
 	case H5VL_ATTR_GET_TYPE:
 		hdf5_type_import(scheme->type, va_arg(arguments, hid_t*));
 		break;
+	case H5VL_ATTR_GET_ACPL:
+	case H5VL_ATTR_GET_INFO:
+	case H5VL_ATTR_GET_NAME:
+	case H5VL_ATTR_GET_STORAGE_SIZE:
 	default:
 		printf("ERROR: unsupported type %s:%d\n", __FILE__, __LINE__);
 		exit(1);
@@ -443,6 +488,7 @@ H5VL_julea_dataset_create(void* _parent __attribute__((unused)), //
 	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
 	((J_HDF_Scheme_t*)scheme->user_data)->type_id = type_id;
 	((J_HDF_Scheme_t*)scheme->user_data)->space_id = space_id;
+	calculate_constants(scheme);
 	j_smd_type_unref(type);
 	j_smd_space_unref(space);
 
@@ -465,12 +511,13 @@ H5VL_julea_scheme_open(void* obj __attribute__((unused)), //
 	scheme = j_smd_scheme_open(name, parent, batch);
 	j_batch_execute(batch);
 	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
+	calculate_constants(scheme);
 	hdf5_space_import(scheme->space, &((J_HDF_Scheme_t*)scheme->user_data)->space_id);
 	hdf5_type_import(scheme->type, &((J_HDF_Scheme_t*)scheme->user_data)->type_id);
 	return scheme;
 }
 static herr_t
-H5VL_julea_dataset_read(void* _dataset __attribute__((unused)), //
+H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 	hid_t mem_type_id __attribute__((unused)), //
 	hid_t mem_space_id __attribute__((unused)), //
 	hid_t file_space_id __attribute__((unused)), //
@@ -479,21 +526,20 @@ H5VL_julea_dataset_read(void* _dataset __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
+	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	guint64 bytes_read;
-	int len_to_read = 4096; /*TODO specify which data and offset?*/
+	int len_to_read = ((J_HDF_Scheme_t*)scheme->user_data)->type_size; /*TODO specify which data and offset?*/
 	int off_to_read = 0; /*TODO specify which data and offset?*/
-
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_read = 0;
 	g_assert(buf != NULL);
-	g_assert(dataset->object != NULL);
-	j_distributed_object_read(dataset->object, buf, len_to_read, off_to_read, &bytes_read, batch);
+	g_assert(scheme->object != NULL);
+	j_smd_dataset_read(scheme,buf,len_to_read, off_to_read, &bytes_read, batch);
 	j_batch_execute(batch);
 	return 0;
 }
 static herr_t
-H5VL_julea_dataset_write(void* dset __attribute__((unused)), //
+H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 	hid_t mem_type_id __attribute__((unused)), //
 	hid_t mem_space_id __attribute__((unused)), //
 	hid_t file_space_id __attribute__((unused)), //
@@ -502,13 +548,13 @@ H5VL_julea_dataset_write(void* dset __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* dataset = (J_Scheme_t*)dset;
+	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	guint64 bytes_written;
-	int len_to_read = 4096; /*TODO specify which data and offset?*/
+	int len_to_read = ((J_HDF_Scheme_t*)scheme->user_data)->type_size; /*TODO specify which data and offset?*/
 	int off_to_read = 0; /*TODO specify which data and offset?*/
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_written = 0;
-	j_distributed_object_write(dataset->object, buf, len_to_read, off_to_read, &bytes_written, batch);
+	j_smd_dataset_write(scheme, buf, len_to_read, off_to_read, &bytes_written, batch);
 	j_batch_execute(batch);
 	return 0;
 }
@@ -526,7 +572,7 @@ static const H5VL_class_t H5VL_julea_g = { 0,
 		H5VL_julea_scheme_open, /* open */
 		H5VL_julea_attr_read, /* read */
 		H5VL_julea_attr_write, /* write */
-		H5VL_julea_scheme_get, /* get */
+		H5VL_julea_attr_get, /* get */
 		NULL, // H5VL_julea_attr_specific,              /* specific */
 		NULL, // H5VL_julea_attr_optional,              /* optional */
 		H5VL_julea_scheme_close /* close */
@@ -537,7 +583,7 @@ static const H5VL_class_t H5VL_julea_g = { 0,
 		H5VL_julea_scheme_open, /* open */
 		H5VL_julea_dataset_read, /* read */
 		H5VL_julea_dataset_write, /* write */
-		H5VL_julea_scheme_get, /* get */
+		H5VL_julea_dataset_get, /* get */
 		NULL, // H5VL_julea_dataset_specific,          /* specific */
 		NULL, // H5VL_julea_dataset_optional,          /* optional */
 		H5VL_julea_scheme_close /* close */

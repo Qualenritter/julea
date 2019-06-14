@@ -54,9 +54,9 @@ main(int argc, char** argv)
 		test_item();
 		test_uri();
 
-		// HDF5 client
-		test_hdf();
 	*/
+	// HDF5 client
+	test_hdf();
 	// SMD
 	test_smd();
 
