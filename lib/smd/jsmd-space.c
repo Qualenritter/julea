@@ -108,11 +108,21 @@ j_smd_space_get(void* _space, guint* ndims, guint** dims)
 	memcpy(*dims, space->dims, sizeof(*space->dims) * *ndims);
 	return TRUE;
 }
-gboolean
-j_smd_space_free(void* _space)
+void*
+j_smd_space_ref(void* _space)
 {
 	J_SMD_Space_t* space = _space;
-	g_free(space);
+	g_atomic_int_inc(&(space->ref_count));
+	return space;
+}
+gboolean
+j_smd_space_unref(void* _space)
+{
+	J_SMD_Space_t* space = _space;
+	if (g_atomic_int_dec_and_test(&(space->ref_count)))
+	{
+		g_free(_space);
+	}
 	return TRUE;
 }
 gboolean

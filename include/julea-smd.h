@@ -53,7 +53,7 @@ typedef enum JSMDType JSMDType;
 					  : SMD_TYPE_BLOB)
 
 /*TODO make all structs internal*/
-struct J_Metadata_t
+struct J_Scheme_t
 {
 	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
 	bson_t* bson;
@@ -61,18 +61,20 @@ struct J_Metadata_t
 	JDistributionType distribution_type;
 	JDistribution* distribution; /*only if scheme*/
 	JDistributedObject* object; /*only if scheme*/
+	gint ref_count;
 };
-typedef struct J_Metadata_t J_Metadata_t;
+typedef struct J_Scheme_t J_Scheme_t;
 struct J_SMD_Space_t
 {
 	guint ndims;
 	guint dims[SMD_MAX_NDIMS];
+	gint ref_count;
 };
 typedef struct J_SMD_Space_t J_SMD_Space_t;
 struct J_SMD_Type_t
 {
-	gboolean recieved_from_server; /*if recieved from server delete recoursive -- TODO maybe reference counting for this*/
 	GArray* arr;
+	gint ref_count;
 };
 typedef struct J_SMD_Type_t J_SMD_Type_t;
 struct J_SMD_Variable_t
@@ -87,31 +89,35 @@ struct J_SMD_Variable_t
 		J_SMD_Type_t* sub_type; /*client side*/
 		char sub_type_key[SMD_KEY_LENGTH + 1]; /*server side*/
 	};
+	gint ref_count;
 };
 typedef struct J_SMD_Variable_t J_SMD_Variable_t;
 
 void* j_smd_file_create(const char* name, JBatch* batch);
 gboolean j_smd_file_delete(const char* name, JBatch* batch);
 void* j_smd_file_open(const char* name, JBatch* batch);
-gboolean j_smd_file_close(void* file);
-
+void* j_smd_file_ref(void* _file);
+gboolean j_smd_file_unref(void* file);
+/*scheme structure*/
 void* j_smd_scheme_create(const char* name, void* parent, void* data_type, void* space_type, JDistributionType distribution, JBatch* batch);
 gboolean j_smd_scheme_delete(const char* name, void* parent, JBatch* batch);
 void* j_smd_scheme_open(const char* name, void* parent, JBatch* batch);
-gboolean j_smd_scheme_close(void* scheme);
+void* j_smd_scheme_ref(void* _scheme);
+gboolean j_smd_scheme_unref(void* _scheme);
 void* j_smd_scheme_get_type(void* scheme);
 void* j_smd_scheme_get_space(void* scheme);
-
+/*read write to database*/
 gboolean j_smd_scheme_read(void* scheme, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
 gboolean j_smd_scheme_write(void* scheme, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
-
+/*read write to objectstore*/
 gboolean j_smd_dataset_read(void* scheme, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
 gboolean j_smd_dataset_write(void* scheme, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
 
 void* j_smd_space_create(guint ndims, guint* dims);
 gboolean j_smd_space_get(void* space_type, guint* ndims, guint** dims);
-gboolean j_smd_space_free(void* space_type);
 gboolean j_smd_space_equals(void* space_type1, void* space_type2);
+void* j_smd_space_ref(void* _space);
+gboolean j_smd_space_unref(void* _space);
 
 #define J_SMD_TYPE_ADD_COMPOUND(type, parent, var_name, var_subtype) \
 	j_smd_type_add_compound_type(type, #var_name, ((size_t) & ((parent*)0)->var_name), sizeof(((parent*)0)->var_name), var_subtype, 1, &_one);
@@ -138,8 +144,12 @@ gboolean j_smd_space_equals(void* space_type1, void* space_type2);
 gboolean j_smd_type_equals(void* type1, void* type2);
 void* j_smd_type_create(void);
 guint j_smd_type_get_variable_count(void* type);
-gboolean j_smd_type_free(void* type);
 gboolean j_smd_type_remove_variable(void* type, const char* name);
+void* j_smd_type_ref(void* _type);
+gboolean j_smd_type_unref(void* _type);
+
+void* j_smd_variable_ref(void* _variable); /*internal only?*/
+gboolean j_smd_variable_unref(void* _variable); /*internal only?*/
 
 /*not public interface functions below*/
 /*TODO move to internal header file*/

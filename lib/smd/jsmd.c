@@ -38,8 +38,8 @@ j_is_key_initialized(const char* const key)
 	return FALSE;
 }
 gboolean
-j_smd_is_initialized(void* data)
+j_smd_is_initialized(void* _data)
 {
-	J_Metadata_t* mdata = data;
-	return j_is_key_initialized(mdata->key);
+	J_Scheme_t* data = _data;
+	return j_is_key_initialized(data->key);
 }

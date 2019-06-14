@@ -28,9 +28,9 @@
 #include <julea-smd.h>
 struct JSMDSchemeOperation
 {
-	J_Metadata_t* metadata;
+	J_Scheme_t* scheme;
 	char* name;
-	J_Metadata_t* parent;
+	J_Scheme_t* parent;
 	union
 	{
 		char* buf_read;
@@ -67,12 +67,12 @@ j_smd_read_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-			j_backend_smd_scheme_read(smd_backend, operation->metadata->key, operation->buf_read, operation->buf_offset, operation->buf_size);
+			j_backend_smd_scheme_read(smd_backend, operation->scheme->key, operation->buf_read, operation->buf_offset, operation->buf_size);
 		else
 		{
 			message_size = 8 + 8 + SMD_KEY_LENGTH;
 			j_message_add_operation(message, message_size);
-			j_message_append_n(message, operation->metadata->key, SMD_KEY_LENGTH);
+			j_message_append_n(message, operation->scheme->key, SMD_KEY_LENGTH);
 			j_message_append_8(message, &operation->buf_offset);
 			j_message_append_8(message, &operation->buf_size);
 		}
@@ -102,13 +102,13 @@ j_smd_read_free(gpointer data)
 	g_free(data);
 }
 gboolean
-j_smd_scheme_read(void* _metadata, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch)
+j_smd_scheme_read(void* _scheme, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch)
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDSchemeOperation, 1);
-	smd_op->metadata = _metadata;
+	smd_op->scheme = _scheme;
 	smd_op->buf_offset = buf_offset;
 	smd_op->buf_size = buf_size;
 	smd_op->buf_read = buf;
@@ -148,12 +148,12 @@ j_smd_write_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-			j_backend_smd_scheme_write(smd_backend, operation->metadata->key, operation->buf_write, operation->buf_offset, operation->buf_size);
+			j_backend_smd_scheme_write(smd_backend, operation->scheme->key, operation->buf_write, operation->buf_offset, operation->buf_size);
 		else
 		{
 			message_size = 8 + 8 + SMD_KEY_LENGTH + operation->buf_size;
 			j_message_add_operation(message, message_size);
-			j_message_append_n(message, operation->metadata->key, SMD_KEY_LENGTH);
+			j_message_append_n(message, operation->scheme->key, SMD_KEY_LENGTH);
 			j_message_append_8(message, &operation->buf_offset);
 			j_message_append_8(message, &operation->buf_size);
 			j_message_append_n(message, operation->buf_write, operation->buf_size);
@@ -183,13 +183,13 @@ j_smd_write_free(gpointer data)
 	g_free(data);
 }
 gboolean
-j_smd_scheme_write(void* _metadata, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch)
+j_smd_scheme_write(void* _scheme, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch)
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDSchemeOperation, 1);
-	smd_op->metadata = _metadata;
+	smd_op->scheme = _scheme;
 	smd_op->buf_offset = buf_offset;
 	smd_op->buf_size = buf_size;
 	smd_op->buf_write = buf;

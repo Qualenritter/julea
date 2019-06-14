@@ -32,7 +32,7 @@ test_type_create0(void)
 	{
 		type = j_smd_type_create();
 		g_assert_nonnull(type);
-		ret = j_smd_type_free(type);
+		ret = j_smd_type_unref(type);
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 }
@@ -48,7 +48,7 @@ test_type_create1(void)
 	ret = j_smd_type_add_atomic_type(type, "a", 0, 4, SMD_TYPE_INT, one, &one);
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 1);
-	ret = j_smd_type_free(type);
+	ret = j_smd_type_unref(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 static void
@@ -66,7 +66,7 @@ test_type_create2(void)
 	ret = j_smd_type_add_atomic_type(type, "b", 4, 4, SMD_TYPE_INT, one, &one);
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
-	ret = j_smd_type_free(type);
+	ret = j_smd_type_unref(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 static void
@@ -90,7 +90,7 @@ test_type_delete0(void)
 	ret = j_smd_type_remove_variable(type, "a");
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
-	ret = j_smd_type_free(type);
+	ret = j_smd_type_unref(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 static void
@@ -114,7 +114,7 @@ test_type_delete1(void)
 	ret = j_smd_type_remove_variable(type, "b");
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
-	ret = j_smd_type_free(type);
+	ret = j_smd_type_unref(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 static void
@@ -138,7 +138,7 @@ test_type_delete2(void)
 	ret = j_smd_type_remove_variable(type, "c");
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
-	ret = j_smd_type_free(type);
+	ret = j_smd_type_unref(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 static void
@@ -162,7 +162,7 @@ test_type_delete3(void)
 	ret = j_smd_type_remove_variable(type, "d");
 	g_assert_cmpuint(ret, ==, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 3);
-	ret = j_smd_type_free(type);
+	ret = j_smd_type_unref(type);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 void test_smd_type(void);

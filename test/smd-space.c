@@ -33,7 +33,7 @@ test_space_create_destroy(void)
 	{
 		space = j_smd_space_create(one, &one);
 		g_assert_nonnull(space);
-		ret = j_smd_space_free(space);
+		ret = j_smd_space_unref(space);
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
 }
@@ -54,7 +54,7 @@ test_space_read(void)
 	for (i = 0; i < in_ndims && i < out_ndims; i++)
 		g_assert_cmpuint(in_dims[i], ==, out_dims[i]);
 	g_free(out_dims);
-	ret = j_smd_space_free(space);
+	ret = j_smd_space_unref(space);
 	g_assert_cmpuint(ret, !=, FALSE);
 }
 void test_smd_space(void);

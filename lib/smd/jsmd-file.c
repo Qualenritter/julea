@@ -28,7 +28,7 @@
 #include <julea-smd.h>
 struct JSMDFileOperation
 {
-	J_Metadata_t* metadata;
+	J_Scheme_t* scheme;
 	char* name;
 };
 typedef struct JSMDFileOperation JSMDFileOperation;
@@ -58,14 +58,14 @@ j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-			j_backend_smd_file_create(smd_backend, operation->name, operation->metadata->bson, operation->metadata->key);
+			j_backend_smd_file_create(smd_backend, operation->name, operation->scheme->bson, operation->scheme->key);
 		else
 		{
-			message_size = strlen(operation->name) + 1 + 4 + operation->metadata->bson->len;
+			message_size = strlen(operation->name) + 1 + 4 + operation->scheme->bson->len;
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
-			j_message_append_4(message, &operation->metadata->bson->len);
-			j_message_append_n(message, bson_get_data(operation->metadata->bson), operation->metadata->bson->len);
+			j_message_append_4(message, &operation->scheme->bson->len);
+			j_message_append_n(message, bson_get_data(operation->scheme->bson), operation->scheme->bson->len);
 		}
 	}
 	if (smd_backend == NULL)
@@ -78,7 +78,7 @@ j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 		while (j_list_iterator_next(iter))
 		{
 			operation = j_list_iterator_get(iter);
-			memcpy(operation->metadata->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+			memcpy(operation->scheme->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
@@ -99,11 +99,12 @@ j_smd_file_create(const char* name, JBatch* batch)
 	JSMDFileOperation* smd_op;
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDFileOperation, 1);
-	smd_op->metadata = g_new(J_Metadata_t, 1);
-	smd_op->metadata->bson = g_new(bson_t, 1);
-	smd_op->metadata->bson_requires_free = TRUE;
-	bson_init(smd_op->metadata->bson);
-	memset(smd_op->metadata->key, 0, SMD_KEY_LENGTH);
+	smd_op->scheme = g_new(J_Scheme_t, 1);
+	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->bson = g_new(bson_t, 1);
+	smd_op->scheme->bson_requires_free = TRUE;
+	bson_init(smd_op->scheme->bson);
+	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
@@ -112,7 +113,7 @@ j_smd_file_create(const char* name, JBatch* batch)
 	smd_op->name = g_strdup(name);
 	j_batch_add(batch, op);
 	j_trace_leave(G_STRFUNC);
-	return smd_op->metadata;
+	return smd_op->scheme;
 }
 static gboolean
 j_smd_file_delete_exec(JList* operations, JSemantics* semantics)
@@ -212,10 +213,10 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
 		{
-			operation->metadata->bson = g_new(bson_t, 1);
-			operation->metadata->bson_requires_free = TRUE;
-			bson_init(operation->metadata->bson);
-			j_backend_smd_file_open(smd_backend, operation->name, operation->metadata->bson, operation->metadata->key);
+			operation->scheme->bson = g_new(bson_t, 1);
+			operation->scheme->bson_requires_free = TRUE;
+			bson_init(operation->scheme->bson);
+			j_backend_smd_file_open(smd_backend, operation->name, operation->scheme->bson, operation->scheme->key);
 		}
 		else
 		{
@@ -234,13 +235,13 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 		while (j_list_iterator_next(iter))
 		{
 			operation = j_list_iterator_get(iter);
-			memcpy(operation->metadata->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			if (j_is_key_initialized(operation->metadata->key))
+			memcpy(operation->scheme->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+			if (j_is_key_initialized(operation->scheme->key))
 			{
 				bson_len = j_message_get_4(reply);
 				bson_data = j_message_get_n(reply, bson_len);
-				operation->metadata->bson = bson_new_from_data(bson_data, bson_len);
-				operation->metadata->bson_requires_free = FALSE;
+				operation->scheme->bson = bson_new_from_data(bson_data, bson_len);
+				operation->scheme->bson_requires_free = FALSE;
 			}
 		}
 		j_connection_pool_push_smd(index, smd_connection);
@@ -262,10 +263,11 @@ j_smd_file_open(const char* name, JBatch* batch)
 	JSMDFileOperation* smd_op;
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDFileOperation, 1);
-	smd_op->metadata = g_new(J_Metadata_t, 1);
-	smd_op->metadata->bson = NULL;
-	smd_op->metadata->bson_requires_free = FALSE;
-	memset(smd_op->metadata->key, 0, SMD_KEY_LENGTH);
+	smd_op->scheme = g_new(J_Scheme_t, 1);
+	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->bson = NULL;
+	smd_op->scheme->bson_requires_free = FALSE;
+	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
@@ -274,18 +276,27 @@ j_smd_file_open(const char* name, JBatch* batch)
 	smd_op->name = g_strdup(name);
 	j_batch_add(batch, op);
 	j_trace_leave(G_STRFUNC);
-	return smd_op->metadata;
+	return smd_op->scheme;
+}
+void*
+j_smd_file_ref(void* _file)
+{
+	J_Scheme_t* file = _file;
+	g_atomic_int_inc(&(file->ref_count));
+	return file;
 }
 gboolean
-j_smd_file_close(void* _file)
+j_smd_file_unref(void* _file)
 {
-	J_Metadata_t* file = _file;
-	j_trace_enter(G_STRFUNC, NULL);
-	if (file->bson)
-		bson_destroy(file->bson);
-	if (file->bson_requires_free)
-		g_free(file->bson);
-	g_free(file);
-	j_trace_leave(G_STRFUNC);
+	J_Scheme_t* file = _file;
+	g_atomic_int_inc(&(file->ref_count));
+	if (g_atomic_int_dec_and_test(&(file->ref_count)))
+	{
+		if (file->bson)
+			bson_destroy(file->bson);
+		if (file->bson_requires_free)
+			g_free(file->bson);
+		g_free(file);
+	}
 	return TRUE;
 }

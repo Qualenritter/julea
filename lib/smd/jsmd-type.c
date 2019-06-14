@@ -118,7 +118,6 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 	uint32_t len;
 	const char* tmp;
 	type = j_smd_type_create();
-	type->recieved_from_server = TRUE;
 	if (bson_iter_recurse(iter_arr, &iter_loc) && bson_iter_find_descendant(&iter_loc, "arr", &iter_loc2) && BSON_ITER_HOLDS_ARRAY(&iter_loc2))
 	{
 		bson_iter_recurse(&iter_loc2, &iter);
@@ -148,7 +147,6 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "subtype", &iter_val) && BSON_ITER_HOLDS_DOCUMENT(&iter_val))
 			{
 				var.sub_type = j_smd_type_from_bson(&iter_val);
-				var.sub_type->recieved_from_server = TRUE;
 			}
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "dims", &iter_val) && BSON_ITER_HOLDS_ARRAY(&iter_val))
 			{
@@ -176,7 +174,7 @@ j_smd_type_create(void)
 {
 	J_SMD_Type_t* type;
 	type = g_new(J_SMD_Type_t, 1);
-	type->recieved_from_server = FALSE;
+	type->ref_count = 1;
 	type->arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t*));
 	return type;
 }
@@ -205,6 +203,7 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 		}
 	}
 	variable = g_new(J_SMD_Variable_t, 1);
+	variable->ref_count = 1;
 	variable->offset = var_offset;
 	variable->size = var_size;
 	variable->type = var_type;
@@ -241,10 +240,11 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 			return FALSE;
 		}
 	variable = g_new(J_SMD_Variable_t, 1);
+	variable->ref_count = 1;
 	variable->offset = var_offset;
 	variable->size = var_size;
 	variable->type = SMD_TYPE_SUB_TYPE;
-	variable->sub_type = var_type;
+	variable->sub_type = j_smd_type_ref(var_type);
 	memcpy(variable->name, var_name, strlen(var_name));
 	variable->name[strlen(var_name)] = 0;
 	variable->space.ndims = var_ndims;
@@ -259,24 +259,46 @@ j_smd_type_get_variable_count(void* _type)
 	struct J_SMD_Type_t* type = _type;
 	return type->arr->len;
 }
-gboolean
-j_smd_type_free(void* _type)
+void*
+j_smd_variable_ref(void* _variable)
 {
-	guint i;
-	struct J_SMD_Type_t* type = _type;
-	for (i = 0; i < type->arr->len; i++)
+	J_SMD_Variable_t* variable = _variable;
+	g_atomic_int_inc(&(variable->ref_count));
+	return variable;
+}
+gboolean
+j_smd_variable_unref(void* _variable)
+{
+	J_SMD_Variable_t* variable = _variable;
+	if (g_atomic_int_dec_and_test(&(variable->ref_count)))
 	{
-		if (type->recieved_from_server)
-		{
-			if (g_array_index(type->arr, J_SMD_Variable_t*, i)->type == SMD_TYPE_SUB_TYPE)
-				j_smd_type_free(g_array_index(type->arr, J_SMD_Variable_t*, i)->sub_type);
-		}
-		else
-			g_free(g_array_index(type->arr, J_SMD_Variable_t*, i));
+		if (variable->type == SMD_TYPE_SUB_TYPE)
+			j_smd_type_unref(variable->sub_type);
+		g_free(_variable);
 	}
-	g_free(type);
 	return TRUE;
 }
+void*
+j_smd_type_ref(void* _type)
+{
+	J_SMD_Type_t* type = _type;
+	g_atomic_int_inc(&(type->ref_count));
+	return type;
+}
+gboolean
+j_smd_type_unref(void* _type)
+{
+	guint i;
+	J_SMD_Type_t* type = _type;
+	g_atomic_int_inc(&(type->ref_count));
+	if (g_atomic_int_dec_and_test(&(type->ref_count)))
+	{
+		for (i = 0; i < type->arr->len; i++)
+			j_smd_variable_unref(g_array_index(type->arr, J_SMD_Variable_t*, i));
+	}
+	return TRUE;
+}
+
 gboolean
 j_smd_type_remove_variable(void* _type, const char* name)
 {
@@ -286,7 +308,7 @@ j_smd_type_remove_variable(void* _type, const char* name)
 	{
 		if (strcmp(name, g_array_index(type->arr, J_SMD_Variable_t*, i)->name) == 0)
 		{
-			g_free(g_array_index(type->arr, J_SMD_Variable_t*, i));
+			j_smd_variable_unref(g_array_index(type->arr, J_SMD_Variable_t*, i));
 			g_array_remove_index(type->arr, i);
 			return TRUE;
 		}
