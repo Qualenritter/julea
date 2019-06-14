@@ -89,6 +89,8 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 		bson_destroy(b_type);
 		bson_destroy(b_space);
 		bson_destroy(bson);
+		g_free(b_type);
+		g_free(b_space);
 	}
 	if (smd_backend == NULL)
 	{
