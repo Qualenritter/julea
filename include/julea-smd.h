@@ -92,7 +92,7 @@ struct J_Scheme_t
 	gint ref_count;
 };
 typedef struct J_Scheme_t J_Scheme_t;
-
+/*files only required to detect fast what belongs together*/
 void* j_smd_file_create(const char* name, JBatch* batch);
 gboolean j_smd_file_delete(const char* name, JBatch* batch);
 void* j_smd_file_open(const char* name, JBatch* batch);
@@ -158,12 +158,8 @@ gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_of
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
 
-bson_t*
-j_smd_type_to_bson(void* _type);
-void*
-j_smd_type_from_bson(bson_iter_t* iter_arr);
-
+bson_t* j_smd_type_to_bson(void* _type);
+void* j_smd_type_from_bson(bson_iter_t* iter_arr);
 bson_t* j_smd_space_to_bson(void* _space);
-void*
-j_smd_space_from_bson(bson_iter_t* bson);
+void* j_smd_space_from_bson(bson_iter_t* bson);
 #endif

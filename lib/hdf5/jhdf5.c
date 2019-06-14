@@ -73,10 +73,10 @@ H5VL_julea_term(void)
 	return 0;
 }
 
-static void*
-hdf5_space_export(hid_t space_id)
+static J_SMD_Space_t*
+hdf5_space_export(hid_t space_id __attribute__((unused)))
 {
-	void* b_attr_space;
+	void* space;
 	guint ndims;
 	hsize_t* dims1;
 	guint* dims2;
@@ -89,142 +89,100 @@ hdf5_space_export(hid_t space_id)
 	{
 		dims2[i] = dims1[i];
 	}
-	b_attr_space = j_smd_space_create(ndims, dims2);
+	space = j_smd_space_create(ndims, dims2);
 	g_free(dims1);
 	g_free(dims2);
-	return b_attr_space;
+	return space;
 }
-static bson_t*
-hdf5_type_export(hid_t type_id)
+static J_SMD_Type_t*
+hdf5_type_export(hid_t type_id __attribute__((unused)))
 {
-	bson_t* b_attr_type;
-
-	b_attr_type = g_new(bson_t, 1);
-	bson_init(b_attr_type);
-	/*TODO type data to bson*/
-	return b_attr_type;
+	void* type;
+	type = j_smd_type_create();
+	/*TODO type data*/
+	return type;
 }
 static int
-hdf5_space_import(bson_t* bson, hid_t* type_id)
+hdf5_space_import(J_SMD_Space_t* space __attribute__((unused)), hid_t* type_id __attribute__((unused)))
 {
-	return FALSE;
+	return FALSE; /*TODO*/
 }
 static int
-hdf5_type_import(bson_t* bson, hid_t* type_id)
+hdf5_type_import(J_SMD_Type_t* type __attribute__((unused)), hid_t* type_id __attribute__((unused)))
 {
-	return FALSE;
+	return FALSE; /*TODO*/
 }
-/**
- * Creates a new attribute
- *
- * \return attribute The new attribute
- **/
 static void*
-H5VL_julea_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name, hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id, hid_t dxpl_id, void** req)
+H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	const char* name __attribute__((unused)), //
+	hid_t type_id __attribute__((unused)), //
+	hid_t space_id __attribute__((unused)), //
+	hid_t acpl_id __attribute__((unused)), //
+	hid_t aapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
-	J_Scheme_t* parent = (J_Scheme_t*)obj;
-	J_Scheme_t* attr;
-	bson_t* b_type;
-	bson_t* b_space;
-	g_autoptr(JBatch) batch = NULL;
-
-	if (!j_is_key_initialized(parent->key))
-		return 0;
-	j_trace_enter(G_STRFUNC, NULL);
-
-	b_type = hdf5_type_export(type_id);
-	b_space = hdf5_space_export(space_id);
-
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	attr = j_smd_scheme_create(attr_name, parent, b_type, b_space, J_DISTRIBUTION_DATABASE, batch);
-	j_batch_execute(batch);
-
-	bson_destroy(b_type);
-	bson_destroy(b_space);
-	g_free(b_type);
-	g_free(b_space);
-	j_trace_leave(G_STRFUNC);
-
-	return attr;
-}
-
-/**
- * Opens an attribute
- *
- * \return attribute The attribute
- **/
-static void*
-H5VL_julea_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name, hid_t aapl_id, hid_t dxpl_id, void** req)
-{
-	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	void* type;
+	void* space;
+	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* attr;
 	g_autoptr(JBatch) batch = NULL;
-
 	if (!j_is_key_initialized(parent->key))
 		return 0;
+	type = hdf5_type_export(type_id);
+	space = hdf5_space_export(space_id);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-	attr = j_smd_scheme_open(attr_name, parent, batch);
+	attr = j_smd_scheme_create(name, parent, type, space, J_DISTRIBUTION_DATABASE, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
+	j_smd_type_unref(type);
+	j_smd_space_unref(space);
 	return attr;
 }
-
-/**
- * Reads the data from the attribute
- **/
 static herr_t
-H5VL_julea_attr_read(void* _attr, hid_t dtype_id __attribute__((unused)), void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_attr_read(void* _scheme __attribute__((unused)), //
+	hid_t dtype_id __attribute__((unused)), //
+	void* buf __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* attr = (J_Scheme_t*)_attr;
+	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	guint size = 0; /*TODO calculate it correctly*/
-	if (!j_is_key_initialized(attr->key))
+	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-
-	j_smd_scheme_read(attr, buf, 0, size, batch);
+	j_smd_scheme_read(scheme, buf, 0, size, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
-
 	return 0;
 }
-
-/**
- * Writes the data of the attribute
- **/
 static herr_t
-H5VL_julea_attr_write(void* _attr, hid_t dtype_id __attribute__((unused)), const void* buf, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_attr_write(void* _scheme __attribute__((unused)), //
+	hid_t dtype_id __attribute__((unused)), //
+	const void* buf __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* attr = (J_Scheme_t*)_attr;
+	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	guint size = 0; /*TODO calculate it correctly*/
-	if (!j_is_key_initialized(attr->key))
+	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-	j_smd_scheme_write(attr, buf, 0, size, batch);
+	j_smd_scheme_write(scheme, buf, 0, size, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
-
 	return 0;
 }
-
-/**
- * Provides get Functions of the attribute
- *
- * \return ret_value The error code
- **/
 static herr_t
-H5VL_julea_attr_get(void* _attr, H5VL_attr_get_t get_type, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)), va_list arguments)
+H5VL_julea_scheme_get(void* _scheme __attribute__((unused)), //
+	H5VL_attr_get_t get_type __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
 {
-	J_Scheme_t* attr = (J_Scheme_t*)_attr;
-
-	if (!j_is_key_initialized(attr->key))
+	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
+	if (!j_is_key_initialized(scheme->key))
 		return 1;
-	j_trace_enter(G_STRFUNC, NULL);
-
 	switch (get_type)
 	{
 	case H5VL_ATTR_GET_ACPL:
@@ -234,338 +192,174 @@ H5VL_julea_attr_get(void* _attr, H5VL_attr_get_t get_type, hid_t dxpl_id __attri
 	case H5VL_ATTR_GET_NAME:
 		break;
 	case H5VL_ATTR_GET_SPACE:
-	{
-		hdf5_space_import(attr->bson, va_arg(arguments, hid_t*));
-	}
-	break;
+		hdf5_space_import(scheme->space, va_arg(arguments, hid_t*));
+		break;
 	case H5VL_ATTR_GET_STORAGE_SIZE:
 		break;
 	case H5VL_ATTR_GET_TYPE:
-	{
-		hdf5_type_import(attr->bson, va_arg(arguments, hid_t*));
-	}
-	break;
+		hdf5_type_import(scheme->type, va_arg(arguments, hid_t*));
+		break;
 	default:
 		printf("ERROR: unsupported type %s:%d\n", __FILE__, __LINE__);
 		exit(1);
 	}
-	j_trace_leave(G_STRFUNC);
 	return 0;
 }
-
-/**
- * Closes the attribute
- **/
 static herr_t
-H5VL_julea_attr_close(void* _attr, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_scheme_close(void* scheme __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
-	J_Scheme_t* attr = (J_Scheme_t*)_attr;
-	if (!j_is_key_initialized(attr->key))
-		return 1;
-	j_trace_enter(G_STRFUNC, NULL);
-	j_smd_scheme_close(attr);
-	j_trace_leave(G_STRFUNC);
+	j_smd_scheme_unref(scheme);
 	return 0;
 }
-
-/**
- * Creates a new file
- *
- * \return file The new file
- **/
 static void*
-H5VL_julea_file_create(const char* fname, unsigned flags __attribute__((unused)), hid_t fcpl_id __attribute__((unused)), hid_t fapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_file_create(const char* name __attribute__((unused)), //
+	unsigned flags __attribute__((unused)), //
+	hid_t fcpl_id __attribute__((unused)), //
+	hid_t fapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
-	J_Scheme_t* file;
+	J_Scheme_t* scheme;
 	g_autoptr(JBatch) batch = NULL;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	file = j_smd_file_create(fname, batch);
+	scheme = j_smd_file_create(name, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
-	return file;
+	return scheme;
 }
-
-/**
- * Opens a file
- *
- * \return file The file
- **/
 static void*
-H5VL_julea_file_open(const char* fname, unsigned flags __attribute__((unused)), hid_t fapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_file_open(const char* name __attribute__((unused)),
+	unsigned flags __attribute__((unused)),
+	hid_t fapl_id __attribute__((unused)),
+	hid_t dxpl_id __attribute__((unused)),
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* file;
-
+	J_Scheme_t* scheme;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-
-	file = j_smd_file_open(fname, batch);
+	scheme = j_smd_file_open(name, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
-	return file;
+	return scheme;
 }
-
-/**
- * Closes the file
- **/
 static herr_t
-H5VL_julea_file_close(void* _file, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_file_close(void* _scheme __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
-	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* file = (J_Scheme_t*)_file;
-	if (!j_is_key_initialized(file->key))
-		return 1;
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-	j_smd_file_close(file);
-	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
+	j_smd_file_unref(_scheme);
 	return 0;
 }
-
-/**
- * Creates a new group
- *
- * \return group The new group
- **/
 static void*
-H5VL_julea_group_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t gcpl_id __attribute__((unused)), hid_t gapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_group_create(void* _parent __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	const char* name __attribute__((unused)), //
+	hid_t lcpl_id __attribute__((unused)), //
+	hid_t gcpl_id __attribute__((unused)), //
+	hid_t gapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* parent = (J_Scheme_t*)obj;
-	J_Scheme_t* attr;
-
+	J_Scheme_t* parent = (J_Scheme_t*)_parent;
+	J_Scheme_t* scheme;
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-
-	attr = j_smd_scheme_create(name, parent, NULL, NULL, J_DISTRIBUTION_DATABASE, batch);
+	scheme = j_smd_scheme_create(name, parent, NULL, NULL, J_DISTRIBUTION_DATABASE, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
 
-	return attr;
+	return scheme;
 }
-
-/**
- * Opens a group
- *
- * \return group The group
- **/
 static void*
-H5VL_julea_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t gapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_dataset_create(void* _parent __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	const char* name __attribute__((unused)), //
+	hid_t lcpl_id __attribute__((unused)), //
+	hid_t type_id __attribute__((unused)), //
+	hid_t space_id __attribute__((unused)), //
+	hid_t dcpl_id __attribute__((unused)), //
+	hid_t dapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* parent = (J_Scheme_t*)obj;
-	J_Scheme_t* attr;
-
-	int bson_len;
-	char* bson_buf;
-
-	if (!j_is_key_initialized(parent->key))
-		return 0;
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-
-	attr = j_smd_scheme_open(name, parent, batch);
-	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
-	return attr;
-}
-
-/**
- * Closes the group
- **/
-static herr_t
-H5VL_julea_group_close(void* grp, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
-{
-	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* attr = (J_Scheme_t*)grp;
-
-	if (!j_is_key_initialized(attr->key))
-		return 1;
-	j_trace_enter(G_STRFUNC, NULL);
-
-	bson_destroy(attr->bson);
-	g_free(attr);
-	j_trace_leave(G_STRFUNC);
-	return 0;
-}
-
-/**
- * Creates a new dataset
- *
- * \return dset The new dataset
- **/
-static void*
-H5VL_julea_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id, hid_t dapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
-{
-	g_autoptr(JBatch) batch = NULL;
-	j_trace_leave(G_STRFUNC);
-
-	bson_t* b_type;
-	bson_t* b_space;
-	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	void* type;
+	void* space;
+	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* dataset;
-
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_trace_enter(G_STRFUNC, NULL);
-	b_type = hdf5_type_export(type_id);
-	b_space = hdf5_space_export(space_id);
-
-	dataset = j_smd_scheme_create(name, parent, b_type, b_space, J_DISTRIBUTION_ROUND_ROBIN, batch);
+	type = hdf5_type_export(type_id);
+	space = hdf5_space_export(space_id);
+	dataset = j_smd_scheme_create(name, parent, type, space, J_DISTRIBUTION_ROUND_ROBIN, batch);
 	j_batch_execute(batch);
-	bson_destroy(b_type);
-	bson_destroy(b_space);
-	g_free(b_type);
-	g_free(b_space);
-	j_trace_leave(G_STRFUNC);
+	j_smd_type_unref(type);
+	j_smd_space_unref(space);
 
 	return dataset;
 }
-
-/**
- * Opens a dataset
- *
- * \return dset The dataset
- **/
 static void*
-H5VL_julea_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t dapl_id __attribute__((unused)), hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
+H5VL_julea_scheme_open(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	const char* name __attribute__((unused)), //
+	hid_t dapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)obj;
 	J_Scheme_t* dataset;
-
 	if (!j_is_key_initialized(parent->key))
 		return 0;
-	j_trace_enter(G_STRFUNC, NULL);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	dataset = j_smd_scheme_open(name, parent, batch);
 	j_batch_execute(batch);
-	j_trace_leave(G_STRFUNC);
 	return dataset;
 }
-
-/**
- * Reads the data from the dataset
- **/
 static herr_t
-H5VL_julea_dataset_read(void* _dataset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), void* buf, void** req __attribute__((unused)))
+H5VL_julea_dataset_read(void* _dataset __attribute__((unused)), //
+	hid_t mem_type_id __attribute__((unused)), //
+	hid_t mem_space_id __attribute__((unused)), //
+	hid_t file_space_id __attribute__((unused)), //
+	hid_t plist_id __attribute__((unused)), //
+	void* buf __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
 	guint64 bytes_read;
-
-	j_trace_enter(G_STRFUNC, NULL);
-
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-
 	bytes_read = 0;
-
 	g_assert(buf != NULL);
-
 	g_assert(dataset->object != NULL);
 	int len_to_read = 4096; /*TODO specify which data and offset?*/
 	int off_to_read = 0; /*TODO specify which data and offset?*/
 	j_distributed_object_read(dataset->object, buf, len_to_read, off_to_read, &bytes_read, batch);
 	j_batch_execute(batch);
-
-	j_trace_leave(G_STRFUNC);
-
 	return 0;
 }
-
-/**
- * Writes the data to the dataset
- **/
 static herr_t
-H5VL_julea_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), const void* buf, void** req __attribute__((unused)))
+H5VL_julea_dataset_write(void* dset __attribute__((unused)), //
+	hid_t mem_type_id __attribute__((unused)), //
+	hid_t mem_space_id __attribute__((unused)), //
+	hid_t file_space_id __attribute__((unused)), //
+	hid_t plist_id __attribute__((unused)), //
+	const void* buf __attribute__((unused)), //
+	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* dataset = (J_Scheme_t*)dset;
 	guint64 bytes_written;
-
-	j_trace_enter(G_STRFUNC, NULL);
-
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-
 	bytes_written = 0;
-
 	int len_to_read = 4096; /*TODO specify which data and offset?*/
 	int off_to_read = 0; /*TODO specify which data and offset?*/
-
 	j_distributed_object_write(dataset->object, buf, len_to_read, off_to_read, &bytes_written, batch);
 	j_batch_execute(batch);
-
-	j_trace_leave(G_STRFUNC);
-
 	return 0;
 }
-/**
- * Provides get Functions of the dataset
- *
- * \return ret_value The error code
- **/
-static herr_t
-H5VL_julea_dataset_get(void* _dataset, H5VL_dataset_get_t get_type, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)), va_list arguments)
-{
-	g_autoptr(JBatch) batch = NULL;
-	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
-
-	if (!j_is_key_initialized(dataset->key))
-		return 1;
-	j_trace_enter(G_STRFUNC, NULL);
-
-	switch (get_type)
-	{
-	case H5VL_ATTR_GET_ACPL:
-		break;
-	case H5VL_ATTR_GET_INFO:
-		break;
-	case H5VL_ATTR_GET_NAME:
-		break;
-	case H5VL_ATTR_GET_SPACE:
-	{
-		hdf5_space_import(dataset->bson, va_arg(arguments, hid_t*));
-	}
-	break;
-	case H5VL_ATTR_GET_STORAGE_SIZE:
-		break;
-	case H5VL_ATTR_GET_TYPE:
-	{
-		hdf5_type_import(dataset->bson, va_arg(arguments, hid_t*));
-	}
-	break;
-	default:
-		printf("ERROR: unsupported type %s:%d\n", __FILE__, __LINE__);
-		exit(1);
-	}
-	j_trace_leave(G_STRFUNC);
-	return 0;
-}
-
-/**
- * Closes the dataset
- **/
-static herr_t
-H5VL_julea_dataset_close(void* _dataset, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
-{
-	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
-
-	if (!j_is_key_initialized(dataset->key))
-		return 1;
-	j_trace_enter(G_STRFUNC, NULL);
-
-	j_smd_scheme_close(dataset);
-	j_trace_leave(G_STRFUNC);
-	return 0;
-}
-
-/**
- * The class providing the functions to HDF5
- **/
 static const H5VL_class_t H5VL_julea_g = { 0,
 	JULEA,
 	"julea", /* name */
@@ -577,24 +371,24 @@ static const H5VL_class_t H5VL_julea_g = { 0,
 	{
 		/* attribute_cls */
 		H5VL_julea_attr_create, /* create */
-		H5VL_julea_attr_open, /* open */
+		H5VL_julea_scheme_open, /* open */
 		H5VL_julea_attr_read, /* read */
 		H5VL_julea_attr_write, /* write */
-		H5VL_julea_attr_get, /* get */
+		H5VL_julea_scheme_get, /* get */
 		NULL, // H5VL_julea_attr_specific,              /* specific */
 		NULL, // H5VL_julea_attr_optional,              /* optional */
-		H5VL_julea_attr_close /* close */
+		H5VL_julea_scheme_close /* close */
 	},
 	{
 		/* dataset_cls */
 		H5VL_julea_dataset_create, /* create */
-		H5VL_julea_dataset_open, /* open */
+		H5VL_julea_scheme_open, /* open */
 		H5VL_julea_dataset_read, /* read */
 		H5VL_julea_dataset_write, /* write */
-		H5VL_julea_dataset_get, /* get */
+		H5VL_julea_scheme_get, /* get */
 		NULL, // H5VL_julea_dataset_specific,          /* specific */
 		NULL, // H5VL_julea_dataset_optional,          /* optional */
-		H5VL_julea_dataset_close /* close */
+		H5VL_julea_scheme_close /* close */
 	},
 	{
 		/* datatype_cls */
@@ -617,11 +411,11 @@ static const H5VL_class_t H5VL_julea_g = { 0,
 	{
 		/* group_cls */
 		H5VL_julea_group_create, /* create */
-		H5VL_julea_group_open, /* open */
+		H5VL_julea_scheme_open, /* open */
 		NULL, // H5VL_julea_group_get,	/* get */
 		NULL, // H5VL_julea_group_specific,           /* specific */
 		NULL, // H5VL_julea_group_optional,           /* optional */
-		H5VL_julea_group_close /* close */
+		H5VL_julea_scheme_close /* close */
 	},
 	{
 		/* link_cls */
