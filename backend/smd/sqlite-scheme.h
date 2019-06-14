@@ -6,7 +6,7 @@ backend_scheme_delete(const char* name, char* parent)
 	sqlite3_int64 result = 0;
 	J_DEBUG("%s", name);
 	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt);
@@ -15,7 +15,7 @@ backend_scheme_delete(const char* name, char* parent)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, result);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
@@ -26,7 +26,7 @@ backend_scheme_delete(const char* name, char* parent)
 	return TRUE;
 }
 static gboolean
-backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
+backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distribution, char* key)
 {
 	sqlite3_stmt* stmt;
 	gint ret;
@@ -40,7 +40,6 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 	bson_iter_t iter_data_type;
 	bson_iter_t iter_data_dims;
 	guint i;
-	guint distribution;
 	{
 		char* _t = bson_as_json(bson, NULL);
 		J_DEBUG("%s %s", name, _t);
@@ -53,7 +52,6 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 	var_dims[1] = 0;
 	var_dims[2] = 0;
 	var_dims[3] = 0;
-	distribution = J_DISTRIBUTION_ROUND_ROBIN;
 	{ // extract ndims,dims,distribution
 		while (bson_iter_next(&iter))
 		{
@@ -76,8 +74,6 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 					}
 				}
 			}
-			else if (strcmp("distribution", bson_iter_key(&iter)) == 0)
-				distribution = bson_iter_int32(&iter);
 			else if (strcmp("data_type", bson_iter_key(&iter)) == 0)
 			{
 				bson_iter_recurse(&iter, &iter_data_type);
@@ -86,7 +82,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 		}
 	}
 	{ // extract the file key
-		sqlite3_prepare_v2(backend_db, "SELECT file_key FROM smd WHERE key = ?;", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "SELECT file_key FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
 		j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)parent));
 		ret = sqlite3_step(stmt);
 		if (ret == SQLITE_ROW)
@@ -96,7 +92,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	{ /*delete old scheme first*/
-		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 		j_sqlite3_bind_int64(stmt, 3, file_key);
@@ -108,7 +104,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	{ // insert new scheme
-		sqlite3_prepare_v2(backend_db, "INSERT INTO smd (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key) VALUES (?,?,?,?,?,?,?,?,?,?,?);", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "INSERT INTO smd_schemes (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key) VALUES (?,?,?,?,?,?,?,?,?,?,?);", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_DATA);
 		j_sqlite3_bind_int64(stmt, 3, *((sqlite3_int64*)parent));
@@ -126,7 +122,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	{ // extract the primary key
-		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 		j_sqlite3_bind_int64(stmt, 3, file_key);
@@ -145,7 +141,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, char* key)
 	return TRUE;
 }
 static gboolean
-backend_scheme_open(const char* name, char* parent, bson_t* bson, char* key)
+backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distribution, char* key)
 {
 	sqlite3_stmt* stmt;
 	bson_t b_datatype[1];
@@ -158,7 +154,7 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, char* key)
 	J_DEBUG("%s", name);
 	bson_init(bson);
 	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key, ndims, dims0, dims1, dims2, dims3, distribution,type_key FROM smd WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT key, ndims, dims0, dims1, dims2, dims3, distribution,type_key FROM smd_schemes WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt);
@@ -180,7 +176,7 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, char* key)
 		bson_append_int32(b_arr, key, -1, sqlite3_column_int(stmt, 5));
 		bson_append_array_end(b_datatype, b_arr);
 		bson_append_document_end(bson, b_datatype);
-		bson_append_int32(bson, "distribution", -1, sqlite3_column_int(stmt, 6));
+		*distribution = sqlite3_column_int(stmt, 6);
 		type_key = sqlite3_column_int64(stmt, 7);
 	}
 	else if (ret == SQLITE_DONE)
@@ -213,7 +209,7 @@ backend_scheme_write(char* key, const char* buf, guint offset, guint size)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 type_key;
-	sqlite3_prepare_v2(backend_db, "SELECT type_key FROM smd WHERE key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT type_key FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)key));
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)

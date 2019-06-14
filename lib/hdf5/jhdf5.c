@@ -136,7 +136,7 @@ H5VL_julea_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const cha
 	b_space = hdf5_space_export(space_id);
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	attr = j_smd_scheme_create(attr_name, parent, b_type, b_space, J_DISTRIBUTION_DATABASE,batch);
+	attr = j_smd_scheme_create(attr_name, parent, b_type, b_space, J_DISTRIBUTION_DATABASE, batch);
 	j_batch_execute(batch);
 
 	bson_destroy(b_type);
@@ -178,13 +178,13 @@ H5VL_julea_attr_read(void* _attr, hid_t dtype_id __attribute__((unused)), void* 
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* attr = (J_Scheme_t*)_attr;
-guint size=0;/*TODO calculate it correctly*/
+	guint size = 0; /*TODO calculate it correctly*/
 	if (!j_is_key_initialized(attr->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	j_smd_scheme_read(attr, buf,0,size, batch);
+	j_smd_scheme_read(attr, buf, 0, size, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
@@ -199,12 +199,12 @@ H5VL_julea_attr_write(void* _attr, hid_t dtype_id __attribute__((unused)), const
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* attr = (J_Scheme_t*)_attr;
-guint size=0;/*TODO calculate it correctly*/
+	guint size = 0; /*TODO calculate it correctly*/
 	if (!j_is_key_initialized(attr->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
-	j_smd_scheme_write(attr, buf,0,size, batch);
+	j_smd_scheme_write(attr, buf, 0, size, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 
@@ -340,7 +340,7 @@ H5VL_julea_group_create(void* obj, const H5VL_loc_params_t* loc_params, const ch
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_trace_enter(G_STRFUNC, NULL);
 
-	attr = j_smd_scheme_create(name, parent, NULL, NULL, J_DISTRIBUTION_DATABASE,batch);
+	attr = j_smd_scheme_create(name, parent, NULL, NULL, J_DISTRIBUTION_DATABASE, batch);
 	j_batch_execute(batch);
 	j_trace_leave(G_STRFUNC);
 

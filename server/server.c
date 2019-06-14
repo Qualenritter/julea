@@ -669,9 +669,16 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			reply = j_message_new_reply(message);
 			name = j_message_get_string(message);
 			bson_len = j_message_get_4(message);
-			bson_data = j_message_get_n(message, bson_len);
+			if (bson_len == 0)
+			{
+				bson_init(bson);
+			}
+			else
+			{
+				bson_data = j_message_get_n(message, bson_len);
+				bson_init_static(bson, bson_data, bson_len);
+			}
 			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			bson_init_static(bson, bson_data, bson_len);
 			if (j_backend_smd_file_create(jd_smd_backend, name, bson, _key))
 			{
 				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
@@ -740,15 +747,17 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
+			guint distribution;
 
 			reply = j_message_new_reply(message);
 			name = j_message_get_string(message);
 			parent = j_message_get_n(message, SMD_KEY_LENGTH);
+			distribution = j_message_get_4(message);
 			bson_len = j_message_get_4(message);
 			bson_data = j_message_get_n(message, bson_len);
 			bson_init_static(bson, bson_data, bson_len);
 			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, bson, _key))
+			if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, bson, distribution, _key))
 			{
 				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
 			}
@@ -787,15 +796,17 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
+			guint distribution;
 
 			reply = j_message_new_reply(message);
 			name = j_message_get_string(message);
 			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, bson, _key))
+			if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, bson, &distribution, _key))
 			{
 				bson_len = bson->len;
-				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
+				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + 4 + bson_len);
 				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+				j_message_append_4(reply, &distribution);
 				j_message_append_4(reply, &bson_len);
 				j_message_append_n(reply, bson_get_data(bson), bson_len);
 			}

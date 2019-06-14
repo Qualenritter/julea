@@ -6,7 +6,7 @@ backend_file_delete(const char* name)
 	sqlite3_int64 result = 0;
 	J_DEBUG("%s", name);
 	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 	ret = sqlite3_step(stmt);
@@ -15,7 +15,7 @@ backend_file_delete(const char* name)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "DELETE FROM smd WHERE file_key = ?1;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_schemes WHERE file_key = ?1;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, result);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
@@ -38,7 +38,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	}
 	g_return_val_if_fail(name != NULL, FALSE);
 	{ /*delete old file first*/
-		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 		ret = sqlite3_step(stmt);
@@ -49,7 +49,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	{ // insert new file
-		sqlite3_prepare_v2(backend_db, "INSERT INTO smd (name,meta_type) VALUES (?,?);", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "INSERT INTO smd_schemes (name,meta_type) VALUES (?,?);", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 		ret = sqlite3_step(stmt);
@@ -58,7 +58,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	{ // extract the primary key
-		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 		ret = sqlite3_step(stmt);
@@ -73,7 +73,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	{ // set the parent pointers to this file
-		sqlite3_prepare_v2(backend_db, "UPDATE smd SET parent_key = ?1, file_key = ?1 WHERE key = ?1;", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "UPDATE smd_schemes SET parent_key = ?1, file_key = ?1 WHERE key = ?1;", -1, &stmt, NULL);
 		j_sqlite3_bind_int64(stmt, 1, result);
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_DONE)
@@ -92,7 +92,7 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	sqlite3_int64 result = 0;
 	J_DEBUG("%s", name);
 	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
 	ret = sqlite3_step(stmt);

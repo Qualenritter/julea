@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*http://mongoc.org/libbson/current/bson_t.html*/
 /**
  * \file
  **/
@@ -36,9 +35,11 @@ static gboolean
 j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 {
 	int message_size;
+	int zero = 0;
 	g_autoptr(JListIterator) iter = NULL;
 	g_autoptr(JMessage) reply = NULL;
 	int index = 0;
+	bson_t bson[1];
 	GSocketConnection* smd_connection;
 	JBackend* smd_backend;
 	JSMDFileOperation* operation;
@@ -58,14 +59,17 @@ j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 	{
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
-			j_backend_smd_file_create(smd_backend, operation->name, operation->scheme->bson, operation->scheme->key);
+		{
+			bson_init(bson);
+			j_backend_smd_file_create(smd_backend, operation->name, bson, operation->scheme->key);
+			bson_destroy(bson);
+		}
 		else
 		{
-			message_size = strlen(operation->name) + 1 + 4 + operation->scheme->bson->len;
+			message_size = strlen(operation->name) + 1 + 4 + 4;
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
-			j_message_append_4(message, &operation->scheme->bson->len);
-			j_message_append_n(message, bson_get_data(operation->scheme->bson), operation->scheme->bson->len);
+			j_message_append_4(message, &zero);
 		}
 	}
 	if (smd_backend == NULL)
@@ -101,9 +105,8 @@ j_smd_file_create(const char* name, JBatch* batch)
 	smd_op = g_new(JSMDFileOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->ref_count = 1;
-	smd_op->scheme->bson = g_new(bson_t, 1);
-	smd_op->scheme->bson_requires_free = TRUE;
-	bson_init(smd_op->scheme->bson);
+	smd_op->scheme->type = NULL;
+	smd_op->scheme->space = NULL;
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
@@ -191,13 +194,12 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 	JSMDFileOperation* operation;
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
-	int bson_len;
 	int message_size;
 	g_autoptr(JListIterator) iter = NULL;
 	g_autoptr(JMessage) reply = NULL;
 	int index = 0;
+	bson_t bson[1];
 	GSocketConnection* smd_connection;
-	uint8_t* bson_data;
 	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
@@ -213,10 +215,9 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
 		{
-			operation->scheme->bson = g_new(bson_t, 1);
-			operation->scheme->bson_requires_free = TRUE;
-			bson_init(operation->scheme->bson);
-			j_backend_smd_file_open(smd_backend, operation->name, operation->scheme->bson, operation->scheme->key);
+			bson_init(bson);
+			j_backend_smd_file_open(smd_backend, operation->name, bson, operation->scheme->key);
+			bson_destroy(bson);
 		}
 		else
 		{
@@ -236,13 +237,6 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 		{
 			operation = j_list_iterator_get(iter);
 			memcpy(operation->scheme->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			if (j_is_key_initialized(operation->scheme->key))
-			{
-				bson_len = j_message_get_4(reply);
-				bson_data = j_message_get_n(reply, bson_len);
-				operation->scheme->bson = bson_new_from_data(bson_data, bson_len);
-				operation->scheme->bson_requires_free = FALSE;
-			}
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
@@ -265,8 +259,8 @@ j_smd_file_open(const char* name, JBatch* batch)
 	smd_op = g_new(JSMDFileOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->ref_count = 1;
-	smd_op->scheme->bson = NULL;
-	smd_op->scheme->bson_requires_free = FALSE;
+	smd_op->scheme->type = NULL;
+	smd_op->scheme->space = NULL;
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
@@ -291,10 +285,8 @@ j_smd_file_unref(void* _file)
 	J_Scheme_t* file = _file;
 	if (file && g_atomic_int_dec_and_test(&(file->ref_count)))
 	{
-		if (file->bson)
-			bson_destroy(file->bson);
-		if (file->bson_requires_free)
-			g_free(file->bson);
+		j_smd_type_unref(file->type);
+		j_smd_space_unref(file->space);
 		g_free(file);
 	}
 	return TRUE;

@@ -53,17 +53,6 @@ typedef enum JSMDType JSMDType;
 					  : SMD_TYPE_BLOB)
 
 /*TODO make all structs internal*/
-struct J_Scheme_t
-{
-	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
-	bson_t* bson;
-	gboolean bson_requires_free; /*if bson requires gfree*/
-	JDistributionType distribution_type;
-	JDistribution* distribution; /*only if scheme*/
-	JDistributedObject* object; /*only if scheme*/
-	gint ref_count;
-};
-typedef struct J_Scheme_t J_Scheme_t;
 struct J_SMD_Space_t
 {
 	guint ndims;
@@ -92,6 +81,17 @@ struct J_SMD_Variable_t
 	gint ref_count;
 };
 typedef struct J_SMD_Variable_t J_SMD_Variable_t;
+struct J_Scheme_t
+{
+	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
+	J_SMD_Type_t* type;
+	J_SMD_Space_t* space;
+	JDistributionType distribution_type;
+	JDistribution* distribution; /*only if scheme*/
+	JDistributedObject* object; /*only if scheme*/
+	gint ref_count;
+};
+typedef struct J_Scheme_t J_Scheme_t;
 
 void* j_smd_file_create(const char* name, JBatch* batch);
 gboolean j_smd_file_delete(const char* name, JBatch* batch);
@@ -157,8 +157,13 @@ gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_
 gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
-bson_t* j_smd_space_to_bson(void* space);
-void* j_smd_space_from_bson(bson_iter_t* bson);
-bson_t* j_smd_type_to_bson(void* type);
-void* j_smd_type_from_bson(bson_iter_t* bson);
+
+bson_t*
+j_smd_type_to_bson(void* _type);
+void*
+j_smd_type_from_bson(bson_iter_t* iter_arr);
+
+bson_t* j_smd_space_to_bson(void* _space);
+void*
+j_smd_space_from_bson(bson_iter_t* bson);
 #endif

@@ -26,64 +26,6 @@
 #include <julea.h>
 #include <julea-internal.h>
 #include <julea-smd.h>
-bson_t*
-j_smd_space_to_bson(void* _space)
-{
-	J_SMD_Space_t* space = _space;
-	char key_buf[16];
-	const char* key;
-	bson_t* b_space;
-	bson_t b_space_dims[1];
-	guint i;
-	j_trace_enter(G_STRFUNC, NULL);
-	b_space = g_new(bson_t, 1);
-	bson_init(b_space);
-	bson_append_int32(b_space, "ndims", -1, space->ndims);
-	bson_append_array_begin(b_space, "dims", -1, b_space_dims);
-	for (i = 0; i < space->ndims; i++)
-	{
-		bson_uint32_to_string(i, &key, key_buf, sizeof(key_buf));
-		bson_append_int32(b_space_dims, key, -1, space->dims[i]);
-	}
-	bson_append_array_end(b_space, b_space_dims);
-	bson_destroy(b_space_dims);
-	j_trace_leave(G_STRFUNC);
-	return b_space;
-}
-void*
-j_smd_space_from_bson(bson_iter_t* bson)
-{
-	J_SMD_Space_t* space;
-	bson_iter_t iter;
-	bson_iter_t b_ndims;
-	bson_iter_t b_dims;
-	space = g_new(J_SMD_Space_t, 1);
-	space->ref_count = 1;
-	j_trace_enter(G_STRFUNC, NULL);
-	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "ndims", &b_ndims) && BSON_ITER_HOLDS_INT32(&b_ndims))
-		space->ndims = bson_iter_int32(&b_ndims);
-	else
-	{
-		j_trace_leave(G_STRFUNC);
-		g_free(space);
-		return NULL;
-	}
-	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "dims", &b_ndims) && BSON_ITER_HOLDS_ARRAY(&b_ndims))
-	{
-		bson_iter_recurse(&b_ndims, &b_dims);
-		for (guint i = 0; bson_iter_next(&b_dims) && i < space->ndims; i++)
-			space->dims[i] = bson_iter_int32(&b_dims);
-	}
-	else
-	{
-		j_trace_leave(G_STRFUNC);
-		g_free(space->dims);
-		g_free(space);
-		return NULL;
-	}
-	j_trace_leave(G_STRFUNC);
-	return space;
-}
 void*
 j_smd_space_create(guint ndims, guint* dims)
 {
@@ -121,7 +63,7 @@ gboolean
 j_smd_space_unref(void* _space)
 {
 	J_SMD_Space_t* space = _space;
-	if (g_atomic_int_dec_and_test(&(space->ref_count)))
+	if (space && g_atomic_int_dec_and_test(&(space->ref_count)))
 	{
 		g_free(_space);
 	}
@@ -145,4 +87,56 @@ j_smd_space_equals(void* _space1, void* _space2)
 			return FALSE;
 	}
 	return TRUE;
+}
+bson_t*
+j_smd_space_to_bson(void* _space)
+{
+	J_SMD_Space_t* space = _space;
+	char key_buf[16];
+	const char* key;
+	bson_t* b_space;
+	bson_t b_space_dims[1];
+	guint i;
+	b_space = g_new(bson_t, 1);
+	bson_init(b_space);
+	bson_append_int32(b_space, "ndims", -1, space->ndims);
+	bson_append_array_begin(b_space, "dims", -1, b_space_dims);
+	for (i = 0; i < space->ndims; i++)
+	{
+		bson_uint32_to_string(i, &key, key_buf, sizeof(key_buf));
+		bson_append_int32(b_space_dims, key, -1, space->dims[i]);
+	}
+	bson_append_array_end(b_space, b_space_dims);
+	bson_destroy(b_space_dims);
+	return b_space;
+}
+void*
+j_smd_space_from_bson(bson_iter_t* bson)
+{
+	J_SMD_Space_t* space;
+	bson_iter_t iter;
+	bson_iter_t b_ndims;
+	bson_iter_t b_dims;
+	space = g_new(J_SMD_Space_t, 1);
+	space->ref_count = 1;
+	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "ndims", &b_ndims) && BSON_ITER_HOLDS_INT32(&b_ndims))
+		space->ndims = bson_iter_int32(&b_ndims);
+	else
+	{
+		g_free(space);
+		return NULL;
+	}
+	if (bson_iter_recurse(bson, &iter) && bson_iter_find_descendant(&iter, "dims", &b_ndims) && BSON_ITER_HOLDS_ARRAY(&b_ndims))
+	{
+		bson_iter_recurse(&b_ndims, &b_dims);
+		for (guint i = 0; bson_iter_next(&b_dims) && i < space->ndims; i++)
+			space->dims[i] = bson_iter_int32(&b_dims);
+	}
+	else
+	{
+		g_free(space->dims);
+		g_free(space);
+		return NULL;
+	}
+	return space;
 }
