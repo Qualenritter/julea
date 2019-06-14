@@ -301,6 +301,7 @@ test_scheme_datatypes_read_write(void)
 	ret = j_smd_file_delete(filename, batch);
 	g_assert_cmpuint(ret, !=, FALSE);
 	j_batch_execute(batch);
+	g_free(test_var_rec);
 	g_free(test_var);
 	g_free(types);
 }

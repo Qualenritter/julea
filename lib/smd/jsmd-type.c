@@ -145,9 +145,7 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "ndims", &iter_val) && BSON_ITER_HOLDS_INT32(&iter_val))
 				var.space.ndims = bson_iter_int32(&iter_val);
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "subtype", &iter_val) && BSON_ITER_HOLDS_DOCUMENT(&iter_val))
-			{
 				var.sub_type = j_smd_type_from_bson(&iter_val);
-			}
 			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "dims", &iter_val) && BSON_ITER_HOLDS_ARRAY(&iter_val))
 			{
 				bson_iter_recurse(&iter_val, &iter_dims);
@@ -162,7 +160,10 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 				}
 			}
 			if (var.type == SMD_TYPE_SUB_TYPE)
+			{
 				j_smd_type_add_compound_type(type, var.name, var.offset, var.size, var.sub_type, var.space.ndims, var.space.dims);
+				j_smd_type_unref(var.sub_type);
+			}
 			else
 				j_smd_type_add_atomic_type(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
 		}
@@ -270,10 +271,9 @@ gboolean
 j_smd_variable_unref(void* _variable)
 {
 	J_SMD_Variable_t* variable = _variable;
-	if (g_atomic_int_dec_and_test(&(variable->ref_count)))
+	if (variable && g_atomic_int_dec_and_test(&(variable->ref_count)))
 	{
-		if (variable->type == SMD_TYPE_SUB_TYPE)
-			j_smd_type_unref(variable->sub_type);
+		j_smd_type_unref(variable->sub_type);
 		g_free(_variable);
 	}
 	return TRUE;
@@ -290,7 +290,7 @@ j_smd_type_unref(void* _type)
 {
 	guint i;
 	J_SMD_Type_t* type = _type;
-	if (g_atomic_int_dec_and_test(&(type->ref_count)))
+	if (type && g_atomic_int_dec_and_test(&(type->ref_count)))
 	{
 		for (i = 0; i < type->arr->len; i++)
 			j_smd_variable_unref(g_array_index(type->arr, J_SMD_Variable_t*, i));

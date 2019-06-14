@@ -366,7 +366,7 @@ gboolean
 j_smd_scheme_unref(void* _scheme)
 {
 	J_Scheme_t* scheme = _scheme;
-	if (g_atomic_int_dec_and_test(&(scheme->ref_count)))
+	if (scheme && g_atomic_int_dec_and_test(&(scheme->ref_count)))
 	{
 		if (scheme->bson)
 			bson_destroy(scheme->bson);
