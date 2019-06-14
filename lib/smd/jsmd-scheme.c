@@ -132,6 +132,7 @@ j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDi
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->type = j_smd_type_ref(type);
 	smd_op->scheme->space = j_smd_space_ref(space);
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
@@ -330,6 +331,7 @@ j_smd_scheme_open(const char* name, void* parent, JBatch* batch)
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
+	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->ref_count = 1;
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	smd_op->scheme->type = NULL;

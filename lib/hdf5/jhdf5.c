@@ -26,11 +26,10 @@
 // FIXME check whether version is up to date: https://github.com/Olgasnezh/hdf5-vol-sqlite-plugin
 
 #define H5Sencode_vers 1
+#include <julea.h>
 
 #include <bson.h>
 #include <glib.h>
-
-#include <julea.h>
 
 #include <julea-config.h>
 #include <julea-internal.h>
@@ -45,11 +44,19 @@
 #include <unistd.h>
 
 #include <H5PLextern.h>
+
 #include <hdf5.h>
 
 #define _GNU_SOURCE
 
 #define JULEA 520
+
+struct J_HDF_Scheme_t
+{
+	hid_t type_id;
+	hid_t space_id;
+};
+typedef struct J_HDF_Scheme_t J_HDF_Scheme_t;
 
 /**
  * Initializes the plugin
@@ -94,23 +101,157 @@ hdf5_space_export(hid_t space_id __attribute__((unused)))
 	g_free(dims2);
 	return space;
 }
+static gboolean
+hdf5_type_export_recourse(hid_t type_id __attribute__((unused)), const char* name, guint offset, J_SMD_Type_t* parent, guint ndims, guint* dims)
+{
+	J_SMD_Type_t* type;
+	int i;
+	guint dims2[SMD_MAX_NDIMS];
+	hsize_t dims3[SMD_MAX_NDIMS];
+	guint one = 1;
+	if (parent == NULL)
+		parent = j_smd_type_create();
+	switch (H5Tget_class(type_id))
+	{
+	case H5T_INTEGER:
+		j_smd_type_add_atomic_type(parent, name, offset, H5Tget_size(type_id), SMD_TYPE_INT, ndims, dims);
+		break;
+	case H5T_FLOAT:
+		j_smd_type_add_atomic_type(parent, name, offset, H5Tget_size(type_id), SMD_TYPE_FLOAT, ndims, dims);
+		break;
+	case H5T_COMPOUND:
+		for (i = 0; i < H5Tget_nmembers(type_id); i++)
+		{
+			type = j_smd_type_create();
+			hdf5_type_export_recourse(H5Tget_member_type(type_id, i), H5Tget_member_name(type_id, i), H5Tget_member_offset(type_id, i), type, one, &one);
+			j_smd_type_add_compound_type(parent, name, offset, H5Tget_size(type_id), type, ndims, dims);
+			j_smd_type_unref(type);
+		}
+		break;
+	case H5T_ARRAY:
+		ndims = H5Tget_array_ndims(type_id);
+		H5Tget_array_dims2(type_id, dims3);
+		for (i = 0; i < SMD_MAX_NDIMS; i++)
+			dims2[i] = dims3[i];
+		hdf5_type_export_recourse(H5Tget_member_type(type_id, 0), name, offset, parent, ndims, dims2);
+		break;
+	case H5T_STRING:
+	case H5T_BITFIELD:
+	case H5T_OPAQUE:
+	case H5T_REFERENCE:
+	case H5T_ENUM:
+	case H5T_VLEN:
+	case H5T_NO_CLASS:
+	case H5T_TIME:
+	case H5T_NCLASSES:
+	default:
+		J_CRITICAL("unsupported class type=%d", H5Tget_class(type_id));
+	}
+	return TRUE;
+}
 static J_SMD_Type_t*
 hdf5_type_export(hid_t type_id __attribute__((unused)))
 {
-	void* type;
+	J_SMD_Type_t* type;
+	guint one = 1;
 	type = j_smd_type_create();
-	/*TODO type data*/
+	hdf5_type_export_recourse(type_id, "_", 0, type, one, &one);
 	return type;
 }
-static int
-hdf5_space_import(J_SMD_Space_t* space __attribute__((unused)), hid_t* type_id __attribute__((unused)))
+
+static gboolean
+hdf5_space_import(J_SMD_Space_t* space __attribute__((unused)), hid_t* space_id __attribute__((unused)))
 {
-	return FALSE; /*TODO*/
+	hsize_t dims[SMD_MAX_NDIMS];
+	guint i;
+	for (i = 0; i < space->ndims && i < SMD_MAX_NDIMS; i++)
+	{
+		dims[i] = space->dims[i];
+	}
+	*space_id = H5Screate_simple(space->ndims, dims, NULL);
+	return TRUE;
 }
-static int
+
+static hid_t
+hdf5_type_import_base(J_SMD_Variable_t* var)
+{
+	switch (var->type)
+	{
+	case SMD_TYPE_INT:
+		switch (var->size)
+		{ /*TODO signed|unsigned*/
+		case 8:
+			return H5T_NATIVE_LLONG;
+		case 4:
+			return H5T_NATIVE_INT;
+		case 2:
+			return H5T_NATIVE_SHORT;
+		case 1:
+			return H5T_NATIVE_CHAR;
+		default:
+			J_CRITICAL("this should never happen type=%d", var->type);
+		}
+		break;
+	case SMD_TYPE_FLOAT:
+		switch (var->size)
+		{ /*TODO signed|unsigned*/
+		case 8:
+			return H5T_NATIVE_DOUBLE;
+		case 4:
+			return H5T_NATIVE_FLOAT;
+		default:
+			J_CRITICAL("this should never happen type=%d", var->type);
+		}
+		break;
+	case SMD_TYPE_BLOB:
+		return H5T_NATIVE_CHAR;
+	case SMD_TYPE_SUB_TYPE:
+	default:
+		J_CRITICAL("this should never happen%d", 0);
+	}
+	J_CRITICAL("this should never happen%d", 0);
+	return 0;
+}
+static hid_t
+hdf5_type_import_array(J_SMD_Variable_t* var, hid_t base_type)
+{
+	hsize_t dims[SMD_MAX_NDIMS];
+	guint i;
+	if (var->space.ndims == 1 && var->space.dims[0] == 1)
+		return base_type;
+	for (i = 0; i < SMD_MAX_NDIMS; i++)
+	{
+		dims[i] = var->space.dims[i];
+	}
+	return H5Tarray_create(base_type, var->space.ndims, dims);
+}
+static gboolean
 hdf5_type_import(J_SMD_Type_t* type __attribute__((unused)), hid_t* type_id __attribute__((unused)))
 {
-	return FALSE; /*TODO*/
+	J_SMD_Variable_t* var;
+	hid_t base_type;
+	guint i;
+	if (type->arr->len > 0)
+	{
+		var = g_array_index(type->arr, J_SMD_Variable_t*, 0);
+		base_type = hdf5_type_import_base(var);
+		if (type->arr->len == 1 || var->type == SMD_TYPE_SUB_TYPE)
+			*type_id = hdf5_type_import_array(var, base_type);
+		else
+		{
+			*type_id = H5Tcreate(H5T_COMPOUND, var->size);
+			for (i = 0; i < type->arr->len; i++)
+			{
+				var = g_array_index(type->arr, J_SMD_Variable_t*, i);
+				H5Tinsert(*type_id, var->name, var->offset, hdf5_type_import_array(var, base_type));
+			}
+		}
+	}
+	else
+	{
+		J_CRITICAL("array length invalid %d", type->arr->len);
+	}
+	return TRUE;
 }
 static void*
 H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
@@ -126,18 +267,21 @@ H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
 	void* type;
 	void* space;
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
-	J_Scheme_t* attr;
+	J_Scheme_t* scheme;
 	g_autoptr(JBatch) batch = NULL;
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	type = hdf5_type_export(type_id);
 	space = hdf5_space_export(space_id);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	attr = j_smd_scheme_create(name, parent, type, space, J_DISTRIBUTION_DATABASE, batch);
+	scheme = j_smd_scheme_create(name, parent, type, space, J_DISTRIBUTION_DATABASE, batch);
 	j_batch_execute(batch);
+	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
+	((J_HDF_Scheme_t*)scheme->user_data)->type_id = type_id;
+	((J_HDF_Scheme_t*)scheme->user_data)->space_id = space_id;
 	j_smd_type_unref(type);
 	j_smd_space_unref(space);
-	return attr;
+	return scheme;
 }
 static herr_t
 H5VL_julea_attr_read(void* _scheme __attribute__((unused)), //
@@ -210,6 +354,7 @@ H5VL_julea_scheme_close(void* scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
+	g_free(((J_Scheme_t*)scheme)->user_data);
 	j_smd_scheme_unref(scheme);
 	return 0;
 }
@@ -287,18 +432,21 @@ H5VL_julea_dataset_create(void* _parent __attribute__((unused)), //
 	void* type;
 	void* space;
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
-	J_Scheme_t* dataset;
+	J_Scheme_t* scheme;
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	type = hdf5_type_export(type_id);
 	space = hdf5_space_export(space_id);
-	dataset = j_smd_scheme_create(name, parent, type, space, J_DISTRIBUTION_ROUND_ROBIN, batch);
+	scheme = j_smd_scheme_create(name, parent, type, space, J_DISTRIBUTION_ROUND_ROBIN, batch);
 	j_batch_execute(batch);
+	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
+	((J_HDF_Scheme_t*)scheme->user_data)->type_id = type_id;
+	((J_HDF_Scheme_t*)scheme->user_data)->space_id = space_id;
 	j_smd_type_unref(type);
 	j_smd_space_unref(space);
 
-	return dataset;
+	return scheme;
 }
 static void*
 H5VL_julea_scheme_open(void* obj __attribute__((unused)), //
@@ -310,13 +458,16 @@ H5VL_julea_scheme_open(void* obj __attribute__((unused)), //
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)obj;
-	J_Scheme_t* dataset;
+	J_Scheme_t* scheme;
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	dataset = j_smd_scheme_open(name, parent, batch);
+	scheme = j_smd_scheme_open(name, parent, batch);
 	j_batch_execute(batch);
-	return dataset;
+	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
+	hdf5_space_import(scheme->space, &((J_HDF_Scheme_t*)scheme->user_data)->space_id);
+	hdf5_type_import(scheme->type, &((J_HDF_Scheme_t*)scheme->user_data)->type_id);
+	return scheme;
 }
 static herr_t
 H5VL_julea_dataset_read(void* _dataset __attribute__((unused)), //
@@ -330,12 +481,13 @@ H5VL_julea_dataset_read(void* _dataset __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* dataset = (J_Scheme_t*)_dataset;
 	guint64 bytes_read;
+	int len_to_read = 4096; /*TODO specify which data and offset?*/
+	int off_to_read = 0; /*TODO specify which data and offset?*/
+
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_read = 0;
 	g_assert(buf != NULL);
 	g_assert(dataset->object != NULL);
-	int len_to_read = 4096; /*TODO specify which data and offset?*/
-	int off_to_read = 0; /*TODO specify which data and offset?*/
 	j_distributed_object_read(dataset->object, buf, len_to_read, off_to_read, &bytes_read, batch);
 	j_batch_execute(batch);
 	return 0;
@@ -352,10 +504,10 @@ H5VL_julea_dataset_write(void* dset __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* dataset = (J_Scheme_t*)dset;
 	guint64 bytes_written;
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	bytes_written = 0;
 	int len_to_read = 4096; /*TODO specify which data and offset?*/
 	int off_to_read = 0; /*TODO specify which data and offset?*/
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	bytes_written = 0;
 	j_distributed_object_write(dataset->object, buf, len_to_read, off_to_read, &bytes_written, batch);
 	j_batch_execute(batch);
 	return 0;

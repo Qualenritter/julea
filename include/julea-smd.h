@@ -90,6 +90,7 @@ struct J_Scheme_t
 	JDistribution* distribution; /*only if scheme*/
 	JDistributedObject* object; /*only if scheme*/
 	gint ref_count;
+	void* user_data; /*may be used by user application - this will be initialized to NULL but never freed or touched elsewhere*/
 };
 typedef struct J_Scheme_t J_Scheme_t;
 /*files only required to detect fast what belongs together*/
