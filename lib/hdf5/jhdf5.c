@@ -312,12 +312,18 @@ H5VL_julea_attr_read(void* _scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
+	guint len;
+	guint i;
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_smd_scheme_read(scheme, buf, 0, ((J_HDF_Scheme_t*)scheme->user_data)->type_size, batch);
+	len = 1;
+	for (i = 0; i < scheme->space->ndims; i++)
+		len *= scheme->space->dims[i];
+	len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+	j_smd_scheme_read(scheme, buf, 0, len, batch);
 	j_batch_execute(batch);
 	return 0;
 }
@@ -329,11 +335,19 @@ H5VL_julea_attr_write(void* _scheme __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
 	g_autoptr(JBatch) batch = NULL;
+	guint len;
+	guint i;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_smd_scheme_write(scheme, buf, 0, ((J_HDF_Scheme_t*)scheme->user_data)->type_size, batch);
+	len = 1;
+	for (i = 0; i < scheme->space->ndims; i++)
+	{
+		len *= scheme->space->dims[i];
+	}
+	len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+	j_smd_scheme_write(scheme, buf, 0, len, batch);
 	j_batch_execute(batch);
 	return 0;
 }
@@ -528,13 +542,72 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	guint64 bytes_read;
-	int len_to_read = ((J_HDF_Scheme_t*)scheme->user_data)->type_size; /*TODO specify which data and offset?*/
-	int off_to_read = 0; /*TODO specify which data and offset?*/
+	guint i, j, k, l;
+	gint m;
+	guint len;
+	hsize_t dims_start[SMD_MAX_NDIMS];
+	hsize_t dims_end[SMD_MAX_NDIMS];
+	guint off_layer[SMD_MAX_NDIMS];
+	guint size_layer[SMD_MAX_NDIMS];
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_read = 0;
 	g_assert(buf != NULL);
 	g_assert(scheme->object != NULL);
-	j_smd_dataset_read(scheme,buf,len_to_read, off_to_read, &bytes_read, batch);
+	if (H5Tequal(mem_type_id, ((J_HDF_Scheme_t*)scheme->user_data)->type_id))
+	{
+		if (file_space_id != H5S_ALL)
+		{
+			J_CRITICAL("must read entire dataset currently %ld %ld", mem_space_id, file_space_id);
+			exit(1);
+		}
+		if (mem_space_id == H5S_ALL)
+		{
+			len = 1;
+			for (i = 0; i < scheme->space->ndims; i++)
+				len *= scheme->space->dims[i];
+			len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+			j_smd_dataset_read(scheme, buf, len, 0, &bytes_read, batch);
+		}
+		else
+		{
+			H5Sget_select_bounds(mem_space_id, dims_start, dims_end);
+			for (i = scheme->space->ndims; i < SMD_MAX_NDIMS; i++)
+			{
+				dims_start[i] = 0;
+				dims_end[i] = 1;
+			}
+			size_layer[SMD_MAX_NDIMS - 1] = ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+			for (m = SMD_MAX_NDIMS - 2; m >= 0; m--)
+			{
+				if (m > scheme->space->ndims)
+					size_layer[m] = size_layer[m + 1];
+				else
+					size_layer[m] = size_layer[m + 1] * scheme->space->dims[m];
+			}
+			for (i = dims_start[0]; i < dims_end[0]; i++)
+			{
+				off_layer[0] = size_layer[0] * i;
+				for (j = dims_start[1]; j < dims_end[1]; j++)
+				{
+					off_layer[1] = off_layer[0] + size_layer[1] * j;
+					for (k = dims_start[2]; k < dims_end[2]; k++)
+					{
+						off_layer[2] = off_layer[1] + size_layer[2] * k;
+						for (l = dims_start[3]; l < dims_end[3]; l++)
+						{
+							off_layer[3] = off_layer[2] + size_layer[3] * l;
+							j_smd_dataset_read(scheme, buf, size_layer[3], off_layer[3], &bytes_read, batch);
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		J_CRITICAL("memory and database type must match %d", 0);
+		exit(1);
+	}
 	j_batch_execute(batch);
 	return 0;
 }
@@ -550,11 +623,72 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
 	guint64 bytes_written;
-	int len_to_read = ((J_HDF_Scheme_t*)scheme->user_data)->type_size; /*TODO specify which data and offset?*/
-	int off_to_read = 0; /*TODO specify which data and offset?*/
+	guint i, j, k, l;
+	gint m;
+	guint len;
+	hsize_t dims_start[SMD_MAX_NDIMS];
+	hsize_t dims_end[SMD_MAX_NDIMS];
+	guint off_layer[SMD_MAX_NDIMS];
+	guint size_layer[SMD_MAX_NDIMS];
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_written = 0;
-	j_smd_dataset_write(scheme, buf, len_to_read, off_to_read, &bytes_written, batch);
+	g_assert(buf != NULL);
+	g_assert(scheme->object != NULL);
+	if (H5Tequal(mem_type_id, ((J_HDF_Scheme_t*)scheme->user_data)->type_id))
+	{
+		if (file_space_id != H5S_ALL)
+		{
+			J_CRITICAL("must read entire dataset currently %ld %ld", mem_space_id, file_space_id);
+			exit(1);
+		}
+		if (mem_space_id == H5S_ALL)
+		{
+			len = 1;
+			for (i = 0; i < scheme->space->ndims; i++)
+				len *= scheme->space->dims[i];
+			len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+			j_smd_dataset_write(scheme, buf, len, 0, &bytes_written, batch);
+		}
+		else
+		{
+			H5Sget_select_bounds(mem_space_id, dims_start, dims_end);
+			for (i = scheme->space->ndims; i < SMD_MAX_NDIMS; i++)
+			{
+				dims_start[i] = 0;
+				dims_end[i] = 1;
+			}
+			size_layer[SMD_MAX_NDIMS - 1] = ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+			for (m = SMD_MAX_NDIMS - 2; m >= 0; m--)
+			{
+				if (m > scheme->space->ndims)
+					size_layer[m] = size_layer[m + 1];
+				else
+					size_layer[m] = size_layer[m + 1] * scheme->space->dims[m];
+			}
+			for (i = dims_start[0]; i < dims_end[0]; i++)
+			{
+				off_layer[0] = size_layer[0] * i;
+				for (j = dims_start[1]; j < dims_end[1]; j++)
+				{
+					off_layer[1] = off_layer[0] + size_layer[1] * j;
+					for (k = dims_start[2]; k < dims_end[2]; k++)
+					{
+						off_layer[2] = off_layer[1] + size_layer[2] * k;
+						for (l = dims_start[3]; l < dims_end[3]; l++)
+						{
+							off_layer[3] = off_layer[2] + size_layer[3] * l;
+							j_smd_dataset_write(scheme, buf, size_layer[3], off_layer[3], &bytes_written, batch);
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		J_CRITICAL("memory and database type must match %d", 0);
+		exit(1);
+	}
 	j_batch_execute(batch);
 	return 0;
 }
