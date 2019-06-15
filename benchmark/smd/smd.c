@@ -21,8 +21,13 @@
 #include <julea-smd.h>
 #include <julea.h>
 #include "benchmark.h"
+#include <julea-internal.h>
 
+#ifdef JULEA_DEBUG
+guint const n = 500;
+#else
 guint const n = 5000;
+#endif
 
 static void
 _benchmark_smd_scheme_create(BenchmarkResult* result, gboolean use_batch)
@@ -73,11 +78,8 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 	char schemename[50];
 	guint i, j;
 	void* file;
-	void* type;
-	void* space;
 	void* scheme;
 	guint const m = 15;
-	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
 	gdouble elapsed;
@@ -112,10 +114,6 @@ _benchmark_smd_scheme_delete(BenchmarkResult* result, gboolean use_batch)
 	char schemename[50];
 	guint i;
 	void* file;
-	void* type;
-	void* space;
-	void* scheme;
-	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
 	gdouble elapsed;
@@ -176,14 +174,15 @@ benchmark_smd_scheme_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_smd_scheme_delete(result, TRUE);
 }
-
 void
 benchmark_smd(void)
 {
+	j_smd_debug_init();
 	j_benchmark_run("/smd/scheme/create", benchmark_smd_create_scheme);
 	j_benchmark_run("/smd/scheme/open", benchmark_smd_scheme_open);
 	j_benchmark_run("/smd/scheme/delete", benchmark_smd_scheme_delete);
 	j_benchmark_run("/smd/scheme/create-batch", benchmark_smd_create_scheme_batch);
 	j_benchmark_run("/smd/scheme/open-batch", benchmark_smd_scheme_open_batch);
 	j_benchmark_run("/smd/scheme/delete-batch", benchmark_smd_scheme_delete_batch);
+	j_smd_debug_exit();
 }

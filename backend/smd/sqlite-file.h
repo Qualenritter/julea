@@ -4,7 +4,6 @@ backend_file_delete(const char* name)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-	J_DEBUG("%s", name);
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
@@ -22,7 +21,6 @@ backend_file_delete(const char* name)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
 	/*TODO delete type if no file uses it*/
-	J_DEBUG("%s", name);
 	return TRUE;
 }
 static gboolean
@@ -31,11 +29,6 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 file_key = 0;
-	{
-		char* _t = bson_as_json(bson, NULL);
-		J_DEBUG("%s %s", name, _t);
-		free(_t);
-	}
 	file_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	memcpy(key, &file_key, sizeof(file_key));
 	g_return_val_if_fail(name != NULL, FALSE);
@@ -51,7 +44,6 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		sqlite3_finalize(stmt);
 	}
 	(void)bson;
-	J_DEBUG("%s", name);
 	return TRUE;
 }
 static gboolean
@@ -60,7 +52,6 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-	J_DEBUG("%s", name);
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
@@ -81,10 +72,5 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	{
-		char* _t = bson_as_json(bson, NULL);
-		J_DEBUG("%s %s", name, _t);
-		free(_t);
-	}
 	return TRUE;
 }

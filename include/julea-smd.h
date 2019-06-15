@@ -34,6 +34,43 @@
 #define SMD_MAX_NAME_LENGTH 30
 #define SMD_MAX_NDIMS 4
 
+#define _j_smd_timer_variables(name) \
+	GTimer* name##_timer = NULL; \
+	gdouble name##timer_total = 0
+#define _j_smd_timer_variables_extern(name) \
+	extern GTimer* name##_timer;        \
+	extern gdouble name##timer_total
+#define _j_smd_timer_alloc(name) name##_timer = g_timer_new()
+#define _j_smd_timer_free(name) g_timer_destroy(name##_timer)
+#define _j_smd_timer_start(name) g_timer_start(name##_timer)
+#define _j_smd_timer_stop(name)                                           \
+	do                                                                \
+	{                                                                 \
+		name##timer_total += g_timer_elapsed(name##_timer, NULL); \
+	} while (0)
+#define _j_smd_timer_print(name)                                   \
+	do                                                         \
+	{                                                          \
+		J_DEBUG("time %s : %f", #name, name##timer_total); \
+		name##timer_total = 0;                             \
+	} while (0)
+#ifdef JULEA_DEBUG
+#define j_smd_timer_alloc(name) _j_smd_timer_alloc(name)
+#define j_smd_timer_free(name) _j_smd_timer_free(name)
+#define j_smd_timer_variables(name) _j_smd_timer_variables(name)
+#define j_smd_timer_variables_extern(name) _j_smd_timer_variables_extern(name)
+#define j_smd_timer_start(name) _j_smd_timer_start(name)
+#define j_smd_timer_stop(name) _j_smd_timer_stop(name)
+#define j_smd_timer_print(name) _j_smd_timer_print(name)
+#else
+#define j_smd_timer_alloc(name)
+#define j_smd_timer_free(name)
+#define j_smd_timer_variables(name)
+#define j_smd_timer_variables_extern(name)
+#define j_smd_timer_start(name)
+#define j_smd_timer_stop(name)
+#define j_smd_timer_print(name)
+#endif
 enum JSMDType
 {
 	SMD_TYPE_INT,
@@ -164,4 +201,8 @@ bson_t* j_smd_type_to_bson(void* _type);
 void* j_smd_type_from_bson(bson_iter_t* iter_arr);
 bson_t* j_smd_space_to_bson(void* _space);
 void* j_smd_space_from_bson(bson_iter_t* bson);
+
+//only for debugging
+void j_smd_debug_init(void);
+void j_smd_debug_exit(void);
 #endif

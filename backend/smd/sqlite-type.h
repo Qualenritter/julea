@@ -25,6 +25,7 @@ create_type(bson_iter_t* iter_data_type)
 	const char* var_name;
 	guint header_key = 0;
 	sqlite3_int64 subtype_key = 0;
+	j_smd_timer_start(create_type);
 	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
 	while (bson_iter_next(iter_data_type))
 	{
@@ -60,7 +61,9 @@ create_type(bson_iter_t* iter_data_type)
 					else if (strcmp("subtype", bson_iter_key(&iter_data_var)) == 0)
 					{
 						bson_iter_recurse(&iter_data_var, &iter_data_val);
+						j_smd_timer_stop(create_type);
 						subtype_key = create_type(&iter_data_val);
+						j_smd_timer_start(create_type);
 					}
 					else if (strcmp("dims", bson_iter_key(&iter_data_var)) == 0)
 					{
@@ -72,6 +75,7 @@ create_type(bson_iter_t* iter_data_type)
 						}
 					}
 				}
+				j_smd_timer_start(create_type_sql);
 				j_sqlite3_bind_int64(stmt_create_type, 1, header_key);
 				j_sqlite3_bind_text(stmt_create_type, 2, var_name, -1);
 				j_sqlite3_bind_int64(stmt_create_type, 3, var_type);
@@ -85,9 +89,11 @@ create_type(bson_iter_t* iter_data_type)
 				j_sqlite3_bind_int64(stmt_create_type, 11, var_dims[3]);
 				j_sqlite3_bind_int64(stmt_create_type, 12, subtype_key);
 				j_sqlite3_step_and_reset_check_done(stmt_create_type);
+				j_smd_timer_stop(create_type_sql);
 			}
 		}
 	}
+	j_smd_timer_stop(create_type);
 	return header_key;
 }
 static gboolean
@@ -103,6 +109,7 @@ load_type(bson_t* b_datatype, sqlite3_int64 type_key)
 	guint i, j;
 	guint next_offset = 0;
 	sqlite3_int64 subtype_key;
+	j_smd_timer_start(load_type);
 	bson_append_array_begin(b_datatype, "arr", -1, b_arr);
 	i = 0;
 _start:
@@ -110,7 +117,9 @@ _start:
 	j_sqlite3_bind_int64(stmt_load_type, 2, next_offset);
 	do
 	{
+		j_smd_timer_start(load_type_sql);
 		ret = sqlite3_step(stmt_load_type);
+		j_smd_timer_stop(load_type_sql);
 		if (ret == SQLITE_ROW)
 		{
 			bson_uint32_to_string(i, &_key, key_buf, sizeof(key_buf));
@@ -134,7 +143,9 @@ _start:
 				bson_append_document_begin(b_var, "subtype", -1, bson1);
 				subtype_key = sqlite3_column_int64(stmt_load_type, 9);
 				j_sqlite3_reset(stmt_load_type);
+				j_smd_timer_stop(load_type);
 				load_type(bson1, subtype_key);
+				j_smd_timer_start(load_type);
 				bson_append_document_end(b_var, bson1);
 				bson_append_document_end(b_arr, b_var);
 				goto _start;
@@ -146,6 +157,7 @@ _start:
 	} while (ret != SQLITE_DONE);
 	bson_append_array_end(b_datatype, b_arr);
 	j_sqlite3_reset(stmt_load_type);
+	j_smd_timer_stop(load_type);
 	return TRUE;
 }
 static guint
@@ -154,6 +166,7 @@ calculate_struct_size(sqlite3_int64 type_key)
 	gint ret;
 	guint i;
 	guint struct_size;
+	j_smd_timer_start(calculate_struct_size);
 	j_sqlite3_bind_int64(stmt_struct_size, 1, type_key);
 	ret = sqlite3_step(stmt_struct_size);
 	if (ret == SQLITE_ROW)
@@ -166,6 +179,7 @@ calculate_struct_size(sqlite3_int64 type_key)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	j_sqlite3_reset(stmt_struct_size);
+	j_smd_timer_stop(calculate_struct_size);
 	return struct_size;
 }
 static GArray*
@@ -174,6 +188,7 @@ get_type_structure(sqlite3_int64 type_key)
 	GArray* arr;
 	gint ret;
 	J_SMD_Variable_t* var;
+	j_smd_timer_start(get_type_structure);
 	arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t*));
 	j_sqlite3_bind_int64(stmt_write_structure, 1, type_key);
 	do
@@ -200,6 +215,7 @@ get_type_structure(sqlite3_int64 type_key)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_write_structure);
+	j_smd_timer_stop(get_type_structure);
 	return arr;
 }
 static gboolean
@@ -217,6 +233,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	guint64 offset_local;
 	GArray* arr;
 	J_SMD_Variable_t* var;
+	j_smd_timer_start(write_type);
 	if (struct_size == 0)
 		struct_size = calculate_struct_size(type_key);
 	arr = get_type_structure(type_key);
@@ -319,7 +336,9 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 					{
 						guint calc_offset;
 						calc_offset = location - buf;
+						j_smd_timer_stop(write_type);
 						write_type(*((sqlite3_int64*)var->sub_type_key), scheme_key, buf, buf_offset, buf_len, struct_size, parent_offset + calc_offset);
+						j_smd_timer_start(write_type);
 					}
 					break;
 				default:
@@ -333,6 +352,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	}
 	for (i = 0; i < arr->len; i++)
 		g_free(g_array_index(arr, J_SMD_Variable_t*, i));
+	j_smd_timer_stop(write_type);
 	return TRUE;
 }
 static gboolean
@@ -342,6 +362,7 @@ read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 	gint ret;
 	char* location;
 	guint64 offset;
+	j_smd_timer_start(read_type);
 	sqlite3_prepare_v2(backend_db, "SELECT a.offset, a.value_int, a.value_float, a.value_blob, t.type, t.size " //
 				       "FROM smd_scheme_data a, smd_scheme_type t " //
 				       "WHERE a.scheme_key = ?1 AND t.key = a.type_key AND a.offset >= ?2 AND (a.offset + t.size) <= ?3",
@@ -401,5 +422,6 @@ read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
 	sqlite3_finalize(stmt);
+	j_smd_timer_stop(read_type);
 	return TRUE;
 }

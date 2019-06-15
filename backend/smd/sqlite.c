@@ -48,8 +48,8 @@ static sqlite3* backend_db;
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
 	} while (0)
 #else
-#define _j_done_check(ret)
-#define _j_ok_check(ret)
+#define _j_done_check(ret) (void)ret
+#define _j_ok_check(ret) (void)ret
 #endif
 
 #define j_sqlite3_reset(stmt)                     \
@@ -129,7 +129,21 @@ static sqlite3_stmt* stmt_scheme_get_type_key;
 static sqlite3_stmt* stmt_transaction_begin;
 static sqlite3_stmt* stmt_transaction_commit;
 static sqlite3_stmt* stmt_transaction_abort;
-
+#ifdef JULEA_DEBUG
+j_smd_timer_variables(backend_scheme_create);
+j_smd_timer_variables(backend_scheme_delete);
+j_smd_timer_variables(backend_scheme_open);
+j_smd_timer_variables(backend_scheme_read);
+j_smd_timer_variables(backend_scheme_write);
+j_smd_timer_variables(calculate_struct_size);
+j_smd_timer_variables(create_type);
+j_smd_timer_variables(create_type_sql);
+j_smd_timer_variables(get_type_structure);
+j_smd_timer_variables(load_type);
+j_smd_timer_variables(load_type_sql);
+j_smd_timer_variables(read_type);
+j_smd_timer_variables(write_type);
+#endif
 #include "sqlite-type.h"
 #include "sqlite-file.h"
 #include "sqlite-scheme.h"
@@ -170,9 +184,14 @@ backend_init(gchar const* path)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		goto error;
 	}
+	j_sqlite3_prepare_v3("CREATE INDEX smd_scheme_type_idx ON smd_scheme_type(header_key);", &stmt);
+	ret = sqlite3_step(stmt);
+	if (ret != SQLITE_DONE)
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
 	if ((ret = sqlite3_exec(backend_db,
 		     "CREATE TABLE IF NOT EXISTS smd_schemes (" //
-		     "key INTEGER PRIMARY KEY, " //
+		     "key INTEGER UNIQUE NOT NULL, " //
 		     "parent_key INTEGER, " // reference to parent
 		     "file_key INTEGER, " // reference to file for fast delete|fetch
 		     "name TEXT NOT NULL, " // name of |file|scheme
@@ -184,9 +203,10 @@ backend_init(gchar const* path)
 		     "dims2 INTEGER, " // number of dimension[2]
 		     "dims3 INTEGER, " // number of dimension[3]
 		     "distribution INTEGER, " //if this is stored within DB or the distribution in the object store
-		     "FOREIGN KEY(parent_key) REFERENCES smd_schemes(key), "
-		     "FOREIGN KEY(file_key) REFERENCES smd_schemes(key), "
-		     "FOREIGN KEY(type_key) REFERENCES smd_scheme_type(header_key)"
+		     "FOREIGN KEY(parent_key) REFERENCES smd_schemes(key), " //
+		     "FOREIGN KEY(file_key) REFERENCES smd_schemes(key), " //
+		     "FOREIGN KEY(type_key) REFERENCES smd_scheme_type(header_key), " //
+		     "PRIMARY KEY(name, parent_key)"
 		     ");",
 		     NULL,
 		     NULL,
@@ -215,7 +235,7 @@ backend_init(gchar const* path)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		goto error;
 	}
-	sqlite3_prepare_v2(backend_db, "SELECT max(key) FROM smd_schemes", -1, &stmt, NULL);
+	j_sqlite3_prepare_v3("SELECT max(key) FROM smd_schemes", &stmt);
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
 		smd_schemes_primary_key = 1 + sqlite3_column_int64(stmt, 0);
@@ -224,7 +244,7 @@ backend_init(gchar const* path)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "SELECT max(d.type_key, t.subtype_key) FROM smd_scheme_data d, smd_scheme_type t", -1, &stmt, NULL);
+	j_sqlite3_prepare_v3("SELECT max(d.type_key, t.subtype_key) FROM smd_scheme_data d, smd_scheme_type t", &stmt);
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
 		smd_scheme_type_primary_key = 1 + sqlite3_column_int64(stmt, 0);
@@ -298,7 +318,21 @@ backend_init(gchar const* path)
 	j_sqlite3_prepare_v3("BEGIN TRANSACTION;", &stmt_transaction_begin);
 	j_sqlite3_prepare_v3("COMMIT;", &stmt_transaction_commit);
 	j_sqlite3_prepare_v3("ROLLBACK;", &stmt_transaction_abort);
-
+#ifdef JULEA_DEBUG
+	j_smd_timer_alloc(backend_scheme_create);
+	j_smd_timer_alloc(backend_scheme_delete);
+	j_smd_timer_alloc(backend_scheme_open);
+	j_smd_timer_alloc(backend_scheme_read);
+	j_smd_timer_alloc(backend_scheme_write);
+	j_smd_timer_alloc(calculate_struct_size);
+	j_smd_timer_alloc(create_type);
+	j_smd_timer_alloc(create_type_sql);
+	j_smd_timer_alloc(get_type_structure);
+	j_smd_timer_alloc(load_type);
+	j_smd_timer_alloc(load_type_sql);
+	j_smd_timer_alloc(read_type);
+	j_smd_timer_alloc(write_type);
+#endif
 	J_CRITICAL("%s", path);
 	return (backend_db != NULL);
 error:
@@ -314,7 +348,48 @@ backend_fini(void)
 	if (backend_db != NULL)
 	{
 		sqlite3_finalize(stmt_create_type);
+		sqlite3_finalize(stmt_load_type);
+		sqlite3_finalize(stmt_scheme_create);
+		sqlite3_finalize(stmt_scheme_delete_0);
+		sqlite3_finalize(stmt_scheme_delete_1);
+		sqlite3_finalize(stmt_scheme_delete_2);
+		sqlite3_finalize(stmt_scheme_delete_3);
+		sqlite3_finalize(stmt_scheme_get_type_key);
+		sqlite3_finalize(stmt_scheme_open);
+		sqlite3_finalize(stmt_struct_size);
+		sqlite3_finalize(stmt_transaction_abort);
+		sqlite3_finalize(stmt_transaction_begin);
+		sqlite3_finalize(stmt_transaction_commit);
+		sqlite3_finalize(stmt_write_structure);
 		sqlite3_close(backend_db);
+#ifdef JULEA_DEBUG
+		j_smd_timer_print(backend_scheme_create);
+		j_smd_timer_print(backend_scheme_delete);
+		j_smd_timer_print(backend_scheme_open);
+		j_smd_timer_print(backend_scheme_read);
+		j_smd_timer_print(backend_scheme_write);
+		j_smd_timer_print(calculate_struct_size);
+		j_smd_timer_print(create_type);
+		j_smd_timer_print(create_type_sql);
+		j_smd_timer_print(get_type_structure);
+		j_smd_timer_print(load_type);
+		j_smd_timer_print(load_type_sql);
+		j_smd_timer_print(read_type);
+		j_smd_timer_print(write_type);
+		j_smd_timer_free(backend_scheme_create);
+		j_smd_timer_free(backend_scheme_delete);
+		j_smd_timer_free(backend_scheme_open);
+		j_smd_timer_free(backend_scheme_read);
+		j_smd_timer_free(backend_scheme_write);
+		j_smd_timer_free(calculate_struct_size);
+		j_smd_timer_free(create_type);
+		j_smd_timer_free(create_type_sql);
+		j_smd_timer_free(get_type_structure);
+		j_smd_timer_free(load_type);
+		j_smd_timer_free(load_type_sql);
+		j_smd_timer_free(read_type);
+		j_smd_timer_free(write_type);
+#endif
 	}
 	J_CRITICAL("%d", 0);
 }

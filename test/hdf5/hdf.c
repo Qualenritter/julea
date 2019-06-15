@@ -176,6 +176,8 @@ void
 test_hdf(void)
 {
 #ifdef HAVE_HDF5
+	j_smd_init();
 	g_test_add_func("/hdf5/read_write", test_hdf_read_write);
+	j_smd_exit();
 #endif
 }

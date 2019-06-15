@@ -256,7 +256,9 @@ benchmark_hdf(void)
 {
 	// FIXME repeated runs exhibit strange behavior, objects are distributed differently etc.
 #ifdef HAVE_HDF5
+	j_smd_debug_init();
 	j_benchmark_run("/hdf5/write", benchmark_hdf_write);
 	j_benchmark_run("/hdf5/read", benchmark_hdf_read);
+	j_smd_debug_exit();
 #endif
 }

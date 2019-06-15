@@ -23,12 +23,12 @@
 #include <julea.h>
 
 #include "test.h"
-
+void j_smd_debug_init(void);
+void j_smd_debug_exit(void);
 int
 main(int argc, char** argv)
 {
 	gint ret;
-
 	g_test_init(&argc, &argv, NULL);
 
 	/*
@@ -55,12 +55,15 @@ main(int argc, char** argv)
 		test_uri();
 
 	*/
+
+	j_smd_debug_init();
 	// HDF5 client
 	test_hdf();
 	// SMD
 	test_smd();
 
 	ret = g_test_run();
+	j_smd_debug_exit();
 
 	return ret;
 }
