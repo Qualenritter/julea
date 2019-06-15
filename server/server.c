@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include <julea-config.h>
 
 #include <gio/gio.h>
@@ -616,24 +616,28 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			gint64 buf_offset;
 			gint64 buf_size;
 			char* buf;
+			guint i;
 			reply = j_message_new_reply(message);
-			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			buf_offset = j_message_get_8(message);
-			buf_size = j_message_get_8(message);
-			buf = g_malloc(buf_size);
-			if (j_backend_smd_scheme_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
+			for (i = 0; i < operation_count; i++)
 			{
-				j_message_add_operation(reply, 8 + buf_size);
-				j_message_append_8(reply, &buf_size);
-				j_message_append_n(reply, buf, buf_size);
+				memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+				buf_offset = j_message_get_8(message);
+				buf_size = j_message_get_8(message);
+				buf = g_malloc(buf_size);
+				if (j_backend_smd_scheme_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
+				{
+					j_message_add_operation(reply, 8 + buf_size);
+					j_message_append_8(reply, &buf_size);
+					j_message_append_n(reply, buf, buf_size);
+				}
+				else
+				{
+					gint64 zero = 0;
+					j_message_add_operation(reply, 8);
+					j_message_append_8(reply, &zero);
+				}
+				g_free(buf);
 			}
-			else
-			{
-				gint64 zero = 0;
-				j_message_add_operation(reply, 8);
-				j_message_append_8(reply, &zero);
-			}
-			g_free(buf);
 			j_message_send(reply, connection);
 		}
 		break;
@@ -643,15 +647,19 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			char _key[SMD_KEY_LENGTH];
 			gint64 buf_offset;
 			gint64 buf_size;
+			guint i;
 			char* buf;
 			reply = j_message_new_reply(message);
-			memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			buf_offset = j_message_get_8(message);
-			buf_size = j_message_get_8(message);
-			buf = j_message_get_n(message, buf_size);
-			j_backend_smd_scheme_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
-			j_message_add_operation(reply, 8);
-			j_message_append_8(reply, &buf_size);
+			for (i = 0; i < operation_count; i++)
+			{
+				memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+				buf_offset = j_message_get_8(message);
+				buf_size = j_message_get_8(message);
+				buf = j_message_get_n(message, buf_size);
+				j_backend_smd_scheme_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
+				j_message_add_operation(reply, 8);
+				j_message_append_8(reply, &buf_size);
+			}
 			j_message_send(reply, connection);
 		}
 		break;
@@ -663,32 +671,35 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-
+			guint i;
 			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			bson_len = j_message_get_4(message);
-			if (bson_len == 0)
+			for (i = 0; i < operation_count; i++)
 			{
-				bson_init(bson);
-			}
-			else
-			{
-				bson_data = j_message_get_n(message, bson_len);
-				bson_init_static(bson, bson_data, bson_len);
-			}
-			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			if (j_backend_smd_file_create(jd_smd_backend, name, bson, _key))
-			{
-				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-			}
-			else
-			{
-				char buf[SMD_KEY_LENGTH];
+				name = j_message_get_string(message);
+				bson_len = j_message_get_4(message);
+				if (bson_len == 0)
+				{
+					bson_init(bson);
+				}
+				else
+				{
+					bson_data = j_message_get_n(message, bson_len);
+					bson_init_static(bson, bson_data, bson_len);
+				}
+				j_message_add_operation(reply, SMD_KEY_LENGTH);
+				if (j_backend_smd_file_create(jd_smd_backend, name, bson, _key))
+				{
+					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+				}
+				else
+				{
+					char buf[SMD_KEY_LENGTH];
 
-				memset(buf, 0, SMD_KEY_LENGTH);
-				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+					memset(buf, 0, SMD_KEY_LENGTH);
+					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+				}
+				bson_destroy(bson);
 			}
-			bson_destroy(bson);
 			j_message_send(reply, connection);
 		}
 		break;
@@ -697,11 +708,14 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
-
+			guint i;
 			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			j_backend_smd_file_delete(jd_smd_backend, name);
-			j_message_add_operation(reply, 0);
+			for (i = 0; i < operation_count; i++)
+			{
+				name = j_message_get_string(message);
+				j_backend_smd_file_delete(jd_smd_backend, name);
+				j_message_add_operation(reply, 0);
+			}
 			j_message_send(reply, connection);
 		}
 		break;
@@ -713,26 +727,29 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-
+			guint i;
 			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			if (j_backend_smd_file_open(jd_smd_backend, name, bson, _key))
+			for (i = 0; i < operation_count; i++)
 			{
-				bson_len = bson->len;
-				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
-				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-				j_message_append_4(reply, &bson_len);
-				j_message_append_n(reply, bson_get_data(bson), bson_len);
-			}
-			else
-			{
-				char buf[SMD_KEY_LENGTH];
+				name = j_message_get_string(message);
+				if (j_backend_smd_file_open(jd_smd_backend, name, bson, _key))
+				{
+					bson_len = bson->len;
+					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
+					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+					j_message_append_4(reply, &bson_len);
+					j_message_append_n(reply, bson_get_data(bson), bson_len);
+				}
+				else
+				{
+					char buf[SMD_KEY_LENGTH];
 
-				j_message_add_operation(reply, SMD_KEY_LENGTH);
-				memset(buf, 0, SMD_KEY_LENGTH);
-				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+					j_message_add_operation(reply, SMD_KEY_LENGTH);
+					memset(buf, 0, SMD_KEY_LENGTH);
+					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+				}
+				bson_destroy(bson);
 			}
-			bson_destroy(bson);
 			j_message_send(reply, connection);
 		}
 		break;
@@ -745,28 +762,32 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
+			guint i;
 			guint distribution;
 
 			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			distribution = j_message_get_4(message);
-			bson_len = j_message_get_4(message);
-			bson_data = j_message_get_n(message, bson_len);
-			bson_init_static(bson, bson_data, bson_len);
-			j_message_add_operation(reply, SMD_KEY_LENGTH);
-			if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, bson, distribution, _key))
+			for (i = 0; i < operation_count; i++)
 			{
-				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-			}
-			else
-			{
-				char buf[SMD_KEY_LENGTH];
+				name = j_message_get_string(message);
+				parent = j_message_get_n(message, SMD_KEY_LENGTH);
+				distribution = j_message_get_4(message);
+				bson_len = j_message_get_4(message);
+				bson_data = j_message_get_n(message, bson_len);
+				bson_init_static(bson, bson_data, bson_len);
+				j_message_add_operation(reply, SMD_KEY_LENGTH);
+				if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, bson, distribution, _key))
+				{
+					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+				}
+				else
+				{
+					char buf[SMD_KEY_LENGTH];
 
-				memset(buf, 0, SMD_KEY_LENGTH);
-				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+					memset(buf, 0, SMD_KEY_LENGTH);
+					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+				}
+				bson_destroy(bson);
 			}
-			bson_destroy(bson);
 			j_message_send(reply, connection);
 		}
 		break;
@@ -776,12 +797,15 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
 			char* parent;
-
+			guint i;
 			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			j_backend_smd_scheme_delete(jd_smd_backend, name, parent);
-			j_message_add_operation(reply, 0);
+			for (i = 0; i < operation_count; i++)
+			{
+				name = j_message_get_string(message);
+				parent = j_message_get_n(message, SMD_KEY_LENGTH);
+				j_backend_smd_scheme_delete(jd_smd_backend, name, parent);
+				j_message_add_operation(reply, 0);
+			}
 			j_message_send(reply, connection);
 		}
 		break;
@@ -794,29 +818,33 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
+			guint i;
 			guint distribution;
 
 			reply = j_message_new_reply(message);
-			name = j_message_get_string(message);
-			parent = j_message_get_n(message, SMD_KEY_LENGTH);
-			if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, bson, &distribution, _key))
+			for (i = 0; i < operation_count; i++)
 			{
-				bson_len = bson->len;
-				j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + 4 + bson_len);
-				j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-				j_message_append_4(reply, &distribution);
-				j_message_append_4(reply, &bson_len);
-				j_message_append_n(reply, bson_get_data(bson), bson_len);
-			}
-			else
-			{
-				char buf[SMD_KEY_LENGTH];
+				name = j_message_get_string(message);
+				parent = j_message_get_n(message, SMD_KEY_LENGTH);
+				if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, bson, &distribution, _key))
+				{
+					bson_len = bson->len;
+					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + 4 + bson_len);
+					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
+					j_message_append_4(reply, &distribution);
+					j_message_append_4(reply, &bson_len);
+					j_message_append_n(reply, bson_get_data(bson), bson_len);
+				}
+				else
+				{
+					char buf[SMD_KEY_LENGTH];
 
-				j_message_add_operation(reply, SMD_KEY_LENGTH);
-				memset(buf, 0, SMD_KEY_LENGTH);
-				j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+					j_message_add_operation(reply, SMD_KEY_LENGTH);
+					memset(buf, 0, SMD_KEY_LENGTH);
+					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
+				}
+				bson_destroy(bson);
 			}
-			bson_destroy(bson);
 			j_message_send(reply, connection);
 		}
 		break;

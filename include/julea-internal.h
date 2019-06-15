@@ -36,7 +36,11 @@ G_BEGIN_DECLS
 #define J_CRITICAL(format, ...) g_critical("%s:%s: " format, G_STRLOC, G_STRFUNC, __VA_ARGS__);
 #define J_WARNING(format, ...) g_warning("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__);
 #define J_INFO(format, ...) g_info("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__);
+#ifdef JULEA_DEBUG
 #define J_DEBUG(format, ...) g_debug("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__);
+#else
+#define J_DEBUG(format, ...)
+#endif
 /* FIXME j_sync() for benchmarks */
 
 G_END_DECLS

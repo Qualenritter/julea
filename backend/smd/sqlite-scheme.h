@@ -4,7 +4,7 @@ backend_scheme_delete(const char* name, char* parent)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-	J_DEBUG("%s", name);
+	J_DEBUG("%s %ld", name, *((sqlite3_int64*)parent));
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
@@ -13,9 +13,15 @@ backend_scheme_delete(const char* name, char* parent)
 	if (ret == SQLITE_ROW)
 		result = sqlite3_column_int64(stmt, 0);
 	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		J_CRITICAL("sql_error %s %lld  - %d %s", name, *((sqlite3_int64*)parent), ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
+	j_sqlite3_bind_int64(stmt, 1, result);
+	ret = sqlite3_step(stmt);
+	if (ret != SQLITE_DONE)
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
+	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_scheme_data WHERE scheme_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, result);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
@@ -31,8 +37,8 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 scheme_key = 0;
-	sqlite3_int64 file_key;
-	sqlite3_int64 type_key;
+	sqlite3_int64 file_key = 0;
+	sqlite3_int64 type_key = 0;
 	bson_iter_t iter;
 	bson_iter_t iter_space_type;
 	guint var_ndims;
@@ -208,7 +214,7 @@ backend_scheme_write(char* key, const char* buf, guint offset, guint size)
 {
 	sqlite3_stmt* stmt;
 	gint ret;
-	sqlite3_int64 type_key;
+	sqlite3_int64 type_key = 0;
 	sqlite3_prepare_v2(backend_db, "SELECT type_key FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)key));
 	ret = sqlite3_step(stmt);

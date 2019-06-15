@@ -25,8 +25,8 @@ create_type(bson_iter_t* iter_data_type)
 	guint var_type;
 	guint var_count;
 	const char* var_name;
-	sqlite3_int64 header_key;
-	sqlite3_int64 subtype_key;
+	sqlite3_int64 header_key = 0;
+	sqlite3_int64 subtype_key = 0;
 	sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_type_header ( hash ) VALUES(0)", -1, &stmt, NULL); /*TODO something else here*/
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
@@ -222,8 +222,8 @@ get_type_structure(sqlite3_int64 type_key)
 static gboolean
 write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint parent_offset)
 {
-	gint64 value_int;
-	gdouble value_float;
+	gint64 value_int = 0;
+	gdouble value_float = 0;
 	sqlite3_stmt* stmt;
 	gint ret;
 	const guint buf_end = buf_offset + buf_len;

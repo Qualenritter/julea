@@ -177,6 +177,7 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 	while (j_list_iterator_next(it))
 	{
 		operation = j_list_iterator_get(it);
+
 		if (smd_backend != NULL)
 			j_backend_smd_scheme_delete(smd_backend, operation->name, operation->parent->key);
 		else
@@ -212,17 +213,22 @@ j_smd_scheme_delete(const char* name, void* parent, JBatch* batch)
 	JSMDSchemeOperation* smd_op;
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDSchemeOperation, 1);
-	smd_op->scheme = j_smd_scheme_open(name, parent, batch);
+	smd_op->name = g_strdup(name);
+	smd_op->scheme = j_smd_scheme_open(smd_op->name, parent, batch);
 	j_batch_execute(batch);
-	if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE) /*TODO speedup - dont require db read for this?*/
-		j_distributed_object_delete(smd_op->scheme->object, batch);
+	if (j_is_key_initialized(smd_op->scheme->key))
+	{
+		if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
+		{ /*TODO speedup - dont require db read for this?*/
+			j_distributed_object_delete(smd_op->scheme->object, batch);
+		}
+	}
 	j_smd_scheme_unref(smd_op->scheme);
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
 	op->exec_func = j_smd_delete_exec;
 	op->free_func = j_smd_delete_free;
-	smd_op->name = g_strdup(name);
 	smd_op->parent = parent;
 	j_batch_add(batch, op);
 	j_trace_leave(G_STRFUNC);
