@@ -1,7 +1,7 @@
 n=5000
-/smd/scheme/create:                                47.529 seconds (105/s) [47.542 seconds]
-/smd/scheme/open:                                  104.145 seconds (1440/s) [104.145 seconds]
-/smd/scheme/delete:                                84.488 seconds (59/s) [84.495 seconds]
-/smd/scheme/create-batch:                          45.932 seconds (109/s) [45.939 seconds]
-/smd/scheme/open-batch:                            94.808 seconds (1582/s) [94.809 seconds]
-/smd/scheme/delete-batch:                          85.025 seconds (59/s) [85.032 seconds]
+/smd/scheme/create:                                44.963 seconds (111/s) [44.976 seconds]
+/smd/scheme/open:                                  50.202 seconds (1494/s) [50.203 seconds]
+/smd/scheme/delete:                                82.650 seconds (60/s) [82.657 seconds]
+/smd/scheme/create-batch:                          44.062 seconds (113/s) [44.079 seconds]
+/smd/scheme/open-batch:                            45.683 seconds (1642/s) [45.683 seconds]
+/smd/scheme/delete-batch:                          83.258 seconds (60/s) [83.265 seconds]

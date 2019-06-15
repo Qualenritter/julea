@@ -11,7 +11,6 @@ strnlen_s(const char* b, guint64 maxlen)
 static sqlite3_int64
 create_type(bson_iter_t* iter_data_type)
 {
-	gint ret;
 	guint i;
 	guint var_ndims;
 	guint var_dims[4];
@@ -85,10 +84,7 @@ create_type(bson_iter_t* iter_data_type)
 				j_sqlite3_bind_int64(stmt_create_type, 10, var_dims[2]);
 				j_sqlite3_bind_int64(stmt_create_type, 11, var_dims[3]);
 				j_sqlite3_bind_int64(stmt_create_type, 12, subtype_key);
-				ret = sqlite3_step(stmt_create_type);
-				if (ret != SQLITE_DONE)
-					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				j_sqlite3_reset(stmt_create_type);
+				j_sqlite3_step_and_reset_check_done(stmt_create_type);
 			}
 		}
 	}
@@ -157,21 +153,19 @@ calculate_struct_size(sqlite3_int64 type_key)
 {
 	gint ret;
 	guint i;
-	sqlite3_stmt* stmt;
 	guint struct_size;
-	sqlite3_prepare_v2(backend_db, "SELECT t.size, t.offset, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3 FROM smd_scheme_type t WHERE header_key = ?1 ORDER BY t.offset DESC LIMIT 1", -1, &stmt, NULL);
-	j_sqlite3_bind_int64(stmt, 1, type_key);
-	ret = sqlite3_step(stmt);
+	j_sqlite3_bind_int64(stmt_struct_size, 1, type_key);
+	ret = sqlite3_step(stmt_struct_size);
 	if (ret == SQLITE_ROW)
 	{
-		struct_size = sqlite3_column_int64(stmt, 0);
-		for (i = 0; i < sqlite3_column_int64(stmt, 2); i++)
-			struct_size *= sqlite3_column_int64(stmt, 3 + i);
-		struct_size += sqlite3_column_int64(stmt, 1);
+		struct_size = sqlite3_column_int64(stmt_struct_size, 0);
+		for (i = 0; i < sqlite3_column_int64(stmt_struct_size, 2); i++)
+			struct_size *= sqlite3_column_int64(stmt_struct_size, 3 + i);
+		struct_size += sqlite3_column_int64(stmt_struct_size, 1);
 	}
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
+	j_sqlite3_reset(stmt_struct_size);
 	return struct_size;
 }
 static GArray*
@@ -179,35 +173,33 @@ get_type_structure(sqlite3_int64 type_key)
 {
 	GArray* arr;
 	gint ret;
-	sqlite3_stmt* stmt;
 	J_SMD_Variable_t* var;
 	arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t*));
-	sqlite3_prepare_v2(backend_db, "SELECT t.type, t.offset, t.size, t.ndims, t.dims0, t.dims1, t.dims2, t.dims3, t.subtype_key, t.key FROM smd_scheme_type t WHERE header_key = ?1 ORDER BY t.offset;", -1, &stmt, NULL);
-	j_sqlite3_bind_int64(stmt, 1, type_key);
+	j_sqlite3_bind_int64(stmt_write_structure, 1, type_key);
 	do
 	{
-		ret = sqlite3_step(stmt);
+		ret = sqlite3_step(stmt_write_structure);
 		if (ret == SQLITE_ROW)
 		{
 			var = g_new(J_SMD_Variable_t, 1);
-			var->offset = sqlite3_column_int64(stmt, 1);
-			var->size = sqlite3_column_int64(stmt, 2);
-			var->type = sqlite3_column_int64(stmt, 0);
-			var->space.ndims = sqlite3_column_int64(stmt, 3);
-			var->space.dims[0] = sqlite3_column_int64(stmt, 4);
-			var->space.dims[1] = sqlite3_column_int64(stmt, 5);
-			var->space.dims[2] = sqlite3_column_int64(stmt, 6);
-			var->space.dims[3] = sqlite3_column_int64(stmt, 7);
+			var->offset = sqlite3_column_int64(stmt_write_structure, 1);
+			var->size = sqlite3_column_int64(stmt_write_structure, 2);
+			var->type = sqlite3_column_int64(stmt_write_structure, 0);
+			var->space.ndims = sqlite3_column_int64(stmt_write_structure, 3);
+			var->space.dims[0] = sqlite3_column_int64(stmt_write_structure, 4);
+			var->space.dims[1] = sqlite3_column_int64(stmt_write_structure, 5);
+			var->space.dims[2] = sqlite3_column_int64(stmt_write_structure, 6);
+			var->space.dims[3] = sqlite3_column_int64(stmt_write_structure, 7);
 			if (var->type == SMD_TYPE_SUB_TYPE)
-				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt, 8);
+				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt_write_structure, 8);
 			else
-				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt, 9);
+				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt_write_structure, 9);
 			g_array_append_val(arr, var);
 		}
 		else if (ret != SQLITE_DONE)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
-	sqlite3_finalize(stmt);
+	j_sqlite3_reset(stmt_write_structure);
 	return arr;
 }
 static gboolean
