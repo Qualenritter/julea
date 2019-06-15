@@ -76,7 +76,7 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 	void* type;
 	void* space;
 	void* scheme;
-	guint const m = 30;
+	guint const m = 15;
 	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
@@ -121,7 +121,7 @@ _benchmark_smd_scheme_delete(BenchmarkResult* result, gboolean use_batch)
 	gdouble elapsed;
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
-	file = j_smd_file_create(filename, batch);
+	file = j_smd_file_open(filename, batch);
 	j_batch_execute(batch);
 	j_benchmark_timer_start();
 	for (i = 0; i < n; i++)

@@ -1,6 +1,7 @@
-/smd/scheme/create:                                47.482 seconds (105/s) [47.495 seconds]
-/smd/scheme/open:                                  103.949 seconds (1443/s) [103.949 seconds]
-/smd/scheme/delete:                                3.219 seconds (1553/s) [3.258 seconds]
-/smd/scheme/create-batch:                          60.001 seconds (83/s) [60.012 seconds]
-/smd/scheme/open-batch:                            166.341 seconds (902/s) [166.341 seconds]
-/smd/scheme/delete-batch:                          5.887 seconds (849/s) [5.917 seconds]
+n=5000
+/smd/scheme/create:                                47.529 seconds (105/s) [47.542 seconds]
+/smd/scheme/open:                                  104.145 seconds (1440/s) [104.145 seconds]
+/smd/scheme/delete:                                84.488 seconds (59/s) [84.495 seconds]
+/smd/scheme/create-batch:                          45.932 seconds (109/s) [45.939 seconds]
+/smd/scheme/open-batch:                            94.808 seconds (1582/s) [94.809 seconds]
+/smd/scheme/delete-batch:                          85.025 seconds (59/s) [85.032 seconds]
