@@ -78,12 +78,13 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 {
 	const char* filename = "filename";
 	char schemename[50];
-	guint i;
+	guint i, j;
 	void* file;
 	void* type;
 	void* space;
 	void* scheme;
 	guint const n = 500;
+	guint const m = 30;
 	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
@@ -108,13 +109,16 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 	}
 	j_batch_execute(batch);
 	j_benchmark_timer_start();
-	for (i = 0; i < n; i++)
+	for (j = 0; j < m; j++)
 	{
-		sprintf(schemename, "schemename_%d", i);
-		scheme = j_smd_scheme_open(schemename, file, batch);
-		j_smd_scheme_unref(scheme);
-		if (!use_batch)
-			j_batch_execute(batch);
+		for (i = 0; i < n; i++)
+		{
+			sprintf(schemename, "schemename_%d", i);
+			scheme = j_smd_scheme_open(schemename, file, batch);
+			j_smd_scheme_unref(scheme);
+			if (!use_batch)
+				j_batch_execute(batch);
+		}
 	}
 	if (use_batch)
 		j_batch_execute(batch);
@@ -129,7 +133,7 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 	j_smd_file_delete(filename, batch);
 	j_batch_execute(batch);
 	result->elapsed_time = elapsed;
-	result->operations = n;
+	result->operations = n * m;
 }
 static void
 _benchmark_smd_scheme_delete(BenchmarkResult* result, gboolean use_batch)
