@@ -64,6 +64,13 @@ static sqlite3* backend_db;
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
 		sqlite3_finalize(_stmt);                                                \
 	} while (0)
+#define j_sqlite3_reset(stmt)                                                                                            \
+	do                                                                                                               \
+	{                                                                                                                \
+		gint _ret_ = sqlite3_reset(stmt);                                                                        \
+		if (_ret_ != SQLITE_OK)                                                                                  \
+			J_CRITICAL("sqlite3_reset errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
 #define j_sqlite3_bind_null(stmt, idx)                                                                                       \
 	do                                                                                                                   \
 	{                                                                                                                    \
@@ -106,9 +113,18 @@ static sqlite3* backend_db;
 		if (_ret_ != SQLITE_OK)                                                                                      \
 			J_CRITICAL("sqlite3_bind_text errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
 	} while (0)
+#define j_sqlite3_prepare_v3(sql, stmt)                                                                                      \
+	do                                                                                                                   \
+	{                                                                                                                    \
+		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL);                 \
+		if (_ret_ != SQLITE_OK)                                                                                      \
+			J_CRITICAL("sqlite3_bind_text errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
+	} while (0)
 
-guint smd_schemes_primary_key;
-guint smd_scheme_type_primary_key;
+static guint smd_schemes_primary_key;
+static guint smd_scheme_type_primary_key;
+static sqlite3_stmt* stmt_create_type;
+static sqlite3_stmt* stmt_load_type;
 
 #include "sqlite-type.h"
 #include "sqlite-file.h"
@@ -213,6 +229,23 @@ backend_init(gchar const* path)
 	else
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
+	j_sqlite3_prepare_v3("INSERT INTO smd_scheme_type (" //
+			     "header_key, " //
+			     "name, " //
+			     "type, " //
+			     "offset, " //
+			     "size, " //
+			     "count, " //
+			     "ndims, " //
+			     "dims0, dims1, dims2, dims3, " //
+			     "subtype_key) " //
+			     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12);", //
+		&stmt_create_type);
+	j_sqlite3_prepare_v3("SELECT name, type, offset, size, ndims, dims0, dims1, dims2, dims3, subtype_key " //
+			     "FROM smd_scheme_type " //
+			     "WHERE header_key = ?1 AND offset >= ?2" //
+			     "ORDER BY offset;",
+		&stmt_load_type);
 	J_CRITICAL("%s", path);
 	return (backend_db != NULL);
 error:
@@ -226,7 +259,10 @@ backend_fini(void)
 {
 	J_CRITICAL("%d", 0);
 	if (backend_db != NULL)
+	{
+		sqlite3_finalize(stmt_create_type);
 		sqlite3_close(backend_db);
+	}
 	J_CRITICAL("%d", 0);
 }
 static JBackend sqlite_backend = { .type = J_BACKEND_TYPE_SMD, //
