@@ -25,25 +25,9 @@ create_type(bson_iter_t* iter_data_type)
 	guint var_type;
 	guint var_count;
 	const char* var_name;
-	sqlite3_int64 header_key = 0;
+	guint header_key = 0;
 	sqlite3_int64 subtype_key = 0;
-	sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_type_header ( hash ) VALUES(0)", -1, &stmt, NULL); /*TODO something else here*/
-	ret = sqlite3_step(stmt);
-	if (ret != SQLITE_DONE)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_scheme_type_header WHERE hash = 0", -1, &stmt, NULL);
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW)
-		header_key = sqlite3_column_int64(stmt, 0);
-	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "UPDATE smd_scheme_type_header SET hash = key where hash = 0", -1, &stmt, NULL);
-	ret = sqlite3_step(stmt);
-	if (ret != SQLITE_DONE)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
+	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
 	j_sqlite3_transaction_begin();
 	while (bson_iter_next(iter_data_type))
 	{

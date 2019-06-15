@@ -37,32 +37,32 @@ static sqlite3* backend_db;
 #define j_sqlite3_transaction_begin()                                                   \
 	do                                                                              \
 	{                                                                               \
-		sqlite3_stmt* stmt;                                                     \
-		sqlite3_prepare_v2(backend_db, "BEGIN TRANSACTION;", -1, &stmt, NULL);  \
-		ret = sqlite3_step(stmt);                                               \
-		if (ret != SQLITE_DONE)                                                   \
+		sqlite3_stmt* _stmt;                                                    \
+		sqlite3_prepare_v2(backend_db, "BEGIN TRANSACTION;", -1, &_stmt, NULL); \
+		ret = sqlite3_step(_stmt);                                              \
+		if (ret != SQLITE_DONE)                                                 \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-		sqlite3_finalize(stmt);                                                 \
+		sqlite3_finalize(_stmt);                                                \
 	} while (0)
 #define j_sqlite3_transaction_commit()                                                  \
 	do                                                                              \
 	{                                                                               \
-		sqlite3_stmt* stmt;                                                     \
-		sqlite3_prepare_v2(backend_db, "COMMIT;", -1, &stmt, NULL);             \
-		ret = sqlite3_step(stmt);                                               \
-		if (ret != SQLITE_DONE)                                                   \
+		sqlite3_stmt* _stmt;                                                    \
+		sqlite3_prepare_v2(backend_db, "COMMIT;", -1, &_stmt, NULL);            \
+		ret = sqlite3_step(_stmt);                                              \
+		if (ret != SQLITE_DONE)                                                 \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-		sqlite3_finalize(stmt);                                                 \
+		sqlite3_finalize(_stmt);                                                \
 	} while (0)
 #define j_sqlite3_transaction_abort()                                                   \
 	do                                                                              \
 	{                                                                               \
-		sqlite3_stmt* stmt;                                                     \
-		sqlite3_prepare_v2(backend_db, "ABORT;", -1, &stmt, NULL);              \
-		ret = sqlite3_step(stmt);                                               \
-		if (ret != SQLITE_DONE)                                                   \
+		sqlite3_stmt* _stmt;                                                    \
+		sqlite3_prepare_v2(backend_db, "ABORT;", -1, &_stmt, NULL);             \
+		ret = sqlite3_step(_stmt);                                              \
+		if (ret != SQLITE_DONE)                                                 \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-		sqlite3_finalize(stmt);                                                 \
+		sqlite3_finalize(_stmt);                                                \
 	} while (0)
 #define j_sqlite3_bind_null(stmt, idx)                                                                                       \
 	do                                                                                                                   \
@@ -106,12 +106,19 @@ static sqlite3* backend_db;
 		if (_ret_ != SQLITE_OK)                                                                                      \
 			J_CRITICAL("sqlite3_bind_text errorcode = %d, errorstring = %s", _ret_, sqlite3_errmsg(backend_db)); \
 	} while (0)
+
+guint smd_schemes_primary_key;
+guint smd_scheme_type_primary_key;
+
 #include "sqlite-type.h"
 #include "sqlite-file.h"
 #include "sqlite-scheme.h"
+
 static gboolean
 backend_init(gchar const* path)
 {
+	sqlite3_stmt* stmt;
+	guint ret;
 	g_autofree gchar* dirname = NULL;
 	J_CRITICAL("%s", path);
 	g_return_val_if_fail(path != NULL, FALSE);
@@ -121,7 +128,7 @@ backend_init(gchar const* path)
 		goto error;
 	if (sqlite3_exec(backend_db,
 		    "CREATE TABLE IF NOT EXISTS smd_schemes (" //
-		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //
+		    "key INTEGER PRIMARY KEY, " //
 		    "parent_key INTEGER, " // reference to parent
 		    "file_key INTEGER, " // reference to file for fast delete|fetch
 		    "name TEXT NOT NULL, " // name of |file|scheme
@@ -137,19 +144,13 @@ backend_init(gchar const* path)
 		    NULL,
 		    NULL,
 		    NULL) != SQLITE_OK)
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		goto error;
-	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd_scheme_type_header (" //
-		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //used to reserve unique ids for subtypes
-		    "hash BIGINT" // for reuseing it
-		    ");", /*TODO add hash or sth to reuse existing ones*/
-		    NULL, /*TODO if last file using this is removed*/
-		    NULL,
-		    NULL) != SQLITE_OK)
-		goto error;
+	}
 	if (sqlite3_exec(backend_db,
 		    "CREATE TABLE IF NOT EXISTS smd_scheme_type (" //
-		    "key INTEGER PRIMARY KEY AUTOINCREMENT, " //
+		    "key INTEGER PRIMARY KEY AUTOINCREMENT,"
 		    "header_key INTEGER, " // identify variables belonging together
 		    "subtype_key INTEGER, " // reference to subtype if required
 		    "name TEXT NOT NULL, " // name of variable
@@ -166,7 +167,10 @@ backend_init(gchar const* path)
 		    NULL,
 		    NULL,
 		    NULL) != SQLITE_OK)
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		goto error;
+	}
 	if (sqlite3_exec(backend_db,
 		    "CREATE TABLE IF NOT EXISTS smd_scheme_data (" //
 		    "scheme_key INTEGER, " //identiy which scheme belongs to this variable
@@ -175,12 +179,34 @@ backend_init(gchar const* path)
 		    "value_int BIGINT, " //value
 		    "value_float FLOAT, " //value
 		    "value_text TEXT, " //value
-		    "value_blob BLOB " //value
+		    "value_blob BLOB, " //value
+		    "PRIMARY KEY(scheme_key,type_key,offset)"
 		    ");",
 		    NULL,
 		    NULL,
 		    NULL) != SQLITE_OK)
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		goto error;
+	}
+	sqlite3_prepare_v2(backend_db, "SELECT max(key) FROM smd_schemes", -1, &stmt, NULL);
+	ret = sqlite3_step(stmt);
+	if (ret == SQLITE_ROW)
+		smd_schemes_primary_key = 1 + sqlite3_column_int64(stmt, 0);
+	else if (ret == SQLITE_DONE)
+		smd_schemes_primary_key = 1;
+	else
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
+	sqlite3_prepare_v2(backend_db, "SELECT max(d.type_key,t.subtype_key) FROM smd_scheme_data d, smd_scheme_type t", -1, &stmt, NULL);
+	ret = sqlite3_step(stmt);
+	if (ret == SQLITE_ROW)
+		smd_scheme_type_primary_key = 1 + sqlite3_column_int64(stmt, 0);
+	else if (ret == SQLITE_DONE)
+		smd_scheme_type_primary_key = 1;
+	else
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
 	J_CRITICAL("%s", path);
 	return (backend_db != NULL);
 error:
@@ -188,6 +214,7 @@ error:
 	J_CRITICAL("%s", path);
 	return FALSE;
 }
+
 static void
 backend_fini(void)
 {

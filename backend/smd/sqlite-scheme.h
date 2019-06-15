@@ -4,7 +4,7 @@ backend_scheme_delete(const char* name, char* parent)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-	J_DEBUG("%s %ld", name, *((sqlite3_int64*)parent));
+	J_DEBUG("%s %lld", name, *((sqlite3_int64*)parent));
 	g_return_val_if_fail(name != NULL, FALSE);
 	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
@@ -12,7 +12,7 @@ backend_scheme_delete(const char* name, char* parent)
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
 		result = sqlite3_column_int64(stmt, 0);
-	else
+	else if (ret != SQLITE_DONE)
 		J_CRITICAL("sql_error %s %lld  - %d %s", name, *((sqlite3_int64*)parent), ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
@@ -37,7 +37,6 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 scheme_key = 0;
-	sqlite3_int64 file_key = 0;
 	sqlite3_int64 type_key = 0;
 	bson_iter_t iter;
 	bson_iter_t iter_space_type;
@@ -87,59 +86,24 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 			}
 		}
 	}
-	{ // extract the file key
-		sqlite3_prepare_v2(backend_db, "SELECT file_key FROM smd_schemes WHERE key = ?;", -1, &stmt, NULL);
-		j_sqlite3_bind_int64(stmt, 1, *((sqlite3_int64*)parent));
-		ret = sqlite3_step(stmt);
-		if (ret == SQLITE_ROW)
-			file_key = sqlite3_column_int64(stmt, 0);
-		else
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		sqlite3_finalize(stmt);
-	}
-	{ /*delete old scheme first*/
-		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
-		j_sqlite3_bind_text(stmt, 1, name, -1);
-		j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
-		j_sqlite3_bind_int64(stmt, 3, file_key);
-		ret = sqlite3_step(stmt);
-		if (ret == SQLITE_ROW)
-			backend_scheme_delete(name, parent);
-		else if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		sqlite3_finalize(stmt);
-	}
+	backend_scheme_delete(name, parent);
+	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
+	memcpy(key, &scheme_key, sizeof(scheme_key));
 	{ // insert new scheme
-		sqlite3_prepare_v2(backend_db, "INSERT INTO smd_schemes (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key) VALUES (?,?,?,?,?,?,?,?,?,?,?);", -1, &stmt, NULL);
+		sqlite3_prepare_v2(backend_db, "INSERT INTO smd_schemes (name,meta_type,parent_key,file_key,ndims,dims0,dims1,dims2,dims3,distribution,type_key,key) VALUES (?1,?2,?3,(SELECT file_key FROM smd_schemes WHERE key = ?3),?4,?5,?6,?7,?8,?9,?10,?11);", -1, &stmt, NULL);
 		j_sqlite3_bind_text(stmt, 1, name, -1);
 		j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_DATA);
 		j_sqlite3_bind_int64(stmt, 3, *((sqlite3_int64*)parent));
-		j_sqlite3_bind_int64(stmt, 4, file_key);
-		j_sqlite3_bind_int(stmt, 5, var_ndims);
-		j_sqlite3_bind_int(stmt, 6, var_dims[0]);
-		j_sqlite3_bind_int(stmt, 7, var_dims[1]);
-		j_sqlite3_bind_int(stmt, 8, var_dims[2]);
-		j_sqlite3_bind_int(stmt, 9, var_dims[3]);
-		j_sqlite3_bind_int(stmt, 10, distribution);
-		j_sqlite3_bind_int64(stmt, 11, type_key);
+		j_sqlite3_bind_int(stmt, 4, var_ndims);
+		j_sqlite3_bind_int(stmt, 5, var_dims[0]);
+		j_sqlite3_bind_int(stmt, 6, var_dims[1]);
+		j_sqlite3_bind_int(stmt, 7, var_dims[2]);
+		j_sqlite3_bind_int(stmt, 8, var_dims[3]);
+		j_sqlite3_bind_int(stmt, 9, distribution);
+		j_sqlite3_bind_int64(stmt, 10, type_key);
+		j_sqlite3_bind_int64(stmt, 11, scheme_key);
 		ret = sqlite3_step(stmt);
 		if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		sqlite3_finalize(stmt);
-	}
-	{ // extract the primary key
-		sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ? AND file_key = ?;", -1, &stmt, NULL);
-		j_sqlite3_bind_text(stmt, 1, name, -1);
-		j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
-		j_sqlite3_bind_int64(stmt, 3, file_key);
-		ret = sqlite3_step(stmt);
-		memset(key, 0, SMD_KEY_LENGTH);
-		if (ret == SQLITE_ROW)
-		{
-			scheme_key = sqlite3_column_int64(stmt, 0);
-			memcpy(key, &scheme_key, sizeof(scheme_key));
-		}
-		else
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		sqlite3_finalize(stmt);
 	}
