@@ -616,7 +616,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			gint64 buf_offset;
 			gint64 buf_size;
 			char* buf;
-			guint i;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
@@ -647,7 +646,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			char _key[SMD_KEY_LENGTH];
 			gint64 buf_offset;
 			gint64 buf_size;
-			guint i;
 			char* buf;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
@@ -671,7 +669,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-			guint i;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
@@ -708,7 +705,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
-			guint i;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
@@ -727,7 +723,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-			guint i;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
@@ -762,7 +757,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-			guint i;
 			guint distribution;
 
 			reply = j_message_new_reply(message);
@@ -797,7 +791,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			g_autoptr(JMessage) reply = NULL;
 			const char* name;
 			char* parent;
-			guint i;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
@@ -818,7 +811,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			int bson_len;
 			char _key[SMD_KEY_LENGTH];
 			bson_t bson[1];
-			guint i;
 			guint distribution;
 
 			reply = j_message_new_reply(message);

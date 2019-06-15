@@ -4,14 +4,18 @@ backend_scheme_delete(const char* name, char* parent)
 	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
+	sqlite3_int64 type_key = 0;
 	J_DEBUG("%s %lld", name, *((sqlite3_int64*)parent));
 	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
+	sqlite3_prepare_v2(backend_db, "SELECT key,type_key FROM smd_schemes WHERE name = ? AND parent_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_text(stmt, 1, name, -1);
 	j_sqlite3_bind_int64(stmt, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt);
 	if (ret == SQLITE_ROW)
+	{
 		result = sqlite3_column_int64(stmt, 0);
+		type_key = sqlite3_column_int64(stmt, 1); /*TODO chekc if reused somewhere else later*/
+	}
 	else if (ret != SQLITE_DONE)
 		J_CRITICAL("sql_error %s %lld  - %d %s", name, *((sqlite3_int64*)parent), ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
@@ -23,6 +27,12 @@ backend_scheme_delete(const char* name, char* parent)
 	sqlite3_finalize(stmt);
 	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_scheme_data WHERE scheme_key = ?;", -1, &stmt, NULL);
 	j_sqlite3_bind_int64(stmt, 1, result);
+	ret = sqlite3_step(stmt);
+	if (ret != SQLITE_DONE)
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
+	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_scheme_type WHERE header_key = ?;", -1, &stmt, NULL);
+	j_sqlite3_bind_int64(stmt, 1, type_key);
 	ret = sqlite3_step(stmt);
 	if (ret != SQLITE_DONE)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
@@ -50,6 +60,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 		J_DEBUG("%s %s", name, _t);
 		free(_t);
 	}
+	j_sqlite3_transaction_begin();
 	g_return_val_if_fail(name != NULL, FALSE);
 	bson_iter_init(&iter, bson);
 	var_ndims = 0;
@@ -107,6 +118,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		sqlite3_finalize(stmt);
 	}
+	j_sqlite3_transaction_commit();
 	J_DEBUG("%s", name);
 	return TRUE;
 }

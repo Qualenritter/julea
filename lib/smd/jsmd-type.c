@@ -286,11 +286,9 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 {
 	struct J_SMD_Type_t* type;
 	guint i;
-	bson_iter_t iter_loc;
+	bson_iter_t iter_val;
 	bson_iter_t iter_loc2;
 	bson_iter_t iter;
-	bson_iter_t iter_var;
-	bson_iter_t iter_val;
 	bson_iter_t iter_dims;
 	J_SMD_Variable_t var;
 	uint32_t len;

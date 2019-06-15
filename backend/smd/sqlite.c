@@ -127,19 +127,21 @@ backend_init(gchar const* path)
 	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
 		goto error;
 	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd_schemes (" //
-		    "key INTEGER PRIMARY KEY, " //
-		    "parent_key INTEGER, " // reference to parent
-		    "file_key INTEGER, " // reference to file for fast delete|fetch
-		    "name TEXT NOT NULL, " // name of |file|scheme
-		    "meta_type BIGINT," // file|scheme
-		    "type_key," //the key in the smd_type_header table
-		    "ndims BIGINT," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
-		    "dims0 BIGINT," // number of dimension[0]
-		    "dims1 BIGINT," // number of dimension[1]
-		    "dims2 BIGINT," // number of dimension[2]
-		    "dims3 BIGINT," // number of dimension[3]
-		    "distribution BIGINT" //if this is stored within DB or the distribution in the object store
+		    "CREATE TABLE IF NOT EXISTS smd_scheme_type (" //
+		    "key INTEGER PRIMARY KEY AUTOINCREMENT,"
+		    "header_key INTEGER, " // identify variables belonging together
+		    "subtype_key INTEGER, " // reference to subtype if required
+		    "name TEXT NOT NULL, " // name of variable
+		    "type INTEGER," // type of variable
+		    "offset INTEGER," // offset within binary
+		    "size INTEGER," // size of singleelement within binary
+		    "count INTEGER," // element count within binary
+		    "ndims INTEGER," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
+		    "dims0 INTEGER," // number of dimension[0]
+		    "dims1 INTEGER," // number of dimension[1]
+		    "dims2 INTEGER," // number of dimension[2]
+		    "dims3 INTEGER," // number of dimension[3]
+		    "FOREIGN KEY(subtype_key) REFERENCES smd_scheme_type(header_key)" //
 		    ");",
 		    NULL,
 		    NULL,
@@ -149,20 +151,22 @@ backend_init(gchar const* path)
 		goto error;
 	}
 	if (sqlite3_exec(backend_db,
-		    "CREATE TABLE IF NOT EXISTS smd_scheme_type (" //
-		    "key INTEGER PRIMARY KEY AUTOINCREMENT,"
-		    "header_key INTEGER, " // identify variables belonging together
-		    "subtype_key INTEGER, " // reference to subtype if required
-		    "name TEXT NOT NULL, " // name of variable
-		    "type BIGINT," // type of variable
-		    "offset BIGINT," // offset within binary
-		    "size BIGINT," // size of singleelement within binary
-		    "count BIGINT," // element count within binary
-		    "ndims BIGINT," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
-		    "dims0 BIGINT," // number of dimension[0]
-		    "dims1 BIGINT," // number of dimension[1]
-		    "dims2 BIGINT," // number of dimension[2]
-		    "dims3 BIGINT" // number of dimension[3]
+		    "CREATE TABLE IF NOT EXISTS smd_schemes (" //
+		    "key INTEGER PRIMARY KEY, " //
+		    "parent_key INTEGER, " // reference to parent
+		    "file_key INTEGER, " // reference to file for fast delete|fetch
+		    "name TEXT NOT NULL, " // name of |file|scheme
+		    "meta_type INTEGER," // file|scheme
+		    "type_key INTEGER," //the key in the smd_type_header table
+		    "ndims INTEGER," // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
+		    "dims0 INTEGER," // number of dimension[0]
+		    "dims1 INTEGER," // number of dimension[1]
+		    "dims2 INTEGER," // number of dimension[2]
+		    "dims3 INTEGER," // number of dimension[3]
+		    "distribution INTEGER," //if this is stored within DB or the distribution in the object store
+		    "FOREIGN KEY(parent_key) REFERENCES smd_schemes(key),"
+		    "FOREIGN KEY(file_key) REFERENCES smd_schemes(key),"
+		    "FOREIGN KEY(type_key) REFERENCES smd_scheme_type(header_key)"
 		    ");",
 		    NULL,
 		    NULL,
@@ -175,12 +179,14 @@ backend_init(gchar const* path)
 		    "CREATE TABLE IF NOT EXISTS smd_scheme_data (" //
 		    "scheme_key INTEGER, " //identiy which scheme belongs to this variable
 		    "type_key INTEGER, " //identify the type whithin scheme
-		    "offset BIGINT, " //offset within scheme
-		    "value_int BIGINT, " //value
+		    "offset INTEGER, " //offset within scheme
+		    "value_int INTEGER, " //value
 		    "value_float FLOAT, " //value
 		    "value_text TEXT, " //value
 		    "value_blob BLOB, " //value
-		    "PRIMARY KEY(scheme_key,type_key,offset)"
+		    "PRIMARY KEY(scheme_key,type_key,offset)," //
+		    "FOREIGN KEY(scheme_key) REFERENCES smd_schemes(key)," //
+		    "FOREIGN KEY(type_key) REFERENCES smd_scheme_type(key)" //
 		    ");",
 		    NULL,
 		    NULL,

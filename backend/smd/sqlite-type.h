@@ -28,7 +28,6 @@ create_type(bson_iter_t* iter_data_type)
 	guint header_key = 0;
 	sqlite3_int64 subtype_key = 0;
 	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
-	j_sqlite3_transaction_begin();
 	while (bson_iter_next(iter_data_type))
 	{
 		if (strcmp("arr", bson_iter_key(iter_data_type)) == 0)
@@ -63,9 +62,7 @@ create_type(bson_iter_t* iter_data_type)
 					else if (strcmp("subtype", bson_iter_key(&iter_data_var)) == 0)
 					{
 						bson_iter_recurse(&iter_data_var, &iter_data_val);
-						j_sqlite3_transaction_commit();
 						subtype_key = create_type(&iter_data_val);
-						j_sqlite3_transaction_begin();
 					}
 					else if (strcmp("dims", bson_iter_key(&iter_data_var)) == 0)
 					{
@@ -95,7 +92,6 @@ create_type(bson_iter_t* iter_data_type)
 			}
 		}
 	}
-	j_sqlite3_transaction_commit();
 	return header_key;
 }
 static gboolean
