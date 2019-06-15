@@ -94,7 +94,8 @@ j_smd_file_create_free(gpointer data)
 {
 	JSMDFileOperation* operation = data;
 	g_free(operation->name);
-	g_free(data);
+	j_smd_file_unref(operation->scheme);
+	g_free(operation);
 }
 void*
 j_smd_file_create(const char* name, JBatch* batch)
@@ -105,7 +106,7 @@ j_smd_file_create(const char* name, JBatch* batch)
 	smd_op = g_new(JSMDFileOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->user_data = NULL;
-	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->ref_count = 2;
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
@@ -249,7 +250,8 @@ j_smd_file_open_free(gpointer data)
 {
 	JSMDFileOperation* operation = data;
 	g_free(operation->name);
-	g_free(data);
+	j_smd_file_unref(operation->scheme);
+	g_free(operation);
 }
 void*
 j_smd_file_open(const char* name, JBatch* batch)
@@ -259,7 +261,7 @@ j_smd_file_open(const char* name, JBatch* batch)
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDFileOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
-	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->ref_count = 2;
 	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;

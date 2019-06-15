@@ -1,0 +1,62 @@
+['/usr/bin/gcc'
+, '-pthread'
+, '-pthread'
+, '-Wl
+,--export-dynamic'
+, '-pthread'
+, '-pthread'
+, '-pthread'
+, 'server/server.c.9.o'
+, '-o/src/julea/julea/build/server/julea-server'
+, '-Wl
+,-rpath
+,/src/julea/julea/build/lib'
+, '-Wl
+,-rpath
+,/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-Wl
+,-rpath
+,/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-Wl
+,-rpath
+,/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-Wl
+,-rpath
+,/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/libmongoc-1.9.5-jtv7dqrywtk2gmgvg2jam7gtdng4cukh/lib'
+, '-Wl
+,-rpath
+,/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-Wl
+,-rpath
+,/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-Wl
+,-Bstatic'
+, '-Wl
+,-Bdynamic'
+, '-Llib'
+, '-L/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-L/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-L/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-L/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/libmongoc-1.9.5-jtv7dqrywtk2gmgvg2jam7gtdng4cukh/lib'
+, '-L/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-L/src/julea/julea/dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/glib-2.56.3-kfoywyyv5l6o6oyllur4qty44ysls2er/lib'
+, '-ljulea'
+, '-lm'
+, '-lglib-2.0'
+, '-lintl'
+, '-lgio-2.0'
+, '-lgobject-2.0'
+, '-lglib-2.0'
+, '-lintl'
+, '-lgobject-2.0'
+, '-lglib-2.0'
+, '-lintl'
+, '-lbson-1.0'
+, '-lgmodule-2.0'
+, '-lglib-2.0'
+, '-lintl'
+, '-lgthread-2.0'
+, '-lglib-2.0'
+, '-lintl'
+, '-fsanitize=address']
+

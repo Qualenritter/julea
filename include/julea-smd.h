@@ -93,6 +93,7 @@ struct J_Scheme_t
 	void* user_data; /*may be used by user application - this will be initialized to NULL but never freed or touched elsewhere*/
 };
 typedef struct J_Scheme_t J_Scheme_t;
+
 /*files only required to detect fast what belongs together*/
 void* j_smd_file_create(const char* name, JBatch* batch);
 gboolean j_smd_file_delete(const char* name, JBatch* batch);

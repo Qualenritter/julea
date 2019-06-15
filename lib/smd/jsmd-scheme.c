@@ -39,6 +39,7 @@ struct JSMDSchemeOperation
 	guint64 buf_offset;
 	guint64 buf_size;
 };
+/*TODO copy parent->key into operation or increase ref_count*/
 typedef struct JSMDSchemeOperation JSMDSchemeOperation;
 static gboolean
 j_smd_create_exec(JList* operations, JSemantics* semantics)
@@ -121,7 +122,8 @@ j_smd_create_free(gpointer data)
 {
 	JSMDSchemeOperation* operation = data;
 	g_free(operation->name);
-	g_free(data);
+	j_smd_scheme_unref(operation->scheme);
+	g_free(operation);
 }
 void*
 j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDistributionType distribution, JBatch* batch)
@@ -131,7 +133,7 @@ j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDi
 	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
-	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->ref_count = 2;
 	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->type = j_smd_type_ref(type);
 	smd_op->scheme->space = j_smd_space_ref(space);
@@ -321,7 +323,8 @@ j_smd_open_free(gpointer data)
 {
 	JSMDSchemeOperation* operation = data;
 	g_free(operation->name);
-	g_free(data);
+	j_smd_scheme_unref(operation->scheme);
+	g_free(operation);
 }
 void*
 j_smd_scheme_open(const char* name, void* parent, JBatch* batch)
@@ -332,7 +335,7 @@ j_smd_scheme_open(const char* name, void* parent, JBatch* batch)
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->user_data = NULL;
-	smd_op->scheme->ref_count = 1;
+	smd_op->scheme->ref_count = 2;
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;

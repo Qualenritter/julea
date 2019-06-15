@@ -53,7 +53,7 @@ create_type(bson_iter_t* iter_data_type)
 			{
 				var_offset = 0;
 				var_size = 0;
-				var_type = var_type;
+				var_type = 0;
 				var_name = NULL;
 				var_ndims = 0;
 				var_dims[0] = 0;
