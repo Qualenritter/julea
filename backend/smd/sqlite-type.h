@@ -161,8 +161,6 @@ load_type(bson_t* b_datatype, sqlite3_int64 type_key)
 	sqlite3_finalize(stmt);
 	return TRUE;
 }
-const char* buf_root;
-guint64 buf_root_offset;
 static guint
 calculate_struct_size(sqlite3_int64 type_key)
 {
@@ -237,11 +235,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	GArray* arr;
 	J_SMD_Variable_t* var;
 	if (struct_size == 0)
-	{
-		buf_root = buf;
-		buf_root_offset = buf_offset;
 		struct_size = calculate_struct_size(type_key);
-	}
 	arr = get_type_structure(type_key);
 	for (i = 0; i < arr->len; i++)
 	{
@@ -259,6 +253,17 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 			for (j = 0; j < array_length; j++)
 			{
 				/*only write complete objects TODO maybe allow writing of half variables?*/
+				sqlite3_prepare_v2(backend_db, "DELETE " //
+							       "FROM smd_scheme_data " //TODO performance UPDATE ?!?
+							       "WHERE scheme_key = ?1 AND type_key = ?2 AND offset = ?3",
+					-1, &stmt, NULL);
+				j_sqlite3_bind_int64(stmt, 1, scheme_key);
+				j_sqlite3_bind_int64(stmt, 2, type_key);
+				j_sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);
+				ret = sqlite3_step(stmt);
+				if (ret != SQLITE_DONE)
+					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+				sqlite3_finalize(stmt);
 				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
 				j_sqlite3_bind_int64(stmt, 1, scheme_key);
 				j_sqlite3_bind_int64(stmt, 2, (*((sqlite3_int64*)var->sub_type_key)));
