@@ -33,6 +33,37 @@ enum J_SMD_Metadata_Type
 }; /*TODO change to boolean?*/
 typedef enum J_SMD_Metadata_Type J_SMD_Metadata_Type;
 static sqlite3* backend_db;
+
+#define j_sqlite3_transaction_begin()                                                   \
+	do                                                                              \
+	{                                                                               \
+		sqlite3_stmt* stmt;                                                     \
+		sqlite3_prepare_v2(backend_db, "BEGIN TRANSACTION;", -1, &stmt, NULL);  \
+		ret = sqlite3_step(stmt);                                               \
+		if (ret != SQLITE_DONE)                                                   \
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
+		sqlite3_finalize(stmt);                                                 \
+	} while (0)
+#define j_sqlite3_transaction_commit()                                                  \
+	do                                                                              \
+	{                                                                               \
+		sqlite3_stmt* stmt;                                                     \
+		sqlite3_prepare_v2(backend_db, "COMMIT;", -1, &stmt, NULL);             \
+		ret = sqlite3_step(stmt);                                               \
+		if (ret != SQLITE_DONE)                                                   \
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
+		sqlite3_finalize(stmt);                                                 \
+	} while (0)
+#define j_sqlite3_transaction_abort()                                                   \
+	do                                                                              \
+	{                                                                               \
+		sqlite3_stmt* stmt;                                                     \
+		sqlite3_prepare_v2(backend_db, "ABORT;", -1, &stmt, NULL);              \
+		ret = sqlite3_step(stmt);                                               \
+		if (ret != SQLITE_DONE)                                                   \
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
+		sqlite3_finalize(stmt);                                                 \
+	} while (0)
 #define j_sqlite3_bind_null(stmt, idx)                                                                                       \
 	do                                                                                                                   \
 	{                                                                                                                    \

@@ -44,6 +44,7 @@ create_type(bson_iter_t* iter_data_type)
 	if (ret != SQLITE_DONE)
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	sqlite3_finalize(stmt);
+	j_sqlite3_transaction_begin();
 	while (bson_iter_next(iter_data_type))
 	{
 		if (strcmp("arr", bson_iter_key(iter_data_type)) == 0)
@@ -78,7 +79,9 @@ create_type(bson_iter_t* iter_data_type)
 					else if (strcmp("subtype", bson_iter_key(&iter_data_var)) == 0)
 					{
 						bson_iter_recurse(&iter_data_var, &iter_data_val);
+						j_sqlite3_transaction_commit();
 						subtype_key = create_type(&iter_data_val);
+						j_sqlite3_transaction_begin();
 					}
 					else if (strcmp("dims", bson_iter_key(&iter_data_var)) == 0)
 					{
@@ -108,6 +111,7 @@ create_type(bson_iter_t* iter_data_type)
 			}
 		}
 	}
+	j_sqlite3_transaction_commit();
 	return header_key;
 }
 static gboolean

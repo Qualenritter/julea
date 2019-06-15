@@ -295,55 +295,66 @@ j_smd_type_from_bson(bson_iter_t* iter_arr)
 	J_SMD_Variable_t var;
 	uint32_t len;
 	const char* tmp;
+	gchar const* key;
 	type = j_smd_type_create();
-	if (bson_iter_recurse(iter_arr, &iter_loc) && bson_iter_find_descendant(&iter_loc, "arr", &iter_loc2) && BSON_ITER_HOLDS_ARRAY(&iter_loc2))
+	bson_iter_recurse(iter_arr, &iter_loc2);
+	while (bson_iter_next(&iter_loc2))
 	{
-		bson_iter_recurse(&iter_loc2, &iter);
-		while (bson_iter_next(&iter))
+		key = bson_iter_key(&iter_loc2);
+		if (g_strcmp0("arr", key) == 0)
 		{
-			var.offset = 0;
-			var.size = 0;
-			var.type = 0;
-			var.name[0] = 0;
-			var.space.ndims = 0;
-			var.space.dims[0] = 0;
-			var.sub_type = NULL;
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "offset", &iter_val) && BSON_ITER_HOLDS_INT32(&iter_val))
-				var.offset = bson_iter_int32(&iter_val);
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "size", &iter_val) && BSON_ITER_HOLDS_INT32(&iter_val))
-				var.size = bson_iter_int32(&iter_val);
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "type", &iter_val) && BSON_ITER_HOLDS_INT32(&iter_val))
-				var.type = bson_iter_int32(&iter_val);
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "name", &iter_val) && BSON_ITER_HOLDS_UTF8(&iter_val))
+			bson_iter_recurse(&iter_loc2, &iter);
+			while (bson_iter_next(&iter))
 			{
-				tmp = bson_iter_utf8(&iter_val, &len);
-				memcpy(var.name, tmp, len);
-				var.name[len] = 0;
-			}
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "ndims", &iter_val) && BSON_ITER_HOLDS_INT32(&iter_val))
-				var.space.ndims = bson_iter_int32(&iter_val);
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "subtype", &iter_val) && BSON_ITER_HOLDS_DOCUMENT(&iter_val))
-				var.sub_type = j_smd_type_from_bson(&iter_val);
-			if (bson_iter_recurse(&iter, &iter_var) && bson_iter_find_descendant(&iter_var, "dims", &iter_val) && BSON_ITER_HOLDS_ARRAY(&iter_val))
-			{
-				bson_iter_recurse(&iter_val, &iter_dims);
-				i = 0;
-				while (bson_iter_next(&iter_dims) && i < var.space.ndims)
+				var.offset = 0;
+				var.size = 0;
+				var.type = 0;
+				var.name[0] = 0;
+				var.space.ndims = 0;
+				var.space.dims[0] = 0;
+				var.sub_type = NULL;
+				bson_iter_recurse(&iter, &iter_val);
+				while (bson_iter_next(&iter_val))
 				{
-					if (BSON_ITER_HOLDS_INT32(&iter_dims))
+					key = bson_iter_key(&iter_val);
+					if (g_strcmp0("offset", key) == 0)
+						var.offset = bson_iter_int32(&iter_val);
+					if (g_strcmp0("size", key) == 0)
+						var.size = bson_iter_int32(&iter_val);
+					if (g_strcmp0("type", key) == 0)
+						var.type = bson_iter_int32(&iter_val);
+					if (g_strcmp0("name", key) == 0)
 					{
-						var.space.dims[i] = bson_iter_int32(&iter_dims);
-						i++;
+						tmp = bson_iter_utf8(&iter_val, &len);
+						memcpy(var.name, tmp, len);
+						var.name[len] = 0;
+					}
+					if (g_strcmp0("ndims", key) == 0)
+						var.space.ndims = bson_iter_int32(&iter_val);
+					if (g_strcmp0("subtype", key) == 0)
+						var.sub_type = j_smd_type_from_bson(&iter_val);
+					if (g_strcmp0("dims", key) == 0)
+					{
+						bson_iter_recurse(&iter_val, &iter_dims);
+						i = 0;
+						while (bson_iter_next(&iter_dims) && i < var.space.ndims)
+						{
+							if (BSON_ITER_HOLDS_INT32(&iter_dims))
+							{
+								var.space.dims[i] = bson_iter_int32(&iter_dims);
+								i++;
+							}
+						}
 					}
 				}
+				if (var.type == SMD_TYPE_SUB_TYPE)
+				{
+					j_smd_type_add_compound_type(type, var.name, var.offset, var.size, var.sub_type, var.space.ndims, var.space.dims);
+					j_smd_type_unref(var.sub_type);
+				}
+				else
+					j_smd_type_add_atomic_type(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
 			}
-			if (var.type == SMD_TYPE_SUB_TYPE)
-			{
-				j_smd_type_add_compound_type(type, var.name, var.offset, var.size, var.sub_type, var.space.ndims, var.space.dims);
-				j_smd_type_unref(var.sub_type);
-			}
-			else
-				j_smd_type_add_atomic_type(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
 		}
 	}
 	return type;
