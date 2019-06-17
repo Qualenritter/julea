@@ -177,12 +177,10 @@ benchmark_smd_scheme_delete_batch(BenchmarkResult* result)
 void
 benchmark_smd(void)
 {
-	j_smd_debug_init();
 	j_benchmark_run("/smd/scheme/create", benchmark_smd_create_scheme);
 	j_benchmark_run("/smd/scheme/open", benchmark_smd_scheme_open);
 	j_benchmark_run("/smd/scheme/delete", benchmark_smd_scheme_delete);
 	j_benchmark_run("/smd/scheme/create-batch", benchmark_smd_create_scheme_batch);
 	j_benchmark_run("/smd/scheme/open-batch", benchmark_smd_scheme_open_batch);
 	j_benchmark_run("/smd/scheme/delete-batch", benchmark_smd_scheme_delete_batch);
-	j_smd_debug_exit();
 }

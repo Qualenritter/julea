@@ -145,6 +145,8 @@ j_benchmark_run(gchar const* name, BenchmarkFunc benchmark_func)
 	g_timer_destroy(func_timer);
 }
 
+void j_smd_debug_init(void);
+void j_smd_debug_exit(void);
 int
 main(int argc, char** argv)
 {
@@ -203,6 +205,7 @@ main(int argc, char** argv)
 	benchmark_collection();
 	benchmark_item();
 */
+	j_smd_debug_init();
 	// HDF5 client
 	benchmark_hdf();
 	// SMD client
@@ -210,6 +213,8 @@ main(int argc, char** argv)
 
 	g_timer_destroy(j_benchmark_timer);
 	j_semantics_unref(j_benchmark_semantics);
+
+	j_smd_debug_exit();
 
 	g_free(opt_machine_separator);
 	g_free(opt_path);
