@@ -22,11 +22,12 @@
 #include <julea.h>
 #include "benchmark.h"
 #include <julea-internal.h>
+#include <stdlib.h>
 
 #ifdef JULEA_DEBUG
-guint const n = 500;
+guint n = 500;
 #else
-guint const n = 5000;
+guint n = 5000;
 #endif
 
 static void
@@ -79,7 +80,7 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 	guint i, j;
 	void* file;
 	void* scheme;
-	guint const m = 15;
+	guint const m = 200;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
 	gdouble elapsed;
@@ -98,9 +99,9 @@ _benchmark_smd_scheme_open(BenchmarkResult* result, gboolean use_batch)
 			if (!use_batch)
 				j_batch_execute(batch);
 		}
+		if (use_batch)
+			j_batch_execute(batch);
 	}
-	if (use_batch)
-		j_batch_execute(batch);
 	elapsed = j_benchmark_timer_elapsed();
 	j_smd_file_unref(file);
 	j_batch_execute(batch);
@@ -177,10 +178,39 @@ benchmark_smd_scheme_delete_batch(BenchmarkResult* result)
 void
 benchmark_smd(void)
 {
-	j_benchmark_run("/smd/scheme/create", benchmark_smd_create_scheme);
-	j_benchmark_run("/smd/scheme/open", benchmark_smd_scheme_open);
-	j_benchmark_run("/smd/scheme/delete", benchmark_smd_scheme_delete);
-	j_benchmark_run("/smd/scheme/create-batch", benchmark_smd_create_scheme_batch);
-	j_benchmark_run("/smd/scheme/open-batch", benchmark_smd_scheme_open_batch);
-	j_benchmark_run("/smd/scheme/delete-batch", benchmark_smd_scheme_delete_batch);
+	guint n_values[] = {
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, //
+		20, 30, 40, 50, 60, 70, 80, 90, 100, //
+		200, 300, 400, 500, 600, 700, 800, 900, 1000, //
+		2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, //
+		10000, 50000, 100000, //
+	};
+	guint i;
+	char testname[500];
+	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
+	{
+		n = n_values[i];
+		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_01", n);
+		system(testname);
+		sprintf(testname, "/smd/scheme_%d/create", n);
+		j_benchmark_run(testname, benchmark_smd_create_scheme);
+		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_02", n);
+		system(testname);
+		sprintf(testname, "/smd/scheme_%d/open", n);
+		j_benchmark_run(testname, benchmark_smd_scheme_open);
+		sprintf(testname, "/smd/scheme_%d/delete", n);
+		j_benchmark_run(testname, benchmark_smd_scheme_delete);
+		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_03", n);
+		system(testname);
+		sprintf(testname, "/smd/scheme_%d/create-batch", n);
+		j_benchmark_run(testname, benchmark_smd_create_scheme_batch);
+		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_04", n);
+		system(testname);
+		sprintf(testname, "/smd/scheme_%d/open-batch", n);
+		j_benchmark_run(testname, benchmark_smd_scheme_open_batch);
+		sprintf(testname, "/smd/scheme_%d/delete-batch", n);
+		j_benchmark_run(testname, benchmark_smd_scheme_delete_batch);
+		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_05", n);
+		system(testname);
+	}
 }
