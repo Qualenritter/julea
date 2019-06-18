@@ -21,7 +21,6 @@ create_type(bson_iter_t* iter_data_type)
 	guint var_offset;
 	guint var_size;
 	guint var_type;
-	guint var_count;
 	const char* var_name;
 	guint header_key = 0;
 	sqlite3_int64 subtype_key = 0;
@@ -43,7 +42,6 @@ create_type(bson_iter_t* iter_data_type)
 				var_dims[1] = 0;
 				var_dims[2] = 0;
 				var_dims[3] = 0;
-				var_count = 1;
 				subtype_key = 0;
 				bson_iter_recurse(&iter_data_arr, &iter_data_var);
 				while (bson_iter_next(&iter_data_var))
@@ -71,7 +69,6 @@ create_type(bson_iter_t* iter_data_type)
 						for (i = 0; bson_iter_next(&iter_data_dims) && i < 4; i++)
 						{
 							var_dims[i] = bson_iter_int32(&iter_data_dims);
-							var_count *= var_dims[i];
 						}
 					}
 				}
@@ -81,13 +78,12 @@ create_type(bson_iter_t* iter_data_type)
 				j_sqlite3_bind_int64(stmt_create_type, 3, var_type);
 				j_sqlite3_bind_int64(stmt_create_type, 4, var_offset);
 				j_sqlite3_bind_int64(stmt_create_type, 5, var_size);
-				j_sqlite3_bind_int64(stmt_create_type, 6, var_count);
-				j_sqlite3_bind_int64(stmt_create_type, 7, var_ndims);
-				j_sqlite3_bind_int64(stmt_create_type, 8, var_dims[0]);
-				j_sqlite3_bind_int64(stmt_create_type, 9, var_dims[1]);
-				j_sqlite3_bind_int64(stmt_create_type, 10, var_dims[2]);
-				j_sqlite3_bind_int64(stmt_create_type, 11, var_dims[3]);
-				j_sqlite3_bind_int64(stmt_create_type, 12, subtype_key);
+				j_sqlite3_bind_int64(stmt_create_type, 6, var_ndims);
+				j_sqlite3_bind_int64(stmt_create_type, 7, var_dims[0]);
+				j_sqlite3_bind_int64(stmt_create_type, 8, var_dims[1]);
+				j_sqlite3_bind_int64(stmt_create_type, 9, var_dims[2]);
+				j_sqlite3_bind_int64(stmt_create_type, 10, var_dims[3]);
+				j_sqlite3_bind_int64(stmt_create_type, 11, subtype_key);
 				j_sqlite3_step_and_reset_check_done(stmt_create_type);
 				j_smd_timer_stop(create_type_sql);
 			}

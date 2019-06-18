@@ -169,7 +169,6 @@ backend_init(gchar const* path)
 		     "type INTEGER, " // type of variable
 		     "offset INTEGER, " // offset within binary
 		     "size INTEGER, " // size of singleelement within binary
-		     "count INTEGER, " // element count within binary
 		     "ndims INTEGER, " // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
 		     "dims0 INTEGER, " // number of dimension[0]
 		     "dims1 INTEGER, " // number of dimension[1]
@@ -260,11 +259,10 @@ backend_init(gchar const* path)
 		"type, " //
 		"offset, " //
 		"size, " //
-		"count, " //
 		"ndims, " //
 		"dims0, dims1, dims2, dims3, " //
 		"subtype_key) " //
-		"VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12);", //
+		"VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11);", //
 		&stmt_create_type);
 	j_sqlite3_prepare_v3(
 		"SELECT name, type, offset, size, ndims, dims0, dims1, dims2, dims3, subtype_key " //
