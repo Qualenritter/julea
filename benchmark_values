@@ -1,7 +1,0 @@
-n=5000
-/smd/scheme/create:                                65.859 seconds (76/s) [65.878 seconds]
-/smd/scheme/open:                                  2.612 seconds (28714/s) [2.612 seconds]
-/smd/scheme/delete:                                65.970 seconds (76/s) [65.984 seconds]
-/smd/scheme/create-batch:                          64.713 seconds (77/s) [64.727 seconds]
-/smd/scheme/open-batch:                            1.187 seconds (63164/s) [1.188 seconds]
-/smd/scheme/delete-batch:                          68.013 seconds (74/s) [68.026 seconds]
