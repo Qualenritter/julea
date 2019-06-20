@@ -256,4 +256,3 @@ benchmark_smd(void)
 		system(testname);
 	}
 }
-

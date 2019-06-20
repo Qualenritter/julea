@@ -1,26 +1,36 @@
 static gboolean
 backend_file_delete(const char* name)
 {
-	sqlite3_stmt* stmt;
+	GArray* arr;
 	gint ret;
-	sqlite3_int64 result = 0;
-	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
-	j_sqlite3_bind_text(stmt, 1, name, -1);
-	j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW)
-		result = sqlite3_column_int64(stmt, 0);
-	else if (ret != SQLITE_DONE)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
-	sqlite3_prepare_v2(backend_db, "DELETE FROM smd_schemes WHERE file_key = ?1;", -1, &stmt, NULL);
-	j_sqlite3_bind_int64(stmt, 1, result);
-	ret = sqlite3_step(stmt);
-	if (ret != SQLITE_DONE)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
-	/*TODO delete type if no file uses it*/
+	guint i;
+	sqlite3_int64 tmp;
+	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
+	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_text(stmt_file_delete0, 1, name, -1);
+	J_CRITICAL("types to delete %lld %s", -1, name);
+	do
+	{
+		ret = sqlite3_step(stmt_file_delete0);
+		if (ret == SQLITE_ROW)
+		{
+			tmp = sqlite3_column_int64(stmt_file_delete0, 0);
+			J_CRITICAL("types to delete %lld", tmp);
+			g_array_append_val(arr, tmp);
+		}
+		else if (ret != SQLITE_DONE)
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	} while (ret != SQLITE_DONE);
+	j_sqlite3_reset(stmt_file_delete0);
+	j_sqlite3_bind_text(stmt_file_delete1, 1, name, -1);
+	j_sqlite3_step_and_reset_check_done(stmt_file_delete1);
+	for (i = 0; i < arr->len; i++)
+	{
+		j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
+		j_sqlite3_step_and_reset_check_done(stmt_type_delete);
+	}
+	j_sqlite3_transaction_commit();
+	g_array_free(arr, TRUE);
 	return TRUE;
 }
 static gboolean

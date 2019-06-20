@@ -1,31 +1,43 @@
 static gboolean
 backend_scheme_delete(const char* name, char* parent)
 {
-	gint ret;
-	sqlite3_int64 key = 0;
-	sqlite3_int64 type_key = 0;
+	GArray* arr;
+	guint i;
+	guint ret;
+	sqlite3_int64 tmp;
+	sqlite3_int64 type_key;
 	j_smd_timer_start(backend_scheme_delete);
-	g_return_val_if_fail(name != NULL, FALSE);
-	j_sqlite3_bind_text(stmt_scheme_delete_0, 1, name, -1);
-	j_sqlite3_bind_int64(stmt_scheme_delete_0, 2, *((sqlite3_int64*)parent));
-	ret = sqlite3_step(stmt_scheme_delete_0);
-	if (ret == SQLITE_ROW)
+	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
+	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
+	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
+	do
 	{
-		key = sqlite3_column_int64(stmt_scheme_delete_0, 0);
-		type_key = sqlite3_column_int64(stmt_scheme_delete_0, 1); /*TODO chekc if reused somewhere else later*/
-		j_sqlite3_transaction_begin();
-		j_sqlite3_bind_int64(stmt_scheme_delete_1, 1, key);
-		j_sqlite3_step_and_reset_check_done(stmt_scheme_delete_1);
-		j_sqlite3_bind_int64(stmt_scheme_delete_2, 1, key);
-		j_sqlite3_step_and_reset_check_done(stmt_scheme_delete_2);
-		j_sqlite3_bind_int64(stmt_scheme_delete_3, 1, type_key);
-		j_sqlite3_step_and_reset_check_done(stmt_scheme_delete_3);
-		j_sqlite3_transaction_commit();
+		ret = sqlite3_step(stmt_scheme_delete0);
+		if (ret == SQLITE_ROW)
+		{
+			tmp = sqlite3_column_int64(stmt_scheme_delete0, 0);
+			g_array_append_val(arr, tmp);
+		}
+		else if (ret != SQLITE_DONE)
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	} while (ret != SQLITE_DONE);
+	j_sqlite3_reset(stmt_scheme_delete0);
+	j_sqlite3_bind_int64(stmt_scheme_delete0, 1, type_key);
+	if (arr->len > 0)
+	{
+		j_sqlite3_bind_text(stmt_scheme_delete1, 1, name, -1);
+		j_sqlite3_bind_int64(stmt_scheme_delete1, 2, *((sqlite3_int64*)parent));
+		j_sqlite3_step_and_reset_check_done(stmt_scheme_delete1);
+
+		for (i = 0; i < arr->len; i++)
+		{
+			J_CRITICAL("type to delete %lld", g_array_index(arr, sqlite3_int64, i));
+			j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
+			j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete);
+		}
 	}
-	else if (ret != SQLITE_DONE)
-		J_CRITICAL("sql_error %s %lld  - %d %s", name, *((sqlite3_int64*)parent), ret, sqlite3_errmsg(backend_db));
-	j_sqlite3_reset(stmt_scheme_delete_0);
-	/*TODO delete everything below*/
+	g_array_free(arr, TRUE);
+	//TODO transaction here
 	j_smd_timer_stop(backend_scheme_delete);
 	return TRUE;
 }
