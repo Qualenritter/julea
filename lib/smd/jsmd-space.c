@@ -88,7 +88,7 @@ j_smd_space_equals(void* _space1, void* _space2)
 	}
 	return TRUE;
 }
-bson_t*
+/*bson_t*
 j_smd_space_to_bson(void* _space)
 {
 	J_SMD_Space_t* space = _space;
@@ -140,3 +140,4 @@ j_smd_space_from_bson(bson_iter_t* bson)
 	}
 	return space;
 }
+*/

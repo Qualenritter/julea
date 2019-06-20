@@ -103,9 +103,9 @@ hdf5_space_export(hid_t space_id __attribute__((unused)))
 	return space;
 }
 static gboolean
-hdf5_type_export_recourse(hid_t type_id __attribute__((unused)), const char* name, guint offset, J_SMD_Type_t* parent, guint ndims, guint* dims)
+hdf5_type_export_recourse(hid_t type_id __attribute__((unused)), const char* name, guint offset, void* parent, guint ndims, guint* dims)
 {
-	J_SMD_Type_t* type;
+	void* type;
 	int i;
 	guint dims2[SMD_MAX_NDIMS];
 	hsize_t dims3[SMD_MAX_NDIMS];
@@ -151,10 +151,10 @@ hdf5_type_export_recourse(hid_t type_id __attribute__((unused)), const char* nam
 	}
 	return TRUE;
 }
-static J_SMD_Type_t*
+static void*
 hdf5_type_export(hid_t type_id __attribute__((unused)))
 {
-	J_SMD_Type_t* type;
+	void* type;
 	guint one = 1;
 	type = j_smd_type_create();
 	hdf5_type_export_recourse(type_id, "_", 0, type, one, &one);
@@ -228,7 +228,7 @@ hdf5_type_import_array(J_SMD_Variable_t* var, hid_t base_type)
 	return H5Tarray_create(base_type, var->space.ndims, dims);
 }
 static gboolean
-hdf5_type_import(J_SMD_Type_t* type __attribute__((unused)), hid_t* type_id __attribute__((unused)))
+hdf5_type_import(void* type __attribute__((unused)), hid_t* type_id __attribute__((unused)))
 {
 	J_SMD_Variable_t* var;
 	hid_t base_type;

@@ -1,6 +1,7 @@
 static gboolean
 backend_file_delete(const char* name)
 {
+	//TODO delete data in object-store if any
 	GArray* arr;
 	gint ret;
 	guint i;

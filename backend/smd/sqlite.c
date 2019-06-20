@@ -249,8 +249,10 @@ backend_init(gchar const* path)
 	g_return_val_if_fail(path != NULL, FALSE);
 	dirname = g_path_get_dirname(path);
 	g_mkdir_with_parents(dirname, 0700);
-	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
+	if (sqlite3_open(path, &backend_db) != SQLITE_OK){
+		J_CRITICAL("sql damaged %d",0);
 		goto error;
+	}
 	j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = ON");
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_type_header (" //

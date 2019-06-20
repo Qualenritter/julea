@@ -1,6 +1,7 @@
 static gboolean
 backend_scheme_delete(const char* name, char* parent)
 {
+	//TODO delete data in object-store if any
 	GArray* arr;
 	guint i;
 	guint ret;
@@ -36,64 +37,29 @@ backend_scheme_delete(const char* name, char* parent)
 	return TRUE;
 }
 static gboolean
-backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distribution, char* key)
+backend_scheme_create(const char* name, char* parent, const char* _space, const char* _type, guint distribution, char* key)
 {
+	const J_SMD_Space_t* space = _space;
+	const J_SMD_Type_t2* type = _type;
+
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;
-	bson_iter_t iter;
-	bson_iter_t iter_space_type;
-	guint var_ndims;
-	guint var_dims[4];
-	bson_iter_t iter_data_type;
-	bson_iter_t iter_data_dims;
-	guint i;
 	guint ret;
 	memset(key, 0, SMD_KEY_LENGTH);
 	j_smd_timer_start(backend_scheme_create);
 	j_sqlite3_transaction_begin();
-	bson_iter_init(&iter, bson);
-	var_ndims = 0;
-	var_dims[0] = 0;
-	var_dims[1] = 0;
-	var_dims[2] = 0;
-	var_dims[3] = 0;
-	{ // extract ndims,dims,distribution
-		while (bson_iter_next(&iter))
-		{
-			if (strcmp("space_type", bson_iter_key(&iter)) == 0)
-			{
-				bson_iter_recurse(&iter, &iter_space_type);
-				while (bson_iter_next(&iter_space_type))
-				{
-					if (strcmp("ndims", bson_iter_key(&iter_space_type)) == 0)
-					{
-						var_ndims = bson_iter_int32(&iter_space_type);
-						if (var_ndims > 4)
-							return FALSE;
-					}
-					else if (strcmp("dims", bson_iter_key(&iter_space_type)) == 0)
-					{
-						bson_iter_recurse(&iter_space_type, &iter_data_dims);
-						for (i = 0; bson_iter_next(&iter_data_dims) && i < 4; i++)
-							var_dims[i] = bson_iter_int32(&iter_data_dims);
-					}
-				}
-			}
-			else if (strcmp("data_type", bson_iter_key(&iter)) == 0)
-			{
-				bson_iter_recurse(&iter, &iter_data_type);
-				type_key = create_type(&iter_data_type);
-			}
-		}
-	}
+	if (type->arr2->len == 0)
+		type_key = 0;
+	else
+		type_key = create_type(&g_array_index(type->arr2, J_SMD_Variable_t2, type->first_index2));
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
-	j_sqlite3_bind_int(stmt_scheme_create, 3, var_ndims);
-	j_sqlite3_bind_int(stmt_scheme_create, 4, var_dims[0]);
-	j_sqlite3_bind_int(stmt_scheme_create, 5, var_dims[1]);
-	j_sqlite3_bind_int(stmt_scheme_create, 6, var_dims[2]);
-	j_sqlite3_bind_int(stmt_scheme_create, 7, var_dims[3]);
+	j_sqlite3_bind_int(stmt_scheme_create, 3, space->ndims);
+	j_sqlite3_bind_int(stmt_scheme_create, 4, space->dims[0]);
+	j_sqlite3_bind_int(stmt_scheme_create, 5, space->dims[1]);
+	j_sqlite3_bind_int(stmt_scheme_create, 6, space->dims[2]);
+	j_sqlite3_bind_int(stmt_scheme_create, 7, space->dims[3]);
 	j_sqlite3_bind_int(stmt_scheme_create, 8, distribution);
 	j_sqlite3_bind_int64(stmt_scheme_create, 9, type_key);
 	j_sqlite3_bind_int64(stmt_scheme_create, 10, scheme_key);
@@ -121,16 +87,13 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 	return TRUE;
 }
 static gboolean
-backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distribution, char* key)
+backend_scheme_open(const char* name, char* parent, char* _space, char* _type, guint* distribution, char* key)
 {
-	bson_t b_datatype[1];
+	J_SMD_Space_t* space = _space;
+	J_SMD_Type_t2* type = _type;
 	gint ret;
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;
-	bson_t b_arr[1];
-	char key_buf[16];
-	const char* _key;
-	bson_init(bson);
 	j_smd_timer_start(backend_scheme_open);
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
@@ -141,19 +104,11 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distrib
 	{
 		scheme_key = sqlite3_column_int64(stmt_scheme_open, 0);
 		memcpy(key, &scheme_key, sizeof(scheme_key));
-		bson_append_document_begin(bson, "space_type", -1, b_datatype);
-		bson_append_int32(b_datatype, "ndims", -1, sqlite3_column_int(stmt_scheme_open, 1));
-		bson_append_array_begin(b_datatype, "dims", -1, b_arr);
-		bson_uint32_to_string(0, &_key, key_buf, sizeof(key_buf));
-		bson_append_int32(b_arr, key, -1, sqlite3_column_int(stmt_scheme_open, 2));
-		bson_uint32_to_string(1, &_key, key_buf, sizeof(key_buf));
-		bson_append_int32(b_arr, key, -1, sqlite3_column_int(stmt_scheme_open, 3));
-		bson_uint32_to_string(2, &_key, key_buf, sizeof(key_buf));
-		bson_append_int32(b_arr, key, -1, sqlite3_column_int(stmt_scheme_open, 4));
-		bson_uint32_to_string(3, &_key, key_buf, sizeof(key_buf));
-		bson_append_int32(b_arr, key, -1, sqlite3_column_int(stmt_scheme_open, 5));
-		bson_append_array_end(b_datatype, b_arr);
-		bson_append_document_end(bson, b_datatype);
+		space->ndims = sqlite3_column_int(stmt_scheme_open, 1);
+		space->dims[0] = sqlite3_column_int(stmt_scheme_open, 2);
+		space->dims[1] = sqlite3_column_int(stmt_scheme_open, 3);
+		space->dims[2] = sqlite3_column_int(stmt_scheme_open, 4);
+		space->dims[3] = sqlite3_column_int(stmt_scheme_open, 5);
 		*distribution = sqlite3_column_int(stmt_scheme_open, 6);
 		type_key = sqlite3_column_int64(stmt_scheme_open, 7);
 	}
@@ -170,9 +125,7 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distrib
 		exit(1);
 	}
 	j_sqlite3_reset(stmt_scheme_open);
-	bson_append_document_begin(bson, "data_type", -1, b_datatype);
-	load_type(b_datatype, type_key);
-	bson_append_document_end(bson, b_datatype);
+	load_type(type, type_key);
 	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_open);
 	return TRUE;

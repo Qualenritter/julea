@@ -90,6 +90,7 @@ typedef enum JSMDType JSMDType;
 					  : SMD_TYPE_BLOB)
 
 /*TODO make all structs internal*/
+
 struct J_SMD_Space_t
 {
 	guint ndims;
@@ -97,6 +98,7 @@ struct J_SMD_Space_t
 	gint ref_count;
 };
 typedef struct J_SMD_Space_t J_SMD_Space_t;
+/*
 struct J_SMD_Type_t
 {
 	GArray* arr;
@@ -108,20 +110,42 @@ struct J_SMD_Variable_t
 	int offset;
 	int size;
 	JSMDType type;
-	char name[SMD_MAX_NAME_LENGTH + 1]; /*+1 for nulltermination*/
+	char name[SMD_MAX_NAME_LENGTH + 1]; //+1 for nulltermination
 	J_SMD_Space_t space;
 	union
 	{
-		J_SMD_Type_t* sub_type; /*client side*/
-		char sub_type_key[SMD_KEY_LENGTH + 1]; /*server side*/
+		J_SMD_Type_t* sub_type; //client side
+		char sub_type_key[SMD_KEY_LENGTH + 1]; //server side
 	};
-	gint ref_count;
 };
 typedef struct J_SMD_Variable_t J_SMD_Variable_t;
+*/
+
+typedef struct J_SMD_Type_t2 J_SMD_Type_t2;
+struct J_SMD_Type_t2
+{
+	GArray* arr2; //only if root == the own address -- only J_SMD_Variable_t2 - elements
+	gint ref_count2; //only if root == the own address
+	guint last_index2; //points to the last child in this datatype EXCLUDEING subtypes
+	guint first_index2; //points to the first child in this datatype EXCLUDEING subtypes
+};
+typedef struct J_SMD_Variable_t2 J_SMD_Variable_t2;
+struct J_SMD_Variable_t2
+{
+	gint nextindex2; //index of next element relative to myindex
+	gint subtypeindex2; //only if type == SMD_TYPE_SUB_TYPE relative to myindex
+	guint offset2;
+	guint size2;
+	JSMDType type2;
+	J_SMD_Space_t space2;
+	char name2[SMD_MAX_NAME_LENGTH + 1];
+	char sub_type_key2[SMD_KEY_LENGTH + 1]; //primary key in DB
+};
+
 struct J_Scheme_t
 {
 	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
-	J_SMD_Type_t* type;
+	J_SMD_Type_t2* type;
 	J_SMD_Space_t* space;
 	JDistributionType distribution_type;
 	JDistribution* distribution; /*only if scheme*/
@@ -197,11 +221,11 @@ gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_of
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
 
-bson_t* j_smd_type_to_bson(void* _type);
+/*bson_t* j_smd_type_to_bson(void* _type);
 void* j_smd_type_from_bson(bson_iter_t* iter_arr);
 bson_t* j_smd_space_to_bson(void* _space);
 void* j_smd_space_from_bson(bson_iter_t* bson);
-
+*/
 //only for debugging
 void j_smd_debug_init(void);
 void j_smd_debug_exit(void);

@@ -73,9 +73,6 @@ typedef struct JSMDSchemeOperation JSMDSchemeOperation;
 static gboolean
 j_smd_create_exec(JList* operations, JSemantics* semantics)
 {
-	bson_t* b_type;
-	bson_t* b_space;
-	bson_t bson[1];
 	int message_size;
 	JBackend* smd_backend;
 	JSMDSchemeOperation* operation;
@@ -99,28 +96,28 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 	while (j_list_iterator_next(it))
 	{
 		operation = j_list_iterator_get(it);
-		bson_init(bson);
-		b_type = j_smd_type_to_bson(operation->scheme->type);
-		b_space = j_smd_space_to_bson(operation->scheme->space);
-		bson_append_document(bson, "space_type", -1, b_space);
-		bson_append_document(bson, "data_type", -1, b_type);
 		if (smd_backend != NULL)
-			j_backend_smd_scheme_create(smd_backend, operation->name, operation->parent->key, bson, operation->scheme->distribution_type, operation->scheme->key);
+			j_backend_smd_scheme_create(smd_backend, operation->name, operation->parent->key, operation->scheme->space, operation->scheme->type, operation->scheme->distribution_type, operation->scheme->key);
 		else
 		{
-			message_size = strlen(operation->name) + 1 + SMD_KEY_LENGTH + 4 + 4 + bson->len;
+			message_size =
+				strlen(operation->name) + 1 //name of scheme
+				+ SMD_KEY_LENGTH //parent key
+				+ 4 //distribution
+				+ sizeof(J_SMD_Space_t) //space
+				+ 4 + sizeof(J_SMD_Variable_t2) * operation->scheme->type->arr2->len + 4; //type
+			;
+			J_DEBUG("len=%d", message_size);
 			j_message_add_operation(message, message_size);
 			j_message_append_n(message, operation->name, strlen(operation->name) + 1);
 			j_message_append_n(message, operation->parent->key, SMD_KEY_LENGTH);
 			j_message_append_4(message, &operation->scheme->distribution_type);
-			j_message_append_4(message, &bson->len);
-			j_message_append_n(message, bson_get_data(bson), bson->len);
+			j_message_append_n(message, operation->scheme->space, sizeof(J_SMD_Space_t));
+			j_message_append_4(message, &operation->scheme->type->first_index2);
+			j_message_append_4(message, &operation->scheme->type->arr2->len);
+			if (operation->scheme->type->arr2->len)
+				j_message_append_n(message, operation->scheme->type->arr2->data, operation->scheme->type->arr2->len * sizeof(J_SMD_Variable_t2));
 		}
-		bson_destroy(b_type);
-		bson_destroy(b_space);
-		bson_destroy(bson);
-		g_free(b_type);
-		g_free(b_space);
 	}
 	if (smd_backend == NULL)
 	{
@@ -274,15 +271,11 @@ j_smd_scheme_delete(const char* name, void* parent, JBatch* batch)
 static gboolean
 j_smd_open_exec(JList* operations, JSemantics* semantics)
 {
+	guint tmp_len;
 	JBackend* smd_backend;
 	JSMDSchemeOperation* operation;
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
-	int bson_len;
-	bson_t bson[1];
-	bson_iter_t b_iter;
-	bson_iter_t b_scheme;
-	uint8_t* bson_data;
 	int message_size;
 	g_autoptr(JListIterator) iter = NULL;
 	g_autoptr(JMessage) reply = NULL;
@@ -303,8 +296,7 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
 		{
-			bson_init(bson);
-			j_backend_smd_scheme_open(smd_backend, operation->name, operation->parent->key, bson, &operation->scheme->distribution_type, operation->scheme->key);
+			j_backend_smd_scheme_open(smd_backend, operation->name, operation->parent->key, &operation->scheme->space, &operation->scheme->type, &operation->scheme->distribution_type, operation->scheme->key);
 			if (j_is_key_initialized(operation->scheme->key))
 			{
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
@@ -312,11 +304,6 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 					operation->scheme->distribution = j_distribution_new(operation->scheme->distribution_type);
 					operation->scheme->object = j_distributed_object_new("smd", operation->scheme->key, operation->scheme->distribution);
 				}
-				if (bson_iter_init(&b_iter, bson) && bson_iter_find_descendant(&b_iter, "data_type", &b_scheme) && BSON_ITER_HOLDS_DOCUMENT(&b_scheme))
-					operation->scheme->type = j_smd_type_from_bson(&b_scheme);
-				if (bson_iter_init(&b_iter, bson) && bson_iter_find_descendant(&b_iter, "space_type", &b_scheme) && BSON_ITER_HOLDS_DOCUMENT(&b_scheme))
-					operation->scheme->space = j_smd_space_from_bson(&b_scheme);
-				bson_destroy(bson);
 			}
 		}
 		else
@@ -343,19 +330,17 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 			if (j_is_key_initialized(operation->scheme->key))
 			{
 				operation->scheme->distribution_type = j_message_get_4(reply);
-				bson_len = j_message_get_4(reply);
-				bson_data = j_message_get_n(reply, bson_len);
-				bson_init_static(bson, bson_data, bson_len);
+				memcpy(operation->scheme->space, j_message_get_n(reply, sizeof(J_SMD_Space_t)), sizeof(J_SMD_Space_t));
+				tmp_len = j_message_get_4(reply);
+				if (tmp_len)
+					g_array_append_vals(operation->scheme->type->arr2, j_message_get_n(reply, tmp_len * sizeof(J_SMD_Variable_t2)), tmp_len);
+				operation->scheme->type->first_index2 = 0;
+				//TODO calculate last_index2
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 				{
 					operation->scheme->distribution = j_distribution_new(operation->scheme->distribution_type);
 					operation->scheme->object = j_distributed_object_new("smd", operation->scheme->key, operation->scheme->distribution);
 				}
-				if (bson_iter_init(&b_iter, bson) && bson_iter_find_descendant(&b_iter, "data_type", &b_scheme) && BSON_ITER_HOLDS_DOCUMENT(&b_scheme))
-					operation->scheme->type = j_smd_type_from_bson(&b_scheme);
-				if (bson_iter_init(&b_iter, bson) && bson_iter_find_descendant(&b_iter, "space_type", &b_scheme) && BSON_ITER_HOLDS_DOCUMENT(&b_scheme))
-					operation->scheme->space = j_smd_space_from_bson(&b_scheme);
-				bson_destroy(bson);
 			}
 		}
 		j_connection_pool_push_smd(index, smd_connection);
