@@ -73,7 +73,9 @@ static sqlite3* backend_db;
 	} while (0)
 #else
 #define _j_done_check(ret) (void)ret
+#define _j_done_constraint_check(ret) (void)ret
 #define _j_ok_check(ret) (void)ret
+#define _j_ok_constraint_check(ret) (void)ret
 #endif
 
 #define j_sqlite3_reset(stmt)                     \
@@ -280,7 +282,6 @@ backend_init(gchar const* path)
 		"parent_key INTEGER, " // reference to parent
 		"file_key INTEGER, " // reference to file for fast delete|fetch
 		"name TEXT NOT NULL, " // name of |file|scheme
-		"meta_type INTEGER, " // file|scheme
 		"type_key INTEGER, " //the key in the smd_type_header table
 		"ndims INTEGER, " // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
 		"dims0 INTEGER, " // number of dimension[0]
@@ -291,8 +292,8 @@ backend_init(gchar const* path)
 		"FOREIGN KEY(parent_key) REFERENCES smd_schemes(key) ON DELETE CASCADE, " //unterstütze rekursives löschen
 		"FOREIGN KEY(file_key) REFERENCES smd_schemes(key) ON DELETE CASCADE, " //löschen von kompletten datein auf einmal
 		"FOREIGN KEY(type_key) REFERENCES smd_scheme_type_header(key) ON DELETE RESTRICT, " //blockiere das löschen von einem typen, wenn der noch benutzt wird
-		"PRIMARY KEY(name, parent_key)"
-		"UNIQUE(name, parent_key)"
+		"PRIMARY KEY(name, parent_key), "
+		"UNIQUE(name, parent_key) "
 		");");
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_data (" //
@@ -386,8 +387,8 @@ backend_init(gchar const* path)
 		"SELECT x FROM subtypes",
 		&stmt_scheme_delete0);
 	j_sqlite3_prepare_v3(
-		"INSERT INTO smd_schemes (name, meta_type, parent_key, file_key, ndims, dims0, dims1, dims2, dims3, distribution, type_key, key) " //
-		"VALUES (?1, ?2, ?3, (SELECT file_key FROM smd_schemes WHERE key = ?3), ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11);",
+		"INSERT INTO smd_schemes (name, parent_key, file_key, ndims, dims0, dims1, dims2, dims3, distribution, type_key, key) " //
+		"VALUES (?1, ?2, ?3, (SELECT file_key FROM smd_schemes WHERE key = ?3), ?4, ?5, ?6, ?7, ?8, ?9, ?10);",
 		&stmt_scheme_create);
 	j_sqlite3_prepare_v3(
 		"SELECT key, ndims, dims0, dims1, dims2, dims3, distribution, type_key " //
@@ -410,10 +411,10 @@ backend_init(gchar const* path)
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key;",
 		&stmt_file_delete1);
 	j_sqlite3_prepare_v3(
-		"INSERT INTO smd_schemes (key,parent_key,file_key,name,meta_type) VALUES (?1,?1,?1,?2,?3);",
+		"INSERT INTO smd_schemes (key,parent_key,file_key,name) VALUES (?1,?1,?1,?2);",
 		&stmt_file_create);
 	j_sqlite3_prepare_v3(
-		"SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;",
+		"SELECT key FROM smd_schemes WHERE name = ?1 AND file_key = key;",
 		&stmt_file_open);
 	j_sqlite3_prepare_v3("BEGIN TRANSACTION;", &stmt_transaction_begin);
 	j_sqlite3_prepare_v3("COMMIT;", &stmt_transaction_commit);

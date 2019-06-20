@@ -57,9 +57,9 @@ start:
 		space = j_smd_space_create(one, &one);
 		type = j_smd_type_create();
 		j_smd_type_add_atomic_type(type, "name", 0, 10, SMD_TYPE_BLOB, one, &one); /*TODO allow string pointer*/
-		j_smd_type_add_atomic_type(type, "loc", 0, 10, SMD_TYPE_INT, one, &one);
-		j_smd_type_add_atomic_type(type, "coverage", 0, 10, SMD_TYPE_FLOAT, one, &one);
-		j_smd_type_add_atomic_type(type, "lastrun", 0, 10, SMD_TYPE_INT, one, &one); /*TODO allow time value*/
+		j_smd_type_add_atomic_type(type, "loc", 10, 4, SMD_TYPE_INT, one, &one);
+		j_smd_type_add_atomic_type(type, "coverage", 14, 4, SMD_TYPE_FLOAT, one, &one);
+		j_smd_type_add_atomic_type(type, "lastrun", 18, 4, SMD_TYPE_INT, one, &one); /*TODO allow time value*/
 		sprintf(schemename, "schemename_%d", i);
 		scheme = j_smd_scheme_create(schemename, file, type, space, J_DISTRIBUTION_DATABASE, batch);
 		j_smd_scheme_unref(scheme);
@@ -161,9 +161,9 @@ start:
 			space = j_smd_space_create(one, &one);
 			type = j_smd_type_create();
 			j_smd_type_add_atomic_type(type, "name", 0, 10, SMD_TYPE_BLOB, one, &one); /*TODO allow string pointer*/
-			j_smd_type_add_atomic_type(type, "loc", 0, 10, SMD_TYPE_INT, one, &one);
-			j_smd_type_add_atomic_type(type, "coverage", 0, 10, SMD_TYPE_FLOAT, one, &one);
-			j_smd_type_add_atomic_type(type, "lastrun", 0, 10, SMD_TYPE_INT, one, &one); /*TODO allow time value*/
+			j_smd_type_add_atomic_type(type, "loc", 10, 4, SMD_TYPE_INT, one, &one);
+			j_smd_type_add_atomic_type(type, "coverage", 14, 4, SMD_TYPE_FLOAT, one, &one);
+			j_smd_type_add_atomic_type(type, "lastrun", 18, 4, SMD_TYPE_INT, one, &one); /*TODO allow time value*/
 			sprintf(schemename, "schemename_%d", i);
 			scheme = j_smd_scheme_create(schemename, file, type, space, J_DISTRIBUTION_DATABASE, batch);
 			j_smd_scheme_unref(scheme);

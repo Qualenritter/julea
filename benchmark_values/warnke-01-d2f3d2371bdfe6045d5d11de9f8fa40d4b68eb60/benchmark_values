@@ -70,4 +70,3 @@
 /smd/scheme_1000000/create-batch:                  62.123 seconds (16097/s) [62.123 seconds]
 /smd/scheme_1000000/open-batch:                    76.774 seconds (52101/s) [76.783 seconds]
 /smd/scheme_1000000/delete-batch:                  111.425 seconds (8975/s) [111.427 seconds]
-/smd/scheme_1/create:                              /smd/scheme_1/create:                              /smd/scheme_1/create:                              /smd/scheme_1/create:                              0.000 seconds (5000/s) [0.001 seconds]

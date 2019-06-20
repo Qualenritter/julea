@@ -41,7 +41,6 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	memcpy(key, &file_key, sizeof(file_key));
 	j_sqlite3_bind_int(stmt_file_create, 1, file_key);
 	j_sqlite3_bind_text(stmt_file_create, 2, name, -1);
-	j_sqlite3_bind_int(stmt_file_create, 3, SMD_METATYPE_FILE);
 	ret = sqlite3_step(stmt_file_create);
 	if (ret == SQLITE_CONSTRAINT)
 	{
@@ -64,7 +63,6 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	bson_init(bson);
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_file_open, 1, name, -1);
-	j_sqlite3_bind_int(stmt_file_open, 2, SMD_METATYPE_FILE);
 	ret = sqlite3_step(stmt_file_open);
 	if (ret == SQLITE_ROW)
 	{

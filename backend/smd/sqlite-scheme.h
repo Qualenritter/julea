@@ -88,16 +88,15 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 	}
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
-	j_sqlite3_bind_int(stmt_scheme_create, 2, SMD_METATYPE_DATA);
-	j_sqlite3_bind_int64(stmt_scheme_create, 3, *((sqlite3_int64*)parent));
-	j_sqlite3_bind_int(stmt_scheme_create, 4, var_ndims);
-	j_sqlite3_bind_int(stmt_scheme_create, 5, var_dims[0]);
-	j_sqlite3_bind_int(stmt_scheme_create, 6, var_dims[1]);
-	j_sqlite3_bind_int(stmt_scheme_create, 7, var_dims[2]);
-	j_sqlite3_bind_int(stmt_scheme_create, 8, var_dims[3]);
-	j_sqlite3_bind_int(stmt_scheme_create, 9, distribution);
-	j_sqlite3_bind_int64(stmt_scheme_create, 10, type_key);
-	j_sqlite3_bind_int64(stmt_scheme_create, 11, scheme_key);
+	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
+	j_sqlite3_bind_int(stmt_scheme_create, 3, var_ndims);
+	j_sqlite3_bind_int(stmt_scheme_create, 4, var_dims[0]);
+	j_sqlite3_bind_int(stmt_scheme_create, 5, var_dims[1]);
+	j_sqlite3_bind_int(stmt_scheme_create, 6, var_dims[2]);
+	j_sqlite3_bind_int(stmt_scheme_create, 7, var_dims[3]);
+	j_sqlite3_bind_int(stmt_scheme_create, 8, distribution);
+	j_sqlite3_bind_int64(stmt_scheme_create, 9, type_key);
+	j_sqlite3_bind_int64(stmt_scheme_create, 10, scheme_key);
 	ret = sqlite3_step(stmt_scheme_create);
 	if (ret == SQLITE_DONE)
 	{

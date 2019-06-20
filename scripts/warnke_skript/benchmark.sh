@@ -9,17 +9,17 @@ sudo mount -t tmpfs none /mnt2/
 
 pkill julea-server
 
-cd julea2
-./waf.sh configure
-./waf.sh clean
-./waf.sh build
-./waf.sh install
-rm -rf /mnt2/julea/*
-julea-server &
-sleep 5
-./build/benchmark/julea-benchmark >> ../benchmark_values_strassberger
-pkill julea-server
-cd ..
+#cd julea2
+#./waf.sh configure
+#./waf.sh clean
+#./waf.sh build
+#./waf.sh install
+#rm -rf /mnt2/julea/*
+#julea-server &
+#sleep 5
+#./build/benchmark/julea-benchmark >> ../benchmark_values_strassberger
+#pkill julea-server
+#cd ..
 
 
 cd julea
