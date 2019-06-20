@@ -98,9 +98,21 @@ static sqlite3* backend_db;
 		_ret_ = sqlite3_reset(stmt);                 \
 		_j_ok_constraint_check(_ret_);               \
 	} while (0)
-#define j_sqlite3_transaction_begin() j_sqlite3_step_and_reset_check_done(stmt_transaction_begin)
-#define j_sqlite3_transaction_commit() j_sqlite3_step_and_reset_check_done(stmt_transaction_commit)
-#define j_sqlite3_transaction_abort() j_sqlite3_step_and_reset_check_done(stmt_transaction_abort)
+#define j_sqlite3_transaction_begin()                                        \
+	do                                                                   \
+	{                                                                    \
+		j_sqlite3_step_and_reset_check_done(stmt_transaction_begin); \
+	} while (0)
+#define j_sqlite3_transaction_commit()                                        \
+	do                                                                    \
+	{                                                                     \
+		j_sqlite3_step_and_reset_check_done(stmt_transaction_commit); \
+	} while (0)
+#define j_sqlite3_transaction_abort()                                        \
+	do                                                                   \
+	{                                                                    \
+		j_sqlite3_step_and_reset_check_done(stmt_transaction_abort); \
+	} while (0)
 #define j_sqlite3_bind_null(stmt, idx)                     \
 	do                                                 \
 	{                                                  \
@@ -188,8 +200,12 @@ static guint smd_scheme_type_primary_key;
 static sqlite3_stmt* stmt_type_create;
 static sqlite3_stmt* stmt_type_create_header;
 static sqlite3_stmt* stmt_type_load;
+static sqlite3_stmt* stmt_type_write;
+static sqlite3_stmt* stmt_type_read;
 static sqlite3_stmt* stmt_type_struct_size;
 static sqlite3_stmt* stmt_type_write_get_structure;
+static sqlite3_stmt* stmt_file_create;
+static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
 static sqlite3_stmt* stmt_file_delete1;
 static sqlite3_stmt* stmt_type_delete;
@@ -350,6 +366,15 @@ backend_init(gchar const* path)
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_scheme_type_header WHERE key = ?1",
 		&stmt_type_delete);
+	j_sqlite3_prepare_v3(
+		"INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) "
+		"VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ON CONFLICT (scheme_key, type_key, offset) DO UPDATE SET value_int = ?4, value_float=?5,value_text=?6,value_blob=?7",
+		&stmt_type_write);
+	j_sqlite3_prepare_v3(
+		"SELECT a.offset, a.value_int, a.value_float, a.value_blob, t.type, t.size " //
+		"FROM smd_scheme_data a, smd_scheme_type t " //
+		"WHERE a.scheme_key = ?1 AND t.key = a.type_key AND a.offset >= ?2 AND (a.offset + t.size) <= ?3",
+		&stmt_type_read);
 
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes " //
@@ -384,7 +409,12 @@ backend_init(gchar const* path)
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key;",
 		&stmt_file_delete1);
-
+	j_sqlite3_prepare_v3(
+		"INSERT INTO smd_schemes (key,parent_key,file_key,name,meta_type) VALUES (?1,?1,?1,?2,?3);",
+		&stmt_file_create);
+	j_sqlite3_prepare_v3(
+		"SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;",
+		&stmt_file_open);
 	j_sqlite3_prepare_v3("BEGIN TRANSACTION;", &stmt_transaction_begin);
 	j_sqlite3_prepare_v3("COMMIT;", &stmt_transaction_commit);
 	j_sqlite3_prepare_v3("ROLLBACK;", &stmt_transaction_abort);
@@ -420,6 +450,10 @@ backend_fini(void)
 		sqlite3_finalize(stmt_type_create);
 		sqlite3_finalize(stmt_type_create_header);
 		sqlite3_finalize(stmt_type_load);
+		sqlite3_finalize(stmt_type_write);
+		sqlite3_finalize(stmt_type_read);
+		sqlite3_finalize(stmt_file_create);
+		sqlite3_finalize(stmt_file_open);
 		sqlite3_finalize(stmt_file_delete0);
 		sqlite3_finalize(stmt_file_delete1);
 		sqlite3_finalize(stmt_type_delete);

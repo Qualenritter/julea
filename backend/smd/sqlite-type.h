@@ -224,8 +224,6 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 {
 	gint64 value_int = 0;
 	gdouble value_float = 0;
-	sqlite3_stmt* stmt;
-	gint ret;
 	const guint buf_end = buf_offset + buf_len;
 	const char* location;
 	guint array_length;
@@ -254,12 +252,9 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 			for (j = 0; j < array_length; j++)
 			{
 				/*TODO upsert faster than replace ?!? https://www.sqlite.org/lang_UPSERT.html*/
-				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) "
-							       "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ON CONFLICT (scheme_key, type_key, offset) DO UPDATE SET value_int = ?4, value_float=?5,value_text=?6,value_blob=?7",
-					-1, &stmt, NULL);
-				j_sqlite3_bind_int64(stmt, 1, scheme_key);
-				j_sqlite3_bind_int64(stmt, 2, (*((sqlite3_int64*)var->sub_type_key)));
-				j_sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);
+				j_sqlite3_bind_int64(stmt_type_write, 1, scheme_key);
+				j_sqlite3_bind_int64(stmt_type_write, 2, (*((sqlite3_int64*)var->sub_type_key)));
+				j_sqlite3_bind_int64(stmt_type_write, 3, offset_local + parent_offset + j * var->size);
 				location = buf + offset_local - buf_offset + parent_offset + j * var->size;
 				switch (var->type)
 				{
@@ -282,14 +277,11 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 						J_CRITICAL("this should never happen type=%d", var->type);
 					}
 					value_float = value_int;
-					j_sqlite3_bind_int64(stmt, 4, value_int);
-					j_sqlite3_bind_double(stmt, 5, value_float);
-					j_sqlite3_bind_null(stmt, 6);
-					j_sqlite3_bind_null(stmt, 7);
-					ret = sqlite3_step(stmt);
-					if (ret != SQLITE_DONE)
-						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					sqlite3_finalize(stmt);
+					j_sqlite3_bind_int64(stmt_type_write, 4, value_int);
+					j_sqlite3_bind_double(stmt_type_write, 5, value_float);
+					j_sqlite3_bind_null(stmt_type_write, 6);
+					j_sqlite3_bind_null(stmt_type_write, 7);
+					j_sqlite3_step_and_reset_check_done(stmt_type_write);
 					break;
 				case SMD_TYPE_FLOAT:
 					switch (var->size)
@@ -304,24 +296,18 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 						J_CRITICAL("this should never happen type=%d", var->type);
 					}
 					value_int = value_float;
-					j_sqlite3_bind_int64(stmt, 4, value_int);
-					j_sqlite3_bind_double(stmt, 5, value_float);
-					j_sqlite3_bind_null(stmt, 6);
-					j_sqlite3_bind_null(stmt, 7);
-					ret = sqlite3_step(stmt);
-					if (ret != SQLITE_DONE)
-						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					sqlite3_finalize(stmt);
+					j_sqlite3_bind_int64(stmt_type_write, 4, value_int);
+					j_sqlite3_bind_double(stmt_type_write, 5, value_float);
+					j_sqlite3_bind_null(stmt_type_write, 6);
+					j_sqlite3_bind_null(stmt_type_write, 7);
+					j_sqlite3_step_and_reset_check_done(stmt_type_write);
 					break;
 				case SMD_TYPE_BLOB:
-					j_sqlite3_bind_null(stmt, 4);
-					j_sqlite3_bind_null(stmt, 5);
-					j_sqlite3_bind_text(stmt, 6, location, strnlen_s(location, var->size));
-					j_sqlite3_bind_blob(stmt, 7, location, var->size);
-					ret = sqlite3_step(stmt);
-					if (ret != SQLITE_DONE)
-						J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					sqlite3_finalize(stmt);
+					j_sqlite3_bind_null(stmt_type_write, 4);
+					j_sqlite3_bind_null(stmt_type_write, 5);
+					j_sqlite3_bind_text(stmt_type_write, 6, location, strnlen_s(location, var->size));
+					j_sqlite3_bind_blob(stmt_type_write, 7, location, var->size);
+					j_sqlite3_step_and_reset_check_done(stmt_type_write);
 					break;
 				case SMD_TYPE_SUB_TYPE:
 					if ((k == 0)) /*subtypes calculate the offset themselves - only call them once*/
@@ -350,70 +336,65 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 static gboolean
 read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 {
-	sqlite3_stmt* stmt;
 	gint ret;
 	char* location;
 	guint64 offset;
 	j_smd_timer_start(read_type);
-	sqlite3_prepare_v2(backend_db, "SELECT a.offset, a.value_int, a.value_float, a.value_blob, t.type, t.size " //
-				       "FROM smd_scheme_data a, smd_scheme_type t " //
-				       "WHERE a.scheme_key = ?1 AND t.key = a.type_key AND a.offset >= ?2 AND (a.offset + t.size) <= ?3",
-		-1, &stmt, NULL);
-	j_sqlite3_bind_int64(stmt, 1, scheme_key);
-	j_sqlite3_bind_int64(stmt, 2, buf_offset);
-	j_sqlite3_bind_int64(stmt, 3, buf_offset + buf_len);
+	j_sqlite3_bind_int64(stmt_type_read, 1, scheme_key);
+	j_sqlite3_bind_int64(stmt_type_read, 2, buf_offset);
+	j_sqlite3_bind_int64(stmt_type_read, 3, buf_offset + buf_len);
 	do
 	{
-		ret = sqlite3_step(stmt);
+		ret = sqlite3_step(stmt_type_read);
 		if (ret == SQLITE_ROW)
 		{
-			offset = sqlite3_column_int64(stmt, 0) - buf_offset;
+			offset = sqlite3_column_int64(stmt_type_read, 0) - buf_offset;
 			location = buf + offset;
-			switch (sqlite3_column_int64(stmt, 4))
+			switch (sqlite3_column_int64(stmt_type_read, 4))
 			{
 			case SMD_TYPE_INT:
-				switch (sqlite3_column_int64(stmt, 5))
+				switch (sqlite3_column_int64(stmt_type_read, 5))
 				{ /*TODO signed|unsigned*/
 				case 8:
-					*((gint64*)location) = sqlite3_column_int64(stmt, 1);
+					*((gint64*)location) = sqlite3_column_int64(stmt_type_read, 1);
 					break;
 				case 4:
-					*((gint32*)location) = sqlite3_column_int64(stmt, 1);
+					*((gint32*)location) = sqlite3_column_int64(stmt_type_read, 1);
 					break;
 				case 2:
-					*((gint16*)location) = sqlite3_column_int64(stmt, 1);
+					*((gint16*)location) = sqlite3_column_int64(stmt_type_read, 1);
 					break;
 				case 1:
-					*((gint8*)location) = sqlite3_column_int64(stmt, 1);
+					*((gint8*)location) = sqlite3_column_int64(stmt_type_read, 1);
 					break;
 				default:
-					J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt, 5));
+					J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt_type_read, 5));
 				}
 				break;
 			case SMD_TYPE_FLOAT:
-				switch (sqlite3_column_int64(stmt, 5))
+				switch (sqlite3_column_int64(stmt_type_read, 5))
 				{
 				case 8:
-					*((gdouble*)location) = sqlite3_column_double(stmt, 1);
+					*((gdouble*)location) = sqlite3_column_double(stmt_type_read, 1);
 					break;
 				case 4:
-					*((gfloat*)location) = sqlite3_column_double(stmt, 1);
+					*((gfloat*)location) = sqlite3_column_double(stmt_type_read, 1);
 					break;
 				default:
-					J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt, 5));
+					J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt_type_read, 5));
 				}
 				break;
 			case SMD_TYPE_BLOB:
-				memcpy(location, sqlite3_column_blob(stmt, 7), sqlite3_column_int64(stmt, 5));
+				memcpy(location, sqlite3_column_blob(stmt_type_read, 7), sqlite3_column_int64(stmt_type_read, 5));
 				break;
 			default:
-				J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt, 5));
+				J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt_type_read, 5));
 			}
 		}
 		else if (ret != SQLITE_DONE)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
-	sqlite3_finalize(stmt);
+	j_sqlite3_reset(stmt_type_read);
 	j_smd_timer_stop(read_type);
 	return TRUE;
 }

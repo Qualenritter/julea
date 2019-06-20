@@ -34,51 +34,56 @@ backend_file_delete(const char* name)
 static gboolean
 backend_file_create(const char* name, bson_t* bson, char* key)
 {
-	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 file_key = 0;
 	file_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
+	j_sqlite3_transaction_begin();
 	memcpy(key, &file_key, sizeof(file_key));
-	g_return_val_if_fail(name != NULL, FALSE);
-	backend_file_delete(name);
+	j_sqlite3_bind_int(stmt_file_create, 1, file_key);
+	j_sqlite3_bind_text(stmt_file_create, 2, name, -1);
+	j_sqlite3_bind_int(stmt_file_create, 3, SMD_METATYPE_FILE);
+	ret = sqlite3_step(stmt_file_create);
+	if (ret == SQLITE_CONSTRAINT)
 	{
-		sqlite3_prepare_v2(backend_db, "INSERT INTO smd_schemes (key,parent_key,file_key,name,meta_type) VALUES (?1,?1,?1,?2,?3);", -1, &stmt, NULL);
-		j_sqlite3_bind_int(stmt, 1, file_key);
-		j_sqlite3_bind_text(stmt, 2, name, -1);
-		j_sqlite3_bind_int(stmt, 3, SMD_METATYPE_FILE);
-		ret = sqlite3_step(stmt);
-		if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		sqlite3_finalize(stmt);
+		j_sqlite3_reset(stmt_file_create);
+		j_sqlite3_transaction_abort();
+		return FALSE;
 	}
+	else if (ret != SQLITE_DONE)
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	j_sqlite3_reset(stmt_file_create);
+	j_sqlite3_transaction_commit();
 	(void)bson;
 	return TRUE;
 }
 static gboolean
 backend_file_open(const char* name, bson_t* bson, char* key)
 {
-	sqlite3_stmt* stmt;
 	gint ret;
 	sqlite3_int64 result = 0;
-	g_return_val_if_fail(name != NULL, FALSE);
-	sqlite3_prepare_v2(backend_db, "SELECT key FROM smd_schemes WHERE name = ? AND meta_type = ?;", -1, &stmt, NULL);
-	j_sqlite3_bind_text(stmt, 1, name, -1);
-	j_sqlite3_bind_int(stmt, 2, SMD_METATYPE_FILE);
-	ret = sqlite3_step(stmt);
-	memset(key, 0, SMD_KEY_LENGTH);
 	bson_init(bson);
+	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_text(stmt_file_open, 1, name, -1);
+	j_sqlite3_bind_int(stmt_file_open, 2, SMD_METATYPE_FILE);
+	ret = sqlite3_step(stmt_file_open);
 	if (ret == SQLITE_ROW)
 	{
-		result = sqlite3_column_int64(stmt, 0);
+		result = sqlite3_column_int64(stmt_file_open, 0);
+		memset(key, 0, SMD_KEY_LENGTH);
 		memcpy(key, &result, sizeof(result));
 	}
 	else if (ret == SQLITE_DONE)
 	{
-		sqlite3_finalize(stmt);
+		j_sqlite3_reset(stmt_file_open);
+		j_sqlite3_transaction_abort();
 		return FALSE;
 	}
 	else
+	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
+		exit(1);
+	}
+	j_sqlite3_reset(stmt_file_open);
+	j_sqlite3_transaction_commit();
 	return TRUE;
 }
