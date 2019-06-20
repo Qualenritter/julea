@@ -253,19 +253,8 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 			offset_local = offset;
 			for (j = 0; j < array_length; j++)
 			{
-				/*only write complete objects TODO maybe allow writing of half variables?*/
-				sqlite3_prepare_v2(backend_db, "DELETE " //
-							       "FROM smd_scheme_data " //TODO performance UPDATE ?!?
-							       "WHERE scheme_key = ?1 AND type_key = ?2 AND offset = ?3",
-					-1, &stmt, NULL);
-				j_sqlite3_bind_int64(stmt, 1, scheme_key);
-				j_sqlite3_bind_int64(stmt, 2, type_key);
-				j_sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);
-				ret = sqlite3_step(stmt);
-				if (ret != SQLITE_DONE)
-					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-				sqlite3_finalize(stmt);
-				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
+				/*TODO upsert faster than replace ?!? https://www.sqlite.org/lang_UPSERT.html*/
+				sqlite3_prepare_v2(backend_db, "REPLACE INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
 				j_sqlite3_bind_int64(stmt, 1, scheme_key);
 				j_sqlite3_bind_int64(stmt, 2, (*((sqlite3_int64*)var->sub_type_key)));
 				j_sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);

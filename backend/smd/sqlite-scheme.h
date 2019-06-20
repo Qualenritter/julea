@@ -5,7 +5,7 @@ backend_scheme_delete(const char* name, char* parent)
 	guint i;
 	guint ret;
 	sqlite3_int64 tmp;
-	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64)); //cache array
+	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64)); //TODO cache array
 	j_smd_timer_start(backend_scheme_delete);
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
@@ -86,7 +86,6 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 			}
 		}
 	}
-	//	backend_scheme_delete(name, parent);
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int(stmt_scheme_create, 2, SMD_METATYPE_DATA);
@@ -113,6 +112,7 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 		_j_ok_constraint_check(ret);
 		j_sqlite3_transaction_abort();
 		J_CRITICAL("create scheme failed %s %lld", name, *((sqlite3_int64*)parent));
+		return FALSE;
 	}
 	else
 	{
@@ -132,9 +132,9 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distrib
 	bson_t b_arr[1];
 	char key_buf[16];
 	const char* _key;
-	j_smd_timer_start(backend_scheme_open);
 	bson_init(bson);
-	g_return_val_if_fail(name != NULL, FALSE);
+	j_smd_timer_start(backend_scheme_open);
+	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_open, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt_scheme_open);
@@ -162,6 +162,7 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distrib
 	else if (ret == SQLITE_DONE)
 	{
 		j_sqlite3_reset(stmt_scheme_open);
+		j_sqlite3_transaction_abort();
 		j_smd_timer_stop(backend_scheme_open);
 		return FALSE;
 	}
@@ -171,6 +172,7 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distrib
 	bson_append_document_begin(bson, "data_type", -1, b_datatype);
 	load_type(b_datatype, type_key);
 	bson_append_document_end(bson, b_datatype);
+	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_open);
 	return TRUE;
 }

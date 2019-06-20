@@ -288,8 +288,8 @@ test_scheme_datatypes_read_write(void)
 {
 	gboolean ret;
 	guint i, array_len;
-	const char* filename = "filename";
-	const char* schemename = "schemename";
+	const char* filename = "filename2";
+	const char* schemename = "schemename2";
 	void** types;
 	void* file;
 	void* scheme;
@@ -365,9 +365,9 @@ void test_smd_scheme(void);
 void
 test_smd_scheme(void)
 {
+	g_test_add_func("/smd/scheme/create_conflict", test_scheme_create_conflict);
 	g_test_add_func("/smd/scheme/create_destroy_single", test_scheme_create_destroy_single);
 	g_test_add_func("/smd/scheme/create_destroy_many", test_scheme_create_destroy_many);
 	g_test_add_func("/smd/scheme/datatypes", test_scheme_datatypes);
 	g_test_add_func("/smd/scheme/datatypes_read_write", test_scheme_datatypes_read_write);
-	g_test_add_func("/smd/scheme/create_conflict", test_scheme_create_conflict);
 }
