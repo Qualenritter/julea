@@ -388,7 +388,7 @@ backend_init(gchar const* path)
 		&stmt_scheme_delete0);
 	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_schemes (name, parent_key, file_key, ndims, dims0, dims1, dims2, dims3, distribution, type_key, key) " //
-		"VALUES (?1, ?2, ?3, (SELECT file_key FROM smd_schemes WHERE key = ?3), ?4, ?5, ?6, ?7, ?8, ?9, ?10);",
+		"VALUES (?1, ?2, (SELECT file_key FROM smd_schemes WHERE key = ?2), ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);",
 		&stmt_scheme_create);
 	j_sqlite3_prepare_v3(
 		"SELECT key, ndims, dims0, dims1, dims2, dims3, distribution, type_key " //

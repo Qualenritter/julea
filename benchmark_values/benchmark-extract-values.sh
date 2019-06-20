@@ -15,9 +15,10 @@ do
 done
 done
 
+#set terminal pngcairo size 800,400 enhanced crop
 cat > gnuplot.plot << EOF
-set terminal pngcairo size 800,400 enhanced crop
-set output 'graph-create.png'
+set terminal pdf
+set output 'graph-create.pdf'
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -30,15 +31,15 @@ EOF
 str=""
 for f in $(find -type d | grep -v "^.$"); do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
-	str="${str}, '${csv_name}' using 1:2 with lines title \"${f:2:10}-no-batch\""
-	str="${str}, '${csv_name}' using 1:5 with lines title \"${f:2:10}-batch\""
+	str="${str}, '${csv_name}' using 1:2 with lines title \"${f:2:9}-no-batch\""
+	str="${str}, '${csv_name}' using 1:5 with lines title \"${f:2:9}-batch\""
 done
 str="plot${str:1}"
 echo $str >> gnuplot.plot
 cat gnuplot.plot | gnuplot
 cat > gnuplot.plot << EOF
-set terminal pngcairo size 800,400 enhanced crop
-set output 'graph-open.png'
+set terminal pdf
+set output 'graph-open.pdf'
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -51,15 +52,15 @@ EOF
 str=""
 for f in $(find -type d | grep -v "^.$"); do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
-	str="${str}, '${csv_name}' using 1:3 with lines title \"${f:2:10}-no-batch\""
-	str="${str}, '${csv_name}' using 1:6 with lines title \"${f:2:10}-batch\""
+	str="${str}, '${csv_name}' using 1:3 with lines title \"${f:2:9}-no-batch\""
+	str="${str}, '${csv_name}' using 1:6 with lines title \"${f:2:9}-batch\""
 done
 str="plot${str:1}"
 echo $str >> gnuplot.plot
 cat gnuplot.plot | gnuplot
 cat > gnuplot.plot << EOF
-set terminal pngcairo size 800,400 enhanced crop
-set output 'graph-delete.png'
+set terminal pdf
+set output 'graph-delete.pdf'
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -72,15 +73,15 @@ EOF
 str=""
 for f in $(find -type d | grep -v "^.$"); do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
-	str="${str}, '${csv_name}' using 1:4 with lines title \"${f:2:10}-no-batch\""
-	str="${str}, '${csv_name}' using 1:7 with lines title \"${f:2:10}-batch\""
+	str="${str}, '${csv_name}' using 1:4 with lines title \"${f:2:9}-no-batch\""
+	str="${str}, '${csv_name}' using 1:7 with lines title \"${f:2:9}-batch\""
 done
 str="plot${str:1}"
 echo $str >> gnuplot.plot
 cat gnuplot.plot | gnuplot
 cat > gnuplot.plot << EOF
-set terminal pngcairo size 800,400 enhanced crop
-set output 'graph-size.png'
+set terminal pdf
+set output 'graph-size.pdf'
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -93,7 +94,7 @@ EOF
 str=""
 for f in $(find -type d | grep -v "^.$"); do
     csv_name=$(echo $f | sed "s/$/.csv/g")
-	str="${str}, '${csv_name}' using 1:8 with lines title\"${f:2:10}\""
+	str="${str}, '${csv_name}' using 1:8 with lines title\"${f:2:9}\""
 done
 str="plot${str:1}"
 echo $str >> gnuplot.plot

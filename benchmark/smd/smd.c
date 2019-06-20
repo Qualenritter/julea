@@ -23,6 +23,7 @@
 #include "benchmark.h"
 #include <julea-internal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #ifdef JULEA_DEBUG
 guint n = 500;
@@ -218,6 +219,7 @@ benchmark_smd_scheme_delete_batch(BenchmarkResult* result)
 void
 benchmark_smd(void)
 {
+	char cwd[PATH_MAX];
 	guint n_values[] = {
 		1, 5, //
 		10, 50, //
@@ -228,31 +230,26 @@ benchmark_smd(void)
 		1000000, //
 	};
 	guint i;
-	char testname[500];
+	char testname[500 + PATH_MAX];
+	getcwd(cwd, sizeof(cwd));
 	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
 	{
 		n = n_values[i];
-		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_01", n);
+		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_01", cwd, n);
 		system(testname);
 		sprintf(testname, "/smd/scheme_%d/create", n);
 		j_benchmark_run(testname, benchmark_smd_create_scheme);
-		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_02", n);
+		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_02", cwd, n);
 		system(testname);
 		sprintf(testname, "/smd/scheme_%d/open", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_open);
 		sprintf(testname, "/smd/scheme_%d/delete", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_delete);
-		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_03", n);
-		system(testname);
 		sprintf(testname, "/smd/scheme_%d/create-batch", n);
 		j_benchmark_run(testname, benchmark_smd_create_scheme_batch);
-		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_04", n);
-		system(testname);
 		sprintf(testname, "/smd/scheme_%d/open-batch", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_open_batch);
 		sprintf(testname, "/smd/scheme_%d/delete-batch", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_delete_batch);
-		sprintf(testname, "du -s /mnt2/julea/* >> /src/julea/benchmark_values_warnke_size_%d_05", n);
-		system(testname);
 	}
 }

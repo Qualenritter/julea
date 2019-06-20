@@ -17,7 +17,10 @@ backend_file_delete(const char* name)
 			g_array_append_val(arr, tmp);
 		}
 		else if (ret != SQLITE_DONE)
+		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			exit(1);
+		}
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_file_delete0);
 	j_sqlite3_bind_text(stmt_file_delete1, 1, name, -1);
@@ -49,7 +52,10 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 		return FALSE;
 	}
 	else if (ret != SQLITE_DONE)
+	{
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		exit(1);
+	}
 	j_sqlite3_reset(stmt_file_create);
 	j_sqlite3_transaction_commit();
 	(void)bson;
