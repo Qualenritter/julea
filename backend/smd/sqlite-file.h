@@ -8,14 +8,12 @@ backend_file_delete(const char* name)
 	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_file_delete0, 1, name, -1);
-	J_CRITICAL("types to delete %lld %s", -1, name);
 	do
 	{
 		ret = sqlite3_step(stmt_file_delete0);
 		if (ret == SQLITE_ROW)
 		{
 			tmp = sqlite3_column_int64(stmt_file_delete0, 0);
-			J_CRITICAL("types to delete %lld", tmp);
 			g_array_append_val(arr, tmp);
 		}
 		else if (ret != SQLITE_DONE)

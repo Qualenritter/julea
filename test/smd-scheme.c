@@ -50,6 +50,7 @@ test_scheme_create_destroy_single(void)
 		scheme = j_smd_scheme_create(schemename, file, type, space, J_DISTRIBUTION_DATABASE, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(scheme);
+		g_assert_cmpuint(j_smd_is_initialized(scheme), !=, FALSE);
 		ret = j_smd_scheme_unref(scheme);
 		g_assert_cmpuint(ret, !=, FALSE);
 		scheme = j_smd_scheme_open(schemename, file, batch);
@@ -68,6 +69,61 @@ test_scheme_create_destroy_single(void)
 		ret = j_smd_scheme_unref(scheme);
 		g_assert_cmpuint(ret, !=, FALSE);
 	}
+	ret = j_smd_file_unref(file);
+	g_assert_cmpuint(ret, !=, FALSE);
+	ret = j_smd_file_delete(filename, batch);
+	g_assert_cmpuint(ret, !=, FALSE);
+	j_batch_execute(batch);
+	ret = j_smd_space_unref(space);
+	g_assert_cmpuint(ret, !=, FALSE);
+	ret = j_smd_type_unref(type);
+	g_assert_cmpuint(ret, !=, FALSE);
+}
+static void
+test_scheme_create_conflict(void)
+{
+	gboolean ret;
+	const char* filename = "filename";
+	const char* schemename = "schemename";
+	void* file;
+	void* type;
+	void* space;
+	void* scheme;
+	guint one = 1;
+	g_autoptr(JBatch) batch = NULL;
+	type = j_smd_type_create();
+	g_assert_nonnull(type);
+	space = j_smd_space_create(one, &one);
+	g_assert_nonnull(space);
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	file = j_smd_file_create(filename, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(file);
+	g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
+	scheme = j_smd_scheme_create(schemename, file, type, space, J_DISTRIBUTION_DATABASE, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(scheme);
+	g_assert_cmpuint(j_smd_is_initialized(scheme), !=, FALSE);
+	ret = j_smd_scheme_unref(scheme);
+	g_assert_cmpuint(ret, !=, FALSE);
+	scheme = j_smd_scheme_open(schemename, file, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(scheme);
+	g_assert_cmpuint(j_smd_is_initialized(scheme), !=, FALSE);
+	ret = j_smd_scheme_unref(scheme);
+	g_assert_cmpuint(ret, !=, FALSE);
+	scheme = j_smd_scheme_create(schemename, file, type, space, J_DISTRIBUTION_DATABASE, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(scheme);
+	g_assert_cmpuint(j_smd_is_initialized(scheme), ==, FALSE);
+	ret = j_smd_scheme_unref(scheme);
+	g_assert_cmpuint(ret, !=, FALSE);
+	scheme = j_smd_scheme_open(schemename, file, batch);
+	j_batch_execute(batch);
+	g_assert_nonnull(scheme);
+	g_assert_cmpuint(j_smd_is_initialized(scheme), !=, FALSE);
+	ret = j_smd_scheme_unref(scheme);
+	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_file_unref(file);
 	g_assert_cmpuint(ret, !=, FALSE);
 	ret = j_smd_file_delete(filename, batch);
@@ -313,4 +369,5 @@ test_smd_scheme(void)
 	g_test_add_func("/smd/scheme/create_destroy_many", test_scheme_create_destroy_many);
 	g_test_add_func("/smd/scheme/datatypes", test_scheme_datatypes);
 	g_test_add_func("/smd/scheme/datatypes_read_write", test_scheme_datatypes_read_write);
+	g_test_add_func("/smd/scheme/create_conflict", test_scheme_create_conflict);
 }

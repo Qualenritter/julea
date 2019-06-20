@@ -98,7 +98,6 @@ static sqlite3* backend_db;
 		_ret_ = sqlite3_reset(stmt);                 \
 		_j_ok_constraint_check(_ret_);               \
 	} while (0)
-
 #define j_sqlite3_transaction_begin() j_sqlite3_step_and_reset_check_done(stmt_transaction_begin)
 #define j_sqlite3_transaction_commit() j_sqlite3_step_and_reset_check_done(stmt_transaction_commit)
 #define j_sqlite3_transaction_abort() j_sqlite3_step_and_reset_check_done(stmt_transaction_abort)
@@ -258,7 +257,6 @@ backend_init(gchar const* path)
 		"FOREIGN KEY(subtype_key) REFERENCES smd_scheme_type_header(key) ON DELETE RESTRICT, " //typen dürfen nicht gelöscht werden, wenn andere noch darauf zeigen
 		"FOREIGN KEY(header_key) REFERENCES smd_scheme_type_header(key) ON DELETE CASCADE " //typen immer vollständig löschen
 		");");
-
 	j_sqlite3_exec_done_or_error("CREATE INDEX smd_scheme_type_idx ON smd_scheme_type(header_key)");
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_schemes (" //
@@ -278,6 +276,7 @@ backend_init(gchar const* path)
 		"FOREIGN KEY(file_key) REFERENCES smd_schemes(key) ON DELETE CASCADE, " //löschen von kompletten datein auf einmal
 		"FOREIGN KEY(type_key) REFERENCES smd_scheme_type_header(key) ON DELETE RESTRICT, " //blockiere das löschen von einem typen, wenn der noch benutzt wird
 		"PRIMARY KEY(name, parent_key)"
+		"UNIQUE(name, parent_key)"
 		");");
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_data (" //
@@ -348,6 +347,9 @@ backend_init(gchar const* path)
 		"WHERE header_key = ?1 " //
 		"ORDER BY t.offset;",
 		&stmt_type_write_get_structure);
+	j_sqlite3_prepare_v3(
+		"DELETE FROM smd_scheme_type_header WHERE key = ?1",
+		&stmt_type_delete);
 
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes " //
@@ -374,17 +376,14 @@ backend_init(gchar const* path)
 		&stmt_scheme_get_type_key);
 
 	j_sqlite3_prepare_v3(
-		"SELECT t.type_key " //
+		"WITH RECURSIVE " //
+		"subtypes(x) AS (SELECT t.type_key " //
 		"FROM smd_schemes t "
-		"WHERE t.file_key = (SELECT t3.file_key FROM smd_schemes t3 WHERE t3.name = ?1 AND t3.file_key = t3.key)",
+		"WHERE t.file_key = (SELECT t3.file_key FROM smd_schemes t3 WHERE t3.name = ?1 AND t3.file_key = t3.key) UNION SELECT subtype_key FROM smd_scheme_type t2, subtypes s WHERE t2.header_key = s.x) SELECT x FROM subtypes",
 		&stmt_file_delete0);
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key;",
 		&stmt_file_delete1);
-
-	j_sqlite3_prepare_v3(
-		"DELETE FROM smd_scheme_type_header WHERE key = ?1",
-		&stmt_type_delete);
 
 	j_sqlite3_prepare_v3("BEGIN TRANSACTION;", &stmt_transaction_begin);
 	j_sqlite3_prepare_v3("COMMIT;", &stmt_transaction_commit);

@@ -5,9 +5,9 @@ backend_scheme_delete(const char* name, char* parent)
 	guint i;
 	guint ret;
 	sqlite3_int64 tmp;
-	sqlite3_int64 type_key;
+	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64)); //cache array
 	j_smd_timer_start(backend_scheme_delete);
-	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
+	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
 	do
@@ -22,23 +22,17 @@ backend_scheme_delete(const char* name, char* parent)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_delete0);
-	j_sqlite3_bind_int64(stmt_scheme_delete0, 1, type_key);
-	if (arr->len > 0)
+	j_sqlite3_bind_text(stmt_scheme_delete1, 1, name, -1);
+	j_sqlite3_bind_int64(stmt_scheme_delete1, 2, *((sqlite3_int64*)parent));
+	j_sqlite3_step_and_reset_check_done(stmt_scheme_delete1);
+	for (i = 0; i < arr->len; i++)
 	{
-		j_sqlite3_bind_text(stmt_scheme_delete1, 1, name, -1);
-		j_sqlite3_bind_int64(stmt_scheme_delete1, 2, *((sqlite3_int64*)parent));
-		j_sqlite3_step_and_reset_check_done(stmt_scheme_delete1);
-
-		for (i = 0; i < arr->len; i++)
-		{
-			J_CRITICAL("type to delete %lld", g_array_index(arr, sqlite3_int64, i));
-			j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
-			j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete);
-		}
+		j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
+		j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete);
 	}
-	g_array_free(arr, TRUE);
-	//TODO transaction here
+	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_delete);
+	g_array_free(arr, TRUE);
 	return TRUE;
 }
 static gboolean
@@ -53,9 +47,10 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 	bson_iter_t iter_data_type;
 	bson_iter_t iter_data_dims;
 	guint i;
+	guint ret;
+	memset(key, 0, SMD_KEY_LENGTH);
 	j_smd_timer_start(backend_scheme_create);
 	j_sqlite3_transaction_begin();
-	g_return_val_if_fail(name != NULL, FALSE);
 	bson_iter_init(&iter, bson);
 	var_ndims = 0;
 	var_dims[0] = 0;
@@ -91,24 +86,39 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 			}
 		}
 	}
-	backend_scheme_delete(name, parent);
+	//	backend_scheme_delete(name, parent);
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
-	memcpy(key, &scheme_key, sizeof(scheme_key));
-	{ // insert new scheme
-		j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
-		j_sqlite3_bind_int(stmt_scheme_create, 2, SMD_METATYPE_DATA);
-		j_sqlite3_bind_int64(stmt_scheme_create, 3, *((sqlite3_int64*)parent));
-		j_sqlite3_bind_int(stmt_scheme_create, 4, var_ndims);
-		j_sqlite3_bind_int(stmt_scheme_create, 5, var_dims[0]);
-		j_sqlite3_bind_int(stmt_scheme_create, 6, var_dims[1]);
-		j_sqlite3_bind_int(stmt_scheme_create, 7, var_dims[2]);
-		j_sqlite3_bind_int(stmt_scheme_create, 8, var_dims[3]);
-		j_sqlite3_bind_int(stmt_scheme_create, 9, distribution);
-		j_sqlite3_bind_int64(stmt_scheme_create, 10, type_key);
-		j_sqlite3_bind_int64(stmt_scheme_create, 11, scheme_key);
-		j_sqlite3_step_and_reset_check_done(stmt_scheme_create);
+	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
+	j_sqlite3_bind_int(stmt_scheme_create, 2, SMD_METATYPE_DATA);
+	j_sqlite3_bind_int64(stmt_scheme_create, 3, *((sqlite3_int64*)parent));
+	j_sqlite3_bind_int(stmt_scheme_create, 4, var_ndims);
+	j_sqlite3_bind_int(stmt_scheme_create, 5, var_dims[0]);
+	j_sqlite3_bind_int(stmt_scheme_create, 6, var_dims[1]);
+	j_sqlite3_bind_int(stmt_scheme_create, 7, var_dims[2]);
+	j_sqlite3_bind_int(stmt_scheme_create, 8, var_dims[3]);
+	j_sqlite3_bind_int(stmt_scheme_create, 9, distribution);
+	j_sqlite3_bind_int64(stmt_scheme_create, 10, type_key);
+	j_sqlite3_bind_int64(stmt_scheme_create, 11, scheme_key);
+	ret = sqlite3_step(stmt_scheme_create);
+	if (ret == SQLITE_DONE)
+	{
+		ret = sqlite3_reset(stmt_scheme_create);
+		_j_ok_check(ret);
+		memcpy(key, &scheme_key, sizeof(scheme_key));
+		j_sqlite3_transaction_commit();
 	}
-	j_sqlite3_transaction_commit();
+	else if (ret == SQLITE_CONSTRAINT)
+	{
+		ret = sqlite3_reset(stmt_scheme_create);
+		_j_ok_constraint_check(ret);
+		j_sqlite3_transaction_abort();
+		J_CRITICAL("create scheme failed %s %lld", name, *((sqlite3_int64*)parent));
+	}
+	else
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		exit(1);
+	}
 	j_smd_timer_stop(backend_scheme_create);
 	return TRUE;
 }
