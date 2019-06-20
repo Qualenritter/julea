@@ -254,7 +254,9 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 			for (j = 0; j < array_length; j++)
 			{
 				/*TODO upsert faster than replace ?!? https://www.sqlite.org/lang_UPSERT.html*/
-				sqlite3_prepare_v2(backend_db, "REPLACE INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
+				sqlite3_prepare_v2(backend_db, "INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) "
+							       "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ON CONFLICT (scheme_key, type_key, offset) DO UPDATE SET value_int = ?4, value_float=?5,value_text=?6,value_blob=?7",
+					-1, &stmt, NULL);
 				j_sqlite3_bind_int64(stmt, 1, scheme_key);
 				j_sqlite3_bind_int64(stmt, 2, (*((sqlite3_int64*)var->sub_type_key)));
 				j_sqlite3_bind_int64(stmt, 3, offset_local + parent_offset + j * var->size);

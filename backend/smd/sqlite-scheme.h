@@ -111,7 +111,6 @@ backend_scheme_create(const char* name, char* parent, bson_t* bson, guint distri
 		ret = sqlite3_reset(stmt_scheme_create);
 		_j_ok_constraint_check(ret);
 		j_sqlite3_transaction_abort();
-		J_CRITICAL("create scheme failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
 	}
 	else
@@ -166,8 +165,8 @@ backend_scheme_open(const char* name, char* parent, bson_t* bson, guint* distrib
 		j_smd_timer_stop(backend_scheme_open);
 		return FALSE;
 	}
-	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	else{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));exit(1);}
 	j_sqlite3_reset(stmt_scheme_open);
 	bson_append_document_begin(bson, "data_type", -1, b_datatype);
 	load_type(b_datatype, type_key);
@@ -194,8 +193,11 @@ backend_scheme_write(char* key, const char* buf, guint offset, guint size)
 	ret = sqlite3_step(stmt_scheme_get_type_key);
 	if (ret == SQLITE_ROW)
 		type_key = sqlite3_column_int64(stmt_scheme_get_type_key, 0);
-	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	else if (ret == SQLITE_DONE){
+		return FALSE;
+	}
+	else{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));exit(1);}
 	j_sqlite3_reset(stmt_scheme_get_type_key);
 	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0, 0);
 	j_smd_timer_stop(backend_scheme_write);
