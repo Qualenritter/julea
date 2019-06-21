@@ -73,6 +73,7 @@ typedef struct JSMDSchemeOperation JSMDSchemeOperation;
 static gboolean
 j_smd_create_exec(JList* operations, JSemantics* semantics)
 {
+	char buf[SMD_KEY_LENGTH * 2 + 1];
 	int message_size;
 	JBackend* smd_backend;
 	JSMDSchemeOperation* operation;
@@ -135,7 +136,8 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 			memcpy(operation->scheme->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
 			if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 			{
-				operation->scheme->object = j_distributed_object_new("smd", operation->scheme->key, operation->scheme->distribution);
+				SMD_BUF_TO_HEX(operation->scheme->key, buf, SMD_KEY_LENGTH);
+				operation->scheme->object = j_distributed_object_new("smd", buf, operation->scheme->distribution);
 				j_distributed_object_create(operation->scheme->object, batch);
 			}
 		}
@@ -248,16 +250,6 @@ j_smd_scheme_delete(const char* name, void* parent, JBatch* batch)
 	j_smd_timer_start(j_smd_scheme_delete);
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->name = g_strdup(name);
-	smd_op->scheme = j_smd_scheme_open(smd_op->name, parent, batch);
-	j_batch_execute(batch);
-	if (j_is_key_initialized(smd_op->scheme->key))
-	{
-		if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
-		{ /*TODO speedup - dont require db read for this?*/
-			j_distributed_object_delete(smd_op->scheme->object, batch);
-		}
-	}
-	j_smd_scheme_unref(smd_op->scheme);
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
@@ -277,6 +269,7 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
 	int message_size;
+	char buf[SMD_KEY_LENGTH * 2 + 1];
 	g_autoptr(JListIterator) iter = NULL;
 	g_autoptr(JMessage) reply = NULL;
 	int index = 0;
@@ -305,7 +298,8 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 				{
 					operation->scheme->distribution = j_distribution_new(operation->scheme->distribution_type);
-					operation->scheme->object = j_distributed_object_new("smd", operation->scheme->key, operation->scheme->distribution);
+					SMD_BUF_TO_HEX(operation->scheme->key, buf, SMD_KEY_LENGTH);
+					operation->scheme->object = j_distributed_object_new("smd", buf, operation->scheme->distribution);
 				}
 			}
 		}
@@ -345,7 +339,8 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 				{
 					operation->scheme->distribution = j_distribution_new(operation->scheme->distribution_type);
-					operation->scheme->object = j_distributed_object_new("smd", operation->scheme->key, operation->scheme->distribution);
+					SMD_BUF_TO_HEX(operation->scheme->key, buf, SMD_KEY_LENGTH);
+					operation->scheme->object = j_distributed_object_new("smd", buf, operation->scheme->distribution);
 				}
 			}
 		}

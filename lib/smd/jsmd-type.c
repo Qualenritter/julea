@@ -39,27 +39,23 @@ start:
 	ret = ret && (var1->space2.ndims == var2->space2.ndims);
 	if (!ret)
 	{
-		J_DEBUG("type differ -> FALSE");
 		return FALSE;
 	}
 	ret = ret && (strcmp(var1->name2, var2->name2) == 0);
 	if (!ret)
 	{
-		J_DEBUG("type differ -> FALSE %s %s", var1->name2, var2->name2);
 		return FALSE;
 	}
 	for (i = 0; i < var1->space2.ndims; i++)
 		ret = ret && (var1->space2.dims[i] == var2->space2.dims[i]);
 	if (!ret)
 	{
-		J_DEBUG("type differ -> FALSE");
 		return FALSE;
 	}
 	if (var1->type2 == SMD_TYPE_SUB_TYPE)
 		ret = ret && _j_smd_variable_equals(var1 + var1->subtypeindex2, var2 + var2->subtypeindex2);
 	if (!ret)
 	{
-		J_DEBUG("type differ -> FALSE");
 		return FALSE;
 	}
 
@@ -78,7 +74,6 @@ j_smd_type_equals(void* _type1, void* _type2)
 	J_SMD_Variable_t2* var2;
 	if (type1 == NULL || type2 == NULL)
 	{
-		J_DEBUG("type differ NULL -> FALSE");
 		return FALSE;
 	}
 	if (type1->arr2->len == 0 && type2->arr2->len == 0)
@@ -207,7 +202,6 @@ j_smd_type_get_variable_count(void* _type)
 	count++;
 	while (var->nextindex2)
 	{
-		J_DEBUG("%d", var->nextindex2);
 		var += var->nextindex2;
 		count++;
 	}
@@ -248,12 +242,10 @@ start:
 		{
 			if (var->nextindex2) //remove first element
 			{
-				J_DEBUG("remove first%d", 0);
 				type->first_index2 += var->nextindex2;
 			}
 			else
 			{ //remove first AND last element -> ALL
-				J_DEBUG("remove all%d", 0);
 				g_array_free(type->arr2, TRUE);
 				type->arr2 = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t2));
 				type->last_index2 = 0;
@@ -262,7 +254,6 @@ start:
 		}
 		else
 		{ //deletes not the first element
-			J_DEBUG("remove other%d", 0);
 			if (var->nextindex2 == 0)
 				var_prev->nextindex2 = 0;
 			else

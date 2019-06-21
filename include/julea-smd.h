@@ -30,7 +30,22 @@
 
 #include <julea-object.h>
 
-#define SMD_KEY_LENGTH 32
+#define SMD_BUF_TO_HEX(buf, hex, len)                                 \
+	do                                                            \
+	{                                                             \
+		const char* _hex_ = "0123456789ABCDEF";               \
+		const unsigned char* _s_ = (const unsigned char*)buf; \
+		char* _t_ = (char*)hex;                               \
+		guint _i_;                                            \
+		for (_i_ = 0; _i_ < len; _i_++)                       \
+		{                                                     \
+			*_t_++ = _hex_[(*_s_ >> 4) & 0xF];            \
+			*_t_++ = _hex_[(*_s_++) & 0xF];               \
+		}                                                     \
+		*_t_ = 0;                                             \
+	} while (0)
+
+#define SMD_KEY_LENGTH 8
 #define SMD_MAX_NAME_LENGTH 30
 #define SMD_MAX_NDIMS 4
 
@@ -117,12 +132,12 @@ struct J_SMD_Variable_t2
 	JSMDType type2;
 	J_SMD_Space_t space2;
 	char name2[SMD_MAX_NAME_LENGTH + 1];
-	char sub_type_key2[SMD_KEY_LENGTH + 1]; //primary key in DB
+	char sub_type_key2[SMD_KEY_LENGTH]; //primary key in DB
 };
 
 struct J_Scheme_t
 {
-	char key[SMD_KEY_LENGTH + 1]; /*primary key in DB zero terminated - invalid if all 0 */
+	char key[SMD_KEY_LENGTH]; /*primary key in DB binary - invalid if all 0 */
 	J_SMD_Type_t2* type;
 	J_SMD_Space_t* space;
 	JDistributionType distribution_type;

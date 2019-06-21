@@ -1,7 +1,11 @@
 static gboolean
 backend_scheme_delete(const char* name, void* parent)
 {
-	//TODO delete data in object-store if any
+	JDistribution* distribution;
+	JDistributedObject* object;
+	JBatch* batch;
+	char buf[SMD_KEY_LENGTH * 2 + 1];
+	char key[SMD_KEY_LENGTH];
 	GArray* arr;
 	guint i;
 	guint ret;
@@ -9,6 +13,31 @@ backend_scheme_delete(const char* name, void* parent)
 	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64)); //TODO cache array
 	j_smd_timer_start(backend_scheme_delete);
 	j_sqlite3_transaction_begin();
+	{
+		/* delete data from objectstore - if it exist */
+		j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
+		j_sqlite3_bind_int64(stmt_scheme_open, 2, *((sqlite3_int64*)parent));
+		ret = sqlite3_step(stmt_scheme_open);
+		if (ret == SQLITE_ROW)
+		{
+			i = sqlite3_column_int64(stmt_scheme_open, 6);
+			if (i != J_DISTRIBUTION_DATABASE)
+			{
+				memset(key, 0, SMD_KEY_LENGTH);
+				tmp = sqlite3_column_int64(stmt_scheme_open, 0);
+				memcpy(key, &tmp, sizeof(sqlite3_int64));
+				SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
+				distribution = j_distribution_new(sqlite3_column_int64(stmt_scheme_open, 5));
+				object = j_distributed_object_new("smd", buf, distribution);
+				batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+				j_distributed_object_delete(object, batch);
+				j_batch_execute(batch);
+			}
+		}
+		else if (ret != SQLITE_DONE)
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		j_sqlite3_reset(stmt_scheme_open);
+	}
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
 	do

@@ -162,7 +162,7 @@ main(gint argc, gchar** argv)
 		{ "kv-backend", 0, 0, G_OPTION_ARG_STRING, &opt_kv_backend, "Key-value backend to use", "posix|null|gio|…" },
 		{ "kv-component", 0, 0, G_OPTION_ARG_STRING, &opt_kv_component, "Key-value component to use", "client|server" },
 		{ "kv-path", 0, 0, G_OPTION_ARG_STRING, &opt_kv_path, "Key-value path to use", "/path/to/storage" },
-		{ "smd-backend", 0, 0, G_OPTION_ARG_STRING, &opt_smd_backend, "Structured-metadata backend to use", "posix|null|gio|…" },
+		{ "smd-backend", 0, 0, G_OPTION_ARG_STRING, &opt_smd_backend, "Structured-metadata backend to use", "sqlite|null|…" },
 		{ "smd-component", 0, 0, G_OPTION_ARG_STRING, &opt_smd_component, "Structured-metadata component to use", "client|server" },
 		{ "smd-path", 0, 0, G_OPTION_ARG_STRING, &opt_smd_path, "Structured-metadata path to use", "/path/to/storage" },
 		{ "max-operation-size", 0, 0, G_OPTION_ARG_INT64, &opt_max_operation_size, "Maximum size of an operation", "0" },
@@ -184,8 +184,16 @@ main(gint argc, gchar** argv)
 		return 1;
 	}
 
-	if ((opt_user && opt_system) || (opt_read && (opt_servers_object != NULL || opt_servers_smd != NULL || opt_servers_kv != NULL || opt_object_backend != NULL || opt_object_component != NULL || opt_object_path != NULL || opt_kv_backend != NULL || opt_kv_component != NULL || opt_kv_path != NULL)) || opt_smd_backend != NULL || opt_smd_component != NULL || opt_smd_path != NULL || (opt_read && !opt_user && !opt_system) ||
-		(!opt_read && (opt_servers_object == NULL || opt_servers_kv == NULL || opt_servers_smd != NULL || opt_object_backend == NULL || opt_object_component == NULL || opt_object_path == NULL || opt_kv_backend == NULL || opt_kv_component == NULL || opt_kv_path == NULL)) || opt_smd_backend != NULL || opt_smd_component != NULL || opt_smd_path != NULL || opt_max_operation_size < 0 || opt_max_connections < 0 || opt_stripe_size < 0)
+	if (
+		(opt_user && opt_system)
+		//
+		|| (opt_read && !opt_user && !opt_system)
+		//
+		|| (opt_read && (opt_servers_object != NULL || opt_servers_smd != NULL || opt_servers_kv != NULL || opt_object_backend != NULL || opt_object_component != NULL || opt_object_path != NULL || opt_kv_backend != NULL || opt_kv_component != NULL || opt_kv_path != NULL || opt_smd_backend != NULL || opt_smd_component != NULL || opt_smd_path != NULL))
+		//
+		|| (!opt_read && (opt_servers_object == NULL || opt_servers_kv == NULL || opt_servers_smd == NULL || opt_object_backend == NULL || opt_object_component == NULL || opt_object_path == NULL || opt_kv_backend == NULL || opt_kv_component == NULL || opt_kv_path == NULL || opt_smd_backend == NULL || opt_smd_component == NULL || opt_smd_path == NULL))
+		//
+		|| opt_max_operation_size < 0 || opt_max_connections < 0 || opt_stripe_size < 0)
 	{
 		g_autofree gchar* help = NULL;
 
