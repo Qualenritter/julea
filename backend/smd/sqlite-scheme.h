@@ -70,7 +70,7 @@ static gboolean
 backend_scheme_create(const char* name, void* parent, const void* _space, const void* _type, guint distribution, void* key)
 {
 	const J_SMD_Space_t* space = _space;
-	const J_SMD_Type_t2* type = _type;
+	const J_SMD_Type_t* type = _type;
 
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;
@@ -78,10 +78,10 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	memset(key, 0, SMD_KEY_LENGTH);
 	j_smd_timer_start(backend_scheme_create);
 	j_sqlite3_transaction_begin();
-	if (type->arr2->len == 0)
+	if (type->arr->len == 0)
 		type_key = 0;
 	else
-		type_key = create_type(&g_array_index(type->arr2, J_SMD_Variable_t2, type->first_index2));
+		type_key = create_type(&g_array_index(type->arr, J_SMD_Variable_t, type->first_index));
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
@@ -122,7 +122,7 @@ static gboolean
 backend_scheme_open(const char* name, void* parent, void* _space, void* _type, guint* distribution, void* key)
 {
 	J_SMD_Space_t* space = _space;
-	J_SMD_Type_t2* type = _type;
+	J_SMD_Type_t* type = _type;
 	gint ret;
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;

@@ -754,7 +754,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			char* parent;
 			char _key[SMD_KEY_LENGTH];
 			void* space;
-			J_SMD_Type_t2 type;
+			J_SMD_Type_t type;
 			guint len;
 			guint distribution;
 
@@ -765,12 +765,12 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				parent = j_message_get_n(message, SMD_KEY_LENGTH);
 				distribution = j_message_get_4(message);
 				space = j_message_get_n(message, sizeof(J_SMD_Space_t));
-				type.first_index2 = j_message_get_4(message);
+				type.first_index = j_message_get_4(message);
 				len = j_message_get_4(message);
-				type.arr2 = g_array_sized_new(FALSE, FALSE, sizeof(J_SMD_Variable_t2), len);
+				type.arr = g_array_sized_new(FALSE, FALSE, sizeof(J_SMD_Variable_t), len);
 				if (len)
 				{
-					g_array_append_vals(type.arr2, j_message_get_n(message, len * sizeof(J_SMD_Variable_t2)), len);
+					g_array_append_vals(type.arr, j_message_get_n(message, len * sizeof(J_SMD_Variable_t)), len);
 				}
 				j_message_add_operation(reply, SMD_KEY_LENGTH);
 				if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, space, &type, distribution, _key))
@@ -784,7 +784,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					memset(buf, 0, SMD_KEY_LENGTH);
 					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
 				}
-				g_array_free(type.arr2, TRUE);
+				g_array_free(type.arr, TRUE);
 			}
 			j_message_send(reply, connection);
 		}
@@ -815,23 +815,23 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			char _key[SMD_KEY_LENGTH];
 			guint distribution;
 			J_SMD_Space_t space;
-			J_SMD_Type_t2 type;
+			J_SMD_Type_t type;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
-				type.arr2 = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t2));
+				type.arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t));
 				name = j_message_get_string(message);
 				parent = j_message_get_n(message, SMD_KEY_LENGTH);
 				if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, &space, &type, &distribution, _key))
 				{
-					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + sizeof(J_SMD_Space_t) + 4 + type.arr2->len * sizeof(J_SMD_Variable_t2));
+					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + sizeof(J_SMD_Space_t) + 4 + type.arr->len * sizeof(J_SMD_Variable_t));
 					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
 					j_message_append_4(reply, &distribution);
 					j_message_append_n(reply, &space, sizeof(J_SMD_Space_t));
-					j_message_append_4(reply, &type.arr2->len);
-					if (type.arr2->len)
+					j_message_append_4(reply, &type.arr->len);
+					if (type.arr->len)
 					{
-						j_message_append_n(reply, type.arr2->data, type.arr2->len * sizeof(J_SMD_Variable_t2));
+						j_message_append_n(reply, type.arr->data, type.arr->len * sizeof(J_SMD_Variable_t));
 					}
 				}
 				else
@@ -841,7 +841,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					memset(buf, 0, SMD_KEY_LENGTH);
 					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
 				}
-				g_array_free(type.arr2, TRUE);
+				g_array_free(type.arr, TRUE);
 			}
 			j_message_send(reply, connection);
 		}

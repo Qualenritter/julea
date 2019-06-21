@@ -106,7 +106,7 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 				+ SMD_KEY_LENGTH //parent key
 				+ 4 //distribution
 				+ sizeof(J_SMD_Space_t) //space
-				+ 4 + sizeof(J_SMD_Variable_t2) * operation->scheme->type->arr2->len + 4; //type
+				+ 4 + sizeof(J_SMD_Variable_t) * operation->scheme->type->arr->len + 4; //type
 			;
 			J_DEBUG("len=%d", message_size);
 			j_message_add_operation(message, message_size);
@@ -114,10 +114,10 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 			j_message_append_n(message, operation->parent->key, SMD_KEY_LENGTH);
 			j_message_append_4(message, &operation->scheme->distribution_type);
 			j_message_append_n(message, operation->scheme->space, sizeof(J_SMD_Space_t));
-			j_message_append_4(message, &operation->scheme->type->first_index2);
-			j_message_append_4(message, &operation->scheme->type->arr2->len);
-			if (operation->scheme->type->arr2->len)
-				j_message_append_n(message, operation->scheme->type->arr2->data, operation->scheme->type->arr2->len * sizeof(J_SMD_Variable_t2));
+			j_message_append_4(message, &operation->scheme->type->first_index);
+			j_message_append_4(message, &operation->scheme->type->arr->len);
+			if (operation->scheme->type->arr->len)
+				j_message_append_n(message, operation->scheme->type->arr->data, operation->scheme->type->arr->len * sizeof(J_SMD_Variable_t));
 		}
 	}
 	if (smd_backend == NULL)
@@ -333,8 +333,8 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				operation->scheme->type = j_smd_type_create();
 				tmp_len = j_message_get_4(reply);
 				if (tmp_len)
-					g_array_append_vals(operation->scheme->type->arr2, j_message_get_n(reply, tmp_len * sizeof(J_SMD_Variable_t2)), tmp_len);
-				operation->scheme->type->first_index2 = 0;
+					g_array_append_vals(operation->scheme->type->arr, j_message_get_n(reply, tmp_len * sizeof(J_SMD_Variable_t)), tmp_len);
+				operation->scheme->type->first_index = 0;
 				//TODO calculate last_index2
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 				{

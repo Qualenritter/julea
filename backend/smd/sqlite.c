@@ -505,7 +505,7 @@ backend_fini(void)
 	J_CRITICAL("%d", 0);
 }
 static JBackend sqlite_backend = { .type = J_BACKEND_TYPE_SMD, //
-	.component = J_BACKEND_COMPONENT_SERVER, //
+	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT, //
 	.smd = { //
 		.backend_init = backend_init, //
 		.backend_fini = backend_fini, //

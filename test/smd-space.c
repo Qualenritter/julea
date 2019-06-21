@@ -34,7 +34,7 @@ test_space_create_destroy(void)
 		space = j_smd_space_create(one, &one);
 		g_assert_nonnull(space);
 		ret = j_smd_space_unref(space);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 	}
 }
 static void

@@ -114,31 +114,31 @@ struct J_SMD_Space_t
 };
 typedef struct J_SMD_Space_t J_SMD_Space_t;
 
-typedef struct J_SMD_Type_t2 J_SMD_Type_t2;
-struct J_SMD_Type_t2
+typedef struct J_SMD_Type_t J_SMD_Type_t;
+struct J_SMD_Type_t
 {
-	GArray* arr2; //only if root == the own address -- only J_SMD_Variable_t2 - elements
-	gint ref_count2; //only if root == the own address
-	guint last_index2; //points to the last child in this datatype EXCLUDEING subtypes
-	guint first_index2; //points to the first child in this datatype EXCLUDEING subtypes
+	GArray* arr; //only if root == the own address -- only J_SMD_Variable_t - elements
+	gint ref_count; //only if root == the own address
+	guint last_index; //points to the last child in this datatype EXCLUDEING subtypes
+	guint first_index; //points to the first child in this datatype EXCLUDEING subtypes
 };
-typedef struct J_SMD_Variable_t2 J_SMD_Variable_t2;
-struct J_SMD_Variable_t2
+typedef struct J_SMD_Variable_t J_SMD_Variable_t;
+struct J_SMD_Variable_t
 {
-	gint nextindex2; //index of next element relative to myindex
-	gint subtypeindex2; //only if type == SMD_TYPE_SUB_TYPE relative to myindex
-	guint offset2;
-	guint size2;
-	JSMDType type2;
-	J_SMD_Space_t space2;
-	char name2[SMD_MAX_NAME_LENGTH + 1];
-	char sub_type_key2[SMD_KEY_LENGTH]; //primary key in DB
+	gint nextindex; //index of next element relative to myindex
+	gint subtypeindex; //only if type == SMD_TYPE_SUB_TYPE relative to myindex
+	guint offset;
+	guint size;
+	JSMDType type;
+	J_SMD_Space_t space;
+	char name[SMD_MAX_NAME_LENGTH + 1];
+	char sub_type_key[SMD_KEY_LENGTH]; //primary key in DB
 };
 
 struct J_Scheme_t
 {
 	char key[SMD_KEY_LENGTH]; /*primary key in DB binary - invalid if all 0 */
-	J_SMD_Type_t2* type;
+	J_SMD_Type_t* type;
 	J_SMD_Space_t* space;
 	JDistributionType distribution_type;
 	JDistribution* distribution; /*only if scheme*/

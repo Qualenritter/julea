@@ -27,182 +27,185 @@
 #include <julea-internal.h>
 #include <julea-smd.h>
 static gboolean
-_j_smd_variable_equals(J_SMD_Variable_t2* var1, J_SMD_Variable_t2* var2)
+_j_smd_variable_equals(J_SMD_Variable_t* var1, J_SMD_Variable_t* var2)
 {
 	gboolean ret = TRUE;
 	guint i;
 start:
-	ret = ret && ((var1->nextindex2 == 0) == (var2->nextindex2 == 0)); //beide oder keiner hat einen Nachfolger
-	ret = ret && (var1->offset2 == var2->offset2);
-	ret = ret && (var1->size2 == var2->size2);
-	ret = ret && (var1->type2 == var2->type2);
-	ret = ret && (var1->space2.ndims == var2->space2.ndims);
+	ret = ret && ((var1->nextindex == 0) == (var2->nextindex == 0)); //beide oder keiner hat einen Nachfolger
+	ret = ret && (var1->offset == var2->offset);
+	ret = ret && (var1->size == var2->size);
+	ret = ret && (var1->type == var2->type);
+	ret = ret && (var1->space.ndims == var2->space.ndims);
 	if (!ret)
 	{
 		return FALSE;
 	}
-	ret = ret && (strcmp(var1->name2, var2->name2) == 0);
+	ret = ret && (strcmp(var1->name, var2->name) == 0);
 	if (!ret)
 	{
 		return FALSE;
 	}
-	for (i = 0; i < var1->space2.ndims; i++)
-		ret = ret && (var1->space2.dims[i] == var2->space2.dims[i]);
+	for (i = 0; i < var1->space.ndims; i++)
+		ret = ret && (var1->space.dims[i] == var2->space.dims[i]);
 	if (!ret)
 	{
 		return FALSE;
 	}
-	if (var1->type2 == SMD_TYPE_SUB_TYPE)
-		ret = ret && _j_smd_variable_equals(var1 + var1->subtypeindex2, var2 + var2->subtypeindex2);
+	if (var1->type == SMD_TYPE_SUB_TYPE)
+		ret = ret && _j_smd_variable_equals(var1 + var1->subtypeindex, var2 + var2->subtypeindex);
 	if (!ret)
 	{
 		return FALSE;
 	}
 
-	if (var1->nextindex2 == 0)
+	if (var1->nextindex == 0)
 		return TRUE;
-	var1 += var1->nextindex2;
-	var2 += var2->nextindex2;
+	var1 += var1->nextindex;
+	var2 += var2->nextindex;
 	goto start;
 }
 gboolean
-j_smd_type_equals(void* _type1, void* _type2)
+j_smd_type_equals(void* _type1, void* _type)
 {
-	J_SMD_Type_t2* type1 = _type1;
-	J_SMD_Type_t2* type2 = _type2;
-	J_SMD_Variable_t2* var1;
-	J_SMD_Variable_t2* var2;
-	if (type1 == NULL || type2 == NULL)
+	J_SMD_Type_t* type1 = _type1;
+	J_SMD_Type_t* type = _type;
+	J_SMD_Variable_t* var1;
+	J_SMD_Variable_t* var2;
+	if (type1 == NULL || type == NULL)
 	{
 		return FALSE;
 	}
-	if (type1->arr2->len == 0 && type2->arr2->len == 0)
+	if (type1->arr->len == 0 && type->arr->len == 0)
 	{
 		return TRUE;
 	}
-	var1 = &g_array_index(type1->arr2, J_SMD_Variable_t2, type1->first_index2);
-	var2 = &g_array_index(type2->arr2, J_SMD_Variable_t2, type2->first_index2);
+	var1 = &g_array_index(type1->arr, J_SMD_Variable_t, type1->first_index);
+	var2 = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
 	return _j_smd_variable_equals(var1, var2);
 }
+/**
+\return a new created type
+*/
 void*
 j_smd_type_create(void)
 {
-	J_SMD_Type_t2* type;
-	type = g_new(J_SMD_Type_t2, 1);
-	type->ref_count2 = 1;
-	type->arr2 = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t2));
-	type->last_index2 = 0;
-	type->first_index2 = 0;
+	J_SMD_Type_t* type;
+	type = g_new(J_SMD_Type_t, 1);
+	type->ref_count = 1;
+	type->arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t));
+	type->last_index = 0;
+	type->first_index = 0;
 	return type;
 }
 gboolean
 j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims)
 {
-	J_SMD_Type_t2* type = _type;
-	J_SMD_Variable_t2 variable;
+	J_SMD_Type_t* type = _type;
+	J_SMD_Variable_t variable;
 	guint i;
 	guint my_idx;
 	if (var_ndims > SMD_MAX_NDIMS)
 	{
-		J_CRITICAL("var_ndims > %d not supported", SMD_MAX_NDIMS);
+		J_DEBUG("var_ndims > %d not supported", SMD_MAX_NDIMS);
 		return FALSE;
 	}
 	if (strlen(var_name) > SMD_MAX_NAME_LENGTH)
 	{
-		J_CRITICAL("var_names longer than  %d not supported", SMD_MAX_NAME_LENGTH);
+		J_DEBUG("var_names longer than  %d not supported", SMD_MAX_NAME_LENGTH);
 		return FALSE;
 	}
 	if (var_type == SMD_TYPE_SUB_TYPE)
 	{
-		J_CRITICAL("vartype SMD_TYPE_SUB_TYPE %d not supportet here", var_type);
+		J_DEBUG("vartype SMD_TYPE_SUB_TYPE %d not supportet here", var_type);
 		return FALSE;
 	}
 	for (i = 0; i < var_ndims; i++)
 	{
 		if (var_dims[i] == 0)
 		{
-			J_CRITICAL("variable array length not supported here var_dims[%d]", i);
+			J_DEBUG("variable array length not supported here var_dims[%d]", i);
 			return FALSE;
 		}
 	}
-	variable.nextindex2 = 0;
-	variable.subtypeindex2 = 0;
-	variable.offset2 = var_offset;
-	variable.size2 = var_size;
-	variable.type2 = var_type;
-	memcpy(variable.name2, var_name, strlen(var_name));
-	variable.name2[strlen(var_name)] = 0;
-	variable.space2.ndims = var_ndims;
+	variable.nextindex = 0;
+	variable.subtypeindex = 0;
+	variable.offset = var_offset;
+	variable.size = var_size;
+	variable.type = var_type;
+	memcpy(variable.name, var_name, strlen(var_name));
+	variable.name[strlen(var_name)] = 0;
+	variable.space.ndims = var_ndims;
 	for (i = 0; i < var_ndims; i++)
-		variable.space2.dims[i] = var_dims[i];
-	my_idx = type->arr2->len;
-	g_array_append_val(type->arr2, variable);
+		variable.space.dims[i] = var_dims[i];
+	my_idx = type->arr->len;
+	g_array_append_val(type->arr, variable);
 	if (my_idx)
-		g_array_index(type->arr2, J_SMD_Variable_t2, type->last_index2).nextindex2 = my_idx - type->last_index2;
-	type->last_index2 = my_idx;
+		g_array_index(type->arr, J_SMD_Variable_t, type->last_index).nextindex = my_idx - type->last_index;
+	type->last_index = my_idx;
 	/*TODO check conflicting other variables*/
 	return TRUE;
 }
 gboolean
 j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, int var_size, void* _var_type, guint var_ndims, guint* var_dims)
 {
-	J_SMD_Type_t2* type = _type;
-	J_SMD_Type_t2* var_type = _var_type;
-	J_SMD_Variable_t2 variable;
+	J_SMD_Type_t* type = _type;
+	J_SMD_Type_t* var_type = _var_type;
+	J_SMD_Variable_t variable;
 	guint my_idx;
 	guint i;
 	if (var_ndims > SMD_MAX_NDIMS)
 	{
-		J_CRITICAL("var_ndims > %d not supported", SMD_MAX_NDIMS);
+		J_DEBUG("var_ndims > %d not supported", SMD_MAX_NDIMS);
 		return FALSE;
 	}
 	if (strlen(var_name) > SMD_MAX_NAME_LENGTH)
 	{
-		J_CRITICAL("var_names longer than  %d not supported", SMD_MAX_NAME_LENGTH);
+		J_DEBUG("var_names longer than  %d not supported", SMD_MAX_NAME_LENGTH);
 		return FALSE;
 	}
 	for (i = 0; i < var_ndims; i++)
 		if (var_dims[i] == 0)
 		{
-			J_CRITICAL("variable array length not supported here var_dims[%d]", i);
+			J_DEBUG("variable array length not supported here var_dims[%d]", i);
 			return FALSE;
 		}
-	if (var_type->arr2->len == 0)
+	if (var_type->arr->len == 0)
 	{
-		J_CRITICAL("adding empty subtype not allowed - since subtypes are not modifyable curerntly %d", 0);
+		J_DEBUG("adding empty subtype not allowed - since subtypes are not modifyable curerntly %d", 0);
 		return FALSE;
 	}
-	variable.subtypeindex2 = 1; //appended directly afterwards
-	variable.nextindex2 = 0; //this is last element
-	variable.type2 = SMD_TYPE_SUB_TYPE;
-	variable.offset2 = var_offset;
-	variable.size2 = var_size;
-	memcpy(variable.name2, var_name, strlen(var_name));
-	variable.name2[strlen(var_name)] = 0;
-	variable.space2.ndims = var_ndims;
+	variable.subtypeindex = 1; //appended directly afterwards
+	variable.nextindex = 0; //this is last element
+	variable.type = SMD_TYPE_SUB_TYPE;
+	variable.offset = var_offset;
+	variable.size = var_size;
+	memcpy(variable.name, var_name, strlen(var_name));
+	variable.name[strlen(var_name)] = 0;
+	variable.space.ndims = var_ndims;
 	for (i = 0; i < var_ndims; i++)
-		variable.space2.dims[i] = var_dims[i];
-	my_idx = type->arr2->len;
-	g_array_append_val(type->arr2, variable);
+		variable.space.dims[i] = var_dims[i];
+	my_idx = type->arr->len;
+	g_array_append_val(type->arr, variable);
 	if (my_idx)
-		g_array_index(type->arr2, J_SMD_Variable_t2, type->last_index2).nextindex2 = my_idx - type->last_index2;
-	type->last_index2 = my_idx;
-	g_array_append_vals(type->arr2, var_type->arr2->data, var_type->arr2->len);
+		g_array_index(type->arr, J_SMD_Variable_t, type->last_index).nextindex = my_idx - type->last_index;
+	type->last_index = my_idx;
+	g_array_append_vals(type->arr, var_type->arr->data, var_type->arr->len);
 	return TRUE;
 }
 guint
 j_smd_type_get_variable_count(void* _type)
 {
-	J_SMD_Type_t2* type = _type;
-	J_SMD_Variable_t2* var;
+	J_SMD_Type_t* type = _type;
+	J_SMD_Variable_t* var;
 	guint count = 0;
-	if (type->arr2->len == 0)
+	if (type->arr->len == 0)
 		return 0;
-	var = &g_array_index(type->arr2, J_SMD_Variable_t2, type->first_index2);
+	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
 	count++;
-	while (var->nextindex2)
+	while (var->nextindex)
 	{
-		var += var->nextindex2;
+		var += var->nextindex;
 		count++;
 	}
 	return count;
@@ -210,61 +213,65 @@ j_smd_type_get_variable_count(void* _type)
 void*
 j_smd_type_ref(void* _type)
 {
-	J_SMD_Type_t2* type = _type;
-	g_atomic_int_inc(&(type->ref_count2));
+	J_SMD_Type_t* type = _type;
+	g_atomic_int_inc(&(type->ref_count));
 	return type;
 }
+/**
+* \return TRUE if _type is still referenced somewhere, and FALSE if memory is released
+*/
 gboolean
 j_smd_type_unref(void* _type)
 {
-	J_SMD_Type_t2* type = _type;
-	if (type && g_atomic_int_dec_and_test(&(type->ref_count2)))
+	J_SMD_Type_t* type = _type;
+	if (type && g_atomic_int_dec_and_test(&(type->ref_count)))
 	{
-		g_array_free(type->arr2, TRUE);
+		g_array_free(type->arr, TRUE);
 		g_free(type);
+		return FALSE;
 	}
-	return TRUE;
+	return type != NULL;
 }
 gboolean
 j_smd_type_remove_variable(void* _type, const char* name)
 {
-	J_SMD_Type_t2* type = _type;
-	J_SMD_Variable_t2* var;
-	J_SMD_Variable_t2* var_prev;
-	if (type->arr2->len == 0)
+	J_SMD_Type_t* type = _type;
+	J_SMD_Variable_t* var;
+	J_SMD_Variable_t* var_prev;
+	if (type->arr->len == 0)
 		return FALSE;
-	var = &g_array_index(type->arr2, J_SMD_Variable_t2, 0);
+	var = &g_array_index(type->arr, J_SMD_Variable_t, 0);
 	var_prev = var;
 start:
-	if (strcmp(name, var->name2) == 0)
+	if (strcmp(name, var->name) == 0)
 	{
 		if (var == var_prev)
 		{
-			if (var->nextindex2) //remove first element
+			if (var->nextindex) //remove first element
 			{
-				type->first_index2 += var->nextindex2;
+				type->first_index += var->nextindex;
 			}
 			else
 			{ //remove first AND last element -> ALL
-				g_array_free(type->arr2, TRUE);
-				type->arr2 = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t2));
-				type->last_index2 = 0;
-				type->first_index2 = 0;
+				g_array_free(type->arr, TRUE);
+				type->arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t));
+				type->last_index = 0;
+				type->first_index = 0;
 			}
 		}
 		else
 		{ //deletes not the first element
-			if (var->nextindex2 == 0)
-				var_prev->nextindex2 = 0;
+			if (var->nextindex == 0)
+				var_prev->nextindex = 0;
 			else
-				var_prev->nextindex2 += var->nextindex2;
+				var_prev->nextindex += var->nextindex;
 		}
 		return TRUE;
 	}
-	if (var->nextindex2)
+	if (var->nextindex)
 	{
 		var_prev = var;
-		var += var->nextindex2;
+		var += var->nextindex;
 		goto start;
 	}
 	return FALSE;
