@@ -127,7 +127,7 @@ loop:
 				MYABORT();
 			if (ndims != space_ndims[idx])
 				MYABORT();
-			if (!*dims)
+			if (!dims)
 				MYABORT();
 			for (i = 0; i < ndims; i++)
 				if (dims[i] != space_dims[idx][i])
