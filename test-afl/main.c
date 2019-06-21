@@ -19,6 +19,9 @@ enum smd_afl_event_t
 	SMD_AFL_TYPE_REMOVE_VARIABLE,
 	SMD_AFL_TYPE_UNREF,
 	SMD_AFL_TYPE_REF,
+	SMD_AFL_FILE_CREATE,
+	SMD_AFL_FILE_UNREF,
+	SMD_AFL_FILE_REF,
 	_SMD_AFL_EVENT_COUNT
 };
 //configure here->
@@ -27,6 +30,7 @@ enum smd_afl_event_t
 #define AFL_LIMIT_TYPE_COUNT 16
 #define AFL_LIMIT_TYPE_MAX_NAMES 16
 #define AFL_LIMIT_TYPE_MAX_VARIABLES 16
+#define AFL_LIMIT_FILE_COUNT 16
 //<-
 #define MY_READ(var)                                                              \
 	do                                                                        \
@@ -60,10 +64,14 @@ main(int argc, char* argv[])
 	J_SMD_Type_t* type[AFL_LIMIT_TYPE_COUNT];
 	guint type_var_count[AFL_LIMIT_TYPE_COUNT];
 	guint type_last_offset[AFL_LIMIT_TYPE_COUNT];
-	char type_strbuf[100];
 	guint type_ndims;
 	guint type_dims[SMD_MAX_NDIMS];
+	char type_strbuf[SMD_MAX_NAME_LENGTH];
+	//file
+	J_Scheme_t* file[AFL_LIMIT_FILE_COUNT];
+	char file_strbuf[SMD_MAX_NAME_LENGTH];
 	//shared
+	g_autoptr(JBatch) batch = NULL;
 	void* ptr;
 	enum smd_afl_event_t event;
 	guint idx;
@@ -76,10 +84,13 @@ main(int argc, char* argv[])
 		create_raw_test_files(argv[1]);
 		return 0;
 	}
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	for (i = 0; i < AFL_LIMIT_SPACE_COUNT; i++)
 		space[i] = NULL;
 	for (i = 0; i < AFL_LIMIT_TYPE_COUNT; i++)
 		type[i] = NULL;
+	for (i = 0; i < AFL_LIMIT_FILE_COUNT; i++)
+		file[i] = NULL;
 loop:
 	MY_READ_MAX(event, _SMD_AFL_EVENT_COUNT);
 	switch (event)
@@ -110,12 +121,13 @@ loop:
 		J_DEBUG("SMD_AFL_SPACE_GET idx=%d", idx);
 		if (space[idx])
 		{
+			dims = NULL;
 			res = j_smd_space_get(space[idx], &ndims, &dims);
 			if (res == FALSE)
 				MYABORT();
-			if (!*dims)
-				MYABORT();
 			if (ndims != space_ndims[idx])
+				MYABORT();
+			if (!*dims)
 				MYABORT();
 			for (i = 0; i < ndims; i++)
 				if (dims[i] != space_dims[idx][i])
@@ -295,6 +307,52 @@ loop:
 				MYABORT();
 		}
 		break;
+	case SMD_AFL_FILE_CREATE:
+		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
+		J_DEBUG("SMD_AFL_FILE_CREATE idx=%d", idx);
+		sprintf(file_strbuf, "file_%d", i);
+		if (file[idx])
+		{
+			j_smd_file_delete(file_strbuf, batch);
+			j_batch_execute(batch);
+			res = j_smd_file_unref(file[idx]);
+			if (res != FALSE)
+				MYABORT();
+		}
+		file[idx] = j_smd_file_create(file_strbuf, batch);
+		if (!file[idx])
+			MYABORT();
+		j_batch_execute(batch);
+		if (!j_smd_is_initialized(file[idx]))
+			MYABORT();
+		break;
+	case SMD_AFL_FILE_UNREF:
+		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
+		J_DEBUG("SMD_AFL_FILE_UNREF idx=%d", idx);
+		res = j_smd_file_unref(file[idx]);
+		if (res != FALSE)
+			MYABORT();
+		file[idx] = NULL;
+		break;
+	case SMD_AFL_FILE_REF:
+		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
+		J_DEBUG("SMD_AFL_FILE_REF idx=%d", idx);
+		if (file[idx])
+		{
+			ptr = j_smd_file_ref(file[idx]);
+			if (!ptr)
+				MYABORT();
+			res = j_smd_file_unref(file[idx]);
+			if (res == FALSE)
+				MYABORT();
+		}
+		else
+		{
+			ptr = j_smd_file_ref(file[idx]);
+			if (ptr)
+				MYABORT();
+		}
+		break;
 	case _SMD_AFL_EVENT_COUNT:
 	default:
 		J_DEBUG("invalid event %d", event);
@@ -311,6 +369,12 @@ cleanup:
 	for (i = 0; i < AFL_LIMIT_TYPE_COUNT; i++)
 	{
 		res = j_smd_type_unref(type[i]);
+		if (res != FALSE)
+			MYABORT();
+	}
+	for (i = 0; i < AFL_LIMIT_FILE_COUNT; i++)
+	{
+		res = j_smd_file_unref(file[i]);
 		if (res != FALSE)
 			MYABORT();
 	}
@@ -358,15 +422,6 @@ create_raw_test_files(const char* base_folder)
 		file = fopen(filename, "wb");
 		i = 1;
 		event = SMD_AFL_SPACE_UNREF;
-		fwrite(&event, sizeof(event), 1, file);
-		fwrite(&i, sizeof(i), 1, file);
-		fclose(file);
-	}
-	{
-		sprintf(filename, "%s/start-files/SMD_AFL_SPACE_REF_NULL.bin", base_folder);
-		file = fopen(filename, "wb");
-		i = 1;
-		event = SMD_AFL_SPACE_REF;
 		fwrite(&event, sizeof(event), 1, file);
 		fwrite(&i, sizeof(i), 1, file);
 		fclose(file);
@@ -450,10 +505,37 @@ create_raw_test_files(const char* base_folder)
 		fclose(file);
 	}
 	{
-		sprintf(filename, "%s/start-files/SMD_AFL_TYPE_REF_NULL.bin", base_folder);
+		sprintf(filename, "%s/start-files/SMD_AFL_TYPE_REF.bin", base_folder);
 		file = fopen(filename, "wb");
 		i = 1;
 		event = SMD_AFL_TYPE_REF;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fclose(file);
+	}
+	{
+		sprintf(filename, "%s/start-files/SMD_AFL_FILE_CREATE.bin", base_folder);
+		file = fopen(filename, "wb");
+		i = 1;
+		event = SMD_AFL_FILE_CREATE;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fclose(file);
+	}
+	{
+		sprintf(filename, "%s/start-files/SMD_AFL_FILE_UNREF.bin", base_folder);
+		file = fopen(filename, "wb");
+		i = 1;
+		event = SMD_AFL_FILE_UNREF;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fclose(file);
+	}
+	{
+		sprintf(filename, "%s/start-files/SMD_AFL_FILE_REF.bin", base_folder);
+		file = fopen(filename, "wb");
+		i = 1;
+		event = SMD_AFL_FILE_REF;
 		fwrite(&event, sizeof(event), 1, file);
 		fwrite(&i, sizeof(i), 1, file);
 		fclose(file);

@@ -389,7 +389,8 @@ j_smd_scheme_ref(void* _scheme)
 {
 	J_Scheme_t* scheme = _scheme;
 	j_smd_timer_start(j_smd_scheme_ref);
-	g_atomic_int_inc(&(scheme->ref_count));
+	if (scheme)
+		g_atomic_int_inc(&(scheme->ref_count));
 	j_smd_timer_stop(j_smd_scheme_ref);
 	return scheme;
 }
@@ -403,9 +404,10 @@ j_smd_scheme_unref(void* _scheme)
 		j_smd_type_unref(scheme->type);
 		j_smd_space_unref(scheme->space);
 		g_free(scheme);
+		return FALSE;
 	}
 	j_smd_timer_stop(j_smd_scheme_unref);
-	return TRUE;
+	return scheme != NULL;
 }
 
 gboolean

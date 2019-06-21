@@ -45,7 +45,6 @@ j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 	JSMDFileOperation* operation;
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
-	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
 	it = j_list_iterator_new(operations);
@@ -86,23 +85,21 @@ j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 static void
 j_smd_file_create_free(gpointer data)
 {
-	JSMDFileOperation* operation = data;
-	g_free(operation->name);
-	j_smd_file_unref(operation->scheme);
-	g_free(operation);
+	JSMDFileOperation* smd_op = data;
+	g_free(smd_op->name);
+	j_smd_file_unref(smd_op->scheme);
+	g_free(smd_op);
 }
 void*
 j_smd_file_create(const char* name, JBatch* batch)
 {
 	JOperation* op;
 	JSMDFileOperation* smd_op;
-	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDFileOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->user_data = NULL;
@@ -117,7 +114,6 @@ j_smd_file_create(const char* name, JBatch* batch)
 	op->free_func = j_smd_file_create_free;
 	smd_op->name = g_strdup(name);
 	j_batch_add(batch, op);
-	j_trace_leave(G_STRFUNC);
 	return smd_op->scheme;
 }
 static gboolean
@@ -132,7 +128,6 @@ j_smd_file_delete_exec(JList* operations, JSemantics* semantics)
 	GSocketConnection* smd_connection;
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
-	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
 	it = j_list_iterator_new(operations);
@@ -162,7 +157,6 @@ j_smd_file_delete_exec(JList* operations, JSemantics* semantics)
 		j_message_receive(reply, smd_connection);
 		j_connection_pool_push_smd(index, smd_connection);
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 static void
@@ -177,7 +171,6 @@ j_smd_file_delete(const char* name, JBatch* batch)
 {
 	JOperation* op;
 	JSMDFileOperation* smd_op;
-	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDFileOperation, 1);
 	op = j_operation_new();
 	op->key = NULL;
@@ -186,7 +179,6 @@ j_smd_file_delete(const char* name, JBatch* batch)
 	op->free_func = j_smd_file_delete_free;
 	smd_op->name = g_strdup(name);
 	j_batch_add(batch, op);
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 static gboolean
@@ -202,7 +194,6 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 	int index = 0;
 	bson_t bson[1];
 	GSocketConnection* smd_connection;
-	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
 	it = j_list_iterator_new(operations);
@@ -242,7 +233,6 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 static void
@@ -258,7 +248,6 @@ j_smd_file_open(const char* name, JBatch* batch)
 {
 	JOperation* op;
 	JSMDFileOperation* smd_op;
-	j_trace_enter(G_STRFUNC, NULL);
 	smd_op = g_new(JSMDFileOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->ref_count = 2;
@@ -273,14 +262,14 @@ j_smd_file_open(const char* name, JBatch* batch)
 	op->free_func = j_smd_file_open_free;
 	smd_op->name = g_strdup(name);
 	j_batch_add(batch, op);
-	j_trace_leave(G_STRFUNC);
 	return smd_op->scheme;
 }
 void*
 j_smd_file_ref(void* _file)
 {
 	J_Scheme_t* file = _file;
-	g_atomic_int_inc(&(file->ref_count));
+	if (file)
+		g_atomic_int_inc(&(file->ref_count));
 	return file;
 }
 gboolean
@@ -292,6 +281,7 @@ j_smd_file_unref(void* _file)
 		j_smd_type_unref(file->type);
 		j_smd_space_unref(file->space);
 		g_free(file);
+		return FALSE;
 	}
-	return TRUE;
+	return file != NULL;
 }

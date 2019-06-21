@@ -99,7 +99,7 @@ j_smd_type_create(void)
 	return type;
 }
 gboolean
-j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims)
+j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, int var_size, J_SMD_Atomic_Type_t var_type, guint var_ndims, guint* var_dims)
 {
 	J_SMD_Type_t* type = _type;
 	J_SMD_Variable_t variable;
