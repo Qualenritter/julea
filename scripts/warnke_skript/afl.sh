@@ -18,7 +18,7 @@ do
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=server --object-path="/mnt2/julea/object" \
   --kv-backend=sqlite --kv-component=server --kv-path="/mnt2/julea/kv" \
-  --smd-backend=sqlite --smd-component=client --smd-path="/mnt2/julea/smd${i}"
+  --smd-backend=sqlite --smd-component=client --smd-path=":memory:"
 
 afl-fuzz -S fuzzer$i -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build/test-afl/julea-test-afl &
 
@@ -31,7 +31,7 @@ i=12
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=server --object-path="/mnt2/julea/object" \
   --kv-backend=sqlite --kv-component=server --kv-path="/mnt2/julea/kv" \
-  --smd-backend=sqlite --smd-component=client --smd-path="/mnt2/julea/smd${i}"
+  --smd-backend=sqlite --smd-component=client --smd-path=":memory:"
 
 afl-fuzz -M fuzzer$i -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build/test-afl/julea-test-afl
 

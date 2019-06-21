@@ -93,6 +93,7 @@ j_smd_type_create(void)
 	J_SMD_Type_t* type;
 	type = g_new(J_SMD_Type_t, 1);
 	type->ref_count = 1;
+	J_DEBUG("ref_count %p %d", (void*)type, type->ref_count);
 	type->arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t));
 	type->last_index = 0;
 	type->first_index = 0;
@@ -235,7 +236,10 @@ j_smd_type_ref(void* _type)
 {
 	J_SMD_Type_t* type = _type;
 	if (type)
+	{
 		g_atomic_int_inc(&(type->ref_count));
+		J_DEBUG("ref_count %p %d", (void*)type, type->ref_count);
+	}
 	return type;
 }
 /**
@@ -245,6 +249,10 @@ gboolean
 j_smd_type_unref(void* _type)
 {
 	J_SMD_Type_t* type = _type;
+	if (type)
+	{
+		J_DEBUG("ref_count %p %d", (void*)type, type->ref_count);
+	}
 	if (type && g_atomic_int_dec_and_test(&(type->ref_count)))
 	{
 		g_array_free(type->arr, TRUE);

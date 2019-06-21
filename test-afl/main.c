@@ -176,7 +176,7 @@ loop:
 		J_DEBUG("SMD_AFL_TYPE_CREATE idx=%d", idx);
 		if (type[idx])
 		{
-			res = j_smd_type_unref(type[i]);
+			res = j_smd_type_unref(type[idx]);
 			if (res != FALSE)
 				MYABORT();
 		}
