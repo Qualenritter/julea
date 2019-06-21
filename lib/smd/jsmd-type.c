@@ -105,9 +105,14 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 	J_SMD_Variable_t variable;
 	guint i;
 	guint my_idx;
-	if (var_ndims > SMD_MAX_NDIMS)
+	if (!type)
 	{
-		J_DEBUG("var_ndims > %d not supported", SMD_MAX_NDIMS);
+		J_DEBUG("type is %p", _type);
+		return FALSE;
+	}
+	if (var_ndims > SMD_MAX_NDIMS || var_ndims == 0)
+	{
+		J_DEBUG("(0 < ndims) && (ndims <= %d)", SMD_MAX_NDIMS);
 		return FALSE;
 	}
 	if (strlen(var_name) > SMD_MAX_NAME_LENGTH)
@@ -154,9 +159,14 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 	J_SMD_Variable_t variable;
 	guint my_idx;
 	guint i;
-	if (var_ndims > SMD_MAX_NDIMS)
+	if (!type)
 	{
-		J_DEBUG("var_ndims > %d not supported", SMD_MAX_NDIMS);
+		J_DEBUG("type is %p", _type);
+		return FALSE;
+	}
+	if (var_ndims > SMD_MAX_NDIMS || var_ndims == 0)
+	{
+		J_DEBUG("(0 < ndims) && (ndims <= %d)", SMD_MAX_NDIMS);
 		return FALSE;
 	}
 	if (strlen(var_name) > SMD_MAX_NAME_LENGTH)
@@ -199,7 +209,7 @@ j_smd_type_get_variable_count(void* _type)
 	J_SMD_Type_t* type = _type;
 	J_SMD_Variable_t* var;
 	guint count = 0;
-	if (type->arr->len == 0)
+	if (!type || type->arr->len == 0)
 		return 0;
 	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
 	count++;
@@ -238,9 +248,9 @@ j_smd_type_remove_variable(void* _type, const char* name)
 	J_SMD_Type_t* type = _type;
 	J_SMD_Variable_t* var;
 	J_SMD_Variable_t* var_prev;
-	if (type->arr->len == 0)
+	if (!type || !name || type->arr->len == 0)
 		return FALSE;
-	var = &g_array_index(type->arr, J_SMD_Variable_t, 0);
+	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
 	var_prev = var;
 start:
 	if (strcmp(name, var->name) == 0)

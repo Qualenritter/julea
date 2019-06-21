@@ -262,6 +262,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 						j_smd_timer_start(write_type);
 					}
 					break;
+				case _SMD_TYPE_COUNT:
 				default:
 					J_CRITICAL("this should never happen type=%d", var->type);
 				}

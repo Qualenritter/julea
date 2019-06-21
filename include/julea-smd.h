@@ -88,10 +88,11 @@
 #endif
 enum JSMDType
 {
-	SMD_TYPE_INT,
+	SMD_TYPE_INT = 0,
 	SMD_TYPE_FLOAT,
 	SMD_TYPE_BLOB,
 	SMD_TYPE_SUB_TYPE,
+	_SMD_TYPE_COUNT //count the previous enum members
 };
 typedef enum JSMDType JSMDType;
 
@@ -203,14 +204,14 @@ guint j_smd_type_get_variable_count(void* type);
 gboolean j_smd_type_remove_variable(void* type, const char* name);
 void* j_smd_type_ref(void* _type);
 gboolean j_smd_type_unref(void* _type);
+gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_offset, int var_size, void* var_type, guint var_ndims, guint* var_dims);
+gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
 
 void* j_smd_variable_ref(void* _variable); /*internal only?*/
 gboolean j_smd_variable_unref(void* _variable); /*internal only?*/
 
 /*not public interface functions below*/
 /*TODO move to internal header file*/
-gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_offset, int var_size, void* var_type, guint var_ndims, guint* var_dims);
-gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, JSMDType var_type, guint var_ndims, guint* var_dims);
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
 
