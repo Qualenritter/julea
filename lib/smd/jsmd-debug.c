@@ -87,7 +87,6 @@ j_smd_debug_init(void)
 void
 j_smd_debug_exit(void)
 {
-	J_DEBUG("free timers %d", 0);
 	j_smd_timer_print(j_smd_create_exec);
 	j_smd_timer_print(j_smd_create_exec_server);
 	j_smd_timer_print(j_smd_create_free);
@@ -114,7 +113,7 @@ j_smd_debug_exit(void)
 	j_smd_timer_print(j_smd_write_exec);
 	j_smd_timer_print(j_smd_write_exec_server);
 	j_smd_timer_print(j_smd_write_free);
-
+	J_DEBUG("free timers %d", 0);
 	j_smd_timer_free(j_smd_create_exec);
 	j_smd_timer_free(j_smd_create_exec_server);
 	j_smd_timer_free(j_smd_create_free);

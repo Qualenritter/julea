@@ -106,6 +106,7 @@ j_smd_file_create(const char* name, JBatch* batch)
 	smd_op->scheme->ref_count = 2;
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;
+	smd_op->scheme->name = g_strdup(name);
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
@@ -254,6 +255,7 @@ j_smd_file_open(const char* name, JBatch* batch)
 	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;
+	smd_op->scheme->name = g_strdup(name);
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
@@ -269,7 +271,9 @@ j_smd_file_ref(void* _file)
 {
 	J_Scheme_t* file = _file;
 	if (file)
+	{
 		g_atomic_int_inc(&(file->ref_count));
+	}
 	return file;
 }
 gboolean
@@ -280,6 +284,7 @@ j_smd_file_unref(void* _file)
 	{
 		j_smd_type_unref(file->type);
 		j_smd_space_unref(file->space);
+		g_free(file->name);
 		g_free(file);
 		return FALSE;
 	}

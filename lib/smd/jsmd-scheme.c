@@ -169,6 +169,7 @@ j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDi
 	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->type = j_smd_type_ref(type);
 	smd_op->scheme->space = j_smd_space_ref(space);
+	smd_op->scheme->name = g_strdup(name);
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	op = j_operation_new();
 	op->key = NULL;
@@ -369,6 +370,7 @@ j_smd_scheme_open(const char* name, void* parent, JBatch* batch)
 	smd_op->scheme = g_new(J_Scheme_t, 1);
 	smd_op->scheme->user_data = NULL;
 	smd_op->scheme->ref_count = 2;
+	smd_op->scheme->name = g_strdup(name);
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;
@@ -403,6 +405,7 @@ j_smd_scheme_unref(void* _scheme)
 	{
 		j_smd_type_unref(scheme->type);
 		j_smd_space_unref(scheme->space);
+		g_free(scheme->name);
 		g_free(scheme);
 		return FALSE;
 	}
