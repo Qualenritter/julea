@@ -29,6 +29,7 @@ enum smd_afl_event_t
 	//SMD_AFL_FILE_GET_SCHEMES,
 	//SMD_AFL_FILE_LIST,
 	SMD_AFL_SCHEME_CREATE,
+	//	SMD_AFL_SCHEME_OPEN,
 	SMD_AFL_SCHEME_UNREF,
 	SMD_AFL_SCHEME_DELETE,
 	SMD_AFL_SCHEME_REF,
@@ -78,15 +79,15 @@ main(int argc, char* argv[])
 	guint type_last_offset[AFL_LIMIT_TYPE_COUNT];
 	guint type_ndims;
 	guint type_dims[SMD_MAX_NDIMS];
-	char type_strbuf[SMD_MAX_NAME_LENGTH];
+	char type_strbuf[SMD_MAX_NAME_LENGTH]; //TODO test NULL | too long
 	//file
 	J_Scheme_t* file[AFL_LIMIT_FILE_COUNT];
-	char file_strbuf[SMD_MAX_NAME_LENGTH];
+	char file_strbuf[SMD_MAX_NAME_LENGTH]; //TODO test NULL | too long
 	//scheme
 	J_Scheme_t* scheme[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT];
 	J_SMD_Type_t* scheme_type[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT];
 	J_SMD_Space_t* scheme_space[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT];
-	char scheme_strbuf[SMD_MAX_NAME_LENGTH];
+	char scheme_strbuf[SMD_MAX_NAME_LENGTH]; //TODO test NULL | too long
 	//shared
 	g_autoptr(JBatch) batch = NULL;
 	void* ptr;

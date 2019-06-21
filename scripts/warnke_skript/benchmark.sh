@@ -1,6 +1,6 @@
 sudo mount -t tmpfs none /mnt2/
 
-./julea2/build/tools/julea-config --user \
+./build/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=server --object-path=/mnt2/julea/object \
