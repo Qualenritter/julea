@@ -164,6 +164,11 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 		J_DEBUG("type is %p", _type);
 		return FALSE;
 	}
+	if (!_var_type)
+	{
+		J_DEBUG("_var_type is %p", _type);
+		return FALSE;
+	}
 	if (var_ndims > SMD_MAX_NDIMS || var_ndims == 0)
 	{
 		J_DEBUG("(0 < ndims) && (ndims <= %d)", SMD_MAX_NDIMS);
@@ -183,6 +188,11 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 	if (var_type->arr->len == 0)
 	{
 		J_DEBUG("adding empty subtype not allowed - since subtypes are not modifyable curerntly %d", 0);
+		return FALSE;
+	}
+	if (type == _var_type)
+	{
+		J_DEBUG("recoursive definition not allowed %p %p", _type, _var_type);
 		return FALSE;
 	}
 	variable.subtypeindex = 1; //appended directly afterwards
@@ -224,7 +234,8 @@ void*
 j_smd_type_ref(void* _type)
 {
 	J_SMD_Type_t* type = _type;
-	g_atomic_int_inc(&(type->ref_count));
+	if (type)
+		g_atomic_int_inc(&(type->ref_count));
 	return type;
 }
 /**

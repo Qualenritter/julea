@@ -15,7 +15,10 @@ enum smd_afl_event_t
 	SMD_AFL_TYPE_CREATE,
 	SMD_AFL_TYPE_VARIABLE_COUNT,
 	SMD_AFL_TYPE_ADD_ATOMIC,
+	SMD_AFL_TYPE_ADD_COMPOUND,
 	SMD_AFL_TYPE_REMOVE_VARIABLE,
+	SMD_AFL_TYPE_UNREF,
+	SMD_AFL_TYPE_REF,
 	_SMD_AFL_EVENT_COUNT
 };
 //configure here->
@@ -64,6 +67,7 @@ main(int argc, char* argv[])
 	void* ptr;
 	enum smd_afl_event_t event;
 	guint idx;
+	guint idx2;
 	guint i;
 	gboolean res;
 	gboolean res_expected;
@@ -161,7 +165,7 @@ loop:
 		if (type[idx])
 		{
 			res = j_smd_type_unref(type[i]);
-			if (res == FALSE)
+			if (res != FALSE)
 				MYABORT();
 		}
 		type[idx] = j_smd_type_create();
@@ -185,8 +189,9 @@ loop:
 		}
 		break;
 	case SMD_AFL_TYPE_ADD_ATOMIC:
+	case SMD_AFL_TYPE_ADD_COMPOUND:
 		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
-		J_DEBUG("SMD_AFL_TYPE_ADD_ATOMIC idx=%d", idx);
+		J_DEBUG("SMD_AFL_TYPE_ADD_ATOMIC|COMPOUND idx=%d", idx);
 		if (type[idx] && type_var_count[idx] == AFL_LIMIT_TYPE_MAX_VARIABLES)
 		{
 			res = j_smd_type_remove_variable(type[idx], g_array_index(type[idx]->arr, J_SMD_Variable_t, type[idx]->first_index).name);
@@ -206,8 +211,18 @@ loop:
 		}
 		MY_READ_MAX(i, AFL_LIMIT_TYPE_MAX_NAMES);
 		sprintf(type_strbuf, "var_%d", i);
-		res = j_smd_type_add_atomic_type(type[idx], type_strbuf, type_last_offset[idx], 4, SMD_TYPE_INT, type_ndims, type_dims);
 		res_expected = TRUE;
+		if (event == SMD_AFL_TYPE_ADD_ATOMIC)
+		{
+			res = j_smd_type_add_atomic_type(type[idx], type_strbuf, type_last_offset[idx], 4, SMD_TYPE_INT, type_ndims, type_dims);
+		}
+		else
+		{
+			MY_READ_MAX(idx2, AFL_LIMIT_TYPE_COUNT);
+			res = j_smd_type_add_compound_type(type[idx], type_strbuf, type_last_offset[idx], 4, type[idx2], type_ndims, type_dims);
+			res_expected = res_expected && type[idx2] != NULL;
+			res_expected = res_expected && idx != idx2;
+		}
 		res_expected = res_expected && type[idx];
 		res_expected = res_expected && type_ndims > 0 && type_ndims <= SMD_MAX_NDIMS;
 		for (i = 0; i < type_ndims; i++)
@@ -252,6 +267,33 @@ loop:
 				MYABORT();
 		}
 		J_DEBUG("SMD_AFL_TYPE_REMOVE_VARIABLE idx=%d", idx);
+		break;
+	case SMD_AFL_TYPE_UNREF:
+		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
+		J_DEBUG("SMD_AFL_TYPE_UNREF idx=%d", idx);
+		res = j_smd_type_unref(type[idx]);
+		if (res != FALSE)
+			MYABORT();
+		type[idx] = NULL;
+		break;
+	case SMD_AFL_TYPE_REF:
+		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
+		J_DEBUG("SMD_AFL_TYPE_REF idx=%d", idx);
+		if (type[idx])
+		{
+			ptr = j_smd_type_ref(type[idx]);
+			if (!ptr)
+				MYABORT();
+			res = j_smd_type_unref(type[idx]);
+			if (res == FALSE)
+				MYABORT();
+		}
+		else
+		{
+			ptr = j_smd_type_ref(type[idx]);
+			if (ptr)
+				MYABORT();
+		}
 		break;
 	case _SMD_AFL_EVENT_COUNT:
 	default:
@@ -372,6 +414,20 @@ create_raw_test_files(const char* base_folder)
 			}
 			fwrite(&i, sizeof(i), 1, file);
 			fclose(file);
+			sprintf(filename, "%s/start-files/SMD_AFL_TYPE_ADD_COMPOUND_%d.bin", base_folder, i);
+			file = fopen(filename, "wb");
+			event = SMD_AFL_TYPE_ADD_COMPOUND;
+			fwrite(&event, sizeof(event), 1, file);
+			fwrite(&i, sizeof(i), 1, file);
+			fwrite(&i, sizeof(i), 1, file);
+			for (j = 0; j < i; j++)
+			{
+				k = i + j;
+				fwrite(&k, sizeof(k), 1, file);
+			}
+			fwrite(&i, sizeof(i), 1, file);
+			fwrite(&i, sizeof(i), 1, file);
+			fclose(file);
 		}
 	}
 	{
@@ -381,6 +437,24 @@ create_raw_test_files(const char* base_folder)
 		event = SMD_AFL_TYPE_REMOVE_VARIABLE;
 		fwrite(&event, sizeof(event), 1, file);
 		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fclose(file);
+	}
+	{
+		sprintf(filename, "%s/start-files/SMD_AFL_TYPE_UNREF.bin", base_folder);
+		file = fopen(filename, "wb");
+		i = 1;
+		event = SMD_AFL_TYPE_UNREF;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fclose(file);
+	}
+	{
+		sprintf(filename, "%s/start-files/SMD_AFL_TYPE_REF_NULL.bin", base_folder);
+		file = fopen(filename, "wb");
+		i = 1;
+		event = SMD_AFL_TYPE_REF;
+		fwrite(&event, sizeof(event), 1, file);
 		fwrite(&i, sizeof(i), 1, file);
 		fclose(file);
 	}
