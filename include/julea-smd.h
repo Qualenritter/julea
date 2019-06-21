@@ -98,28 +98,6 @@ struct J_SMD_Space_t
 	gint ref_count;
 };
 typedef struct J_SMD_Space_t J_SMD_Space_t;
-/*
-struct J_SMD_Type_t
-{
-	GArray* arr;
-	gint ref_count;
-};
-typedef struct J_SMD_Type_t J_SMD_Type_t;
-struct J_SMD_Variable_t
-{
-	int offset;
-	int size;
-	JSMDType type;
-	char name[SMD_MAX_NAME_LENGTH + 1]; //+1 for nulltermination
-	J_SMD_Space_t space;
-	union
-	{
-		J_SMD_Type_t* sub_type; //client side
-		char sub_type_key[SMD_KEY_LENGTH + 1]; //server side
-	};
-};
-typedef struct J_SMD_Variable_t J_SMD_Variable_t;
-*/
 
 typedef struct J_SMD_Type_t2 J_SMD_Type_t2;
 struct J_SMD_Type_t2

@@ -296,7 +296,10 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 		operation = j_list_iterator_get(it);
 		if (smd_backend != NULL)
 		{
-			j_backend_smd_scheme_open(smd_backend, operation->name, operation->parent->key, &operation->scheme->space, &operation->scheme->type, &operation->scheme->distribution_type, operation->scheme->key);
+			operation->scheme->space = g_new(J_SMD_Space_t, 1);
+			operation->scheme->space->ref_count = 1;
+			operation->scheme->type = j_smd_type_create();
+			j_backend_smd_scheme_open(smd_backend, operation->name, operation->parent->key, operation->scheme->space, operation->scheme->type, &operation->scheme->distribution_type, operation->scheme->key);
 			if (j_is_key_initialized(operation->scheme->key))
 			{
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
@@ -332,6 +335,7 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				operation->scheme->distribution_type = j_message_get_4(reply);
 				operation->scheme->space = g_new(J_SMD_Space_t, 1);
 				memcpy(operation->scheme->space, j_message_get_n(reply, sizeof(J_SMD_Space_t)), sizeof(J_SMD_Space_t));
+				operation->scheme->space->ref_count = 1;
 				operation->scheme->type = j_smd_type_create();
 				tmp_len = j_message_get_4(reply);
 				if (tmp_len)
