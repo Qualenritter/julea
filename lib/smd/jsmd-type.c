@@ -38,18 +38,30 @@ start:
 	ret = ret && (var1->type2 == var2->type2);
 	ret = ret && (var1->space2.ndims == var2->space2.ndims);
 	if (!ret)
+	{
+		J_DEBUG("type differ -> FALSE");
 		return FALSE;
+	}
 	ret = ret && (strcmp(var1->name2, var2->name2) == 0);
 	if (!ret)
+	{
+		J_DEBUG("type differ -> FALSE %s %s", var1->name2, var2->name2);
 		return FALSE;
+	}
 	for (i = 0; i < var1->space2.ndims; i++)
 		ret = ret && (var1->space2.dims[i] == var2->space2.dims[i]);
 	if (!ret)
+	{
+		J_DEBUG("type differ -> FALSE");
 		return FALSE;
+	}
 	if (var1->type2 == SMD_TYPE_SUB_TYPE)
 		ret = ret && _j_smd_variable_equals(var1 + var1->subtypeindex2, var2 + var2->subtypeindex2);
 	if (!ret)
+	{
+		J_DEBUG("type differ -> FALSE");
 		return FALSE;
+	}
 
 	if (var1->nextindex2 == 0)
 		return TRUE;
@@ -64,14 +76,15 @@ j_smd_type_equals(void* _type1, void* _type2)
 	J_SMD_Type_t2* type2 = _type2;
 	J_SMD_Variable_t2* var1;
 	J_SMD_Variable_t2* var2;
-	if (type1 == NULL)
+	if (type1 == NULL || type2 == NULL)
+	{
+		J_DEBUG("type differ NULL -> FALSE");
 		return FALSE;
-	if (type2 == NULL)
-		return FALSE;
+	}
 	if (type1->arr2->len == 0 && type2->arr2->len == 0)
+	{
 		return TRUE;
-	if (type1->arr2->len == 0 || type2->arr2->len == 0)
-		return FALSE;
+	}
 	var1 = &g_array_index(type1->arr2, J_SMD_Variable_t2, type1->first_index2);
 	var2 = &g_array_index(type2->arr2, J_SMD_Variable_t2, type2->first_index2);
 	return _j_smd_variable_equals(var1, var2);
@@ -129,7 +142,8 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 		variable.space2.dims[i] = var_dims[i];
 	my_idx = type->arr2->len;
 	g_array_append_val(type->arr2, variable);
-	g_array_index(type->arr2, J_SMD_Variable_t2, type->last_index2).nextindex2 = my_idx - type->last_index2;
+	if (my_idx)
+		g_array_index(type->arr2, J_SMD_Variable_t2, type->last_index2).nextindex2 = my_idx - type->last_index2;
 	type->last_index2 = my_idx;
 	/*TODO check conflicting other variables*/
 	return TRUE;
@@ -175,7 +189,8 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 		variable.space2.dims[i] = var_dims[i];
 	my_idx = type->arr2->len;
 	g_array_append_val(type->arr2, variable);
-	g_array_index(type->arr2, J_SMD_Variable_t2, type->last_index2).nextindex2 = my_idx - type->last_index2;
+	if (my_idx)
+		g_array_index(type->arr2, J_SMD_Variable_t2, type->last_index2).nextindex2 = my_idx - type->last_index2;
 	type->last_index2 = my_idx;
 	g_array_append_vals(type->arr2, var_type->arr2->data, var_type->arr2->len);
 	return TRUE;

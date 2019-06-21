@@ -10,9 +10,9 @@ ln -s /mnt/julea /tmp/julea
 julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --smd-servers="$(hostname)" \
-  --object-backend=posix --object-component=server --object-path=/mnt/julea/object \
-  --kv-backend=sqlite --kv-component=server --kv-path=/mnt/julea/kv \
-  --smd-backend=sqlite --smd-component=server --smd-path=/mnt/julea/smd
+  --object-backend=posix --object-component=server --object-path=/mnt2/julea/object \
+  --kv-backend=sqlite --kv-component=server --kv-path=/mnt2/julea/kv \
+  --smd-backend=sqlite --smd-component=server --smd-path=/mnt2/julea/smd
 
 export ASAN_OPTIONS=fast_unwind_on_malloc=0
 

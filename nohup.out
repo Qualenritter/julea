@@ -1,0 +1,352 @@
+HEAD is now at 227f9c902 py-deeptools: adding release 3.2.1 sha256 sum (#11174)
+==> environment-modules is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/environment-modules-4.2.3-osxmlgyv7t4tjgh2dwn7lp532u6nzizy
+==> pkgconf is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pkgconf-1.6.0-3hvode5en7wwbe3rekqrjgtic73jri26
+==> glib is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi
+==> libbson is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libbson-1.9.1-ve7qj5p7yvtiq5pdxe65j52u6xo7tmg6
+==> lmdb is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/lmdb-0.9.22-3bizzlrzatz22sxltfacrptrervg4mfl
+==> sqlite is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/sqlite-3.26.0-bj4bz5sekpkuvg327y6zszili72sjuib
+==> Warning: No Spack mirrors are currently configured
+==> diffutils is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/diffutils-3.7-fuwsgt5hoq4x62dq2dq2lcmp5lw34ogp
+==> bzip2 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/bzip2-1.0.6-kkt2kiubwwq2f6cn6uvbnvurg6q3lwii
+==> pkgconf is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pkgconf-1.6.0-3hvode5en7wwbe3rekqrjgtic73jri26
+==> ncurses is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/ncurses-6.1-mlzmjd3eykltlvbv2vi7jgserwiudsy2
+==> readline is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/readline-7.0-ehpo5duxthibdb4wwe3awhv2raeaf7xt
+==> gdbm is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/gdbm-1.18.1-o3ogwau3hf3woqahktztl4belwhno2lz
+==> perl is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/perl-5.26.2-mskb5xldv7t5trtiafqcvfr5723xx2sx
+==> zlib is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/zlib-1.2.11-svvxgn7pln5jyvtfaexp4s6kkfwefraf
+==> openssl is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/openssl-1.1.1b-z4yx5sqn6eal3nusyqiyinhgwdhbpcnk
+==> Installing curl
+==> Searching for binary cache of curl
+==> No binary for curl found: installing from source
+==> Fetching http://curl.haxx.se/download/curl-7.63.0.tar.bz2
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/curl-7.63.0-6jjbgoznfpbi3qxpfefejfcda4g5rgbz/curl-7.63.0.tar.bz2
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/curl-7.63.0-6jjbgoznfpbi3qxpfefejfcda4g5rgbz
+==> No patches needed for curl
+==> Building curl [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed curl
+  Fetch: 0.74s.  Build: 25.95s.  Total: 26.68s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/curl-7.63.0-6jjbgoznfpbi3qxpfefejfcda4g5rgbz
+==> Warning: No Spack mirrors are currently configured
+==> libbsd is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libbsd-0.9.1-mqiqtxtf6lchf7rnebdkne7o3zlywx44
+==> expat is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/expat-2.2.5-c3jkmcxfpi7dxosj4gfszgq66fqxcpdh
+==> libiconv is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libiconv-1.15-yr3qd5p47ps2kdm6hievq6fcz45myoan
+==> xz is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/xz-5.2.4-wu55ii655dzyzh3g4bfdhy6bjo4hmepk
+==> libxml2 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libxml2-2.9.8-okyyrazmvwghoje27oejrfhoem7engly
+==> Installing lz4
+==> Searching for binary cache of lz4
+==> No binary for lz4 found: installing from source
+==> Fetching https://github.com/lz4/lz4/archive/v1.8.3.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/lz4-1.8.3-qkejcm5xibzvzrjhmyuvj6vibaxovltq/v1.8.3.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/lz4-1.8.3-qkejcm5xibzvzrjhmyuvj6vibaxovltq
+==> No patches needed for lz4
+==> Building lz4 [Package]
+==> Executing phase: 'install'
+==> Successfully installed lz4
+  Fetch: 1.35s.  Build: 4.17s.  Total: 5.52s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/lz4-1.8.3-qkejcm5xibzvzrjhmyuvj6vibaxovltq
+==> Warning: No Spack mirrors are currently configured
+==> Installing lzo
+==> Searching for binary cache of lzo
+==> No binary for lzo found: installing from source
+==> Fetching http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/lzo-2.10-tzrm272kmakjfsjndmozebyekvjc3acx/lzo-2.10.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/lzo-2.10-tzrm272kmakjfsjndmozebyekvjc3acx
+==> No patches needed for lzo
+==> Building lzo [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed lzo
+  Fetch: 0.35s.  Build: 8.82s.  Total: 9.17s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/lzo-2.10-tzrm272kmakjfsjndmozebyekvjc3acx
+==> Warning: No Spack mirrors are currently configured
+==> Installing libsigsegv
+==> Searching for binary cache of libsigsegv
+==> No binary for libsigsegv found: installing from source
+==> Fetching https://ftpmirror.gnu.org/libsigsegv/libsigsegv-2.11.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/libsigsegv-2.11-3vt446ehosqjsfuaenifku5ffggekfxl/libsigsegv-2.11.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/libsigsegv-2.11-3vt446ehosqjsfuaenifku5ffggekfxl
+==> No patches needed for libsigsegv
+==> Building libsigsegv [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed libsigsegv
+  Fetch: 2.38s.  Build: 3.05s.  Total: 5.43s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libsigsegv-2.11-3vt446ehosqjsfuaenifku5ffggekfxl
+==> Warning: No Spack mirrors are currently configured
+==> Installing m4
+==> Searching for binary cache of m4
+==> No binary for m4 found: installing from source
+==> Fetching https://ftpmirror.gnu.org/m4/m4-1.4.18.tar.gz
+==> Fetching https://src.fedoraproject.org/rpms/m4/raw/5d147168d4b93f38a4833f5dd1d650ad88af5a8a/f/m4-1.4.18-glibc-change-work-around.patch
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/m4-1.4.18-7jziq7aan7kbvcznrvu65f4xnzawwe5c/m4-1.4.18.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/m4-1.4.18-7jziq7aan7kbvcznrvu65f4xnzawwe5c
+==> Applied patch /src/julea/julea/dependencies/var/spack/repos/builtin/packages/m4/gnulib-pgi.patch
+==> Applied patch /src/julea/julea/dependencies/var/spack/repos/builtin/packages/m4/secure_snprintf.patch
+==> Applied patch https://src.fedoraproject.org/rpms/m4/raw/5d147168d4b93f38a4833f5dd1d650ad88af5a8a/f/m4-1.4.18-glibc-change-work-around.patch
+==> Building m4 [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed m4
+  Fetch: 1.35s.  Build: 16.41s.  Total: 17.75s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/m4-1.4.18-7jziq7aan7kbvcznrvu65f4xnzawwe5c
+==> Warning: No Spack mirrors are currently configured
+==> Installing autoconf
+==> Searching for binary cache of autoconf
+==> No binary for autoconf found: installing from source
+==> Fetching https://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/autoconf-2.69.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz
+==> Ran patch() for autoconf
+==> Building autoconf [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Warning: Patched overlong shebang in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/bin/ifnames
+==> Warning: Patched overlong shebang in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/bin/autom4te
+==> Warning: Patched overlong shebang in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/bin/autoscan
+==> Warning: Patched overlong shebang in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/bin/autoupdate
+==> Warning: Patched overlong shebang in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/bin/autoheader
+==> Warning: Patched overlong shebang in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz/bin/autoreconf
+==> Successfully installed autoconf
+  Fetch: 0.95s.  Build: 2.04s.  Total: 2.99s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz
+==> Warning: No Spack mirrors are currently configured
+==> Installing automake
+==> Searching for binary cache of automake
+==> No binary for automake found: installing from source
+==> Fetching https://ftpmirror.gnu.org/automake/automake-1.16.1.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/automake-1.16.1-ok473b2iy22vfwpuiwv3xtnlzfrxikxp/automake-1.16.1.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/automake-1.16.1-ok473b2iy22vfwpuiwv3xtnlzfrxikxp
+==> Ran patch() for automake
+==> Building automake [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed automake
+  Fetch: 1.40s.  Build: 1.66s.  Total: 3.05s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/automake-1.16.1-ok473b2iy22vfwpuiwv3xtnlzfrxikxp
+==> Warning: No Spack mirrors are currently configured
+==> Installing libtool
+==> Searching for binary cache of libtool
+==> No binary for libtool found: installing from source
+==> Fetching https://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/libtool-2.4.6-d6v3tehytdkaleh65tcwdaxm7wzfcqrr/libtool-2.4.6.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/libtool-2.4.6-d6v3tehytdkaleh65tcwdaxm7wzfcqrr
+==> No patches needed for libtool
+==> Building libtool [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed libtool
+  Fetch: 1.04s.  Build: 4.62s.  Total: 5.66s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libtool-2.4.6-d6v3tehytdkaleh65tcwdaxm7wzfcqrr
+==> Warning: No Spack mirrors are currently configured
+==> Installing gmp
+==> Searching for binary cache of gmp
+==> No binary for gmp found: installing from source
+==> Fetching https://ftpmirror.gnu.org/gmp/gmp-6.1.2.tar.bz2
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/gmp-6.1.2-o6x2ohvb5box6pvnve4rj6hd3hhfwrqm/gmp-6.1.2.tar.bz2
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/gmp-6.1.2-o6x2ohvb5box6pvnve4rj6hd3hhfwrqm
+==> No patches needed for gmp
+==> Building gmp [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed gmp
+  Fetch: 1.07s.  Build: 32.82s.  Total: 33.89s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/gmp-6.1.2-o6x2ohvb5box6pvnve4rj6hd3hhfwrqm
+==> Warning: No Spack mirrors are currently configured
+==> Installing nettle
+==> Searching for binary cache of nettle
+==> No binary for nettle found: installing from source
+==> Fetching https://ftpmirror.gnu.org/nettle/nettle-3.4.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/nettle-3.4-yio5il6bzhpn3xexka3f5dpztseurkcd/nettle-3.4.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/nettle-3.4-yio5il6bzhpn3xexka3f5dpztseurkcd
+==> No patches needed for nettle
+==> Building nettle [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed nettle
+  Fetch: 1.23s.  Build: 10.59s.  Total: 11.81s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/nettle-3.4-yio5il6bzhpn3xexka3f5dpztseurkcd
+==> Warning: No Spack mirrors are currently configured
+==> Installing libarchive
+==> Searching for binary cache of libarchive
+==> No binary for libarchive found: installing from source
+==> Fetching http://www.libarchive.org/downloads/libarchive-3.3.2.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/libarchive-3.3.2-vkgjvkuwwypd2d7yvtci7iruzowfzkcl/libarchive-3.3.2.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/libarchive-3.3.2-vkgjvkuwwypd2d7yvtci7iruzowfzkcl
+==> No patches needed for libarchive
+==> Building libarchive [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed libarchive
+  Fetch: 0.66s.  Build: 21.64s.  Total: 22.30s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libarchive-3.3.2-vkgjvkuwwypd2d7yvtci7iruzowfzkcl
+==> Warning: No Spack mirrors are currently configured
+==> Installing libuv
+==> Searching for binary cache of libuv
+==> No binary for libuv found: installing from source
+==> Fetching https://github.com/libuv/libuv/archive/v1.25.0.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/libuv-1.25.0-vy5bwm77i7lahjaryedj3qrgkth2gdfw/v1.25.0.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/libuv-1.25.0-vy5bwm77i7lahjaryedj3qrgkth2gdfw
+==> No patches needed for libuv
+==> Building libuv [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed libuv
+  Fetch: 2.75s.  Build: 7.49s.  Total: 10.24s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libuv-1.25.0-vy5bwm77i7lahjaryedj3qrgkth2gdfw
+==> Warning: No Spack mirrors are currently configured
+==> Installing rhash
+==> Searching for binary cache of rhash
+==> No binary for rhash found: installing from source
+==> Fetching https://github.com/rhash/RHash/archive/v1.3.5.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/rhash-1.3.5-xd4fhdn5ishwxds2ckgpuwy3hq6pgfay/v1.3.5.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/rhash-1.3.5-xd4fhdn5ishwxds2ckgpuwy3hq6pgfay
+==> No patches needed for rhash
+==> Building rhash [MakefilePackage]
+==> Executing phase: 'edit'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed rhash
+  Fetch: 1.27s.  Build: 2.59s.  Total: 3.86s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/rhash-1.3.5-xd4fhdn5ishwxds2ckgpuwy3hq6pgfay
+==> Warning: No Spack mirrors are currently configured
+==> Installing cmake
+==> Searching for binary cache of cmake
+==> No binary for cmake found: installing from source
+==> Fetching https://github.com/Kitware/CMake/releases/download/v3.14.1/cmake-3.14.1.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/cmake-3.14.1-xy4bbtc3aqzmemggecijf6xstgcukklx/cmake-3.14.1.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/cmake-3.14.1-xy4bbtc3aqzmemggecijf6xstgcukklx
+==> No patches needed for cmake
+==> Building cmake [Package]
+==> Executing phase: 'bootstrap'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed cmake
+  Fetch: 21.99s.  Build: 2m 13.62s.  Total: 2m 35.62s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/cmake-3.14.1-xy4bbtc3aqzmemggecijf6xstgcukklx
+==> Warning: No Spack mirrors are currently configured
+==> Installing snappy
+==> Searching for binary cache of snappy
+==> No binary for snappy found: installing from source
+==> Fetching https://github.com/google/snappy/archive/1.1.7.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/snappy-1.1.7-qf3chutfsz5h44seljlyfkefmkg4it4q/1.1.7.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/snappy-1.1.7-qf3chutfsz5h44seljlyfkefmkg4it4q
+==> Applied patch /src/julea/julea/dependencies/var/spack/repos/builtin/packages/snappy/link_gtest.patch
+==> Building snappy [CMakePackage]
+==> Executing phase: 'cmake'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed snappy
+  Fetch: 3.13s.  Build: 2.94s.  Total: 6.07s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/snappy-1.1.7-qf3chutfsz5h44seljlyfkefmkg4it4q
+==> Warning: No Spack mirrors are currently configured
+==> Installing leveldb
+==> Searching for binary cache of leveldb
+==> No binary for leveldb found: installing from source
+==> Fetching https://github.com/google/leveldb/archive/v1.20.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/leveldb-1.20-pdrmj5tdi3lhi2pm2v22jqzcuugiy6bn/v1.20.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/leveldb-1.20-pdrmj5tdi3lhi2pm2v22jqzcuugiy6bn
+==> No patches needed for leveldb
+==> Building leveldb [MakefilePackage]
+==> Executing phase: 'edit'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed leveldb
+  Fetch: 1.15s.  Build: 15.79s.  Total: 16.94s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/leveldb-1.20-pdrmj5tdi3lhi2pm2v22jqzcuugiy6bn
+==> libbson is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libbson-1.9.1-ve7qj5p7yvtiq5pdxe65j52u6xo7tmg6
+==> pkgconf is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pkgconf-1.6.0-3hvode5en7wwbe3rekqrjgtic73jri26
+==> ncurses is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/ncurses-6.1-mlzmjd3eykltlvbv2vi7jgserwiudsy2
+==> readline is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/readline-7.0-ehpo5duxthibdb4wwe3awhv2raeaf7xt
+==> gdbm is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/gdbm-1.18.1-o3ogwau3hf3woqahktztl4belwhno2lz
+==> perl is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/perl-5.26.2-mskb5xldv7t5trtiafqcvfr5723xx2sx
+==> zlib is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/zlib-1.2.11-svvxgn7pln5jyvtfaexp4s6kkfwefraf
+==> openssl is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/openssl-1.1.1b-z4yx5sqn6eal3nusyqiyinhgwdhbpcnk
+==> diffutils is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/diffutils-3.7-fuwsgt5hoq4x62dq2dq2lcmp5lw34ogp
+==> bzip2 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/bzip2-1.0.6-kkt2kiubwwq2f6cn6uvbnvurg6q3lwii
+==> curl is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/curl-7.63.0-6jjbgoznfpbi3qxpfefejfcda4g5rgbz
+==> libbsd is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libbsd-0.9.1-mqiqtxtf6lchf7rnebdkne7o3zlywx44
+==> expat is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/expat-2.2.5-c3jkmcxfpi7dxosj4gfszgq66fqxcpdh
+==> libiconv is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libiconv-1.15-yr3qd5p47ps2kdm6hievq6fcz45myoan
+==> xz is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/xz-5.2.4-wu55ii655dzyzh3g4bfdhy6bjo4hmepk
+==> libxml2 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libxml2-2.9.8-okyyrazmvwghoje27oejrfhoem7engly
+==> lz4 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/lz4-1.8.3-qkejcm5xibzvzrjhmyuvj6vibaxovltq
+==> lzo is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/lzo-2.10-tzrm272kmakjfsjndmozebyekvjc3acx
+==> libsigsegv is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libsigsegv-2.11-3vt446ehosqjsfuaenifku5ffggekfxl
+==> m4 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/m4-1.4.18-7jziq7aan7kbvcznrvu65f4xnzawwe5c
+==> autoconf is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz
+==> automake is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/automake-1.16.1-ok473b2iy22vfwpuiwv3xtnlzfrxikxp
+==> libtool is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libtool-2.4.6-d6v3tehytdkaleh65tcwdaxm7wzfcqrr
+==> gmp is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/gmp-6.1.2-o6x2ohvb5box6pvnve4rj6hd3hhfwrqm
+==> nettle is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/nettle-3.4-yio5il6bzhpn3xexka3f5dpztseurkcd
+==> libarchive is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libarchive-3.3.2-vkgjvkuwwypd2d7yvtci7iruzowfzkcl
+==> libuv is already installed in /src/julea/jule==> Warning: No Spack mirrors are currently configured
+a/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libuv-1.25.0-vy5bwm77i7lahjaryedj3qrgkth2gdfw
+==> rhash is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/rhash-1.3.5-xd4fhdn5ishwxds2ckgpuwy3hq6pgfay
+==> cmake is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/cmake-3.14.1-xy4bbtc3aqzmemggecijf6xstgcukklx
+==> snappy is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/snappy-1.1.7-qf3chutfsz5h44seljlyfkefmkg4it4q
+==> Installing libmongoc
+==> Searching for binary cache of libmongoc
+==> No binary for libmongoc found: installing from source
+==> Fetching https://github.com/mongodb/mongo-c-driver/releases/download/1.9.5/mongo-c-driver-1.9.5.tar.gz
+==> Staging archive: /src/julea/julea/dependencies/var/spack/stage/libmongoc-1.9.5-a37k6hbsbanjkqibnmcc3letw7wshirg/mongo-c-driver-1.9.5.tar.gz
+==> Created stage in /src/julea/julea/dependencies/var/spack/stage/libmongoc-1.9.5-a37k6hbsbanjkqibnmcc3letw7wshirg
+==> No patches needed for libmongoc
+==> Building libmongoc [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed libmongoc
+  Fetch: 16.76s.  Build: 24.91s.  Total: 41.67s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libmongoc-1.9.5-a37k6hbsbanjkqibnmcc3letw7wshirg
+==> Warning: No Spack mirrors are currently configured
+==> libsigsegv is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libsigsegv-2.11-3vt446ehosqjsfuaenifku5ffggekfxl
+==> m4 is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/m4-1.4.18-7jziq7aan7kbvcznrvu65f4xnzawwe5c
+==> pkgconf is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pkgconf-1.6.0-3hvode5en7wwbe3rekqrjgtic73jri26
+==> ncurses is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/ncurses-6.1-mlzmjd3eykltlvbv2vi7jgserwiudsy2
+==> readline is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/readline-7.0-ehpo5duxthibdb4wwe3awhv2raeaf7xt
+==> gdbm is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/gdbm-1.18.1-o3ogwau3hf3woqahktztl4belwhno2lz
+==> perl is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/perl-5.26.2-mskb5xldv7t5trtiafqcvfr5723xx2sx
+==> autoconf is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/autoconf-2.69-t3dpu5s3sxkcprmdwrx2w56sqz2yulmz
+==> automake is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/automake-1.16.1-ok473b2iy22vfwpuiwv3xtnlzfrxikxp
+==> libtool is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libtool-2.4.6-d6v3tehytdkaleh65tcwdaxm7wzfcqrr
+==> zlib is already installed in /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/zlib-1.2.11-svvxgn7pln5jyvtfaexp4s6kkfwefraf
+==> Installing hdf5
+==> Searching for binary cache of hdf5
+==> No binary for hdf5 found: installing from source
+==> Cloning git repository: https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git on branch develop
+==> No checksum needed when fetching with git
+==> Already staged hdf5-develop-4iami4kalqj7xgv2x2uv25dnzvz4xzwf in /src/julea/julea/dependencies/var/spack/stage/hdf5-develop-4iami4kalqj7xgv2x2uv25dnzvz4xzwf
+==> No patches needed for hdf5
+==> Building hdf5 [AutotoolsPackage]
+==> Executing phase: 'autoreconf'
+==> Executing phase: 'configure'
+==> Executing phase: 'build'
+==> Executing phase: 'install'
+==> Successfully installed hdf5
+  Fetch: 45.43s.  Build: 1m 52.70s.  Total: 2m 38.13s.
+[+] /src/julea/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/hdf5-develop-4iami4kalqj7xgv2x2uv25dnzvz4xzwf

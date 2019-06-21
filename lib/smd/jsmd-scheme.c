@@ -330,7 +330,9 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 			if (j_is_key_initialized(operation->scheme->key))
 			{
 				operation->scheme->distribution_type = j_message_get_4(reply);
+				operation->scheme->space = g_new(J_SMD_Space_t, 1);
 				memcpy(operation->scheme->space, j_message_get_n(reply, sizeof(J_SMD_Space_t)), sizeof(J_SMD_Space_t));
+				operation->scheme->type = j_smd_type_create();
 				tmp_len = j_message_get_4(reply);
 				if (tmp_len)
 					g_array_append_vals(operation->scheme->type->arr2, j_message_get_n(reply, tmp_len * sizeof(J_SMD_Variable_t2)), tmp_len);

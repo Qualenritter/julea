@@ -417,6 +417,8 @@ def build(ctx):
 		if client == 'item':
 			use_extra.append('lib/julea-kv')
 			use_extra.append('lib/julea-object')
+		elif client == 'smd':
+			use_extra.append('lib/julea-object')
 		elif client == 'hdf5':
 			use_extra.append('HDF5')
 			use_extra.append('lib/julea-kv')

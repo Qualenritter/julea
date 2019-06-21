@@ -57,7 +57,6 @@ load_type(J_SMD_Type_t2* type, sqlite3_int64 type_key)
 	J_SMD_Type_t2* subtype;
 	J_SMD_Variable_t2 var;
 	gint ret;
-	const char* name_buf;
 	guint next_offset = 0;
 	sqlite3_int64 subtype_key;
 	j_smd_timer_start(load_type);
@@ -75,14 +74,14 @@ _start:
 			var.space2.dims[1] = sqlite3_column_int64(stmt_type_load, 6);
 			var.space2.dims[2] = sqlite3_column_int64(stmt_type_load, 7);
 			var.space2.dims[3] = sqlite3_column_int64(stmt_type_load, 8);
-			name_buf = (const char*)sqlite3_column_text(stmt_type_load, 0);
+			strcpy(var.name2, (const char*)sqlite3_column_text(stmt_type_load, 0));
 			var.space2.ndims = sqlite3_column_int64(stmt_type_load, 4);
 			var.size2 = sqlite3_column_int64(stmt_type_load, 3);
 			var.offset2 = sqlite3_column_int64(stmt_type_load, 2);
 			var.type2 = sqlite3_column_int64(stmt_type_load, 1);
 			if (var.type2 != SMD_TYPE_SUB_TYPE)
 			{
-				j_smd_type_add_atomic_type(type, name_buf, var.offset2, var.size2, var.type2, var.space2.ndims, var.space2.dims);
+				j_smd_type_add_atomic_type(type, var.name2, var.offset2, var.size2, var.type2, var.space2.ndims, var.space2.dims);
 			}
 			else
 			{
@@ -93,7 +92,7 @@ _start:
 				subtype = j_smd_type_create();
 				load_type(subtype, subtype_key);
 				j_smd_timer_start(load_type);
-				j_smd_type_add_compound_type(type, name_buf, var.offset2, var.size2, subtype, var.space2.ndims, var.space2.dims);
+				j_smd_type_add_compound_type(type, var.name2, var.offset2, var.size2, subtype, var.space2.ndims, var.space2.dims);
 				j_smd_type_unref(subtype);
 				goto _start;
 			}

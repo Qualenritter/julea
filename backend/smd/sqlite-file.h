@@ -33,10 +33,11 @@ backend_file_delete(const char* name)
 	}
 	j_sqlite3_transaction_commit();
 	g_array_free(arr, TRUE);
+	J_DEBUG("file delete success %s", name);
 	return TRUE;
 }
 static gboolean
-backend_file_create(const char* name, bson_t* bson, char* key)
+backend_file_create(const char* name, bson_t* bson, void* key)
 {
 	gint ret;
 	sqlite3_int64 file_key = 0;
@@ -50,6 +51,7 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	{
 		j_sqlite3_reset(stmt_file_create);
 		j_sqlite3_transaction_abort();
+		J_DEBUG("file create failed %s", name);
 		return FALSE;
 	}
 	else if (ret != SQLITE_DONE)
@@ -60,27 +62,29 @@ backend_file_create(const char* name, bson_t* bson, char* key)
 	j_sqlite3_reset(stmt_file_create);
 	j_sqlite3_transaction_commit();
 	(void)bson;
+	J_DEBUG("file create success %s %lld", name, file_key);
 	return TRUE;
 }
 static gboolean
-backend_file_open(const char* name, bson_t* bson, char* key)
+backend_file_open(const char* name, bson_t* bson, void* key)
 {
 	gint ret;
-	sqlite3_int64 result = 0;
+	sqlite3_int64 file_key = 0;
 	bson_init(bson);
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_file_open, 1, name, -1);
 	ret = sqlite3_step(stmt_file_open);
 	if (ret == SQLITE_ROW)
 	{
-		result = sqlite3_column_int64(stmt_file_open, 0);
+		file_key = sqlite3_column_int64(stmt_file_open, 0);
 		memset(key, 0, SMD_KEY_LENGTH);
-		memcpy(key, &result, sizeof(result));
+		memcpy(key, &file_key, sizeof(file_key));
 	}
 	else if (ret == SQLITE_DONE)
 	{
 		j_sqlite3_reset(stmt_file_open);
 		j_sqlite3_transaction_abort();
+		J_DEBUG("file open failed %s", name);
 		return FALSE;
 	}
 	else
@@ -90,5 +94,6 @@ backend_file_open(const char* name, bson_t* bson, char* key)
 	}
 	j_sqlite3_reset(stmt_file_open);
 	j_sqlite3_transaction_commit();
+	J_DEBUG("file open success %s %lld", name, file_key);
 	return TRUE;
 }

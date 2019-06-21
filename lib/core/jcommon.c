@@ -154,6 +154,7 @@ j_init(void)
 
 	if (common->configuration == NULL)
 	{
+		J_CRITICAL("config error%d", 0);
 		goto error;
 	}
 

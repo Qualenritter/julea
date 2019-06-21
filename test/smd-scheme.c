@@ -37,6 +37,7 @@ test_scheme_create_destroy_single(void)
 	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
+	J_SMD_TYPE_ADD_ATOMIC(type, struct test_type_0, a);
 	g_assert_nonnull(type);
 	space = j_smd_space_create(one, &one);
 	g_assert_nonnull(space);
@@ -92,6 +93,7 @@ test_scheme_create_conflict(void)
 	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
+	J_SMD_TYPE_ADD_ATOMIC(type, struct test_type_0, a);
 	g_assert_nonnull(type);
 	space = j_smd_space_create(one, &one);
 	g_assert_nonnull(space);
@@ -149,6 +151,7 @@ test_scheme_create_destroy_many(void)
 	guint one = 1;
 	g_autoptr(JBatch) batch = NULL;
 	type = j_smd_type_create();
+	J_SMD_TYPE_ADD_ATOMIC(type, struct test_type_0, a);
 	g_assert_nonnull(type);
 	space = j_smd_space_create(one, &one);
 	g_assert_nonnull(space);

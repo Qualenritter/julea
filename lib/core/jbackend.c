@@ -47,7 +47,6 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	gchar* path = NULL;
 	gchar* tpath = NULL;
 	gchar const* type_str = NULL;
-J_CRITICAL("here%d",0);
 	switch (type)
 	{
 	case J_BACKEND_TYPE_OBJECT:
@@ -58,7 +57,6 @@ J_CRITICAL("here%d",0);
 		break;
 	case J_BACKEND_TYPE_SMD:
 		type_str = "smd";
-J_CRITICAL("here-smd%d",0);
 		break;
 	default:
 		g_warn_if_reached();
@@ -71,29 +69,24 @@ J_CRITICAL("here-smd%d",0);
 	g_free(tpath);
 	g_free(path);
 #endif
-J_CRITICAL("here%d",0);
 	if (module == NULL)
 	{
 		tpath = g_build_filename(JULEA_BACKEND_PATH, type_str, NULL);
 		path = g_module_build_path(tpath, name);
-J_CRITICAL("here %s %s",path,tpath);
 		module = g_module_open(path, G_MODULE_BIND_LOCAL);
 		g_free(tpath);
 		g_free(path);
 	}
-J_CRITICAL("here%d",0);
 	if (module == NULL)
 	{
 		goto error;
 	}
-J_CRITICAL("here%d",0);
 	g_module_symbol(module, "backend_info", (gpointer*)&module_backend_info);
 
 	if (module_backend_info == NULL)
 	{
 		goto error;
 	}
-J_CRITICAL("here%d",0);
 	j_trace_enter("backend_info", NULL);
 	tmp_backend = module_backend_info();
 	j_trace_leave("backend_info");
@@ -102,12 +95,10 @@ J_CRITICAL("here%d",0);
 	{
 		goto error;
 	}
-J_CRITICAL("here%d",0);
 	if (tmp_backend->type != type || !(tmp_backend->component & component))
 	{
 		goto error;
 	}
-J_CRITICAL("here%d",0);
 	if (type == J_BACKEND_TYPE_OBJECT)
 	{
 		if (tmp_backend->object.backend_init == NULL || tmp_backend->object.backend_fini == NULL || tmp_backend->object.backend_create == NULL || tmp_backend->object.backend_delete == NULL || tmp_backend->object.backend_open == NULL || tmp_backend->object.backend_close == NULL || tmp_backend->object.backend_status == NULL || tmp_backend->object.backend_sync == NULL || tmp_backend->object.backend_read == NULL || tmp_backend->object.backend_write == NULL)
@@ -115,7 +106,6 @@ J_CRITICAL("here%d",0);
 			goto error;
 		}
 	}
-J_CRITICAL("here%d",0);
 	if (type == J_BACKEND_TYPE_KV)
 	{
 		if (tmp_backend->kv.backend_init == NULL || tmp_backend->kv.backend_fini == NULL || tmp_backend->kv.backend_batch_start == NULL || tmp_backend->kv.backend_batch_execute == NULL || tmp_backend->kv.backend_put == NULL || tmp_backend->kv.backend_delete == NULL || tmp_backend->kv.backend_get == NULL || tmp_backend->kv.backend_get_all == NULL || tmp_backend->kv.backend_get_by_prefix == NULL || tmp_backend->kv.backend_iterate == NULL)
@@ -123,7 +113,6 @@ J_CRITICAL("here%d",0);
 			goto error;
 		}
 	}
-J_CRITICAL("here%d",0);
 	if (type == J_BACKEND_TYPE_SMD)
 	{
 		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_scheme_read == NULL || tmp_backend->smd.backend_scheme_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_scheme_create == NULL || tmp_backend->smd.backend_scheme_delete == NULL ||
@@ -132,7 +121,6 @@ J_CRITICAL("here%d",0);
 			goto error;
 		}
 	}
-J_CRITICAL("here%d",0);
 	*backend = tmp_backend;
 
 	return module;
@@ -184,7 +172,6 @@ j_backend_load_server(gchar const* name, gchar const* component, JBackendType ty
 
 	if (g_strcmp0(component, "server") == 0)
 	{
-J_CRITICAL("here%d",0);
 		*module = j_backend_load(name, J_BACKEND_COMPONENT_SERVER, type, backend);
 		return TRUE;
 	}
@@ -526,7 +513,6 @@ gboolean
 j_backend_smd_init(JBackend* backend, gchar const* path)
 {
 	gboolean ret;
-J_CRITICAL("a%p %s",backend,path);
 
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
@@ -548,7 +534,7 @@ j_backend_smd_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_smd_scheme_read(JBackend* backend, char* key, char* buf, guint offset, guint size)
+j_backend_smd_scheme_read(JBackend* backend, void* key, void* buf, guint offset, guint size)
 {
 	gboolean ret;
 
@@ -560,7 +546,7 @@ j_backend_smd_scheme_read(JBackend* backend, char* key, char* buf, guint offset,
 	return ret;
 }
 gboolean
-j_backend_smd_scheme_write(JBackend* backend, char* key, const char* buf, guint offset, guint size)
+j_backend_smd_scheme_write(JBackend* backend, void* key, const void* buf, guint offset, guint size)
 {
 	gboolean ret;
 
@@ -572,7 +558,7 @@ j_backend_smd_scheme_write(JBackend* backend, char* key, const char* buf, guint 
 	return ret;
 }
 gboolean
-j_backend_smd_file_create(JBackend* backend, const char* name, bson_t* bson, char* key)
+j_backend_smd_file_create(JBackend* backend, const char* name, bson_t* bson, void* key)
 {
 	gboolean ret;
 
@@ -596,7 +582,7 @@ j_backend_smd_file_delete(JBackend* backend, const char* name)
 	return ret;
 }
 gboolean
-j_backend_smd_file_open(JBackend* backend, const char* name, bson_t* bson, char* key)
+j_backend_smd_file_open(JBackend* backend, const char* name, bson_t* bson, void* key)
 {
 	gboolean ret;
 
@@ -609,7 +595,7 @@ j_backend_smd_file_open(JBackend* backend, const char* name, bson_t* bson, char*
 	return ret;
 }
 gboolean
-j_backend_smd_scheme_create(JBackend* backend, const char* name, char* parent, const char* space, const char* type, guint distribution, char* key)
+j_backend_smd_scheme_create(JBackend* backend, const char* name, void* parent, const void* space, const void* type, guint distribution, void* key)
 {
 	gboolean ret;
 
@@ -624,7 +610,7 @@ j_backend_smd_scheme_create(JBackend* backend, const char* name, char* parent, c
 	return ret;
 }
 gboolean
-j_backend_smd_scheme_delete(JBackend* backend, const char* name, char* parent)
+j_backend_smd_scheme_delete(JBackend* backend, const char* name, void* parent)
 {
 	gboolean ret;
 
@@ -636,7 +622,7 @@ j_backend_smd_scheme_delete(JBackend* backend, const char* name, char* parent)
 	return ret;
 }
 gboolean
-j_backend_smd_scheme_open(JBackend* backend, const char* name, char* parent, char* space, char* type, guint* distribution, char* key)
+j_backend_smd_scheme_open(JBackend* backend, const char* name, void* parent, void* space, void* type, guint* distribution, void* key)
 {
 	gboolean ret;
 
