@@ -149,6 +149,7 @@ void* j_smd_type_create(void);
 guint j_smd_type_get_variable_count(void* type);
 gboolean j_smd_type_remove_variable(void* type, const char* name);
 void* j_smd_type_ref(void* _type);
+void* j_smd_type_copy(void* _type);
 gboolean j_smd_type_unref(void* _type);
 gboolean j_smd_type_add_compound_type(void* type, const char* var_name, int var_offset, int var_size, void* var_type, guint var_ndims, guint* var_dims);
 gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_offset, int var_size, J_SMD_Atomic_Type_t var_type, guint var_ndims, guint* var_dims);

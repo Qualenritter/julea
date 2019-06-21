@@ -162,6 +162,8 @@ j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDi
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
+	if (!name || !parent || !type || !space || !batch)
+		return NULL;
 	j_smd_timer_start(j_smd_scheme_create);
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);
