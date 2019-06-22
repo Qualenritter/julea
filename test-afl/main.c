@@ -650,8 +650,8 @@ loop:
 			scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
 			scheme_var = &g_array_index(scheme_type[idx][idx2]->arr, J_SMD_Variable_t, scheme_type[idx][idx2]->first_index);
 			for (i = scheme_offset; i < scheme_offset + scheme_size; i++)
-				scheme_write_random_data(scheme_var, &scheme_buf[idx][idx2][0] + i * scheme_type[idx][idx2]->total_size);
-			res = j_smd_scheme_write(scheme[idx][idx2], &scheme_buf[idx][idx2][0] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_offset, scheme_size, batch);
+				scheme_write_random_data(scheme_var, scheme_buf[idx][idx2] + i * scheme_type[idx][idx2]->total_size);
+			res = j_smd_scheme_write(scheme[idx][idx2], scheme_buf[idx][idx2] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_offset, scheme_size, batch);
 			if (res == FALSE)
 				MYABORT();
 			j_batch_execute(batch);
@@ -673,20 +673,21 @@ loop:
 				MYABORT();
 			scheme_offset = scheme_offset % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size);
 			scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
-			memset(scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 			//read partial
-			res = j_smd_scheme_read(scheme[idx][idx2], &scheme_tmp_buf[0], scheme_offset, scheme_size, batch);
+			memset(scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE);
+			res = j_smd_scheme_read(scheme[idx][idx2], scheme_tmp_buf, scheme_offset, scheme_size, batch);
 			if (res == FALSE)
 				MYABORT();
 			j_batch_execute(batch);
-			if (memcmp(&scheme_tmp_buf[0], &scheme_buf[idx][idx2][0] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_size * scheme_type[idx][idx2]->total_size))
+			if (memcmp(scheme_tmp_buf, scheme_buf[idx][idx2] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_size * scheme_type[idx][idx2]->total_size))
 				MYABORT();
 			//read fully
+			memset(scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 			res = j_smd_scheme_read(scheme[idx][idx2], scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size, batch);
 			if (res == FALSE)
 				MYABORT();
 			j_batch_execute(batch);
-			if (memcmp(&scheme_tmp_buf[0], &scheme_buf[idx][idx2][0], AFL_LIMIT_SCHEME_BUF_SIZE))
+			if (memcmp(scheme_tmp_buf, scheme_buf[idx][idx2], AFL_LIMIT_SCHEME_BUF_SIZE))
 				MYABORT();
 		}
 		break;
