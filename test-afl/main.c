@@ -275,7 +275,7 @@ loop:
 		break;
 	case SMD_AFL_TYPE_ADD_COMPOUND:
 		MY_READ_MAX(idx2, AFL_LIMIT_TYPE_COUNT);
- __attribute__ ((fallthrough)); 
+		__attribute__((fallthrough));
 	case SMD_AFL_TYPE_ADD_ATOMIC:
 		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
 		if (event == SMD_AFL_TYPE_ADD_ATOMIC)
@@ -656,7 +656,7 @@ loop:
 				MYABORT();
 			j_batch_execute(batch);
 		}
- __attribute__ ((fallthrough));
+		__attribute__((fallthrough));
 	case SMD_AFL_SCHEME_READ:
 		if (event == SMD_AFL_SCHEME_READ)
 		{

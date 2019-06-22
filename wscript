@@ -83,7 +83,6 @@ def check_and_add_cflags(ctx, flags, mandatory=True):
 		if ret:
 			ctx.env.CFLAGS += [flag]
 
-
 def get_bin(prefixes, bin):
 	env = os.getenv('PATH')
 
@@ -129,6 +128,7 @@ def get_pkg_config_path(prefix):
 def options(ctx):
 	ctx.load('compiler_c')
 
+	ctx.add_option('--gcov', action='store_true', default=False, help='Enable gcov mode')
 	ctx.add_option('--debug', action='store_true', default=False, help='Enable debug mode')
 	ctx.add_option('--sanitize', action='store_true', default=False, help='Enable sanitize mode')
 
@@ -319,6 +319,14 @@ def configure(ctx):
 			mandatory=False
 		)
 
+	if ctx.options.gcov:
+		ctx.check_cc(
+			cflags=['-fprofile-arcs', '-ftest-coverage', '-O2', '-g'],
+			ldflags=['-lgcov', '--coverage'],
+			uselib_store='GCOV',
+			mandatory=False
+		)
+
 	if ctx.options.debug:
 		check_and_add_cflags(ctx, [
 			'-Waggregate-return',
@@ -385,7 +393,7 @@ def build(ctx):
 	include_dir = ctx.path.find_dir('include')
 	ctx.install_files('${INCLUDEDIR}/julea', include_dir.ant_glob('**/*.h', excl='**/*-internal.h'), cwd=include_dir, relative_trick=True)
 
-	use_julea_core = ['M', 'GLIB', 'ASAN']  # 'UBSAN'
+	use_julea_core = ['M', 'GLIB', 'ASAN', 'GCOV']  # 'UBSAN'
 	use_julea_lib = use_julea_core + ['GIO', 'GOBJECT', 'LIBBSON', 'OTF']
 	use_julea_backend = use_julea_core + ['GMODULE']
 	use_julea_object = use_julea_core + ['lib/julea', 'lib/julea-object']
