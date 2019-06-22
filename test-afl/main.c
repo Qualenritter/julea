@@ -33,22 +33,31 @@ enum smd_afl_event_t
 	SMD_AFL_SCHEME_UNREF,
 	SMD_AFL_SCHEME_DELETE,
 	SMD_AFL_SCHEME_REF,
+	SMD_AFL_SCHEME_READ,
+	SMD_AFL_SCHEME_WRITE,
 	_SMD_AFL_EVENT_COUNT
 };
 //configure here->
 #define AFL_LIMIT_SPACE_COUNT 16
-#define AFL_LIMIT_SPACE_DIMS_SIZE 10
+#define AFL_LIMIT_SPACE_DIMS_SIZE 2
 #define AFL_LIMIT_TYPE_COUNT 16
 #define AFL_LIMIT_TYPE_MAX_NAMES 16
 #define AFL_LIMIT_TYPE_MAX_VARIABLES 16
 #define AFL_LIMIT_FILE_COUNT 16
 #define AFL_LIMIT_SCHEME_COUNT 16
+#define AFL_LIMIT_SCHEME_BUF_SIZE 1000
 //<-
 #define MY_READ(var)                                                              \
 	do                                                                        \
 	{                                                                         \
 		if (read(STDIN_FILENO, &var, sizeof(var)) < (ssize_t)sizeof(var)) \
 			goto cleanup;                                             \
+	} while (0)
+#define MY_READ_LEN(var, len)                                    \
+	do                                                       \
+	{                                                        \
+		if (read(STDIN_FILENO, var, len) < (ssize_t)len) \
+			goto cleanup;                            \
 	} while (0)
 #define MY_READ_MAX(var, max)      \
 	do                         \
@@ -63,10 +72,39 @@ enum smd_afl_event_t
 		abort();               \
 	} while (0)
 void create_raw_test_files(const char* base_folder);
+
+static void
+scheme_write_random_data(J_SMD_Variable_t* var, char* buf)
+{
+	guint i;
+	guint arr_len;
+start:
+	arr_len = 1;
+	for (i = 0; i < var->space.ndims; i++)
+	{
+		arr_len *= var->space.dims[i];
+	}
+	if (!arr_len)
+		MYABORT();
+	for (i = 0; i < arr_len; i++)
+	{
+		if (var->type == SMD_TYPE_SUB_TYPE)
+			scheme_write_random_data(var + var->subtypeindex, buf + var->offset + i * var->size);
+		else
+			MY_READ_LEN(buf + var->offset + i * var->size, var->size);
+	}
+	if (var->nextindex)
+	{
+		var += var->nextindex;
+		goto start;
+	}
+cleanup:;
+}
+
 int
 main(int argc, char* argv[])
 {
-	//between any tests ref_count == 1 OR pointers are NULL
+	//between any tests ref_count == 1 OR pointers are NULL otherwise -> error
 	//space
 	J_SMD_Space_t* space[AFL_LIMIT_SPACE_COUNT];
 	guint space_ndims[AFL_LIMIT_SPACE_COUNT];
@@ -87,7 +125,12 @@ main(int argc, char* argv[])
 	J_Scheme_t* scheme[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT];
 	J_SMD_Type_t* scheme_type[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT];
 	J_SMD_Space_t* scheme_space[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT];
+	char scheme_buf[AFL_LIMIT_FILE_COUNT][AFL_LIMIT_SCHEME_COUNT][AFL_LIMIT_SCHEME_BUF_SIZE];
 	char scheme_strbuf[SMD_MAX_NAME_LENGTH]; //TODO test NULL | too long
+	char scheme_tmp_buf[AFL_LIMIT_SCHEME_BUF_SIZE];
+	guint scheme_offset;
+	guint scheme_size;
+	J_SMD_Variable_t* scheme_var;
 	//shared
 	g_autoptr(JBatch) batch = NULL;
 	void* ptr;
@@ -118,6 +161,7 @@ main(int argc, char* argv[])
 			scheme[i][j] = NULL;
 			scheme_type[i][j] = NULL;
 			scheme_space[i][j] = NULL;
+			memset(&scheme_buf[i][j][0], 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 		}
 	}
 loop:
@@ -231,7 +275,7 @@ loop:
 		break;
 	case SMD_AFL_TYPE_ADD_COMPOUND:
 		MY_READ_MAX(idx2, AFL_LIMIT_TYPE_COUNT);
-		;
+		/*fall trough*/
 	case SMD_AFL_TYPE_ADD_ATOMIC:
 		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
 		if (event == SMD_AFL_TYPE_ADD_ATOMIC)
@@ -310,7 +354,6 @@ loop:
 			default:
 				MYABORT();
 			}
-			J_DEBUG("i %d", i);
 			//TODO delete not existing member
 			type_var_count[idx]--;
 			if (res == FALSE)
@@ -590,6 +633,61 @@ loop:
 			if (res != FALSE)
 				MYABORT();
 			scheme[idx][idx2] = NULL;
+		}
+		break;
+	case SMD_AFL_SCHEME_WRITE:
+		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
+		MY_READ_MAX(idx2, AFL_LIMIT_SCHEME_COUNT);
+		MY_READ(scheme_offset);
+		MY_READ(scheme_size);
+		J_DEBUG("SMD_AFL_SCHEME_WRITE idx=%d idx2=%d", idx, idx2);
+		if (scheme[idx][idx2])
+		{
+			res = j_smd_type_calc_metadata(scheme_type[idx][idx2]);
+			if (res == FALSE)
+				MYABORT();
+			scheme_offset = scheme_offset % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size);
+			scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
+			scheme_var = &g_array_index(scheme_type[idx][idx2]->arr, J_SMD_Variable_t, scheme_type[idx][idx2]->first_index);
+			for (i = scheme_offset; i < scheme_offset + scheme_size; i++)
+				scheme_write_random_data(scheme_var, &scheme_buf[idx][idx2][0] + i * scheme_type[idx][idx2]->total_size);
+			res = j_smd_scheme_write(scheme[idx][idx2], &scheme_buf[idx][idx2][0] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_offset, scheme_size, batch);
+			if (res == FALSE)
+				MYABORT();
+			j_batch_execute(batch);
+		}
+		/*fall trough*/
+	case SMD_AFL_SCHEME_READ:
+		if (event == SMD_AFL_SCHEME_READ)
+		{
+			MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
+			MY_READ_MAX(idx2, AFL_LIMIT_SCHEME_COUNT);
+			MY_READ(scheme_offset);
+			MY_READ(scheme_size);
+		}
+		J_DEBUG("SMD_AFL_SCHEME_READ idx=%d idx2=%d", idx, idx2);
+		if (scheme[idx][idx2])
+		{
+			res = j_smd_type_calc_metadata(scheme_type[idx][idx2]);
+			if (res == FALSE)
+				MYABORT();
+			scheme_offset = scheme_offset % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size);
+			scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
+			memset(scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE);
+			//read partial
+			res = j_smd_scheme_read(scheme[idx][idx2], &scheme_tmp_buf[0], scheme_offset, scheme_size, batch);
+			if (res == FALSE)
+				MYABORT();
+			j_batch_execute(batch);
+			if (memcmp(&scheme_tmp_buf[0], &scheme_buf[idx][idx2][0] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_size * scheme_type[idx][idx2]->total_size))
+				MYABORT();
+			//read fully
+			res = j_smd_scheme_read(scheme[idx][idx2], scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size, batch);
+			if (res == FALSE)
+				MYABORT();
+			j_batch_execute(batch);
+			if (memcmp(&scheme_tmp_buf[0], &scheme_buf[idx][idx2][0], AFL_LIMIT_SCHEME_BUF_SIZE))
+				MYABORT();
 		}
 		break;
 	case _SMD_AFL_EVENT_COUNT:

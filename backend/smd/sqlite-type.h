@@ -109,7 +109,7 @@ calculate_struct_size(sqlite3_int64 type_key)
 {
 	gint ret;
 	guint i;
-	guint struct_size;
+	guint struct_size = 0;
 	j_smd_timer_start(calculate_struct_size);
 	j_sqlite3_bind_int64(stmt_type_struct_size, 1, type_key);
 	ret = sqlite3_step(stmt_type_struct_size);
@@ -117,7 +117,9 @@ calculate_struct_size(sqlite3_int64 type_key)
 	{
 		struct_size = sqlite3_column_int64(stmt_type_struct_size, 0);
 		for (i = 0; i < sqlite3_column_int64(stmt_type_struct_size, 2); i++)
+		{
 			struct_size *= sqlite3_column_int64(stmt_type_struct_size, 3 + i);
+		}
 		struct_size += sqlite3_column_int64(stmt_type_struct_size, 1);
 	}
 	else
@@ -187,7 +189,9 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 			array_length *= var->space.dims[j];
 		offset = var->offset;
 		while (offset < buf_offset)
+		{
 			offset += struct_size; /*TODO faster required???*/
+		}
 		k = 0;
 		while (offset + var->size <= buf_end)
 		{

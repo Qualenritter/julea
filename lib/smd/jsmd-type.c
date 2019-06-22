@@ -233,9 +233,7 @@ j_smd_type_ref(void* _type)
 {
 	J_SMD_Type_t* type = _type;
 	if (type)
-	{
 		g_atomic_int_inc(&(type->ref_count));
-	}
 	return type;
 }
 void*
@@ -260,9 +258,6 @@ gboolean
 j_smd_type_unref(void* _type)
 {
 	J_SMD_Type_t* type = _type;
-	if (type)
-	{
-	}
 	if (type && g_atomic_int_dec_and_test(&(type->ref_count)))
 	{
 		g_array_free(type->arr, TRUE);
@@ -275,11 +270,15 @@ static guint
 j_smd_variable_calc_size(J_SMD_Variable_t* var)
 {
 	guint size = 0;
+	guint tmp = 0;
+	guint i;
 start:
 	if (var->type == SMD_TYPE_SUB_TYPE)
-		size += j_smd_variable_calc_size(var + var->subtypeindex);
-	else
-		size += var->size;
+		var->size = j_smd_variable_calc_size(var + var->subtypeindex);
+	tmp = var->size;
+	for (i = 0; i < var->space.ndims; i++)
+		tmp *= var->space.dims[i];
+	size += tmp;
 	if (var->nextindex)
 	{
 		var += var->nextindex;
@@ -293,6 +292,7 @@ j_smd_type_calc_metadata(void* _type)
 	J_SMD_Type_t* type = _type;
 	J_SMD_Variable_t* var;
 	guint tmp;
+	guint i;
 	if (!type || (type->element_count == 0))
 		return FALSE;
 	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
@@ -302,9 +302,11 @@ j_smd_type_calc_metadata(void* _type)
 start:
 	type->element_count++;
 	if (var->type == SMD_TYPE_SUB_TYPE)
-		tmp = var->offset + j_smd_variable_calc_size(var + var->subtypeindex);
-	else
-		tmp = var->offset + var->size;
+		var->size = j_smd_variable_calc_size(var + var->subtypeindex);
+	tmp = var->size;
+	for (i = 0; i < var->space.ndims; i++)
+		tmp *= var->space.dims[i];
+	tmp += var->offset;
 	if (tmp > type->total_size)
 		type->total_size = tmp;
 	if (var->nextindex)
