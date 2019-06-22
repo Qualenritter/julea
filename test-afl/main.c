@@ -29,7 +29,7 @@ enum smd_afl_event_t
 	//SMD_AFL_FILE_GET_SCHEMES,
 	//SMD_AFL_FILE_LIST,
 	SMD_AFL_SCHEME_CREATE,
-	//	SMD_AFL_SCHEME_OPEN,
+	SMD_AFL_SCHEME_OPEN,
 	SMD_AFL_SCHEME_UNREF,
 	SMD_AFL_SCHEME_DELETE,
 	SMD_AFL_SCHEME_REF,
@@ -229,10 +229,19 @@ loop:
 				MYABORT();
 		}
 		break;
-	case SMD_AFL_TYPE_ADD_ATOMIC:
 	case SMD_AFL_TYPE_ADD_COMPOUND:
+		MY_READ_MAX(idx2, AFL_LIMIT_TYPE_COUNT);
+		;
+	case SMD_AFL_TYPE_ADD_ATOMIC:
 		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
-		J_DEBUG("SMD_AFL_TYPE_ADD_ATOMIC|COMPOUND idx=%d", idx);
+		if (event == SMD_AFL_TYPE_ADD_ATOMIC)
+		{
+			J_DEBUG("SMD_AFL_TYPE_ADD_ATOMIC idx=%d", idx);
+		}
+		else
+		{
+			J_DEBUG("SMD_AFL_TYPE_ADD_COMPOUND idx=%d idx2=%d", idx, idx2);
+		}
 		if (type[idx] && type_var_count[idx] == AFL_LIMIT_TYPE_MAX_VARIABLES)
 		{
 			res = j_smd_type_remove_variable(type[idx], g_array_index(type[idx]->arr, J_SMD_Variable_t, type[idx]->first_index).name);
@@ -253,25 +262,23 @@ loop:
 		MY_READ_MAX(i, AFL_LIMIT_TYPE_MAX_NAMES);
 		sprintf(type_strbuf, "var_%d", i);
 		res_expected = TRUE;
+		res_expected = res_expected && type[idx];
+		res_expected = res_expected && type_ndims > 0 && type_ndims <= SMD_MAX_NDIMS;
+		for (i = 0; i < type_ndims; i++)
+			res_expected = res_expected && type_dims[i] > 0;
+		//TODO duplicate variable names -> error
+		//TODO duplicate offset -> error
 		if (event == SMD_AFL_TYPE_ADD_ATOMIC)
 		{
 			res = j_smd_type_add_atomic_type(type[idx], type_strbuf, type_last_offset[idx], 4, SMD_TYPE_INT, type_ndims, type_dims);
 		}
 		else
 		{
-			MY_READ_MAX(idx2, AFL_LIMIT_TYPE_COUNT);
-			res = j_smd_type_add_compound_type(type[idx], type_strbuf, type_last_offset[idx], 4, type[idx2], type_ndims, type_dims);
-			res_expected = res_expected && type[idx2] != NULL;
+			res_expected = res_expected && type[idx2];
 			res_expected = res_expected && idx != idx2;
+			res_expected = res_expected && j_smd_type_get_variable_count(type[idx2]) > 0;
+			res = j_smd_type_add_compound_type(type[idx], type_strbuf, type_last_offset[idx], 4, type[idx2], type_ndims, type_dims);
 		}
-		res_expected = res_expected && type[idx];
-		res_expected = res_expected && type_ndims > 0 && type_ndims <= SMD_MAX_NDIMS;
-		if (type[idx])
-			res_expected = res_expected && j_smd_type_get_variable_count(type[idx]) > 0;
-		for (i = 0; i < type_ndims; i++)
-			res_expected = res_expected && type_dims[i] > 0;
-		//TODO duplicate variable names -> error
-		//TODO duplicate offset -> error
 		if (res != res_expected)
 			MYABORT();
 		if (res)
@@ -303,6 +310,7 @@ loop:
 			default:
 				MYABORT();
 			}
+			J_DEBUG("i %d", i);
 			//TODO delete not existing member
 			type_var_count[idx]--;
 			if (res == FALSE)
@@ -310,7 +318,6 @@ loop:
 			if (type_var_count[idx] != j_smd_type_get_variable_count(type[idx]))
 				MYABORT();
 		}
-		J_DEBUG("SMD_AFL_TYPE_REMOVE_VARIABLE idx=%d", idx);
 		break;
 	case SMD_AFL_TYPE_UNREF:
 		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
@@ -460,7 +467,7 @@ loop:
 		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
 		MY_READ_MAX(idx2, AFL_LIMIT_SCHEME_COUNT);
 		J_DEBUG("SMD_AFL_SCHEME_DELETE|UNREF idx=%d idx2=%d", idx, idx2);
-		sprintf(scheme_strbuf, "scheme_%d", idx);
+		sprintf(scheme_strbuf, "scheme_%d", idx2);
 		if (file[idx] && scheme[idx][idx2])
 		{
 			res = j_smd_scheme_delete(scheme_strbuf, file[idx], batch);
@@ -499,7 +506,7 @@ loop:
 		MY_READ_MAX(idx3, AFL_LIMIT_TYPE_COUNT);
 		MY_READ_MAX(idx4, AFL_LIMIT_SPACE_COUNT);
 		J_DEBUG("SMD_AFL_SCHEME_CREATE idx=%d idx2=%d idx3=%d idx4=%d", idx, idx2, idx3, idx4);
-		sprintf(scheme_strbuf, "scheme_%d", idx);
+		sprintf(scheme_strbuf, "scheme_%d", idx2);
 		ptr = scheme[idx][idx2];
 		res = j_smd_type_unref(scheme_type[idx][idx2]);
 		if (res != FALSE)
@@ -513,10 +520,10 @@ loop:
 		else
 			scheme_space[idx][idx2] = NULL;
 		scheme[idx][idx2] = j_smd_scheme_create(scheme_strbuf, file[idx], scheme_type[idx][idx2], scheme_space[idx][idx2], J_DISTRIBUTION_DATABASE, batch);
-		if (!scheme[idx][idx2] && file[idx] && scheme_type[idx][idx2] && scheme_space[idx][idx2])
+		if (!scheme[idx][idx2] && file[idx] && scheme_type[idx][idx2] && scheme_space[idx][idx2] && j_smd_type_get_variable_count(scheme_type[idx][idx2]))
 			MYABORT();
 		j_batch_execute(batch);
-		if (scheme[idx][idx2] && ((j_smd_is_initialized(scheme[idx])) != (ptr != NULL)))
+		if (scheme[idx][idx2] && ((j_smd_is_initialized(scheme[idx][idx2])) == (ptr != NULL)))
 			MYABORT();
 		if (ptr)
 		{
@@ -533,6 +540,53 @@ loop:
 			res = j_smd_scheme_unref(scheme[idx][idx2]);
 			if (res != FALSE)
 				MYABORT();
+		}
+		res = j_smd_scheme_unref(ptr);
+		if (res != FALSE)
+			MYABORT();
+		break;
+	case SMD_AFL_SCHEME_OPEN:
+		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
+		MY_READ_MAX(idx2, AFL_LIMIT_SCHEME_COUNT);
+		J_DEBUG("SMD_AFL_SCHEME_OPEN idx=%d idx2=%d", idx, idx2);
+		sprintf(scheme_strbuf, "scheme_%d", idx2);
+		ptr = scheme[idx][idx2];
+		scheme[idx][idx2] = j_smd_scheme_open(scheme_strbuf, file[idx], batch);
+		if (scheme[idx][idx2] && (!file[idx]))
+			MYABORT();
+		if (!scheme[idx][idx2] && (file[idx]))
+			MYABORT();
+		j_batch_execute(batch);
+		if (scheme[idx][idx2] && ((j_smd_is_initialized(scheme[idx][idx2])) != (ptr != NULL)))
+			MYABORT();
+		if (ptr)
+		{
+			res = j_smd_scheme_unref(ptr);
+			if (res != FALSE)
+				MYABORT();
+			ptr = j_smd_scheme_get_type(scheme[idx][idx2]);
+			if (!ptr)
+				MYABORT();
+			if (!j_smd_type_equals(ptr, scheme_type[idx][idx2]))
+				MYABORT();
+			res = j_smd_type_unref(ptr);
+			if (res != FALSE)
+				MYABORT();
+			ptr = j_smd_scheme_get_space(scheme[idx][idx2]);
+			if (!ptr)
+				MYABORT();
+			if (!j_smd_space_equals(ptr, scheme_space[idx][idx2]))
+				MYABORT();
+			res = j_smd_space_unref(ptr);
+			if (res != FALSE)
+				MYABORT();
+		}
+		else
+		{
+			res = j_smd_scheme_unref(scheme[idx][idx2]);
+			if (res != FALSE)
+				MYABORT();
+			scheme[idx][idx2] = NULL;
 		}
 		break;
 	case _SMD_AFL_EVENT_COUNT:
@@ -670,12 +724,12 @@ create_raw_test_files(const char* base_folder)
 			fwrite(&event, sizeof(event), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
+			fwrite(&i, sizeof(i), 1, file);
 			for (j = 0; j < i; j++)
 			{
 				k = i + j;
 				fwrite(&k, sizeof(k), 1, file);
 			}
-			fwrite(&i, sizeof(i), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
 			fclose(file);
 		}

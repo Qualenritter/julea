@@ -230,17 +230,19 @@ benchmark_smd(void)
 		1000000, //
 	};
 	guint i;
+	guint res;
+	char* res2;
 	char testname[500 + PATH_MAX];
-	getcwd(cwd, sizeof(cwd));
+	res2 = getcwd(cwd, sizeof(cwd));
 	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
 	{
 		n = n_values[i];
 		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_01", cwd, n);
-		system(testname);
+		res = system(testname);
 		sprintf(testname, "/smd/scheme_%d/create", n);
 		j_benchmark_run(testname, benchmark_smd_create_scheme);
 		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_02", cwd, n);
-		system(testname);
+		res = system(testname);
 		sprintf(testname, "/smd/scheme_%d/open", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_open);
 		sprintf(testname, "/smd/scheme_%d/delete", n);
@@ -252,4 +254,6 @@ benchmark_smd(void)
 		sprintf(testname, "/smd/scheme_%d/delete-batch", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_delete_batch);
 	}
+	(void)res;
+	(void)res2;
 }

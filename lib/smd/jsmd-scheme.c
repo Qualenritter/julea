@@ -68,7 +68,6 @@ j_smd_timer_variables(j_smd_open_exec_server);
 j_smd_timer_variables(j_smd_read_exec_server);
 j_smd_timer_variables(j_smd_write_exec_server);
 #endif
-/*TODO copy parent->key into operation or increase ref_count*/
 typedef struct JSMDSchemeOperation JSMDSchemeOperation;
 static gboolean
 j_smd_create_exec(JList* operations, JSemantics* semantics)
@@ -162,7 +161,7 @@ j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDi
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
-	if (!name || !parent || !type || !space || !batch)
+	if (!name || !parent || !type || !space || !batch || j_smd_type_get_variable_count(type) == 0)
 		return NULL;
 	j_smd_timer_start(j_smd_scheme_create);
 	smd_op = g_new(JSMDSchemeOperation, 1);
@@ -338,7 +337,8 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				if (tmp_len)
 					g_array_append_vals(operation->scheme->type->arr, j_message_get_n(reply, tmp_len * sizeof(J_SMD_Variable_t)), tmp_len);
 				operation->scheme->type->first_index = 0;
-				//TODO calculate last_index2
+				//TODO calculate last_index
+				//TODO calculate element_count
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 				{
 					operation->scheme->distribution = j_distribution_new(operation->scheme->distribution_type);
@@ -367,6 +367,8 @@ j_smd_scheme_open(const char* name, void* parent, JBatch* batch)
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
+	if (!name || !parent || !batch)
+		return NULL;
 	j_smd_timer_start(j_smd_scheme_open);
 	smd_op = g_new(JSMDSchemeOperation, 1);
 	smd_op->scheme = g_new(J_Scheme_t, 1);

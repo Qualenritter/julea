@@ -30,6 +30,8 @@ gboolean
 j_is_key_initialized(const char* const key)
 {
 	int i;
+	if (!key)
+		return FALSE;
 	for (i = 0; i < SMD_KEY_LENGTH; i++)
 	{
 		if (key[i] != 0)
@@ -41,5 +43,7 @@ gboolean
 j_smd_is_initialized(void* _data)
 {
 	J_Scheme_t* data = _data;
+	if (!data)
+		return FALSE;
 	return j_is_key_initialized(data->key);
 }

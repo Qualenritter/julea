@@ -67,6 +67,7 @@ struct J_SMD_Type_t
 	gint ref_count; //only if root == the own address
 	guint last_index; //points to the last child in this datatype EXCLUDEING subtypes
 	guint first_index; //points to the first child in this datatype EXCLUDEING subtypes
+	guint element_count;
 };
 typedef struct J_SMD_Type_t J_SMD_Type_t;
 struct J_SMD_Variable_t
