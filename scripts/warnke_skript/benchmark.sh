@@ -1,4 +1,5 @@
-sudo mount -t tmpfs none /mnt2/
+umount /mnt2
+mount /mnt2
 
 ./build/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
@@ -14,7 +15,7 @@ pkill julea-server
 # --debug --sanitize --hdf5=./dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/hdf5-develop-qckzbb5gxnzeixlnhtgkq5mxvavegx4n
 ./waf.sh clean
 ./waf.sh build
-./waf.sh install
+./waf.sh install -f
 rm -rf /mnt2/julea/*
 julea-server &
 sleep 5

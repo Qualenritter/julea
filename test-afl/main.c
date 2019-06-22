@@ -266,6 +266,8 @@ loop:
 		}
 		res_expected = res_expected && type[idx];
 		res_expected = res_expected && type_ndims > 0 && type_ndims <= SMD_MAX_NDIMS;
+		if (type[idx])
+			res_expected = res_expected && j_smd_type_get_variable_count(type[idx]) > 0;
 		for (i = 0; i < type_ndims; i++)
 			res_expected = res_expected && type_dims[i] > 0;
 		//TODO duplicate variable names -> error
@@ -370,6 +372,13 @@ loop:
 			res = j_smd_file_unref(file[idx]);
 			if (res != FALSE)
 				MYABORT();
+			for (j = 0; j < AFL_LIMIT_SCHEME_COUNT; j++)
+			{
+				res = j_smd_scheme_unref(scheme[idx][j]);
+				if (res != FALSE)
+					MYABORT();
+				scheme[idx][j] = NULL;
+			}
 		}
 		file[idx] = j_smd_file_create(file_strbuf, batch);
 		if (!file[idx])
@@ -507,7 +516,7 @@ loop:
 		if (!scheme[idx][idx2] && file[idx] && scheme_type[idx][idx2] && scheme_space[idx][idx2])
 			MYABORT();
 		j_batch_execute(batch);
-		if (scheme[idx][idx2] && ((j_smd_is_initialized(file[idx])) != (ptr != NULL)))
+		if (scheme[idx][idx2] && ((j_smd_is_initialized(scheme[idx])) != (ptr != NULL)))
 			MYABORT();
 		if (ptr)
 		{
