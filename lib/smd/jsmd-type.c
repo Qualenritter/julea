@@ -95,7 +95,6 @@ j_smd_type_create(void)
 	type->ref_count = 1;
 	type->arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t));
 	type->element_count = 0;
-	J_DEBUG("element_count %d", type->element_count);
 	type->last_index = 0;
 	type->first_index = 0;
 	return type;
@@ -153,7 +152,6 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 		type->first_index = my_idx;
 	type->last_index = my_idx;
 	type->element_count++;
-	J_DEBUG("element_count %d", type->element_count);
 	/*TODO check conflicting other variables*/
 	return TRUE;
 }
@@ -220,7 +218,6 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 	type->last_index = my_idx;
 	g_array_append_vals(type->arr, var_type->arr->data, var_type->arr->len);
 	type->element_count++;
-	J_DEBUG("element_count %d", type->element_count);
 	return TRUE;
 }
 guint
@@ -274,6 +271,50 @@ j_smd_type_unref(void* _type)
 	}
 	return type != NULL;
 }
+static guint
+j_smd_variable_calc_size(J_SMD_Variable_t* var)
+{
+	guint size = 0;
+start:
+	if (var->type == SMD_TYPE_SUB_TYPE)
+		size += j_smd_variable_calc_size(var + var->subtypeindex);
+	else
+		size += var->size;
+	if (var->nextindex)
+	{
+		var += var->nextindex;
+		goto start;
+	}
+	return size;
+}
+gboolean
+j_smd_type_calc_metadata(void* _type)
+{
+	J_SMD_Type_t* type = _type;
+	J_SMD_Variable_t* var;
+	guint tmp;
+	if (!type || (type->element_count == 0))
+		return FALSE;
+	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
+	type->element_count = 0;
+	type->total_size = 0;
+	type->last_index = type->first_index;
+start:
+	type->element_count++;
+	if (var->type == SMD_TYPE_SUB_TYPE)
+		tmp = var->offset + j_smd_variable_calc_size(var + var->subtypeindex);
+	else
+		tmp = var->offset + var->size;
+	if (tmp > type->total_size)
+		type->total_size = tmp;
+	if (var->nextindex)
+	{
+		type->last_index += var->nextindex;
+		var += var->nextindex;
+		goto start;
+	}
+	return TRUE;
+}
 gboolean
 j_smd_type_remove_variable(void* _type, const char* name)
 {
@@ -282,7 +323,6 @@ j_smd_type_remove_variable(void* _type, const char* name)
 	J_SMD_Variable_t* var_prev;
 	if (!type || !name || (type->element_count == 0))
 		return FALSE;
-	J_DEBUG("element_count %d", type->element_count);
 	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
 	var_prev = var;
 start:
@@ -314,7 +354,6 @@ start:
 			}
 		}
 		type->element_count--;
-		J_DEBUG("element_count %d", type->element_count);
 		return TRUE;
 	}
 	if (var->nextindex)

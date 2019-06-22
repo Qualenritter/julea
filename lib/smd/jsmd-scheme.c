@@ -337,8 +337,8 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 				if (tmp_len)
 					g_array_append_vals(operation->scheme->type->arr, j_message_get_n(reply, tmp_len * sizeof(J_SMD_Variable_t)), tmp_len);
 				operation->scheme->type->first_index = 0;
-				//TODO calculate last_index
-				//TODO calculate element_count
+				operation->scheme->type->element_count = 1;
+				j_smd_type_calc_metadata(operation->scheme->type);
 				if (operation->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 				{
 					operation->scheme->distribution = j_distribution_new(operation->scheme->distribution_type);

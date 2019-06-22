@@ -530,6 +530,10 @@ loop:
 			MYABORT();
 		if (ptr)
 		{
+			res = j_smd_scheme_unref(scheme[idx][idx2]);
+			if (res != FALSE)
+				MYABORT();
+			scheme[idx][idx2] = NULL;
 			res = j_smd_scheme_delete(scheme_strbuf, file[idx], batch);
 			if (res == FALSE)
 				MYABORT();
@@ -542,10 +546,6 @@ loop:
 			if (res != FALSE)
 				MYABORT();
 			scheme_space[idx][idx2] = NULL;
-			res = j_smd_scheme_unref(scheme[idx][idx2]);
-			if (res != FALSE)
-				MYABORT();
-			scheme[idx][idx2] = NULL;
 		}
 		break;
 	case SMD_AFL_SCHEME_OPEN:
@@ -573,7 +573,7 @@ loop:
 			if (!j_smd_type_equals(ptr, scheme_type[idx][idx2]))
 				MYABORT();
 			res = j_smd_type_unref(ptr);
-			if (res != FALSE)
+			if (res == FALSE)
 				MYABORT();
 			ptr = j_smd_scheme_get_space(scheme[idx][idx2]);
 			if (!ptr)
@@ -581,7 +581,7 @@ loop:
 			if (!j_smd_space_equals(ptr, scheme_space[idx][idx2]))
 				MYABORT();
 			res = j_smd_space_unref(ptr);
-			if (res != FALSE)
+			if (res == FALSE)
 				MYABORT();
 		}
 		else

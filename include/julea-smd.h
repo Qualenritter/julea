@@ -68,6 +68,7 @@ struct J_SMD_Type_t
 	guint last_index; //points to the last child in this datatype EXCLUDEING subtypes
 	guint first_index; //points to the first child in this datatype EXCLUDEING subtypes
 	guint element_count;
+	guint total_size;
 };
 typedef struct J_SMD_Type_t J_SMD_Type_t;
 struct J_SMD_Variable_t
@@ -157,6 +158,7 @@ gboolean j_smd_type_add_atomic_type(void* type, const char* var_name, int var_of
 
 /*not public interface functions below*/
 /*TODO move to internal header file*/
+gboolean j_smd_type_calc_metadata(void* type);
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
 #define SMD_BUF_TO_HEX(buf, hex, len)                                 \
