@@ -164,6 +164,7 @@ main(int argc, char* argv[])
 			memset(&scheme_buf[i][j][0], 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 		}
 	}
+	j_smd_reset();
 loop:
 	MY_READ_MAX(event, _SMD_AFL_EVENT_COUNT);
 	switch (event)

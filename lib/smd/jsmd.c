@@ -47,3 +47,22 @@ j_smd_is_initialized(void* _data)
 		return FALSE;
 	return j_is_key_initialized(data->key);
 }
+
+void
+j_smd_reset(void)
+{
+	JBackend* smd_backend;
+	GSocketConnection* smd_connection;
+	g_autoptr(JMessage) reply = NULL;
+	g_autoptr(JMessage) message = NULL;
+	smd_backend = j_smd_backend();
+	if (smd_backend == NULL)
+	{
+		message = j_message_new(J_MESSAGE_SMD_RESET, 0);
+		smd_connection = j_connection_pool_pop_smd(0);
+		j_message_send(message, smd_connection);
+		j_message_receive(reply, smd_connection);
+		j_connection_pool_push_smd(0, smd_connection);
+		//TODO reset ALL backends
+	}
+}

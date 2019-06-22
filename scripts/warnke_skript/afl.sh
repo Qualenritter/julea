@@ -11,7 +11,7 @@ export AFL_USE_ASAN=1
 #CC=afl-gcc ./waf configure --debug --sanitize
 #CC=afl-gcc ./waf.sh build
 #cp ./build/test-afl/julea-test-afl afl/julea-test-afl
-CC=afl-gcc ./waf configure --gcov
+CC=afl-gcc ./waf configure --gcov --debug
 CC=afl-gcc ./waf.sh build
 cp ./build/test-afl/julea-test-afl afl/julea-test-afl
 cp ./build/server/julea-server afl/julea-server

@@ -177,6 +177,7 @@ gboolean j_smd_is_initialized(void* data);
 	} while (0)
 
 //only for debugging
+void j_smd_reset(void);
 void j_smd_debug_init(void);
 void j_smd_debug_exit(void);
 #ifdef JULEA_DEBUG

@@ -239,22 +239,15 @@ j_smd_timer_variables(write_type);
 #include "sqlite-file.h"
 #include "sqlite-scheme.h"
 
-static gboolean
-backend_init(gchar const* path)
+static guint
+backend_init_sql(void)
 {
 	sqlite3_stmt* stmt;
 	guint ret;
-	g_autofree gchar* dirname = NULL;
-	J_CRITICAL("%s", path);
-	g_return_val_if_fail(path != NULL, FALSE);
-	dirname = g_path_get_dirname(path);
-	g_mkdir_with_parents(dirname, 0700);
-	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
-	{
-		J_CRITICAL("sql damaged %d", 0);
-		goto error;
-	}
 	j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = ON");
+	j_sqlite3_prepare_v3("BEGIN TRANSACTION;", &stmt_transaction_begin);
+	j_sqlite3_prepare_v3("COMMIT;", &stmt_transaction_commit);
+	j_sqlite3_prepare_v3("ROLLBACK;", &stmt_transaction_abort);
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_type_header (" //
 		"key INTEGER PRIMARY KEY"
@@ -309,27 +302,8 @@ backend_init(gchar const* path)
 		"value_blob BLOB, " //value
 		"PRIMARY KEY(scheme_key, type_key, offset), " //
 		"FOREIGN KEY(scheme_key) REFERENCES smd_schemes(key) ON DELETE CASCADE, " //wenn dass schema gelöscht wird - lösche auch die daten
-		"FOREIGN KEY(type_key) REFERENCES smd_scheme_type(key) ON DELETE CASCADE" //wenn der datentyp gelöscht wird - lösche auch die daten. das löschen des typen wird ja sowiso verhindert, wenn es noch ein attribut gibt, welches diesen typen benutzt
+		"FOREIGN KEY(type_key) REFERENCES smd_scheme_type(key) ON DELETE CASCADE" //wenn der datentyp gelöscht wird - lösche auch die daten. das löschen des typen wird ja sowiso verhin$
 		");");
-	j_sqlite3_prepare_v3("SELECT max(key) FROM smd_schemes", &stmt);
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW)
-		smd_schemes_primary_key = 1 + sqlite3_column_int64(stmt, 0);
-	else if (ret == SQLITE_DONE)
-		smd_schemes_primary_key = 1;
-	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
-	j_sqlite3_prepare_v3("SELECT max(d.type_key, t.subtype_key) FROM smd_scheme_data d, smd_scheme_type t", &stmt);
-	ret = sqlite3_step(stmt);
-	if (ret == SQLITE_ROW)
-		smd_scheme_type_primary_key = 1 + sqlite3_column_int64(stmt, 0);
-	else if (ret == SQLITE_DONE)
-		smd_scheme_type_primary_key = 1;
-	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-	sqlite3_finalize(stmt);
-
 	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_scheme_type (" //
 		"header_key, " //
@@ -405,6 +379,30 @@ backend_init(gchar const* path)
 		&stmt_scheme_get_type_key);
 
 	j_sqlite3_prepare_v3(
+		"DELETE FROM smd_schemes " //
+		"WHERE name = ? AND parent_key = ?;",
+		&stmt_scheme_delete1);
+	j_sqlite3_prepare_v3(
+		"WITH RECURSIVE "
+		"subtypes(x) AS (SELECT type_key FROM smd_schemes WHERE name = ?1 AND parent_key = ?2 UNION SELECT subtype_key FROM smd_scheme_type t, subtypes s WHERE t.header_key = s.x) "
+		"SELECT x FROM subtypes",
+		&stmt_scheme_delete0);
+	j_sqlite3_prepare_v3(
+		"INSERT INTO smd_schemes (name, parent_key, file_key, ndims, dims0, dims1, dims2, dims3, distribution, type_key, key) " //
+		"VALUES (?1, ?2, (SELECT file_key FROM smd_schemes WHERE key = ?2), ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);",
+		&stmt_scheme_create);
+	j_sqlite3_prepare_v3(
+		"SELECT key, ndims, dims0, dims1, dims2, dims3, distribution, type_key " //
+		"FROM smd_schemes " //
+		"WHERE name = ? AND parent_key = ?;",
+		&stmt_scheme_open);
+	j_sqlite3_prepare_v3(
+		"SELECT type_key " //
+		"FROM smd_schemes " //
+		"WHERE key = ?;",
+		&stmt_scheme_get_type_key);
+
+	j_sqlite3_prepare_v3(
 		"WITH RECURSIVE " //
 		"subtypes(x) AS (SELECT t.type_key " //
 		"FROM smd_schemes t "
@@ -419,9 +417,82 @@ backend_init(gchar const* path)
 	j_sqlite3_prepare_v3(
 		"SELECT key FROM smd_schemes WHERE name = ?1 AND file_key = key;",
 		&stmt_file_open);
-	j_sqlite3_prepare_v3("BEGIN TRANSACTION;", &stmt_transaction_begin);
-	j_sqlite3_prepare_v3("COMMIT;", &stmt_transaction_commit);
-	j_sqlite3_prepare_v3("ROLLBACK;", &stmt_transaction_abort);
+
+	j_sqlite3_prepare_v3("SELECT max(key) FROM smd_schemes", &stmt);
+	ret = sqlite3_step(stmt);
+	if (ret == SQLITE_ROW)
+		smd_schemes_primary_key = 1 + sqlite3_column_int64(stmt, 0);
+	else if (ret == SQLITE_DONE)
+		smd_schemes_primary_key = 1;
+	else
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
+	j_sqlite3_prepare_v3("SELECT max(d.type_key, t.subtype_key) FROM smd_scheme_data d, smd_scheme_type t", &stmt);
+	ret = sqlite3_step(stmt);
+	if (ret == SQLITE_ROW)
+		smd_scheme_type_primary_key = 1 + sqlite3_column_int64(stmt, 0);
+	else if (ret == SQLITE_DONE)
+		smd_scheme_type_primary_key = 1;
+	else
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	sqlite3_finalize(stmt);
+
+	return TRUE;
+error:
+	return FALSE;
+}
+static void
+backend_fini_sql(void)
+{
+	sqlite3_finalize(stmt_type_create);
+	sqlite3_finalize(stmt_type_create_header);
+	sqlite3_finalize(stmt_type_load);
+	sqlite3_finalize(stmt_type_write);
+	sqlite3_finalize(stmt_type_read);
+	sqlite3_finalize(stmt_file_create);
+	sqlite3_finalize(stmt_file_open);
+	sqlite3_finalize(stmt_file_delete0);
+	sqlite3_finalize(stmt_file_delete1);
+	sqlite3_finalize(stmt_type_delete);
+	sqlite3_finalize(stmt_scheme_create);
+	sqlite3_finalize(stmt_scheme_delete0);
+	sqlite3_finalize(stmt_scheme_delete1);
+	sqlite3_finalize(stmt_scheme_delete2);
+	sqlite3_finalize(stmt_scheme_get_type_key);
+	sqlite3_finalize(stmt_scheme_open);
+	sqlite3_finalize(stmt_type_struct_size);
+	sqlite3_finalize(stmt_transaction_abort);
+	sqlite3_finalize(stmt_transaction_begin);
+	sqlite3_finalize(stmt_transaction_commit);
+	sqlite3_finalize(stmt_type_write_get_structure);
+}
+static void
+backend_reset(void)
+{
+	backend_fini_sql();
+	j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = OFF");
+	j_sqlite3_exec_done_or_error("DROP INDEX smd_scheme_type_idx");
+	j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type_header");
+	j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type");
+	j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_data");
+	j_sqlite3_exec_done_or_error("DROP TABLE smd_schemes");
+	backend_init_sql();
+error:; /*makros jump here*/
+}
+
+static gboolean
+backend_init(gchar const* path)
+{
+	g_autofree gchar* dirname = NULL;
+	J_CRITICAL("%s", path);
+	g_return_val_if_fail(path != NULL, FALSE);
+	dirname = g_path_get_dirname(path);
+	g_mkdir_with_parents(dirname, 0700);
+	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
+		goto error;
+	if (!backend_init_sql())
+		goto error;
+
 #ifdef JULEA_DEBUG
 	j_smd_timer_alloc(backend_scheme_create);
 	j_smd_timer_alloc(backend_scheme_delete);
@@ -451,27 +522,7 @@ backend_fini(void)
 	J_CRITICAL("%d", 0);
 	if (backend_db != NULL)
 	{
-		sqlite3_finalize(stmt_type_create);
-		sqlite3_finalize(stmt_type_create_header);
-		sqlite3_finalize(stmt_type_load);
-		sqlite3_finalize(stmt_type_write);
-		sqlite3_finalize(stmt_type_read);
-		sqlite3_finalize(stmt_file_create);
-		sqlite3_finalize(stmt_file_open);
-		sqlite3_finalize(stmt_file_delete0);
-		sqlite3_finalize(stmt_file_delete1);
-		sqlite3_finalize(stmt_type_delete);
-		sqlite3_finalize(stmt_scheme_create);
-		sqlite3_finalize(stmt_scheme_delete0);
-		sqlite3_finalize(stmt_scheme_delete1);
-		sqlite3_finalize(stmt_scheme_delete2);
-		sqlite3_finalize(stmt_scheme_get_type_key);
-		sqlite3_finalize(stmt_scheme_open);
-		sqlite3_finalize(stmt_type_struct_size);
-		sqlite3_finalize(stmt_transaction_abort);
-		sqlite3_finalize(stmt_transaction_begin);
-		sqlite3_finalize(stmt_transaction_commit);
-		sqlite3_finalize(stmt_type_write_get_structure);
+		backend_fini_sql();
 		sqlite3_close(backend_db);
 #ifdef JULEA_DEBUG
 		j_smd_timer_print(backend_scheme_create);
@@ -516,7 +567,8 @@ static JBackend sqlite_backend = { .type = J_BACKEND_TYPE_SMD, //
 		.backend_file_open = backend_file_open, //
 		.backend_scheme_create = backend_scheme_create, //
 		.backend_scheme_delete = backend_scheme_delete, //
-		.backend_scheme_open = backend_scheme_open } };
+		.backend_scheme_open = backend_scheme_open, //
+		.backend_reset = backend_reset } };
 G_MODULE_EXPORT
 JBackend*
 backend_info(void)

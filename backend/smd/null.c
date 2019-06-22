@@ -85,6 +85,9 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 	(void)size;
 	return TRUE;
 }
+static void
+backend_reset(void)
+{}
 static JBackend null_backend = { .type = J_BACKEND_TYPE_SMD, //
 	.component = J_BACKEND_COMPONENT_SERVER, //
 	.smd = { //
@@ -97,7 +100,8 @@ static JBackend null_backend = { .type = J_BACKEND_TYPE_SMD, //
 		.backend_file_open = backend_file_open, //
 		.backend_scheme_create = backend_scheme_create, //
 		.backend_scheme_delete = backend_scheme_delete, //
-		.backend_scheme_open = backend_scheme_open } };
+		.backend_scheme_open = backend_scheme_open, //
+		.backend_reset = backend_reset } };
 G_MODULE_EXPORT
 JBackend*
 backend_info(void)

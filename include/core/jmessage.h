@@ -55,6 +55,7 @@ enum JMessageType
 	J_MESSAGE_SMD_SCHEME_CREATE,
 	J_MESSAGE_SMD_SCHEME_DELETE,
 	J_MESSAGE_SMD_SCHEME_OPEN,
+	J_MESSAGE_SMD_RESET, /*deletes ALL data*/
 };
 
 typedef enum JMessageType JMessageType;
