@@ -612,27 +612,27 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 			g_autoptr(JMessage) reply = NULL;
 			char _key[SMD_KEY_LENGTH];
-			gint64 buf_offset;
-			gint64 buf_size;
+			guint buf_offset;
+			guint buf_size;
 			char* buf;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
 				memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-				buf_offset = j_message_get_8(message);
-				buf_size = j_message_get_8(message);
+				buf_offset = j_message_get_4(message);
+				buf_size = j_message_get_4(message);
 				buf = g_malloc(buf_size);
 				if (j_backend_smd_scheme_read(jd_smd_backend, _key, buf, buf_offset, buf_size))
 				{
-					j_message_add_operation(reply, 8 + buf_size);
-					j_message_append_8(reply, &buf_size);
+					j_message_add_operation(reply, 4 + buf_size);
+					j_message_append_4(reply, &buf_size);
 					j_message_append_n(reply, buf, buf_size);
 				}
 				else
 				{
 					gint64 zero = 0;
-					j_message_add_operation(reply, 8);
-					j_message_append_8(reply, &zero);
+					j_message_add_operation(reply, 4);
+					j_message_append_4(reply, &zero);
 				}
 				g_free(buf);
 			}
@@ -643,19 +643,19 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 			g_autoptr(JMessage) reply = NULL;
 			char _key[SMD_KEY_LENGTH];
-			gint64 buf_offset;
-			gint64 buf_size;
+			guint buf_offset;
+			guint buf_size;
 			char* buf;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
 				memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-				buf_offset = j_message_get_8(message);
-				buf_size = j_message_get_8(message);
+				buf_offset = j_message_get_4(message);
+				buf_size = j_message_get_4(message);
 				buf = j_message_get_n(message, buf_size);
 				j_backend_smd_scheme_write(jd_smd_backend, _key, buf, buf_offset, buf_size);
-				j_message_add_operation(reply, 8);
-				j_message_append_8(reply, &buf_size);
+				j_message_add_operation(reply, 4);
+				j_message_append_4(reply, &buf_size);
 			}
 			j_message_send(reply, connection);
 		}

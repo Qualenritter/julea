@@ -37,13 +37,13 @@ test_file_create_destroy_single(void)
 		j_batch_execute(batch);
 		g_assert_nonnull(file);
 		ret = j_smd_file_unref(file);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 		file = j_smd_file_open(filename, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(file);
 		g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
 		ret = j_smd_file_unref(file);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 		ret = j_smd_file_delete(filename, batch);
 		g_assert_cmpuint(ret, !=, FALSE);
 		j_batch_execute(batch);
@@ -52,7 +52,7 @@ test_file_create_destroy_single(void)
 		g_assert_nonnull(file);
 		g_assert_cmpuint(j_smd_is_initialized(file), ==, FALSE);
 		ret = j_smd_file_unref(file);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 	}
 }
 static void
@@ -72,14 +72,14 @@ test_file_create_destroy_many(void)
 		j_batch_execute(batch);
 		g_assert_nonnull(file);
 		ret = j_smd_file_unref(file);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 		j_batch_execute(batch);
 		file = j_smd_file_open(filename, batch);
 		j_batch_execute(batch);
 		g_assert_nonnull(file);
 		g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
 		ret = j_smd_file_unref(file);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 	}
 	for (i = 0; i < n; i++)
 	{
@@ -92,7 +92,7 @@ test_file_create_destroy_many(void)
 		g_assert_nonnull(file);
 		g_assert_cmpuint(j_smd_is_initialized(file), ==, FALSE);
 		ret = j_smd_file_unref(file);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 	}
 }
 void test_smd_file(void);

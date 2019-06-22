@@ -763,6 +763,15 @@ create_raw_test_files(const char* base_folder)
 	{
 		sprintf(filename, "%s/start-files/SMD_AFL_SPACE_GET.bin", base_folder);
 		file = fopen(filename, "wb");
+		event = SMD_AFL_SPACE_CREATE;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		for (j = 0; j < i; j++)
+		{
+			k = i + j;
+			fwrite(&k, sizeof(k), 1, file);
+		}
 		event = SMD_AFL_SPACE_GET;
 		fwrite(&event, sizeof(event), 1, file);
 		i = 0;
@@ -810,9 +819,13 @@ create_raw_test_files(const char* base_folder)
 		{
 			sprintf(filename, "%s/start-files/SMD_AFL_TYPE_ADD_ATOMIC_%d.bin", base_folder, i);
 			file = fopen(filename, "wb");
-			event = SMD_AFL_TYPE_ADD_ATOMIC;
+			event = SMD_AFL_TYPE_CREATE;
 			fwrite(&event, sizeof(event), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
+			event = SMD_AFL_TYPE_ADD_ATOMIC;
+			fwrite(&event, sizeof(event), 1, file);
+			k = 2;
+			fwrite(&k, sizeof(k), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
 			for (j = 0; j < i; j++)
 			{
@@ -823,9 +836,23 @@ create_raw_test_files(const char* base_folder)
 			fclose(file);
 			sprintf(filename, "%s/start-files/SMD_AFL_TYPE_ADD_COMPOUND_%d.bin", base_folder, i);
 			file = fopen(filename, "wb");
-			event = SMD_AFL_TYPE_ADD_COMPOUND;
+			event = SMD_AFL_TYPE_CREATE;
 			fwrite(&event, sizeof(event), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
+			event = SMD_AFL_TYPE_ADD_ATOMIC;
+			fwrite(&event, sizeof(event), 1, file);
+			fwrite(&i, sizeof(i), 1, file);
+			fwrite(&i, sizeof(i), 1, file);
+			for (j = 0; j < i; j++)
+			{
+				k = i + j;
+				fwrite(&k, sizeof(k), 1, file);
+			}
+			fwrite(&i, sizeof(i), 1, file);
+			event = SMD_AFL_TYPE_ADD_COMPOUND;
+			fwrite(&event, sizeof(event), 1, file);
+			k = 2;
+			fwrite(&k, sizeof(k), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
 			fwrite(&i, sizeof(i), 1, file);
 			for (j = 0; j < i; j++)
@@ -950,7 +977,38 @@ create_raw_test_files(const char* base_folder)
 		sprintf(filename, "%s/start-files/SMD_AFL_SCHEME_CREATE.bin", base_folder);
 		file = fopen(filename, "wb");
 		i = 1;
+		event = SMD_AFL_FILE_CREATE;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		event = SMD_AFL_TYPE_CREATE;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		event = SMD_AFL_TYPE_ADD_ATOMIC;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		for (j = 0; j < i; j++)
+		{
+			k = i + j;
+			fwrite(&k, sizeof(k), 1, file);
+		}
+		fwrite(&i, sizeof(i), 1, file);
+		event = SMD_AFL_SPACE_CREATE;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		for (j = 0; j < i; j++)
+		{
+			k = i + j;
+			fwrite(&k, sizeof(k), 1, file);
+		}
 		event = SMD_AFL_SCHEME_CREATE;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		fwrite(&i, sizeof(i), 1, file);
+		event = SMD_AFL_SCHEME_WRITE;
 		fwrite(&event, sizeof(event), 1, file);
 		fwrite(&i, sizeof(i), 1, file);
 		fwrite(&i, sizeof(i), 1, file);

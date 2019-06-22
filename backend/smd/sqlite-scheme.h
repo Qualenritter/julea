@@ -167,9 +167,10 @@ backend_scheme_open(const char* name, void* parent, void* _space, void* _type, g
 static gboolean
 backend_scheme_read(void* key, void* buf, guint offset, guint size)
 {
-
+	J_DEBUG("read %d %d", offset, size);
 	j_smd_timer_start(backend_scheme_read);
 	j_sqlite3_transaction_begin();
+	memset(buf, 0, size);
 	read_type(*((sqlite3_int64*)key), buf, offset, size);
 	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_read);
@@ -181,6 +182,7 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 {
 	gint ret;
 	sqlite3_int64 type_key = 0;
+	J_DEBUG("write %d %d", offset, size);
 	j_smd_timer_start(backend_scheme_write);
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_int64(stmt_scheme_get_type_key, 1, *((sqlite3_int64*)key));

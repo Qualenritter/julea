@@ -55,7 +55,7 @@ test_space_read(void)
 		g_assert_cmpuint(in_dims[i], ==, out_dims[i]);
 	g_free(out_dims);
 	ret = j_smd_space_unref(space);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 void test_smd_space(void);
 void

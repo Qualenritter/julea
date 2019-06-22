@@ -6,7 +6,7 @@ lcov -a initial.info -a test.info -o coverage.info
 genhtml coverage.info --output-directory html
 echo "finished code coverage"
 cd ../..
-rm -rf test-afl/bin afl/out/corpus afl/out/merged
+rm -rf afl/out/corpus afl/out/merged
 mkdir afl/out/merged afl/out/corpus test-afl/bin
 
 #cp afl/start-files/* afl/out/merged/
@@ -17,7 +17,7 @@ mkdir afl/out/merged afl/out/corpus test-afl/bin
 #done
 #afl-cmin -e -m none -i afl/out/merged -o afl/out/corpus ./afl/julea-test-afl
 
-i=0
+i=$(ls -l test-afl/bin | wc -l)
 for f in $(find afl/out/cov/diff -type f)
 do
 	cp $f test-afl/bin/$i.bin

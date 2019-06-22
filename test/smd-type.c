@@ -33,7 +33,7 @@ test_type_create0(void)
 		type = j_smd_type_create();
 		g_assert_nonnull(type);
 		ret = j_smd_type_unref(type);
-		g_assert_cmpuint(ret, !=, FALSE);
+		g_assert_cmpuint(ret, ==, FALSE);
 	}
 }
 static void
@@ -49,7 +49,7 @@ test_type_create1(void)
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 1);
 	ret = j_smd_type_unref(type);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 static void
 test_type_create2(void)
@@ -67,7 +67,7 @@ test_type_create2(void)
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
 	ret = j_smd_type_unref(type);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 static void
 test_type_delete0(void)
@@ -91,7 +91,7 @@ test_type_delete0(void)
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
 	ret = j_smd_type_unref(type);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 static void
 test_type_delete1(void)
@@ -115,7 +115,7 @@ test_type_delete1(void)
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
 	ret = j_smd_type_unref(type);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 static void
 test_type_delete2(void)
@@ -139,7 +139,7 @@ test_type_delete2(void)
 	g_assert_cmpuint(ret, !=, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 2);
 	ret = j_smd_type_unref(type);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 static void
 test_type_delete3(void)
@@ -163,7 +163,7 @@ test_type_delete3(void)
 	g_assert_cmpuint(ret, ==, FALSE);
 	g_assert_cmpuint(j_smd_type_get_variable_count(type), ==, 3);
 	ret = j_smd_type_unref(type);
-	g_assert_cmpuint(ret, !=, FALSE);
+	g_assert_cmpuint(ret, ==, FALSE);
 }
 void test_smd_type(void);
 void
