@@ -488,8 +488,18 @@ backend_init(gchar const* path)
 	g_return_val_if_fail(path != NULL, FALSE);
 	dirname = g_path_get_dirname(path);
 	g_mkdir_with_parents(dirname, 0700);
-	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
-		goto error;
+	if (strncmp(":memory:", path, 7))
+	{
+		J_CRITICAL("useing path=%s", path);
+		if (sqlite3_open(path, &backend_db) != SQLITE_OK)
+			goto error;
+	}
+	else
+	{
+		J_CRITICAL("useing path=%s", ":memory:");
+		if (sqlite3_open(":memory:", &backend_db) != SQLITE_OK)
+			goto error;
+	}
 	if (!backend_init_sql())
 		goto error;
 
