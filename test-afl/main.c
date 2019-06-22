@@ -508,13 +508,16 @@ loop:
 		J_DEBUG("SMD_AFL_SCHEME_CREATE idx=%d idx2=%d idx3=%d idx4=%d", idx, idx2, idx3, idx4);
 		sprintf(scheme_strbuf, "scheme_%d", idx2);
 		ptr = scheme[idx][idx2];
+		res = j_smd_scheme_unref(ptr);
+		if (res != FALSE)
+			MYABORT();
 		res = j_smd_type_unref(scheme_type[idx][idx2]);
 		if (res != FALSE)
 			MYABORT();
+		scheme_type[idx][idx2] = j_smd_type_copy(type[idx3]);
 		res = j_smd_space_unref(scheme_space[idx][idx2]);
 		if (res != FALSE)
 			MYABORT();
-		scheme_type[idx][idx2] = j_smd_type_copy(type[idx3]);
 		if (space[idx4])
 			scheme_space[idx][idx2] = j_smd_space_create(space[idx4]->ndims, space[idx4]->dims);
 		else
@@ -534,16 +537,16 @@ loop:
 			res = j_smd_type_unref(scheme_type[idx][idx2]);
 			if (res != FALSE)
 				MYABORT();
+			scheme_type[idx][idx2] = NULL;
 			res = j_smd_space_unref(scheme_space[idx][idx2]);
 			if (res != FALSE)
 				MYABORT();
+			scheme_space[idx][idx2] = NULL;
 			res = j_smd_scheme_unref(scheme[idx][idx2]);
 			if (res != FALSE)
 				MYABORT();
+			scheme[idx][idx2] = NULL;
 		}
-		res = j_smd_scheme_unref(ptr);
-		if (res != FALSE)
-			MYABORT();
 		break;
 	case SMD_AFL_SCHEME_OPEN:
 		MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
