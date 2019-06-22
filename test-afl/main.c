@@ -275,7 +275,7 @@ loop:
 		break;
 	case SMD_AFL_TYPE_ADD_COMPOUND:
 		MY_READ_MAX(idx2, AFL_LIMIT_TYPE_COUNT);
-		/*fall trough*/
+ __attribute__ ((fallthrough)); 
 	case SMD_AFL_TYPE_ADD_ATOMIC:
 		MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
 		if (event == SMD_AFL_TYPE_ADD_ATOMIC)
@@ -652,11 +652,11 @@ loop:
 			for (i = scheme_offset; i < scheme_offset + scheme_size; i++)
 				scheme_write_random_data(scheme_var, scheme_buf[idx][idx2] + i * scheme_type[idx][idx2]->total_size);
 			res = j_smd_scheme_write(scheme[idx][idx2], scheme_buf[idx][idx2] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_offset, scheme_size, batch);
-			if (res == FALSE)
+			if (!res && (scheme_size > 0))
 				MYABORT();
 			j_batch_execute(batch);
 		}
-		/*fall trough*/
+ __attribute__ ((fallthrough));
 	case SMD_AFL_SCHEME_READ:
 		if (event == SMD_AFL_SCHEME_READ)
 		{
@@ -676,7 +676,7 @@ loop:
 			//read partial
 			memset(scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 			res = j_smd_scheme_read(scheme[idx][idx2], scheme_tmp_buf, scheme_offset, scheme_size, batch);
-			if (res == FALSE)
+			if (!res && (scheme_size > 0))
 				MYABORT();
 			j_batch_execute(batch);
 			if (memcmp(scheme_tmp_buf, scheme_buf[idx][idx2] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_size * scheme_type[idx][idx2]->total_size))
