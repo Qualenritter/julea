@@ -72,4 +72,7 @@ cp -r build ./afl/cov/fuzzer${i}/src/julea/julea/
 GCOV_PREFIX=afl/cov/fuzzer${i} JULEA_CONFIG=~/.config/julea/julea2 afl-fuzz -m none -M fuzzer$i -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./afl/julea-test-afl &
 sleep 2
 i=12
+mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
+cp -r build ./afl/cov/fuzzer${i}/src/julea/julea/
 GCOV_PREFIX=afl/cov/fuzzer${i} afl-cov --disable-lcov-web --background --live --afl-queue-id-limit 20 -d /src/julea/julea/afl/out --coverage-cmd "cat AFL_FILE | ./afl/julea-test-afl-gcov; cat AFL_FILE | ./afl/julea-test-afl" --code-dir .
+

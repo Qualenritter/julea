@@ -35,6 +35,7 @@ typedef enum J_SMD_Metadata_Type J_SMD_Metadata_Type;
 static sqlite3* backend_db;
 
 #ifdef JULEA_DEBUG
+static guint db_modified_since_start = 0;
 #define _j_done_check(ret)                                                              \
 	do                                                                              \
 	{                                                                               \
@@ -71,19 +72,26 @@ static sqlite3* backend_db;
 			exit(1);                                                        \
 		}                                                                       \
 	} while (0)
+#define j_sqlite3_reset(stmt)                     \
+	do                                        \
+	{                                         \
+		gint _ret_ = sqlite3_reset(stmt); \
+		db_modified_since_start = 1;      \
+		_j_ok_check(_ret_);               \
+	} while (0)
 #else
 #define _j_done_check(ret) (void)ret
 #define _j_done_constraint_check(ret) (void)ret
 #define _j_ok_check(ret) (void)ret
 #define _j_ok_constraint_check(ret) (void)ret
-#endif
-
 #define j_sqlite3_reset(stmt)                     \
 	do                                        \
 	{                                         \
 		gint _ret_ = sqlite3_reset(stmt); \
 		_j_ok_check(_ret_);               \
 	} while (0)
+#endif
+
 #define j_sqlite3_step_and_reset_check_done(stmt) \
 	do                                        \
 	{                                         \
@@ -469,15 +477,25 @@ backend_fini_sql(void)
 static void
 backend_reset(void)
 {
-	backend_fini_sql();
-	j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = OFF");
-	j_sqlite3_exec_done_or_error("DROP INDEX smd_scheme_type_idx");
-	j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type_header");
-	j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type");
-	j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_data");
-	j_sqlite3_exec_done_or_error("DROP TABLE smd_schemes");
-	backend_init_sql();
-error:; /*makros jump here*/
+#ifdef JULEA_DEBUG
+	if (db_modified_since_start)
+#endif
+	{
+		backend_fini_sql();
+		j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = OFF");
+		j_sqlite3_exec_done_or_error("DROP INDEX smd_scheme_type_idx");
+		j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type_header");
+		j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type");
+		j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_data");
+		j_sqlite3_exec_done_or_error("DROP TABLE smd_schemes");
+		backend_init_sql();
+	}
+error: /*makros jump here*/
+#ifdef JULEA_DEBUG
+	db_modified_since_start = 0;
+#else
+       ;
+#endif
 }
 
 static gboolean
