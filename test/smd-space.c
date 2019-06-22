@@ -44,7 +44,7 @@ test_space_read(void)
 	guint in_ndims = 4;
 	guint in_dims[] = { 2, 3, 6, 5 };
 	guint out_ndims = 0;
-	guint* out_dims;
+	guint* out_dims = NULL;
 	guint i;
 	void* space;
 	space = j_smd_space_create(in_ndims, in_dims);

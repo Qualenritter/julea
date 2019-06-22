@@ -74,5 +74,5 @@ sleep 2
 i=12
 mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 cp -r build ./afl/cov/fuzzer${i}/src/julea/julea/
-GCOV_PREFIX=afl/cov/fuzzer${i} afl-cov --disable-lcov-web --background --live --afl-queue-id-limit 20 -d /src/julea/julea/afl/out --coverage-cmd "cat AFL_FILE | ./afl/julea-test-afl-gcov; cat AFL_FILE | ./afl/julea-test-afl" --code-dir .
+GCOV_PREFIX=afl/cov/fuzzer${i} afl-cov --live -d /src/julea/julea/afl/out --coverage-cmd "cat AFL_FILE | ./afl/julea-test-afl-fast" --code-dir .
 
