@@ -17,6 +17,7 @@ create_type(const J_SMD_Variable_t* type)
 	sqlite3_int64 subtype_key;
 	j_smd_timer_start(create_type);
 	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
+J_DEBUG("header_key %d",header_key);
 	j_sqlite3_bind_int64(stmt_type_create_header, 1, header_key);
 	j_sqlite3_step_and_reset_check_done(stmt_type_create_header);
 start:
@@ -172,6 +173,7 @@ get_type_structure(sqlite3_int64 type_key)
 	j_smd_timer_stop(get_type_structure);
 	return arr;
 }
+char* buf_root;
 static gboolean
 write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint type_offset)
 {
@@ -186,8 +188,10 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	GArray* arr;
 	J_SMD_Variable_t* var;
 	j_smd_timer_start(write_type);
-	if (struct_size == 0)
+	if (struct_size == 0){
 		struct_size = calculate_struct_size(type_key);
+		buf_root=buf;
+	}
 	arr = get_type_structure(type_key);
 	for (i = 0; i < arr->len; i++)
 	{
@@ -231,6 +235,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 						J_CRITICAL("this should never happen type=%d", var->type);
 					}
 					value_float = value_int;
+J_DEBUG("write %d",location-buf_root+buf_offset);
 					j_sqlite3_bind_int64(stmt_type_write, 4, value_int);
 					j_sqlite3_bind_double(stmt_type_write, 5, value_float);
 					j_sqlite3_bind_null(stmt_type_write, 6);
@@ -303,6 +308,7 @@ read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 		{
 			offset = sqlite3_column_int64(stmt_type_read, 0) - buf_offset;
 			location = buf + offset;
+J_DEBUG("read %d %lld",location-buf,sqlite3_column_int64(stmt_type_read, 0));
 			switch (sqlite3_column_int64(stmt_type_read, 4))
 			{
 			case SMD_TYPE_INT:

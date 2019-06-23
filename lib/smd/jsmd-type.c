@@ -171,6 +171,7 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 {
 	J_SMD_Type_t* type = _type;
 	guint i;
+	gboolean tmp;
 	J_SMD_Type_t* var_type = _var_type;
 	if (!type)
 	{
@@ -198,11 +199,6 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 			J_DEBUG("variable array length not supported here var_dims[%d]", i);
 			return FALSE;
 		}
-	if (var_type->arr->len == 0)
-	{
-		J_DEBUG("adding empty subtype not allowed - since subtypes are not modifyable curerntly %d", 0);
-		return FALSE;
-	}
 	if (type == _var_type)
 	{
 		J_DEBUG("recoursive definition not allowed %p %p", _type, _var_type);
@@ -211,6 +207,12 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 	if (j_smd_type_get_member(type, var_name))
 	{
 		J_DEBUG("type already contains a variable named '%s'", var_name);
+		return FALSE;
+	}
+tmp=j_smd_type_calc_metadata(_var_type);
+	if ((var_type->arr->len == 0) || (!tmp))
+	{
+		J_DEBUG("adding empty subtype not allowed - since subtypes are not modifyable curerntly %d", 0);
 		return FALSE;
 	}
 	return j_smd_type_add_compound_type_internal(type, var_name, var_offset, var_size, _var_type, var_ndims, var_dims);
