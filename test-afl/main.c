@@ -160,7 +160,7 @@ main(int argc, char* argv[])
 	j_smd_debug_init();
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 #ifdef __AFL_HAVE_MANUAL_CONTROL
-//		__AFL_INIT();
+	//		__AFL_INIT();
 	while (__AFL_LOOP(1000))
 #endif
 	{
@@ -720,36 +720,36 @@ main(int argc, char* argv[])
 		}
 		goto loop;
 	cleanup:;
-	for (i = 0; i < AFL_LIMIT_SPACE_COUNT; i++)
-	{
-		res = j_smd_space_unref(space[i]);
-		if (res != FALSE)
-			MYABORT();
-	}
-	for (i = 0; i < AFL_LIMIT_TYPE_COUNT; i++)
-	{
-		res = j_smd_type_unref(type[i]);
-		if (res != FALSE)
-			MYABORT();
-	}
-	for (i = 0; i < AFL_LIMIT_FILE_COUNT; i++)
-	{
-		res = j_smd_file_unref(file[i]);
-		if (res != FALSE)
-			MYABORT();
-		for (j = 0; j < AFL_LIMIT_SCHEME_COUNT; j++)
+		for (i = 0; i < AFL_LIMIT_SPACE_COUNT; i++)
 		{
-			res = j_smd_scheme_unref(scheme[i][j]);
-			if (res != FALSE)
-				MYABORT();
-			res = j_smd_type_unref(scheme_type[i][j]);
-			if (res != FALSE)
-				MYABORT();
-			res = j_smd_space_unref(scheme_space[i][j]);
+			res = j_smd_space_unref(space[i]);
 			if (res != FALSE)
 				MYABORT();
 		}
-	}
+		for (i = 0; i < AFL_LIMIT_TYPE_COUNT; i++)
+		{
+			res = j_smd_type_unref(type[i]);
+			if (res != FALSE)
+				MYABORT();
+		}
+		for (i = 0; i < AFL_LIMIT_FILE_COUNT; i++)
+		{
+			res = j_smd_file_unref(file[i]);
+			if (res != FALSE)
+				MYABORT();
+			for (j = 0; j < AFL_LIMIT_SCHEME_COUNT; j++)
+			{
+				res = j_smd_scheme_unref(scheme[i][j]);
+				if (res != FALSE)
+					MYABORT();
+				res = j_smd_type_unref(scheme_type[i][j]);
+				if (res != FALSE)
+					MYABORT();
+				res = j_smd_space_unref(scheme_space[i][j]);
+				if (res != FALSE)
+					MYABORT();
+			}
+		}
 	}
 	j_smd_debug_exit();
 	return 0;
