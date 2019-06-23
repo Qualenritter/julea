@@ -134,6 +134,11 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 			return FALSE;
 		}
 	}
+	if (j_smd_type_get_member(type, var_name))
+	{
+		J_DEBUG("type already contains a variable named '%s'", var_name);
+		return FALSE;
+	}
 	variable.nextindex = 0;
 	variable.subtypeindex = 0;
 	variable.offset = var_offset;
@@ -197,6 +202,11 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 	if (type == _var_type)
 	{
 		J_DEBUG("recoursive definition not allowed %p %p", _type, _var_type);
+		return FALSE;
+	}
+	if (j_smd_type_get_member(type, var_name))
+	{
+		J_DEBUG("type already contains a variable named '%s'", var_name);
 		return FALSE;
 	}
 	variable.subtypeindex = 1; //appended directly afterwards
@@ -318,6 +328,24 @@ start:
 		goto start;
 	}
 	return TRUE;
+}
+const J_SMD_Variable_t*
+j_smd_type_get_member(void* _type, const char* var_name)
+{
+	J_SMD_Variable_t* var;
+	J_SMD_Type_t* type = _type;
+	if (!type || !var_name || (type->element_count == 0))
+		return NULL;
+	var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
+start:
+	if (strcmp(var_name, var->name) == 0)
+		return var;
+	if (var->nextindex)
+	{
+		var += var->nextindex;
+		goto start;
+	}
+	return NULL;
 }
 gboolean
 j_smd_type_remove_variable(void* _type, const char* name)

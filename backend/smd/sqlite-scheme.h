@@ -82,7 +82,8 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		type_key = 0;
 	else
 		type_key = create_type(&g_array_index(type->arr, J_SMD_Variable_t, type->first_index));
-	if(!type_key){
+	if (!type_key)
+	{
 		j_sqlite3_transaction_abort();
 		J_DEBUG("scheme create failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
@@ -203,7 +204,7 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 		exit(1);
 	}
 	j_sqlite3_reset(stmt_scheme_get_type_key);
-	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0,0);
+	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0, 0);
 	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_write);
 	J_DEBUG("scheme write success %lld", *((sqlite3_int64*)key));

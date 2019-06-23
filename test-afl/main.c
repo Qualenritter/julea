@@ -77,7 +77,7 @@ enum smd_afl_event_t
 void create_raw_test_files(const char* base_folder);
 
 static void
-scheme_write_random_data(J_SMD_Variable_t* var, char* buf,char*root)
+scheme_write_random_data(J_SMD_Variable_t* var, char* buf, char* root)
 {
 	guint i;
 	guint arr_len;
@@ -91,9 +91,12 @@ start:
 		MYABORT();
 	for (i = 0; i < arr_len; i++)
 	{
-		if (var->type == SMD_TYPE_SUB_TYPE){
-			scheme_write_random_data(var + var->subtypeindex, buf + var->offset + i * var->size,root);
-		}else{
+		if (var->type == SMD_TYPE_SUB_TYPE)
+		{
+			scheme_write_random_data(var + var->subtypeindex, buf + var->offset + i * var->size, root);
+		}
+		else
+		{
 			MY_READ_LEN(buf + var->offset + i * var->size, var->size);
 		}
 	}
@@ -318,9 +321,9 @@ main(int argc, char* argv[])
 			res_expected = TRUE;
 			res_expected = res_expected && type[idx];
 			res_expected = res_expected && type_ndims > 0 && type_ndims <= SMD_MAX_NDIMS;
+			res_expected = res_expected && !j_smd_type_get_member(type[idx], type_strbuf);
 			for (i = 0; i < type_ndims; i++)
 				res_expected = res_expected && type_dims[i] > 0;
-			//TODO duplicate variable names -> error
 			//TODO duplicate offset -> error
 			if (event == SMD_AFL_TYPE_ADD_ATOMIC)
 			{
@@ -661,7 +664,7 @@ main(int argc, char* argv[])
 				scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
 				scheme_var = &g_array_index(scheme_type[idx][idx2]->arr, J_SMD_Variable_t, scheme_type[idx][idx2]->first_index);
 				for (i = scheme_offset; i < scheme_offset + scheme_size; i++)
-					scheme_write_random_data(scheme_var, scheme_buf[idx][idx2] + i * scheme_type[idx][idx2]->total_size,scheme_buf[idx][idx2]);
+					scheme_write_random_data(scheme_var, scheme_buf[idx][idx2] + i * scheme_type[idx][idx2]->total_size, scheme_buf[idx][idx2]);
 				res = j_smd_scheme_write(scheme[idx][idx2], scheme_buf[idx][idx2] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_offset, scheme_size, batch);
 				if (!res && (scheme_size > 0))
 					MYABORT();

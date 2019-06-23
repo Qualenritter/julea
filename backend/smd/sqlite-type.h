@@ -12,7 +12,8 @@ static sqlite3_int64
 create_type(const J_SMD_Variable_t* type)
 {
 	const J_SMD_Variable_t* var = type;
-gint ret;	guint header_key = 0;
+	gint ret;
+	guint header_key = 0;
 	sqlite3_int64 subtype_key;
 	j_smd_timer_start(create_type);
 	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
@@ -24,7 +25,8 @@ start:
 	{
 		j_smd_timer_stop(create_type);
 		subtype_key = create_type(var + var->subtypeindex); //TODO unroll recoursion of this function
-		if(!subtype_key)return 0;
+		if (!subtype_key)
+			return 0;
 		j_smd_timer_start(create_type);
 	}
 	j_smd_timer_start(create_type_sql);
@@ -42,11 +44,12 @@ start:
 		j_sqlite3_bind_null(stmt_type_create, 11);
 	else
 		j_sqlite3_bind_int64(stmt_type_create, 11, subtype_key);
-ret = sqlite3_step(stmt_type_create);
-if(ret==SQLITE_CONSTRAINT)
-return 0;
-else _j_done_check(ret);
-j_sqlite3_reset(stmt_type_create);
+	ret = sqlite3_step(stmt_type_create);
+	if (ret == SQLITE_CONSTRAINT)
+		return 0;
+	else
+		_j_done_check(ret);
+	j_sqlite3_reset(stmt_type_create);
 	j_smd_timer_stop(create_type_sql);
 	if (var->nextindex)
 	{
@@ -170,7 +173,7 @@ get_type_structure(sqlite3_int64 type_key)
 	return arr;
 }
 static gboolean
-write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size,guint type_offset)
+write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, guint buf_offset, guint buf_len, guint struct_size, guint type_offset)
 {
 	gint64 value_int = 0;
 	gdouble value_float = 0;
@@ -205,8 +208,8 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 			{
 				j_sqlite3_bind_int64(stmt_type_write, 1, scheme_key);
 				j_sqlite3_bind_int64(stmt_type_write, 2, (*((sqlite3_int64*)var->sub_type_key)));
-				j_sqlite3_bind_int64(stmt_type_write, 3, offset_local + j * var->size+type_offset);
-				location = buf + offset_local - buf_offset + j * var->size+type_offset;
+				j_sqlite3_bind_int64(stmt_type_write, 3, offset_local + j * var->size + type_offset);
+				location = buf + offset_local - buf_offset + j * var->size + type_offset;
 				switch (var->type)
 				{
 				case SMD_TYPE_INT:
@@ -263,10 +266,8 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 				case SMD_TYPE_SUB_TYPE:
 					if ((k == 0)) /*subtypes calculate the offset themselves - only call them once*/
 					{
-						guint calc_offset;
-						calc_offset = location - buf;
 						j_smd_timer_stop(write_type);
-						write_type(*((sqlite3_int64*)var->sub_type_key), scheme_key, buf, buf_offset, buf_len, struct_size,type_offset+var->offset);
+						write_type(*((sqlite3_int64*)var->sub_type_key), scheme_key, buf, buf_offset, buf_len, struct_size, type_offset + var->offset);
 						j_smd_timer_start(write_type);
 					}
 					break;
