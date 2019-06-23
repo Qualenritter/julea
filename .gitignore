@@ -14,7 +14,7 @@ html/
 *.swp
 
 # Waf
-build/
+build*/
 waf-extras/*.pyc
 .lock-waf*
 .waf-*/
