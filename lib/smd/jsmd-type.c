@@ -209,7 +209,7 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 		J_DEBUG("type already contains a variable named '%s'", var_name);
 		return FALSE;
 	}
-tmp=j_smd_type_calc_metadata(_var_type);
+	tmp = j_smd_type_calc_metadata(_var_type);
 	if ((var_type->arr->len == 0) || (!tmp))
 	{
 		J_DEBUG("adding empty subtype not allowed - since subtypes are not modifyable curerntly %d", 0);

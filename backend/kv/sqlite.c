@@ -234,9 +234,15 @@ backend_init(gchar const* path)
 	dirname = g_path_get_dirname(path);
 	g_mkdir_with_parents(dirname, 0700);
 
-	if (sqlite3_open(path, &backend_db) != SQLITE_OK)
+	if (strncmp(":memory:", path, 7))
 	{
-		goto error;
+		if (sqlite3_open(path, &backend_db) != SQLITE_OK)
+			goto error;
+	}
+	else
+	{
+		if (sqlite3_open(":memory:", &backend_db) != SQLITE_OK)
+			goto error;
 	}
 
 	if (sqlite3_exec(backend_db, "CREATE TABLE IF NOT EXISTS julea (namespace TEXT NOT NULL, key TEXT NOT NULL, value BLOB NOT NULL);", NULL, NULL, NULL) != SQLITE_OK)
@@ -268,7 +274,7 @@ backend_fini(void)
 
 static JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_KV,
-	.component = J_BACKEND_COMPONENT_SERVER,
+	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.kv = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,

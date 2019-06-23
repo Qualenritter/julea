@@ -123,7 +123,6 @@ j_smd_file_delete_exec(JList* operations, JSemantics* semantics)
 	int message_size;
 	JBackend* smd_backend;
 	JSMDFileOperation* operation;
-	g_autoptr(JListIterator) iter = NULL;
 	g_autoptr(JMessage) reply = NULL;
 	int index = 0;
 	GSocketConnection* smd_connection;

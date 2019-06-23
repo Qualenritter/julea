@@ -41,7 +41,6 @@ def check_cfg_rpath(ctx, **kwargs):
 
 	if ctx.options.debug:
 		libpath = 'LIBPATH_{0}'.format(kwargs['uselib_store'])
-
 		if libpath in ctx.env:
 			rpath = 'RPATH_{0}'.format(kwargs['uselib_store'])
 			ctx.env[rpath] = ctx.env[libpath]
@@ -56,7 +55,6 @@ def check_cc_rpath(ctx, opt, **kwargs):
 	if opt:
 		kwargs['includes'] = ['{0}/include'.format(opt)]
 		kwargs['libpath'] = ['{0}/lib'.format(opt)]
-
 		if ctx.options.debug:
 			kwargs['rpath'] = kwargs['libpath']
 
@@ -64,10 +62,11 @@ def check_cc_rpath(ctx, opt, **kwargs):
 
 
 def get_rpath(ctx):
-	if not ctx.env.JULEA_DEBUG:
-		return None
+	if ctx.env.JULEA_DEBUG:
+		return ['{0}/lib'.format(os.path.abspath(out))]
 
-	return ['{0}/lib'.format(os.path.abspath(out))]
+	return None
+
 
 
 def check_and_add_cflags(ctx, flags, mandatory=True):
@@ -393,7 +392,7 @@ def build(ctx):
 	include_dir = ctx.path.find_dir('include')
 	ctx.install_files('${INCLUDEDIR}/julea', include_dir.ant_glob('**/*.h', excl='**/*-internal.h'), cwd=include_dir, relative_trick=True)
 
-	use_julea_core = ['M', 'GLIB', 'ASAN', 'GCOV']  # 'UBSAN'
+	use_julea_core = ['ASAN', 'M', 'GLIB', 'GCOV']  # 'UBSAN'
 	use_julea_lib = use_julea_core + ['GIO', 'GOBJECT', 'LIBBSON', 'OTF']
 	use_julea_backend = use_julea_core + ['GMODULE']
 	use_julea_object = use_julea_core + ['lib/julea', 'lib/julea-object']
@@ -413,7 +412,6 @@ def build(ctx):
 		defines=['JULEA_COMPILATION'],
 		install_path='${LIBDIR}'
 	)
-
 	clients = ['object', 'kv', 'item', 'smd']
 
 	if ctx.env.JULEA_HDF:

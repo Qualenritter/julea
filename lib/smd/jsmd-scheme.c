@@ -192,7 +192,6 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 {
 	JBackend* smd_backend;
 	int message_size;
-	g_autoptr(JListIterator) iter = NULL;
 	g_autoptr(JMessage) reply = NULL;
 	int index = 0;
 	GSocketConnection* smd_connection;

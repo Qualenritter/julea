@@ -15,6 +15,7 @@ html/
 
 # Waf
 build*/
+prefix*/
 waf-extras/*.pyc
 .lock-waf*
 .waf-*/

@@ -187,9 +187,10 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	GArray* arr;
 	J_SMD_Variable_t* var;
 	j_smd_timer_start(write_type);
-	if (struct_size == 0){
+	if (struct_size == 0)
+	{
 		struct_size = calculate_struct_size(type_key);
-	//	buf_root=buf;
+		//	buf_root=buf;
 	}
 	arr = get_type_structure(type_key);
 	for (i = 0; i < arr->len; i++)
@@ -234,7 +235,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 						J_CRITICAL("this should never happen type=%d", var->type);
 					}
 					value_float = value_int;
-//J_DEBUG("write %d",location-buf_root+buf_offset);
+					//J_DEBUG("write %d",location-buf_root+buf_offset);
 					j_sqlite3_bind_int64(stmt_type_write, 4, value_int);
 					j_sqlite3_bind_double(stmt_type_write, 5, value_float);
 					j_sqlite3_bind_null(stmt_type_write, 6);
@@ -268,7 +269,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 					j_sqlite3_step_and_reset_check_done(stmt_type_write);
 					break;
 				case SMD_TYPE_SUB_TYPE:
-					if ((k == 0)) /*subtypes calculate the offset themselves - only call them once*/
+					if (k == 0) /*subtypes calculate the offset themselves - only call them once*/
 					{
 						j_smd_timer_stop(write_type);
 						write_type(*((sqlite3_int64*)var->sub_type_key), scheme_key, buf, buf_offset, buf_len, struct_size, type_offset + var->offset);
@@ -307,7 +308,7 @@ read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 		{
 			offset = sqlite3_column_int64(stmt_type_read, 0) - buf_offset;
 			location = buf + offset;
-//J_DEBUG("read %d %lld",location-buf,sqlite3_column_int64(stmt_type_read, 0));
+			//J_DEBUG("read %d %lld",location-buf,sqlite3_column_int64(stmt_type_read, 0));
 			switch (sqlite3_column_int64(stmt_type_read, 4))
 			{
 			case SMD_TYPE_INT:

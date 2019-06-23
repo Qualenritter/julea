@@ -76,42 +76,8 @@ enum smd_afl_event_t
 	} while (0)
 void create_raw_test_files(const char* base_folder);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 static void
-scheme_write_random_data(J_SMD_Variable_t* var, char* buf, char* root,int stage)
+scheme_write_random_data(J_SMD_Variable_t* var, char* buf, char* root, int stage)
 {
 	guint i;
 	guint arr_len;
@@ -126,14 +92,14 @@ start:
 		MYABORT();
 	for (i = 0; i < arr_len; i++)
 	{
-//J_DEBUG("rand-for    %s %d %d %d %d",var->name,var->offset,var->size,stage,i);
+		//J_DEBUG("rand-for    %s %d %d %d %d",var->name,var->offset,var->size,stage,i);
 		if (var->type == SMD_TYPE_SUB_TYPE)
 		{
-			scheme_write_random_data(var + var->subtypeindex, buf + var->offset + i * var->size, root,stage+1);
+			scheme_write_random_data(var + var->subtypeindex, buf + var->offset + i * var->size, root, stage + 1);
 		}
 		else
 		{
-//J_DEBUG("rand        %d",buf + var->offset + i * var->size-root);
+			//J_DEBUG("rand        %d",buf + var->offset + i * var->size-root);
 			MY_READ_LEN(buf + var->offset + i * var->size, var->size);
 		}
 	}
@@ -194,7 +160,7 @@ main(int argc, char* argv[])
 	j_smd_debug_init();
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 #ifdef __AFL_HAVE_MANUAL_CONTROL
-	__AFL_INIT();
+//		__AFL_INIT();
 	while (__AFL_LOOP(1000))
 #endif
 	{
@@ -376,9 +342,11 @@ main(int argc, char* argv[])
 			if (res != res_expected)
 				MYABORT();
 			if (res)
-			{if (event == SMD_AFL_TYPE_ADD_ATOMIC)
-				type_last_offset[idx] += 4;else
-				type_last_offset[idx] += type[idx2]->total_size;
+			{
+				if (event == SMD_AFL_TYPE_ADD_ATOMIC)
+					type_last_offset[idx] += 4;
+				else
+					type_last_offset[idx] += type[idx2]->total_size;
 				type_var_count[idx]++;
 				if (type_var_count[idx] != j_smd_type_get_variable_count(type[idx]))
 					MYABORT();
@@ -701,15 +669,15 @@ main(int argc, char* argv[])
 				scheme_offset = scheme_offset % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size);
 				scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
 				scheme_var = &g_array_index(scheme_type[idx][idx2]->arr, J_SMD_Variable_t, scheme_type[idx][idx2]->first_index);
-//J_DEBUG("write %d %d",scheme_offset * scheme_type[idx][idx2]->total_size,scheme_size*scheme_type[idx][idx2]->total_size);
+				//J_DEBUG("write %d %d",scheme_offset * scheme_type[idx][idx2]->total_size,scheme_size*scheme_type[idx][idx2]->total_size);
 				for (i = scheme_offset; i < scheme_offset + scheme_size; i++)
-					scheme_write_random_data(scheme_var, scheme_buf[idx][idx2] + i * scheme_type[idx][idx2]->total_size, scheme_buf[idx][idx2],0);
+					scheme_write_random_data(scheme_var, scheme_buf[idx][idx2] + i * scheme_type[idx][idx2]->total_size, scheme_buf[idx][idx2], 0);
 				res = j_smd_scheme_write(scheme[idx][idx2], scheme_buf[idx][idx2] + scheme_offset * scheme_type[idx][idx2]->total_size, scheme_offset, scheme_size, batch);
 				if (!res && (scheme_size > 0))
 					MYABORT();
 				j_batch_execute(batch);
 			}
-			__attribute__((fallthrough));//directly verify read
+			__attribute__((fallthrough)); //directly verify read
 		case SMD_AFL_SCHEME_READ:
 			if (event == SMD_AFL_SCHEME_READ)
 			{
@@ -726,7 +694,7 @@ main(int argc, char* argv[])
 					MYABORT();
 				scheme_offset = scheme_offset % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size);
 				scheme_size = scheme_size % (AFL_LIMIT_SCHEME_BUF_SIZE / scheme_type[idx][idx2]->total_size - scheme_offset);
-//J_DEBUG("read %d %d",i * scheme_type[idx][idx2]->total_size,scheme_size*scheme_type[idx][idx2]->total_size);
+				//J_DEBUG("read %d %d",i * scheme_type[idx][idx2]->total_size,scheme_size*scheme_type[idx][idx2]->total_size);
 				//read partial
 				memset(scheme_tmp_buf, 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 				res = j_smd_scheme_read(scheme[idx][idx2], scheme_tmp_buf, scheme_offset, scheme_size, batch);
@@ -752,7 +720,6 @@ main(int argc, char* argv[])
 		}
 		goto loop;
 	cleanup:;
-	}
 	for (i = 0; i < AFL_LIMIT_SPACE_COUNT; i++)
 	{
 		res = j_smd_space_unref(space[i]);
@@ -782,6 +749,7 @@ main(int argc, char* argv[])
 			if (res != FALSE)
 				MYABORT();
 		}
+	}
 	}
 	j_smd_debug_exit();
 	return 0;
