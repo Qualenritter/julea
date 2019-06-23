@@ -481,14 +481,16 @@ backend_reset(void)
 	if (db_modified_since_start)
 #endif
 	{
-		backend_fini_sql();
+//		backend_fini_sql();
 		j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = OFF");
-		j_sqlite3_exec_done_or_error("DROP INDEX smd_scheme_type_idx");
-		j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type_header");
-		j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_type");
-		j_sqlite3_exec_done_or_error("DROP TABLE smd_scheme_data");
-		j_sqlite3_exec_done_or_error("DROP TABLE smd_schemes");
-		backend_init_sql();
+		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_type_header");
+		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_type");
+		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_data");
+		j_sqlite3_exec_done_or_error("DELETE FROM smd_schemes");
+		j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = ON");
+		smd_schemes_primary_key = 1;
+		smd_scheme_type_primary_key = 1;
+//		backend_init_sql();
 	}
 error: /*makros jump here*/
 #ifdef JULEA_DEBUG
