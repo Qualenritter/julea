@@ -1,0 +1,12 @@
+diff id:000130,src:000000,op:havoc,rep:64 -> id:000131,src:000000,op:havoc,rep:64,+cov
+Src file: /src/julea/julea/backend/smd/sqlite-type.h
+  New 'line' coverage: 88
+  New 'line' coverage: 89
+  New 'line' coverage: 90
+  New 'line' coverage: 91
+  New 'line' coverage: 92
+  New 'line' coverage: 93
+  New 'line' coverage: 94
+  New 'line' coverage: 95
+  New 'line' coverage: 96
+  New 'line' coverage: 97

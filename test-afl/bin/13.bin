@@ -1,0 +1,10 @@
+diff id:000003,orig:SMD_AFL_FILE_REF.bin -> id:000004,orig:SMD_AFL_FILE_UNREF.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 478
+  New 'line' coverage: 479
+diff id:000003,orig:SMD_AFL_FILE_REF.bin -> id:000004,orig:SMD_AFL_FILE_UNREF.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 533
+  New 'line' coverage: 534
+  New 'line' coverage: 536
+  New 'line' coverage: 537

@@ -1,0 +1,14 @@
+diff id:000063,src:000000,op:havoc,rep:8 -> id:000064,src:000000,op:havoc,rep:16
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 577
+  New 'line' coverage: 578
+  New 'line' coverage: 580
+  New 'line' coverage: 581
+  New 'line' coverage: 582
+  New 'line' coverage: 584
+  New 'line' coverage: 585
+  New 'line' coverage: 586
+  New 'line' coverage: 588
+  New 'line' coverage: 589
+  New 'line' coverage: 590
+  New 'line' coverage: 592

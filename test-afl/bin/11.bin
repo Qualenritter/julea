@@ -1,0 +1,3 @@
+diff id:000032,orig:SMD_AFL_TYPE_VARIABLE_COUNT.bin -> id:000033,src:000000,op:havoc,rep:128,+cov
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 215

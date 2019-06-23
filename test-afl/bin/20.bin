@@ -1,0 +1,10 @@
+diff id:000030,orig:SMD_AFL_TYPE_REMOVE_VARIABLE.bin -> id:000031,orig:SMD_AFL_TYPE_UNREF.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 342
+  New 'line' coverage: 343
+  New 'line' coverage: 345
+  New 'line' coverage: 346
+  New 'line' coverage: 347
+  New 'line' coverage: 359
+  New 'line' coverage: 360
+  New 'line' coverage: 362

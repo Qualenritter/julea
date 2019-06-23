@@ -1,0 +1,6 @@
+diff id:000365,sync:fuzzer3,src:000319,+cov -> id:000366,sync:fuzzer3,src:000331
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 292
+  New 'line' coverage: 293
+  New 'line' coverage: 294
+  New 'line' coverage: 296

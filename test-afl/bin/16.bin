@@ -1,0 +1,3 @@
+diff id:000010,orig:SMD_AFL_SPACE_CREATE_1.bin -> id:000011,orig:SMD_AFL_SPACE_CREATE_2.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 273

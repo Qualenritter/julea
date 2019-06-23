@@ -1,0 +1,3 @@
+diff id:000091,src:000000,op:havoc,rep:64 -> id:000092,src:000000,op:havoc,rep:128
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 337

@@ -1,0 +1,9 @@
+diff id:000002,orig:SMD_AFL_FILE_OPEN.bin -> id:000003,orig:SMD_AFL_FILE_REF.bin
+Src file: /src/julea/julea/backend/smd/sqlite-file.h
+  New 'line' coverage: 79
+  New 'line' coverage: 80
+  New 'line' coverage: 81
+  New 'line' coverage: 95
+  New 'line' coverage: 96
+  New 'line' coverage: 97
+  New 'line' coverage: 98

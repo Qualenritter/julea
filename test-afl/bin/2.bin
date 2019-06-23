@@ -1,0 +1,3 @@
+diff id:000019,orig:SMD_AFL_TYPE_ADD_ATOMIC_2.bin -> id:000020,orig:SMD_AFL_TYPE_ADD_ATOMIC_3.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 323

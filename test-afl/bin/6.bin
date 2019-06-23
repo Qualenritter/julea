@@ -1,0 +1,16 @@
+diff id:000090,src:000000,op:havoc,rep:128,+cov -> id:000091,src:000000,op:havoc,rep:32,+cov
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 277
+  New 'line' coverage: 284
+  New 'line' coverage: 285
+Src file: /src/julea/julea/backend/smd/sqlite-type.h
+  New 'line' coverage: 155
+  New 'line' coverage: 259
+  New 'line' coverage: 260
+  New 'line' coverage: 262
+  New 'line' coverage: 263
+  New 'line' coverage: 264
+  New 'line' coverage: 265
+  New 'line' coverage: 266
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 92

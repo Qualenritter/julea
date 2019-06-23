@@ -1,0 +1,14 @@
+diff id:000011,orig:SMD_AFL_SPACE_CREATE_2.bin -> id:000012,orig:SMD_AFL_SPACE_CREATE_3.bin
+Src file: /src/julea/julea/lib/smd/jsmd-scheme.c
+  New 'line' coverage: 334
+  New 'line' coverage: 335
+  New 'line' coverage: 336
+  New 'line' coverage: 337
+  New 'line' coverage: 338
+  New 'line' coverage: 339
+  New 'line' coverage: 340
+  New 'line' coverage: 341
+  New 'line' coverage: 342
+  New 'line' coverage: 343
+  New 'line' coverage: 344
+  New 'line' coverage: 345

@@ -1,0 +1,5 @@
+diff id:000018,orig:SMD_AFL_TYPE_ADD_ATOMIC_1.bin -> id:000019,orig:SMD_AFL_TYPE_ADD_ATOMIC_2.bin
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 192
+  New 'line' coverage: 194
+  New 'line' coverage: 195

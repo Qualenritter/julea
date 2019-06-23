@@ -1,0 +1,13 @@
+diff id:000001,orig:SMD_AFL_FILE_DELETE.bin -> id:000002,orig:SMD_AFL_FILE_OPEN.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 185
+  New 'line' coverage: 186
+Src file: /src/julea/julea/lib/smd/jsmd-space.c
+  New 'line' coverage: 68
+  New 'line' coverage: 73
+  New 'line' coverage: 74
+  New 'line' coverage: 75
+  New 'line' coverage: 76
+diff id:000001,orig:SMD_AFL_FILE_DELETE.bin -> id:000002,orig:SMD_AFL_FILE_OPEN.bin
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 324

@@ -1,0 +1,3 @@
+diff id:000305,sync:fuzzer7,src:000230 -> id:000306,sync:fuzzer7,src:000155
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 355

@@ -20,7 +20,6 @@ waf-extras/*.pyc
 .waf-*/
 
 # AFL generated files
-test-afl/bin
 afl
 
 # Benchmarks temporary file

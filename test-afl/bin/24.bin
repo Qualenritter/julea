@@ -1,0 +1,8 @@
+diff id:000157,src:000000+000057,op:splice,rep:64 -> id:000158,src:000000+000057,op:splice,rep:16
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 314
+  New 'line' coverage: 315
+  New 'line' coverage: 316
+Src file: /src/julea/julea/backend/smd/sqlite-type.h
+  New 'line' coverage: 48
+  New 'line' coverage: 49

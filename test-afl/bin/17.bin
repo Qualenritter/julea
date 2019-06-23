@@ -1,0 +1,21 @@
+diff id:000061,src:000000,op:havoc,rep:16 -> id:000062,src:000000,op:havoc,rep:32,+cov
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 202
+  New 'line' coverage: 203
+  New 'line' coverage: 204
+  New 'line' coverage: 205
+  New 'line' coverage: 206
+  New 'line' coverage: 207
+  New 'line' coverage: 208
+  New 'line' coverage: 209
+  New 'line' coverage: 210
+  New 'line' coverage: 211
+  New 'line' coverage: 212
+  New 'line' coverage: 213
+  New 'line' coverage: 214
+  New 'line' coverage: 216
+  New 'line' coverage: 217
+  New 'line' coverage: 218
+  New 'line' coverage: 219
+  New 'line' coverage: 220
+  New 'line' coverage: 221

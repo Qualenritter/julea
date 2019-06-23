@@ -1,0 +1,7 @@
+diff id:000050,src:000000,op:havoc,rep:64,+cov -> id:000051,src:000000,op:havoc,rep:64
+Src file: /src/julea/julea/lib/smd/jsmd-scheme.c
+  New 'line' coverage: 525
+  New 'line' coverage: 612
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 101
+  New 'line' coverage: 96

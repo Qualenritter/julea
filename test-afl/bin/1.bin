@@ -1,0 +1,28 @@
+diff id:000009,orig:SMD_AFL_SPACE_CREATE_0.bin -> id:000010,orig:SMD_AFL_SPACE_CREATE_1.bin
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'line' coverage: 178
+  New 'line' coverage: 179
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 234
+  New 'line' coverage: 235
+  New 'line' coverage: 237
+  New 'line' coverage: 238
+  New 'line' coverage: 379
+  New 'line' coverage: 380
+  New 'line' coverage: 382
+  New 'line' coverage: 383
+diff id:000009,orig:SMD_AFL_SPACE_CREATE_0.bin -> id:000010,orig:SMD_AFL_SPACE_CREATE_1.bin
+Src file: /src/julea/julea/lib/smd/jsmd-scheme.c
+  New 'line' coverage: 209
+  New 'line' coverage: 210
+  New 'line' coverage: 220
+  New 'line' coverage: 221
+  New 'line' coverage: 222
+  New 'line' coverage: 223
+  New 'line' coverage: 228
+  New 'line' coverage: 229
+  New 'line' coverage: 230
+  New 'line' coverage: 231
+  New 'line' coverage: 232
+  New 'line' coverage: 233
+  New 'line' coverage: 234

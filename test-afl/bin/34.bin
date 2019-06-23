@@ -1,0 +1,24 @@
+diff id:000052,src:000000,op:havoc,rep:64,+cov -> id:000053,src:000000,op:havoc,rep:128
+Src file: /src/julea/julea/lib/smd/jsmd-type.c
+  New 'function' coverage: _j_smd_variable_equals()
+  New 'line' coverage: 30
+  New 'line' coverage: 32
+  New 'line' coverage: 33
+  New 'line' coverage: 34
+  New 'line' coverage: 35
+  New 'line' coverage: 36
+  New 'line' coverage: 37
+  New 'line' coverage: 38
+  New 'line' coverage: 39
+  New 'line' coverage: 40
+  New 'line' coverage: 44
+  New 'line' coverage: 49
+  New 'line' coverage: 50
+  New 'line' coverage: 51
+  New 'line' coverage: 55
+  New 'line' coverage: 62
+  New 'line' coverage: 83
+  New 'line' coverage: 84
+  New 'line' coverage: 85
+Src file: /src/julea/julea/backend/smd/sqlite-type.h
+  New 'line' coverage: 189

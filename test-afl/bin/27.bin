@@ -1,0 +1,4 @@
+diff id:000415,sync:fuzzer6,src:000376 -> id:000416,sync:fuzzer6,src:000377
+Src file: /src/julea/julea/test-afl/main.c
+  New 'line' coverage: 98
+  New 'line' coverage: 99
