@@ -278,7 +278,9 @@ start:
 	tmp = var->size;
 	for (i = 0; i < var->space.ndims; i++)
 		tmp *= var->space.dims[i];
-	size += tmp;
+	tmp += var->offset;
+	if (tmp > size)
+		size = tmp;
 	if (var->nextindex)
 	{
 		var += var->nextindex;

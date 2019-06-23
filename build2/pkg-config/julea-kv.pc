@@ -1,0 +1,6 @@
+Name: julea
+Description: Flexible storage framework
+URL: https://github.com/wr-hamburg/julea
+Version: 0.2
+Requires: julea = 0.2
+Libs: -ljulea-kv

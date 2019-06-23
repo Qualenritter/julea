@@ -13,10 +13,10 @@ CC=afl-gcc ./waf.sh build
 CC=afl-gcc ./waf.sh install
 cp ./build/test-afl/julea-test-afl afl/julea-test-afl-fast
 export AFL_USE_ASAN=1
-CC=afl-gcc ./waf configure --gcov --debug
+CC=afl-gcc ./waf configure --gcov --debug --out build2
 CC=afl-gcc ./waf.sh build
-cp ./build/test-afl/julea-test-afl afl/julea-test-afl
-cp ./build/server/julea-server afl/julea-server
+cp ./build2/test-afl/julea-test-afl afl/julea-test-afl
+cp ./build2/server/julea-server afl/julea-server
 
 ./build/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
@@ -50,7 +50,7 @@ fi
 for i in {1..4}
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
-	cp -r build ./afl/cov/fuzzer${i}/src/julea/julea/
+	cp -r build2 ./afl/cov/fuzzer${i}/src/julea/julea/
 	AFL_USE_ASAN=1 GCOV_PREFIX=afl/cov/fuzzer${i} afl-fuzz -m none -S fuzzer$i -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./afl/julea-test-afl &
 	sleep 2
 done
@@ -68,7 +68,7 @@ GCOV_PREFIX=afl/cov/fuzzer${i} afl-fuzz -m none -M fuzzer$i -i /src/julea/julea/
 sleep 2
 i=11
 mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
-cp -r build ./afl/cov/fuzzer${i}/src/julea/julea/
+cp -r build2 ./afl/cov/fuzzer${i}/src/julea/julea/
 GCOV_PREFIX=afl/cov/fuzzer${i} JULEA_CONFIG=~/.config/julea/julea2 afl-fuzz -m none -M fuzzer$i -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./afl/julea-test-afl &
 sleep 2
 i=12
