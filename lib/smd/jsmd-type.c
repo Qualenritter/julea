@@ -103,9 +103,7 @@ gboolean
 j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, int var_size, J_SMD_Atomic_Type_t var_type, guint var_ndims, guint* var_dims)
 {
 	J_SMD_Type_t* type = _type;
-	J_SMD_Variable_t variable;
 	guint i;
-	guint my_idx;
 	if (!type)
 	{
 		J_DEBUG("type is %p", _type);
@@ -139,6 +137,14 @@ j_smd_type_add_atomic_type(void* _type, const char* var_name, int var_offset, in
 		J_DEBUG("type already contains a variable named '%s'", var_name);
 		return FALSE;
 	}
+	return j_smd_type_add_atomic_type_internal(type, var_name, var_offset, var_size, var_type, var_ndims, var_dims);
+}
+gboolean
+j_smd_type_add_atomic_type_internal(J_SMD_Type_t* type, const char* var_name, int var_offset, int var_size, J_SMD_Atomic_Type_t var_type, guint var_ndims, guint* var_dims)
+{
+	J_SMD_Variable_t variable;
+	guint i;
+	guint my_idx;
 	variable.nextindex = 0;
 	variable.subtypeindex = 0;
 	variable.offset = var_offset;
@@ -164,10 +170,8 @@ gboolean
 j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, int var_size, void* _var_type, guint var_ndims, guint* var_dims)
 {
 	J_SMD_Type_t* type = _type;
-	J_SMD_Type_t* var_type = _var_type;
-	J_SMD_Variable_t variable;
-	guint my_idx;
 	guint i;
+	J_SMD_Type_t* var_type = _var_type;
 	if (!type)
 	{
 		J_DEBUG("type is %p", _type);
@@ -209,6 +213,15 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 		J_DEBUG("type already contains a variable named '%s'", var_name);
 		return FALSE;
 	}
+	return j_smd_type_add_compound_type_internal(type, var_name, var_offset, var_size, _var_type, var_ndims, var_dims);
+}
+gboolean
+j_smd_type_add_compound_type_internal(J_SMD_Type_t* type, const char* var_name, int var_offset, int var_size, void* _var_type, guint var_ndims, guint* var_dims)
+{
+	J_SMD_Type_t* var_type = _var_type;
+	J_SMD_Variable_t variable;
+	guint my_idx;
+	guint i;
 	variable.subtypeindex = 1; //appended directly afterwards
 	variable.nextindex = 0; //this is last element
 	variable.type = SMD_TYPE_SUB_TYPE;

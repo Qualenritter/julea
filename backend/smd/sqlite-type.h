@@ -89,7 +89,7 @@ _start:
 			var.type = sqlite3_column_int64(stmt_type_load, 1);
 			if (var.type != SMD_TYPE_SUB_TYPE)
 			{
-				j_smd_type_add_atomic_type(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
+				j_smd_type_add_atomic_type_internal(type, var.name, var.offset, var.size, var.type, var.space.ndims, var.space.dims);
 			}
 			else
 			{
@@ -100,7 +100,7 @@ _start:
 				subtype = j_smd_type_create();
 				load_type(subtype, subtype_key);
 				j_smd_timer_start(load_type);
-				j_smd_type_add_compound_type(type, var.name, var.offset, var.size, subtype, var.space.ndims, var.space.dims);
+				j_smd_type_add_compound_type_internal(type, var.name, var.offset, var.size, subtype, var.space.ndims, var.space.dims);
 				j_smd_type_unref(subtype);
 				goto _start;
 			}

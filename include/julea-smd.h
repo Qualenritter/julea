@@ -159,6 +159,10 @@ const J_SMD_Variable_t* j_smd_type_get_member(void* _type, const char* var_name)
 
 /*not public interface functions below*/
 /*TODO move to internal header file*/
+gboolean
+j_smd_type_add_atomic_type_internal(J_SMD_Type_t* type, const char* var_name, int var_offset, int var_size, J_SMD_Atomic_Type_t var_type, guint var_ndims, guint* var_dims);
+gboolean
+j_smd_type_add_compound_type_internal(J_SMD_Type_t* type, const char* var_name, int var_offset, int var_size, void* _var_type, guint var_ndims, guint* var_dims);
 gboolean j_smd_type_calc_metadata(void* type);
 gboolean j_is_key_initialized(const char* const key);
 gboolean j_smd_is_initialized(void* data);
