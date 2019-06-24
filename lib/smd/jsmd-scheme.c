@@ -511,12 +511,12 @@ j_smd_read_free(gpointer data)
 	j_smd_scheme_unref(smd_op->scheme);
 	g_free(data);
 }
+static guint64 bytes_read;
 gboolean
 j_smd_scheme_read(void* _scheme, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch)
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
-	guint64 bytes_read;
 	if (!_scheme || !buf || !batch || (buf_size == 0) || !j_smd_is_initialized(_scheme))
 		return FALSE;
 	j_smd_timer_start(j_smd_scheme_read);
@@ -568,7 +568,9 @@ j_smd_write_exec(JList* operations, JSemantics* semantics)
 	{
 		smd_op = j_list_iterator_get(it);
 		if (smd_backend != NULL)
+		{
 			j_backend_smd_scheme_write(smd_backend, smd_op->scheme->key, smd_op->buf_write, smd_op->buf_offset, smd_op->buf_size);
+		}
 		else
 		{
 			message_size = 4 + 4 + SMD_KEY_LENGTH + smd_op->buf_size;
@@ -606,33 +608,116 @@ j_smd_write_free(gpointer data)
 	j_smd_scheme_unref(smd_op->scheme);
 	g_free(data);
 }
+static gboolean
+j_smd_set_valid_exec(JList* operations, JSemantics* semantics)
+{
+	guint ret;
+	JBackend* smd_backend;
+	JSMDSchemeOperation* smd_op;
+	g_autoptr(JListIterator) it = NULL;
+	g_autoptr(JMessage) message = NULL;
+	int message_size;
+	g_autoptr(JListIterator) iter = NULL;
+	g_autoptr(JMessage) reply = NULL;
+	int index = 0;
+	GSocketConnection* smd_connection;
+	j_smd_timer_start(j_smd_write_exec);
+	g_return_val_if_fail(operations != NULL, FALSE);
+	g_return_val_if_fail(semantics != NULL, FALSE);
+	it = j_list_iterator_new(operations);
+	smd_backend = j_smd_backend();
+J_DEBUG("a%d",0);
+	if (smd_backend == NULL)
+	{
+		message = j_message_new(J_MESSAGE_SMD_SCHEME_SET_VALID, 0);
+		j_message_set_safety(message, semantics);
+	}
+J_DEBUG("a%d",0);
+	while (j_list_iterator_next(it))
+	{
+		smd_op = j_list_iterator_get(it);
+		if (smd_backend != NULL)
+		{
+J_DEBUG("a%d",0);
+			j_backend_smd_scheme_set_valid(smd_backend, smd_op->scheme->key, smd_op->buf_offset, smd_op->buf_size);
+J_DEBUG("a%d",0);
+		}
+		else
+		{
+			message_size = 4 + 4 + SMD_KEY_LENGTH + smd_op->buf_size;
+			j_message_add_operation(message, message_size);
+			j_message_append_n(message, smd_op->scheme->key, SMD_KEY_LENGTH);
+			j_message_append_4(message, &smd_op->buf_offset);
+			j_message_append_4(message, &smd_op->buf_size);
+J_DEBUG("a%d",0);
+		}
+	}
+J_DEBUG("a%d",0);
+	if (smd_backend == NULL)
+	{
+		smd_connection = j_connection_pool_pop_smd(index);
+		j_smd_timer_start(j_smd_write_exec_server);
+		j_message_send(message, smd_connection);
+		reply = j_message_new_reply(message);
+		j_message_receive(reply, smd_connection);
+		j_smd_timer_stop(j_smd_write_exec_server);
+		iter = j_list_iterator_new(operations);
+		while (j_list_iterator_next(iter))
+		{
+			smd_op = j_list_iterator_get(iter);
+			ret = j_message_get_4(reply);
+			(void)ret; //TODO ASSERT ret==smd_op->buf_size
+		}
+		j_connection_pool_push_smd(index, smd_connection);
+	}
+	j_smd_timer_stop(j_smd_write_exec);
+J_DEBUG("a%d",0);
+	return TRUE;
+}
+static void
+j_smd_set_valid_free(gpointer data)
+{
+	JSMDSchemeOperation* smd_op = data;
+J_DEBUG("a%d",0);
+	j_smd_scheme_unref(smd_op->scheme);
+	g_free(data);
+J_DEBUG("a%d",0);
+}
+static guint64 bytes_written;
 gboolean
 j_smd_scheme_write(void* _scheme, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch)
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
-	guint64 bytes_written;
 	if (!_scheme || !buf || !batch || (buf_size == 0) || !j_smd_is_initialized(_scheme))
 		return FALSE;
+	op = j_operation_new();
 	j_smd_timer_start(j_smd_scheme_write);
+	smd_op = g_new(JSMDSchemeOperation, 1);
+	smd_op->scheme = j_smd_scheme_ref(_scheme);
 	if (((J_Scheme_t*)_scheme)->distribution_type != J_DISTRIBUTION_DATABASE)
 	{
+J_DEBUG("a%d",0);
 		j_distributed_object_write(((J_Scheme_t*)_scheme)->object, buf, buf_size * ((J_Scheme_t*)_scheme)->type->total_size, buf_offset * ((J_Scheme_t*)_scheme)->type->total_size, &bytes_written, batch);
+j_batch_execute(batch);
+J_DEBUG("a%d",0);
+		op->exec_func = j_smd_set_valid_exec;
+		op->free_func = j_smd_set_valid_free;
 	}
 	else
 	{
-		smd_op = g_new(JSMDSchemeOperation, 1);
-		smd_op->scheme = j_smd_scheme_ref(_scheme);
-		smd_op->buf_offset = buf_offset * smd_op->scheme->type->total_size;
-		smd_op->buf_size = buf_size * smd_op->scheme->type->total_size;
-		smd_op->buf_write = buf;
-		op = j_operation_new();
-		op->key = NULL;
-		op->data = smd_op;
 		op->exec_func = j_smd_write_exec;
 		op->free_func = j_smd_write_free;
-		j_batch_add(batch, op);
 	}
+	smd_op->buf_offset = buf_offset * smd_op->scheme->type->total_size;
+	smd_op->buf_size = buf_size * smd_op->scheme->type->total_size;
+	smd_op->buf_write = buf;
+	op->key = NULL;
+	op->data = smd_op;
+J_DEBUG("a%d",0);
+	j_batch_add(batch, op);
+J_DEBUG("a%d",0);
 	j_smd_timer_stop(j_smd_scheme_write);
+J_DEBUG("a%d",0);
 	return TRUE;
 }

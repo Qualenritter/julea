@@ -33,7 +33,7 @@ lcov --zerocounters -d build-clang-gcov-debug && lcov -c -i -d build-clang-gcov-
 rc=$?; if [[ $rc != 0 ]]; then echo "build-clang failed";exit $rc; fi
 
 i=0
-(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; ./build-gcc-gcov/tools/julea-config --user \
+(export LD_LIBRARY_PATH=prefix-clang-gcov/lib/:$LD_LIBRARY_PATH; ./build-clang-gcov/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
@@ -42,7 +42,7 @@ i=0
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
 for i in {1..24}
 do
-(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; ./build-gcc-gcov/tools/julea-config --user \
+(export LD_LIBRARY_PATH=prefix-clang-gcov/lib/:$LD_LIBRARY_PATH; ./build-clang-gcov/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
@@ -63,7 +63,7 @@ if (( $c < 10 )); then
 	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/gcc/init; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test-afl/julea-test-afl /src/julea/julea/afl)
 fi
 
-#starting fuzzers M-Mode clang - using julea-server
+starting fuzzers M-Mode clang - using julea-server
 for i in 0
 do
 	mkdir -p ./afl/cov/gcc/server${i}/src/julea/julea/
@@ -98,18 +98,25 @@ do
 	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov-debug-asan/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/gcc/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out/gcc ./build-gcc-gcov-debug-asan/test-afl/julea-test-afl) &
 	sleep 2
 done
-for i in {12..22}
+for i in {12..15}
+do
+	mkdir -p ./afl/cov/clang/fuzzer${i}/src/julea/julea/
+	cp -r build-clang ./afl/cov/clang/fuzzer${i}/src/julea/julea/
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1; export LD_LIBRARY_PATH=prefix-clang/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/clang/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out/clang ./build-clang/test-afl/julea-test-afl) &
+	sleep 2
+done
+for i in {16..22}
 do
 	mkdir -p ./afl/cov/clang/fuzzer${i}/src/julea/julea/
 	cp -r build-clang-gcov ./afl/cov/clang/fuzzer${i}/src/julea/julea/
-	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-clang-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/clang/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out/clang ./build-clang-gcov/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1; export LD_LIBRARY_PATH=prefix-clang-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/clang/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out/clang ./build-clang-gcov/test-afl/julea-test-afl) &
 	sleep 2
 done
 for i in {23..24}
 do
 	mkdir -p ./afl/cov/clang/fuzzer${i}/src/julea/julea/
 	cp -r build-clang-gcov-debug ./afl/cov/clang/fuzzer${i}/src/julea/julea/
-	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-clang-gcov-debug/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/clang/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out/clang ./build-clang-gcov-debug/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1; export LD_LIBRARY_PATH=prefix-clang-gcov-debug/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/clang/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out/clang ./build-clang-gcov-debug/test-afl/julea-test-afl) &
 	sleep 2
 done
 #starting single fuzzer in Coverage-Mode gcc - not working if clang uses same source folder

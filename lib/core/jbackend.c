@@ -557,6 +557,17 @@ j_backend_smd_scheme_write(JBackend* backend, void* key, const void* buf, guint 
 	return ret;
 }
 gboolean
+j_backend_smd_scheme_set_valid(JBackend* backend, void* key, guint offset, guint size)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	ret = backend->smd.backend_scheme_set_valid(key, offset, size);
+	return ret;
+}
+gboolean
 j_backend_smd_file_create(JBackend* backend, const char* name, bson_t* bson, void* key)
 {
 	gboolean ret;
@@ -638,10 +649,13 @@ j_backend_smd_scheme_open(JBackend* backend, const char* name, void* parent, voi
 void
 j_backend_reset(JBackend* backend)
 {
-	if (backend && backend->smd.backend_reset)
-		backend->smd.backend_reset();
-	if (backend && backend->object.backend_reset)
-		backend->object.backend_reset();
+	if (backend)
+	{
+		if (backend->type == J_BACKEND_TYPE_SMD && backend->smd.backend_reset)
+			backend->smd.backend_reset();
+		if (backend->type == J_BACKEND_TYPE_OBJECT && backend->object.backend_reset)
+			backend->object.backend_reset();
+	}
 }
 /**
  * @}

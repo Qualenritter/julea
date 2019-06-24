@@ -381,6 +381,7 @@ backend_fini(void)
 static void
 backend_reset(void)
 {
+	J_CRITICAL("reset posix%d", 0);
 	g_assert(g_hash_table_size(jd_backend_file_cache) == 0);
 	g_hash_table_destroy(jd_backend_file_cache);
 	g_rmdir(jd_backend_path);

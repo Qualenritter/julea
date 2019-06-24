@@ -229,3 +229,15 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 	J_DEBUG("scheme write success %lld", *((sqlite3_int64*)key));
 	return TRUE;
 }
+static gboolean
+backend_scheme_set_valid(void* key, guint offset, guint size)
+{
+	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_int64(stmt_scheme_set_valid, 1, *((sqlite3_int64*)key));
+	j_sqlite3_bind_int64(stmt_scheme_set_valid, 2, offset);
+	j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, size);
+	j_sqlite3_step_and_reset_check_done(stmt_scheme_set_valid);
+	j_sqlite3_transaction_commit();
+	J_DEBUG("scheme set_valid success %lld", *((sqlite3_int64*)key));
+	return TRUE;
+}
