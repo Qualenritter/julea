@@ -111,12 +111,9 @@ void* j_smd_scheme_ref(void* _scheme);
 gboolean j_smd_scheme_unref(void* _scheme);
 void* j_smd_scheme_get_type(void* scheme);
 void* j_smd_scheme_get_space(void* scheme);
-/*read write to database*/
+/*read write*/
 gboolean j_smd_scheme_read(void* scheme, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
 gboolean j_smd_scheme_write(void* scheme, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
-/*read write to objectstore*/
-gboolean j_smd_dataset_read(void* scheme, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch);
-gboolean j_smd_dataset_write(void* scheme, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch);
 
 void* j_smd_space_create(guint ndims, guint* dims);
 gboolean j_smd_space_get(void* space_type, guint* ndims, guint** dims);

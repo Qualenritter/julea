@@ -23,20 +23,23 @@ backend_scheme_delete(const char* name, void* parent)
 			i = sqlite3_column_int64(stmt_scheme_open, 6);
 			if (i != J_DISTRIBUTION_DATABASE)
 			{
+
 				memset(key, 0, SMD_KEY_LENGTH);
 				tmp = sqlite3_column_int64(stmt_scheme_open, 0);
 				memcpy(key, &tmp, sizeof(sqlite3_int64));
 				SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
-				distribution = j_distribution_new(sqlite3_column_int64(stmt_scheme_open, 5));
+				distribution = j_distribution_new(i);
 				object = j_distributed_object_new("smd", buf, distribution);
 				batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 				j_distributed_object_delete(object, batch);
+				j_distribution_unref(distribution);
 				j_batch_execute(batch);
 			}
 		}
 		else if (ret != SQLITE_DONE)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		j_sqlite3_reset(stmt_scheme_open);
+
 	}
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
@@ -67,16 +70,20 @@ backend_scheme_delete(const char* name, void* parent)
 	return TRUE;
 }
 static gboolean
-backend_scheme_create(const char* name, void* parent, const void* _space, const void* _type, guint distribution, void* key)
+backend_scheme_create(const char* name, void* parent, const void* _space, const void* _type, guint _distribution, void* key)
 {
+	char buf[SMD_KEY_LENGTH * 2 + 1];
 	const J_SMD_Space_t* space = _space;
 	const J_SMD_Type_t* type = _type;
-
+	JDistributedObject* object;
+	JDistribution* distribution;
+	JBatch* batch;
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;
 	guint ret;
 	memset(key, 0, SMD_KEY_LENGTH);
 	j_smd_timer_start(backend_scheme_create);
+
 	j_sqlite3_transaction_begin();
 	if (type->arr->len == 0)
 		type_key = 0;
@@ -88,6 +95,7 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		J_DEBUG("scheme create failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
 	}
+
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
@@ -96,7 +104,7 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	j_sqlite3_bind_int(stmt_scheme_create, 5, space->dims[1]);
 	j_sqlite3_bind_int(stmt_scheme_create, 6, space->dims[2]);
 	j_sqlite3_bind_int(stmt_scheme_create, 7, space->dims[3]);
-	j_sqlite3_bind_int(stmt_scheme_create, 8, distribution);
+	j_sqlite3_bind_int(stmt_scheme_create, 8, _distribution);
 	j_sqlite3_bind_int64(stmt_scheme_create, 9, type_key);
 	j_sqlite3_bind_int64(stmt_scheme_create, 10, scheme_key);
 	ret = sqlite3_step(stmt_scheme_create);
@@ -120,6 +128,13 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		exit(1);
 	}
+	distribution = j_distribution_new(_distribution);
+	SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
+	object = j_distributed_object_new("smd", buf, distribution);
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	j_distributed_object_create(object, batch);
+	j_batch_execute(batch);
+	j_distribution_unref(distribution);
 	j_smd_timer_stop(backend_scheme_create);
 	J_DEBUG("scheme create success %s %lld %lld", name, *((sqlite3_int64*)parent), scheme_key);
 	return TRUE;

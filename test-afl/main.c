@@ -140,10 +140,12 @@ main(int argc, char* argv[])
 	char scheme_tmp_buf[AFL_LIMIT_SCHEME_BUF_SIZE];
 	guint scheme_offset;
 	guint scheme_size;
+	JDistributionType scheme_distributon;
 	J_SMD_Variable_t* scheme_var;
 	//shared
 	g_autoptr(JBatch) batch = NULL;
 	void* ptr;
+	void* ptr2;
 	enum smd_afl_event_t event;
 	guint idx;
 	guint idx2;
@@ -567,7 +569,12 @@ main(int argc, char* argv[])
 			MY_READ_MAX(idx2, AFL_LIMIT_SCHEME_COUNT);
 			MY_READ_MAX(idx3, AFL_LIMIT_TYPE_COUNT);
 			MY_READ_MAX(idx4, AFL_LIMIT_SPACE_COUNT);
-			J_DEBUG("SMD_AFL_SCHEME_CREATE idx=%d idx2=%d idx3=%d idx4=%d", idx, idx2, idx3, idx4);
+			MY_READ_MAX(scheme_distributon, 2);
+			if (scheme_distributon == 0)
+				scheme_distributon = J_DISTRIBUTION_ROUND_ROBIN;
+			else
+				scheme_distributon = J_DISTRIBUTION_DATABASE; /*remove bias to object store*/
+			J_DEBUG("SMD_AFL_SCHEME_CREATE idx=%d idx2=%d idx3=%d idx4=%d %d", idx, idx2, idx3, idx4, scheme_distributon);
 			sprintf(scheme_strbuf, "scheme_%d", idx2);
 			ptr = scheme[idx][idx2];
 			res = j_smd_scheme_unref(ptr);
@@ -584,12 +591,10 @@ main(int argc, char* argv[])
 				scheme_space[idx][idx2] = j_smd_space_create(space[idx4]->ndims, space[idx4]->dims);
 			else
 				scheme_space[idx][idx2] = NULL;
-			res = j_smd_type_get_member(type[idx3], "not existing name");
-			if (res != FALSE)
+			ptr2 = j_smd_type_get_member(type[idx3], "not_existing_name");
+			if (ptr2)
 				MYABORT();
-			J_DEBUG("using type %p %p", type[idx3], scheme_type[idx][idx2]);
-
-			scheme[idx][idx2] = j_smd_scheme_create(scheme_strbuf, file[idx], scheme_type[idx][idx2], scheme_space[idx][idx2], J_DISTRIBUTION_DATABASE, batch);
+			scheme[idx][idx2] = j_smd_scheme_create(scheme_strbuf, file[idx], scheme_type[idx][idx2], scheme_space[idx][idx2], scheme_distributon, batch);
 			if (!scheme[idx][idx2] && file[idx] && scheme_type[idx][idx2] && scheme_space[idx][idx2] && j_smd_type_get_variable_count(scheme_type[idx][idx2]))
 				MYABORT();
 			j_batch_execute(batch);

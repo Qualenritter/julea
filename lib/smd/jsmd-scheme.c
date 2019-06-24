@@ -81,7 +81,6 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 	g_autoptr(JMessage) reply = NULL;
 	int index = 0;
 	GSocketConnection* smd_connection;
-	JBatch* batch;
 	g_autoptr(JMessage) message = NULL;
 	j_smd_timer_start(j_smd_create_exec);
 	g_return_val_if_fail(operations != NULL, FALSE);
@@ -99,7 +98,17 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 		smd_op->scheme->type->element_count = 1;
 		j_smd_type_calc_metadata(smd_op->scheme->type);
 		if (smd_backend != NULL)
+		{
 			j_backend_smd_scheme_create(smd_backend, smd_op->name, smd_op->parent->key, smd_op->scheme->space, smd_op->scheme->type, smd_op->scheme->distribution_type, smd_op->scheme->key);
+			if (j_smd_is_initialized(smd_op->scheme))
+			{
+				if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
+				{
+					SMD_BUF_TO_HEX(smd_op->scheme->key, buf, SMD_KEY_LENGTH);
+					smd_op->scheme->object = j_distributed_object_new("smd", buf, smd_op->scheme->distribution);
+				}
+			}
+		}
 		else
 		{
 			message_size =
@@ -129,20 +138,20 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 		j_message_receive(reply, smd_connection);
 		j_smd_timer_stop(j_smd_create_exec_server);
 		iter = j_list_iterator_new(operations);
-		batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 		while (j_list_iterator_next(iter))
 		{
 			smd_op = j_list_iterator_get(iter);
 			memcpy(smd_op->scheme->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
-			if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
+			if (j_smd_is_initialized(smd_op->scheme))
 			{
-				SMD_BUF_TO_HEX(smd_op->scheme->key, buf, SMD_KEY_LENGTH);
-				smd_op->scheme->object = j_distributed_object_new("smd", buf, smd_op->scheme->distribution);
-				j_distributed_object_create(smd_op->scheme->object, batch);
+				if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
+				{
+					SMD_BUF_TO_HEX(smd_op->scheme->key, buf, SMD_KEY_LENGTH);
+					smd_op->scheme->object = j_distributed_object_new("smd", buf, smd_op->scheme->distribution);
+				}
 			}
 		}
 		j_connection_pool_push_smd(index, smd_connection);
-		j_batch_execute(batch);
 	}
 	j_smd_timer_stop(j_smd_create_exec);
 	return TRUE;
@@ -419,24 +428,6 @@ j_smd_scheme_unref(void* _scheme)
 	return scheme != NULL;
 }
 
-gboolean
-j_smd_dataset_read(void* _scheme, void* buf, guint64 len, guint64 off, guint64* bytes_read, JBatch* batch)
-{
-	J_Scheme_t* scheme = _scheme;
-	j_smd_timer_start(j_smd_dataset_read);
-	j_distributed_object_read(scheme->object, buf, len, off, bytes_read, batch);
-	j_smd_timer_stop(j_smd_dataset_read);
-	return TRUE;
-}
-gboolean
-j_smd_dataset_write(void* _scheme, const void* buf, guint64 len, guint64 off, guint64* bytes_written, JBatch* batch)
-{
-	J_Scheme_t* scheme = _scheme;
-	j_smd_timer_start(j_smd_dataset_write);
-	j_distributed_object_write(scheme->object, buf, len, off, bytes_written, batch);
-	j_smd_timer_stop(j_smd_dataset_write);
-	return TRUE;
-}
 void*
 j_smd_scheme_get_type(void* _scheme)
 {
@@ -500,8 +491,8 @@ j_smd_read_exec(JList* operations, JSemantics* semantics)
 		{
 			smd_op = j_list_iterator_get(iter);
 			ret = j_message_get_4(reply);
-			memcpy(smd_op->buf_read, j_message_get_n(reply, smd_op->buf_size), smd_op->buf_size);
-			//TODO ASSERT ret==smd_op->buf_size
+			ret = ret < smd_op->buf_size ? ret : smd_op->buf_size; //should be equal
+			memcpy(smd_op->buf_read, j_message_get_n(reply, ret), ret);
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
@@ -520,20 +511,28 @@ j_smd_scheme_read(void* _scheme, void* buf, guint64 buf_offset, guint64 buf_size
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
+	guint64 bytes_read;
 	if (!_scheme || !buf || !batch || (buf_size == 0) || !j_smd_is_initialized(_scheme))
 		return FALSE;
 	j_smd_timer_start(j_smd_scheme_read);
-	smd_op = g_new(JSMDSchemeOperation, 1);
-	smd_op->scheme = j_smd_scheme_ref(_scheme);
-	smd_op->buf_offset = buf_offset * smd_op->scheme->type->total_size;
-	smd_op->buf_size = buf_size * smd_op->scheme->type->total_size;
-	smd_op->buf_read = buf;
-	op = j_operation_new();
-	op->key = NULL;
-	op->data = smd_op;
-	op->exec_func = j_smd_read_exec;
-	op->free_func = j_smd_read_free;
-	j_batch_add(batch, op);
+	if (((J_Scheme_t*)_scheme)->distribution_type != J_DISTRIBUTION_DATABASE)
+	{
+		j_distributed_object_read(((J_Scheme_t*)_scheme)->object, buf, buf_size * ((J_Scheme_t*)_scheme)->type->total_size, buf_offset * ((J_Scheme_t*)_scheme)->type->total_size, &bytes_read, batch);
+	}
+	else
+	{
+		smd_op = g_new(JSMDSchemeOperation, 1);
+		smd_op->scheme = j_smd_scheme_ref(_scheme);
+		smd_op->buf_offset = buf_offset * smd_op->scheme->type->total_size;
+		smd_op->buf_size = buf_size * smd_op->scheme->type->total_size;
+		smd_op->buf_read = buf;
+		op = j_operation_new();
+		op->key = NULL;
+		op->data = smd_op;
+		op->exec_func = j_smd_read_exec;
+		op->free_func = j_smd_read_free;
+		j_batch_add(batch, op);
+	}
 	j_smd_timer_stop(j_smd_scheme_read);
 	return TRUE;
 }
@@ -607,20 +606,28 @@ j_smd_scheme_write(void* _scheme, const void* buf, guint64 buf_offset, guint64 b
 {
 	JOperation* op;
 	JSMDSchemeOperation* smd_op;
+	guint64 bytes_written;
 	if (!_scheme || !buf || !batch || (buf_size == 0) || !j_smd_is_initialized(_scheme))
 		return FALSE;
 	j_smd_timer_start(j_smd_scheme_write);
-	smd_op = g_new(JSMDSchemeOperation, 1);
-	smd_op->scheme = j_smd_scheme_ref(_scheme);
-	smd_op->buf_offset = buf_offset * smd_op->scheme->type->total_size;
-	smd_op->buf_size = buf_size * smd_op->scheme->type->total_size;
-	smd_op->buf_write = buf;
-	op = j_operation_new();
-	op->key = NULL;
-	op->data = smd_op;
-	op->exec_func = j_smd_write_exec;
-	op->free_func = j_smd_write_free;
-	j_batch_add(batch, op);
+	if (((J_Scheme_t*)_scheme)->distribution_type != J_DISTRIBUTION_DATABASE)
+	{
+		j_distributed_object_write(((J_Scheme_t*)_scheme)->object, buf, buf_size * ((J_Scheme_t*)_scheme)->type->total_size, buf_offset * ((J_Scheme_t*)_scheme)->type->total_size, &bytes_written, batch);
+	}
+	else
+	{
+		smd_op = g_new(JSMDSchemeOperation, 1);
+		smd_op->scheme = j_smd_scheme_ref(_scheme);
+		smd_op->buf_offset = buf_offset * smd_op->scheme->type->total_size;
+		smd_op->buf_size = buf_size * smd_op->scheme->type->total_size;
+		smd_op->buf_write = buf;
+		op = j_operation_new();
+		op->key = NULL;
+		op->data = smd_op;
+		op->exec_func = j_smd_write_exec;
+		op->free_func = j_smd_write_free;
+		j_batch_add(batch, op);
+	}
 	j_smd_timer_stop(j_smd_scheme_write);
 	return TRUE;
 }

@@ -1,5 +1,6 @@
 files=$(ls afl/start-files/* | grep -v README )
-files="${files} $(ls afl/out/*/crashes/* | grep -v README )"
+files="${files} $(ls afl/out/gcc/*/crashes/* | grep -v README )"
+files="${files} $(ls afl/out/clang/*/crashes/* | grep -v README )"
 rm -rf b
 mkdir b
 export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH
