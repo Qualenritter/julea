@@ -24,7 +24,7 @@ start:
 	if (var->type == SMD_TYPE_SUB_TYPE)
 	{
 		j_smd_timer_stop(create_type);
-		subtype_key = create_type(var + var->subtypeindex); //TODO unroll recoursion of this function
+		subtype_key = create_type(var + var->subtypeindex);
 		if (!subtype_key)
 			return 0;
 		j_smd_timer_start(create_type);

@@ -1,21 +1,19 @@
 cp -r build afl/cov
 rm afl/cov/*.info
-for f in $(find afl/cov/ -maxdepth 1 -type d)
+for i in {0..11}
 do
-	if [ "$f" == "fuzzer1" ]
-	then
-		lcov --capture --directory $f --base-directory . --output-file ${f}.info
-	elif [ "$f" == "fuzzer2" ]
-	then
-	lcov --capture --directory $f --base-directory . --output-file ${f}.info
-	elif [ "$f" == "fuzzer3" ]
-	then
-	lcov --capture --directory $f --base-directory . --output-file ${f}.info
-	else
-	lcov --capture --directory $f --base-directory . --gcov-tool ./scripts/warnke_skript/llvm-gcov.sh --output-file ${f}.info
-	fi
+	lcov --capture --directory afl/cov/fuzzer$i --base-directory afl --output-file afl/cov/fuzzer$i.info
 done
-cd afl/cov
+lcov --capture --directory afl/cov/server0 --base-directory afl --output-file afl/cov/server0.info
+for i in {12..22}
+do
+	lcov --capture --directory afl/cov/fuzzer$i --base-directory afl --gcov-tool /src/julea/julea/scripts/warnke_skript/llvm-gcov.sh --output-file afl/cov/fuzzer$i.info
+done
+lcov --zerocounters -d build-gcc-gcov && lcov -c -i -d build-gcc-gcov -o afl/cov/build-gcc-gcov.info
+lcov --zerocounters -d build-gcc-gcov-debug-asan && lcov -c -i -d build-gcc-gcov-debug-asan -o afl/cov/build-gcc-gcov-debug-asan.info
+lcov --zerocounters -d build-clang-gcov && lcov -c -i -d build-clang-gcov -o afl/cov/build-clang-gcov.info
+lcov --zerocounters -d build-clang-gcov-debug && lcov -c -i -d build-clang-gcov-debug -o afl/cov/build-clang-gcov-debug.info
+(cd afl/cov
 lcov \
 	-a build-gcc-gcov.info \
 	-a build-gcc-gcov-debug-asan.info \
@@ -34,15 +32,23 @@ lcov \
 	-a fuzzer10.info \
 	-a fuzzer11.info \
 	-a fuzzer12.info \
+	-a fuzzer13.info \
+	-a fuzzer14.info \
+	-a fuzzer15.info \
+	-a fuzzer16.info \
+	-a fuzzer17.info \
+	-a fuzzer18.info \
+	-a fuzzer19.info \
+	-a fuzzer20.info \
+	-a fuzzer21.info \
+	-a fuzzer22.info \
 	-a server0.info \
-	-a server.info \
 	-o coverage.info
-genhtml coverage.info --output-directory html
+genhtml coverage.info --output-directory html)
 echo "finished code coverage"
-cd ../..
 
-rm -rf afl/out/corpus afl/out/merged
-mkdir afl/out/merged afl/out/corpus test-afl/bin
+#rm -rf afl/out/corpus afl/out/merged
+#mkdir afl/out/merged afl/out/corpus test-afl/bin
 
 #cp afl/start-files/* afl/out/merged/
 #for f in $(ls afl/out/*/queue/*)
@@ -52,9 +58,9 @@ mkdir afl/out/merged afl/out/corpus test-afl/bin
 #done
 #afl-cmin -e -m none -i afl/out/merged -o afl/out/corpus ./afl/julea-test-afl
 
-i=$(ls -l test-afl/bin | wc -l)
-for f in $(find afl/out/cov/diff -type f)
-do
-	cp $f test-afl/bin/$i.bin
-	i=$(($i + 1))
-done
+#i=$(ls -l test-afl/bin | wc -l)
+#for f in $(find afl/out/cov/diff -type f)
+#do
+#	cp $f test-afl/bin/$i.bin
+#	i=$(($i + 1))
+#done

@@ -163,7 +163,6 @@ j_smd_type_add_atomic_type_internal(J_SMD_Type_t* type, const char* var_name, in
 		type->first_index = my_idx;
 	type->last_index = my_idx;
 	type->element_count++;
-	/*TODO check conflicting other variables*/
 	return TRUE;
 }
 gboolean
@@ -180,7 +179,7 @@ j_smd_type_add_compound_type(void* _type, const char* var_name, int var_offset, 
 	}
 	if (!_var_type)
 	{
-		J_DEBUG("_var_type is %p", _type);
+		J_DEBUG("_var_type is %p", _var_type);
 		return FALSE;
 	}
 	if (var_ndims > SMD_MAX_NDIMS || var_ndims == 0)
@@ -224,7 +223,7 @@ j_smd_type_add_compound_type_internal(J_SMD_Type_t* type, const char* var_name, 
 	J_SMD_Variable_t variable;
 	guint my_idx;
 	guint i;
-	variable.subtypeindex = 1; //appended directly afterwards
+	variable.subtypeindex = 1 + var_type->first_index; //!! subtype may have deleted data at front!!
 	variable.nextindex = 0; //this is last element
 	variable.type = SMD_TYPE_SUB_TYPE;
 	variable.offset = var_offset;

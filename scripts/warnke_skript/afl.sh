@@ -1,4 +1,10 @@
 #!/usr/bin/bash
+cd /src/julea/julea
+#printenv > a
+#. ./scripts/environment.sh
+#printenv > b
+export PKG_CONFIG_PATH=$(echo $PKG_CONFIG_PATH | sed "s_/pkg-config:__g" | sed -e 's_$_/pkg-config_g')
+#echo $PKG_CONFIG_PATH
 ./scripts/warnke_skript/format.sh
 ./scripts/warnke_skript/kill.sh
 rm -rf prefix* build* afl /mnt2/julea/* ~/.config/julea/*
@@ -7,8 +13,6 @@ mkdir afl/cov
 mkdir afl/start-files
 sudo echo core >/proc/sys/kernel/core_pattern
 sudo echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-export G_DEBUG=
-export G_MESSAGES_DEBUG=
 
 (export CC=afl-gcc; ./waf configure --gcov --out build-gcc-gcov --prefix=prefix-gcc-gcov --libdir=prefix-gcc-gcov --bindir=prefix-gcc-gcov --destdir=prefix-gcc-gcov && ./waf.sh build && ./waf.sh install)
 rc=$?; if [[ $rc != 0 ]]; then echo "build-gcc-gcov failed";exit $rc; fi
@@ -33,7 +37,7 @@ i=0
   --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/kv${i}" \
   --smd-backend=sqlite --smd-component=server --smd-path=":memory:")
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
-for i in {1..11}
+for i in {1..24}
 do
 (export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; ./build-gcc-gcov/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
@@ -53,7 +57,7 @@ if (( $c < 10 )); then
 	i=1
 	mkdir -p ./afl/cov/init/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/init/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/init; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test-afl/julea-test-afl /src/julea/julea/afl)
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/init; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test-afl/julea-test-afl /src/julea/julea/afl)
 fi
 
 #starting fuzzers M-Mode clang - using julea-server
@@ -61,10 +65,10 @@ for i in 0
 do
 	mkdir -p ./afl/cov/server${i}/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/server${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/server${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; ./build-gcc-gcov/server/julea-server) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/server${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; ./build-gcc-gcov/server/julea-server) &
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-fuzz -m none -t 100000 -M fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -M fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
 	sleep 2
 done
 #starting fuzzers M-Mode gcc
@@ -72,44 +76,44 @@ for i in 1
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test/julea-test) &
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-fuzz -m none -t 100000 -M fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test/julea-test) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -M fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
 	sleep 2
 done
 #starting fuzzers S-Mode
-for i in {2..3}
+for i in {2..10}
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
 	sleep 2
 done
-for i in {4..5}
+for i in 11
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-gcc-gcov-debug-asan ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-gcc-gcov-debug-asan/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov-debug-asan/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov-debug-asan/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov-debug-asan/test-afl/julea-test-afl) &
 	sleep 2
 done
-for i in {6..9}
+for i in {12..20}
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-clang-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-clang-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-clang-gcov/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-clang-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-clang-gcov/test-afl/julea-test-afl) &
 	sleep 2
 done
-for i in {10..11}
+for i in {21..22}
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-clang-gcov-debug ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export LD_LIBRARY_PATH=prefix-clang-gcov-debug/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-clang-gcov-debug/test-afl/julea-test-afl) &
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-clang-gcov-debug/lib/:$LD_LIBRARY_PATH; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -S fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-clang-gcov-debug/test-afl/julea-test-afl) &
 	sleep 2
 done
 #starting single fuzzer in Coverage-Mode
-i=12
+i=24
 mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 cp -r build-gcc-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
-(export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; export AFL_NO_AFFINITY=1; afl-cov --live -d /src/julea/julea/afl/out --coverage-cmd "cat AFL_FILE | ./build-gcc-gcov/test-afl/julea-test-afl" --code-dir . )
+(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-cov --live -d /src/julea/julea/afl/out --coverage-cmd "cat AFL_FILE | ./build-gcc-gcov/test-afl/julea-test-afl" --code-dir . )
 
 
 

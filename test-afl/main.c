@@ -161,7 +161,7 @@ main(int argc, char* argv[])
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 #ifdef __AFL_HAVE_MANUAL_CONTROL
 	//		__AFL_INIT();
-	while (__AFL_LOOP(1000))
+//	while (__AFL_LOOP(1000))
 #endif
 	{
 		j_smd_reset();
@@ -584,6 +584,11 @@ main(int argc, char* argv[])
 				scheme_space[idx][idx2] = j_smd_space_create(space[idx4]->ndims, space[idx4]->dims);
 			else
 				scheme_space[idx][idx2] = NULL;
+			res = j_smd_type_get_member(type[idx3], "not existing name");
+			if (res != FALSE)
+				MYABORT();
+			J_DEBUG("using type %p %p", type[idx3], scheme_type[idx][idx2]);
+
 			scheme[idx][idx2] = j_smd_scheme_create(scheme_strbuf, file[idx], scheme_type[idx][idx2], scheme_space[idx][idx2], J_DISTRIBUTION_DATABASE, batch);
 			if (!scheme[idx][idx2] && file[idx] && scheme_type[idx][idx2] && scheme_space[idx][idx2] && j_smd_type_get_variable_count(scheme_type[idx][idx2]))
 				MYABORT();

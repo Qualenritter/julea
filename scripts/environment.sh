@@ -1,3 +1,4 @@
+#!/bin/bash
 # JULEA - Flexible storage framework
 # Copyright (C) 2017-2019 Michael Kuhn
 #
@@ -23,6 +24,7 @@ SELF_BASE="${SELF_PATH##*/}"
 
 . "${SELF_DIR}/common"
 . "${SELF_DIR}/spack"
+
 
 set_path
 set_library_path

@@ -286,84 +286,6 @@ test_scheme_datatypes(void)
 	g_free(types);
 	g_free(spaces);
 }
-static void
-test_scheme_datatypes_read_write(void)
-{
-	gboolean ret;
-	guint i, array_len;
-	const char* filename = "filename2";
-	const char* schemename = "schemename2";
-	void** types;
-	void* file;
-	void* scheme;
-	void* space;
-	void* type;
-	struct test_type_7* test_var_rec;
-	guint types_count;
-	struct test_type_7* test_var;
-	g_autoptr(JBatch) batch = NULL;
-	array_len = 20;
-	test_var = g_new(struct test_type_7, array_len);
-	test_var_rec = g_new(struct test_type_7, array_len);
-	for (i = 0; i < array_len; i++)
-	{
-		test_var[i].a = i * 2;
-		test_var[i].b[0][0].a = i * 2 + 1;
-		test_var[i].b[0][1].a = i * 2 + 2;
-		test_var[i].b[0][2].a = i * 2 + 3;
-		test_var[i].b[1][0].a = i * 2 + 4;
-		test_var[i].b[1][1].a = i * 2 + 5;
-		test_var[i].b[1][2].a = i * 2 + 6;
-		test_var[i].c = i * 4;
-	}
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	file = j_smd_file_create(filename, batch);
-	j_batch_execute(batch);
-	g_assert_nonnull(file);
-	g_assert_cmpuint(j_smd_is_initialized(file), !=, FALSE);
-	_create_test_types(&types, &types_count);
-	space = j_smd_space_create(1, &array_len);
-	///
-	type = types[7];
-	scheme = j_smd_scheme_create(schemename, file, type, space, J_DISTRIBUTION_DATABASE, batch);
-	j_batch_execute(batch);
-	g_assert_nonnull(scheme);
-	g_assert_cmpuint(j_smd_is_initialized(scheme), !=, FALSE);
-	ret = j_smd_scheme_write(scheme, test_var, 0, array_len, batch);
-	g_assert_cmpuint(ret, !=, FALSE);
-	j_batch_execute(batch);
-	ret = j_smd_scheme_unref(scheme);
-	g_assert_cmpuint(ret, ==, FALSE);
-	scheme = j_smd_scheme_open(schemename, file, batch);
-	j_batch_execute(batch);
-	g_assert_nonnull(scheme);
-	g_assert_cmpuint(j_smd_is_initialized(scheme), !=, FALSE);
-	ret = j_smd_scheme_read(scheme, test_var_rec, 0, array_len, batch);
-	g_assert_cmpuint(ret, !=, FALSE);
-	j_batch_execute(batch);
-	g_assert_cmpuint(memcmp(test_var, test_var_rec, sizeof(struct test_type_7) * array_len), ==, 0);
-	ret = j_smd_scheme_unref(scheme);
-	g_assert_cmpuint(ret, ==, FALSE);
-	ret = j_smd_scheme_delete(schemename, file, batch);
-	g_assert_cmpuint(ret, !=, FALSE);
-	j_batch_execute(batch);
-	for (i = 0; i < types_count; i++)
-	{
-		ret = j_smd_type_unref(types[i]);
-		g_assert_cmpuint(ret, ==, FALSE);
-	}
-	ret = j_smd_space_unref(space);
-	g_assert_cmpuint(ret, ==, FALSE);
-	///
-	ret = j_smd_file_unref(file);
-	g_assert_cmpuint(ret, ==, FALSE);
-	ret = j_smd_file_delete(filename, batch);
-	g_assert_cmpuint(ret, !=, FALSE);
-	j_batch_execute(batch);
-	g_free(test_var_rec);
-	g_free(test_var);
-	g_free(types);
-}
 void test_smd_scheme(void);
 void
 test_smd_scheme(void)
@@ -372,5 +294,4 @@ test_smd_scheme(void)
 	g_test_add_func("/smd/scheme/create_destroy_single", test_scheme_create_destroy_single);
 	g_test_add_func("/smd/scheme/create_destroy_many", test_scheme_create_destroy_many);
 	g_test_add_func("/smd/scheme/datatypes", test_scheme_datatypes);
-	g_test_add_func("/smd/scheme/datatypes_read_write", test_scheme_datatypes_read_write);
 }
