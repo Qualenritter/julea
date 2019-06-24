@@ -115,7 +115,7 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	}
 	if (type == J_BACKEND_TYPE_SMD)
 	{
-		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_scheme_read == NULL || tmp_backend->smd.backend_scheme_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_scheme_create == NULL || tmp_backend->smd.backend_scheme_delete == NULL || tmp_backend->smd.backend_scheme_open == NULL || tmp_backend->smd.backend_reset == NULL)
+		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_scheme_read == NULL || tmp_backend->smd.backend_scheme_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_scheme_create == NULL || tmp_backend->smd.backend_scheme_delete == NULL || tmp_backend->smd.backend_scheme_open == NULL)
 		{
 			goto error;
 		}
@@ -636,9 +636,12 @@ j_backend_smd_scheme_open(JBackend* backend, const char* name, void* parent, voi
 	return ret;
 }
 void
-j_backend_smd_reset(JBackend* backend)
+j_backend_reset(JBackend* backend)
 {
-	backend->smd.backend_reset();
+	if (backend && backend->smd.backend_reset)
+		backend->smd.backend_reset();
+	if (backend && backend->object.backend_reset)
+		backend->object.backend_reset();
 }
 /**
  * @}

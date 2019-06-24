@@ -52,10 +52,13 @@ void
 j_smd_reset(void)
 {
 	JBackend* smd_backend;
+	JBackend* object_backend;
 	GSocketConnection* smd_connection;
+	GSocketConnection* object_connection;
 	g_autoptr(JMessage) reply = NULL;
 	g_autoptr(JMessage) message = NULL;
 	smd_backend = j_smd_backend();
+	object_backend = j_object_backend();
 	if (smd_backend == NULL)
 	{
 		message = j_message_new(J_MESSAGE_SMD_RESET, 0);
@@ -64,5 +67,22 @@ j_smd_reset(void)
 		j_message_receive(reply, smd_connection);
 		j_connection_pool_push_smd(0, smd_connection);
 		//TODO reset ALL backends
+	}
+	else
+	{
+		j_backend_reset(smd_backend);
+	}
+	if (object_backend == NULL)
+	{
+		message = j_message_new(J_MESSAGE_SMD_RESET, 0);
+		object_connection = j_connection_pool_pop_object(0);
+		j_message_send(message, object_connection);
+		j_message_receive(reply, object_connection);
+		j_connection_pool_push_object(0, object_connection);
+		//TODO reset ALL backends
+	}
+	else
+	{
+		j_backend_reset(object_backend);
 	}
 }

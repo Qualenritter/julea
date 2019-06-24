@@ -378,13 +378,22 @@ backend_fini(void)
 
 	g_free(jd_backend_path);
 }
-
+static void
+backend_reset(void)
+{
+	g_assert(g_hash_table_size(jd_backend_file_cache) == 0);
+	g_hash_table_destroy(jd_backend_file_cache);
+	g_rmdir(jd_backend_path);
+	jd_backend_file_cache = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+	g_mkdir_with_parents(jd_backend_path, 0700);
+}
 static JBackend posix_backend = {
 	.type = J_BACKEND_TYPE_OBJECT,
 	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.object = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,
+		.backend_reset = backend_reset,
 		.backend_create = backend_create,
 		.backend_delete = backend_delete,
 		.backend_open = backend_open,

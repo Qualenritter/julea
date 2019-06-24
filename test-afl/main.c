@@ -145,7 +145,7 @@ main(int argc, char* argv[])
 	//shared
 	g_autoptr(JBatch) batch = NULL;
 	void* ptr;
-	void* ptr2;
+	const void* ptr2;
 	enum smd_afl_event_t event;
 	guint idx;
 	guint idx2;

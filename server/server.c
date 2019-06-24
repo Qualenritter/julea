@@ -847,7 +847,8 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		}
 		break;
 		case J_MESSAGE_SMD_RESET:
-			j_backend_smd_reset(jd_smd_backend);
+			j_backend_reset(jd_smd_backend);
+			j_backend_reset(jd_object_backend);
 			break;
 		default:
 			g_warn_if_reached();

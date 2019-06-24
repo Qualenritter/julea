@@ -64,6 +64,7 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
+			void (*backend_reset)(void);
 
 			gboolean (*backend_create)(gchar const*, gchar const*, gpointer*);
 			gboolean (*backend_open)(gchar const*, gchar const*, gpointer*);
@@ -158,7 +159,7 @@ gboolean j_backend_smd_file_open(JBackend*, const char* name, bson_t* bson, void
 gboolean j_backend_smd_scheme_create(JBackend*, const char* name, void* parent, const void* space, const void* type, guint distribution, void* key);
 gboolean j_backend_smd_scheme_open(JBackend*, const char* name, void* parent, void* space, void* type, guint* distribution, void* key);
 gboolean j_backend_smd_scheme_delete(JBackend*, const char* name, void* parent);
-void j_backend_smd_reset(JBackend*);
+void j_backend_reset(JBackend*);
 G_END_DECLS
 
 #endif

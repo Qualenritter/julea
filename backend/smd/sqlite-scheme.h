@@ -32,6 +32,7 @@ backend_scheme_delete(const char* name, void* parent)
 				object = j_distributed_object_new("smd", buf, distribution);
 				batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 				j_distributed_object_delete(object, batch);
+				j_distributed_object_unref(object);
 				j_distribution_unref(distribution);
 				j_batch_execute(batch);
 			}
@@ -39,7 +40,6 @@ backend_scheme_delete(const char* name, void* parent)
 		else if (ret != SQLITE_DONE)
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		j_sqlite3_reset(stmt_scheme_open);
-
 	}
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
@@ -128,13 +128,17 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		exit(1);
 	}
-	distribution = j_distribution_new(_distribution);
-	SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
-	object = j_distributed_object_new("smd", buf, distribution);
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	j_distributed_object_create(object, batch);
-	j_batch_execute(batch);
-	j_distribution_unref(distribution);
+	if (_distribution != J_DISTRIBUTION_DATABASE)
+	{
+		distribution = j_distribution_new(_distribution);
+		SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
+		object = j_distributed_object_new("smd", buf, distribution);
+		batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+		j_distributed_object_create(object, batch);
+		j_distributed_object_unref(object);
+		j_batch_execute(batch);
+		j_distribution_unref(distribution);
+	}
 	j_smd_timer_stop(backend_scheme_create);
 	J_DEBUG("scheme create success %s %lld %lld", name, *((sqlite3_int64*)parent), scheme_key);
 	return TRUE;

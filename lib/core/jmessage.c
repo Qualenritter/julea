@@ -457,7 +457,7 @@ j_message_get_flags(JMessage const* message)
 {
 	JMessageFlags op_flags;
 
-	g_return_val_if_fail(message != NULL, J_MESSAGE_NONE);
+	g_return_val_if_fail(message != NULL, J_MESSAGE_FLAGS_NONE);
 
 	j_trace_enter(G_STRFUNC, NULL);
 
