@@ -659,6 +659,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			}
 			j_message_send(reply, connection);
 		}
+		break;
 		case J_MESSAGE_SMD_SCHEME_SET_VALID:
 		{
 			g_autoptr(JMessage) reply = NULL;
@@ -677,6 +678,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			}
 			j_message_send(reply, connection);
 		}
+		break;
 		case J_MESSAGE_SMD_SCHEME_GET_VALID:
 		{
 			g_autoptr(JMessage) reply = NULL;

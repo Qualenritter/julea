@@ -38,7 +38,10 @@ backend_scheme_delete(const char* name, void* parent)
 			}
 		}
 		else if (ret != SQLITE_DONE)
+		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			exit(1);
+		}
 		j_sqlite3_reset(stmt_scheme_open);
 	}
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
@@ -52,7 +55,10 @@ backend_scheme_delete(const char* name, void* parent)
 			g_array_append_val(arr, tmp);
 		}
 		else if (ret != SQLITE_DONE)
+		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			exit(1);
+		}
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_delete0);
 	j_sqlite3_bind_text(stmt_scheme_delete1, 1, name, -1);
@@ -250,7 +256,10 @@ backend_scheme_get_valid(void* key, guint offset, guint size, void* result)
 			g_array_append_val(arr, range);
 		}
 		else if (ret != SQLITE_DONE)
+		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			exit(1);
+		}
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_get_valid);
 	if (arr->len)
@@ -266,13 +275,72 @@ backend_scheme_get_valid(void* key, guint offset, guint size, void* result)
 static gboolean
 backend_scheme_set_valid(void* key, guint offset, guint size)
 {
+	guint ret;
+	guint start;
+	guint end;
+	guint start_new;
+	guint end_new;
+	guint count;
 	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_int64(stmt_scheme_get_valid_max, 1, *((sqlite3_int64*)key));
+	j_sqlite3_bind_int64(stmt_scheme_get_valid_max, 2, offset + size);
+	j_sqlite3_bind_int64(stmt_scheme_get_valid_max, 3, offset);
+	ret = sqlite3_step(stmt_scheme_get_valid_max);
+	if (ret == SQLITE_ROW)
+	{
+		start = sqlite3_column_int64(stmt_scheme_get_valid_max, 0);
+		end = sqlite3_column_int64(stmt_scheme_get_valid_max, 1);
+		count = sqlite3_column_int64(stmt_scheme_get_valid_max, 2);
+	}
+	else if (ret != SQLITE_DONE)
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		exit(1);
+	}
+	j_sqlite3_reset(stmt_scheme_get_valid_max);
+	if (count == 0)
+	{
+		j_sqlite3_bind_int64(stmt_scheme_set_valid, 1, *((sqlite3_int64*)key));
+		j_sqlite3_bind_int64(stmt_scheme_set_valid, 2, offset);
+		j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, offset + size);
+		j_sqlite3_step_and_reset_check_done(stmt_scheme_set_valid);
+		j_sqlite3_transaction_commit();
+		J_DEBUG("scheme set_valid success first entry %lld %d %d", *((sqlite3_int64*)key), offset, offset + size);
+		return TRUE;
+	}
+	if (count == 1 && start <= offset && end >= offset + size)
+	{
+		j_sqlite3_transaction_commit();
+		J_DEBUG("scheme set_valid success without change %lld %d %d", *((sqlite3_int64*)key), offset, offset + size);
+		return TRUE;
+	}
+	start_new = start;
+	end_new = end;
+	if (start > offset)
+		start_new = offset;
+	if (end < offset + size)
+		end_new = offset + size;
+	if (count == 1)
+	{
+		j_sqlite3_bind_int64(stmt_scheme_update_valid, 1, *((sqlite3_int64*)key));
+		j_sqlite3_bind_int64(stmt_scheme_update_valid, 2, start);
+		j_sqlite3_bind_int64(stmt_scheme_update_valid, 3, end);
+		j_sqlite3_bind_int64(stmt_scheme_update_valid, 4, start_new);
+		j_sqlite3_bind_int64(stmt_scheme_update_valid, 5, end_new);
+		j_sqlite3_step_and_reset_check_done(stmt_scheme_update_valid);
+		j_sqlite3_transaction_commit();
+		J_DEBUG("scheme set_valid success update single %lld %d %d", *((sqlite3_int64*)key), offset, offset + size);
+		return TRUE;
+	}
+	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 1, *((sqlite3_int64*)key));
+	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 2, offset);
+	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 3, offset + size);
+	j_sqlite3_step_and_reset_check_done(stmt_scheme_delete_valid);
 	j_sqlite3_bind_int64(stmt_scheme_set_valid, 1, *((sqlite3_int64*)key));
-	j_sqlite3_bind_int64(stmt_scheme_set_valid, 2, offset);
-	j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, offset + size);
-	J_DEBUG("marked valid %d %d", offset, offset + size);
+	j_sqlite3_bind_int64(stmt_scheme_set_valid, 2, start_new);
+	j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, end_new);
 	j_sqlite3_step_and_reset_check_done(stmt_scheme_set_valid);
 	j_sqlite3_transaction_commit();
-	J_DEBUG("scheme set_valid success %lld", *((sqlite3_int64*)key));
+	J_DEBUG("scheme set_valid success merge %lld %d %d", *((sqlite3_int64*)key), offset, offset + size);
 	return TRUE;
 }

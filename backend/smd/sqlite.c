@@ -219,8 +219,11 @@ static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
 static sqlite3_stmt* stmt_file_delete1;
 static sqlite3_stmt* stmt_type_delete;
+static sqlite3_stmt* stmt_scheme_delete_valid;
 static sqlite3_stmt* stmt_scheme_get_valid;
+static sqlite3_stmt* stmt_scheme_get_valid_max;
 static sqlite3_stmt* stmt_scheme_set_valid;
+static sqlite3_stmt* stmt_scheme_update_valid;
 static sqlite3_stmt* stmt_scheme_delete0;
 static sqlite3_stmt* stmt_scheme_delete1;
 static sqlite3_stmt* stmt_scheme_delete2;
@@ -383,10 +386,22 @@ GROUP BY Num - Rn
 		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3 ORDER BY range_start ASC",
 		&stmt_scheme_get_valid);
 	j_sqlite3_prepare_v3(
+		"DELETE FROM smd_scheme_data_range WHERE "
+		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3",
+		&stmt_scheme_delete_valid);
+	j_sqlite3_prepare_v3(
+		"SELECT MIN(range_start), MAX(range_end), COUNT(*) FROM smd_scheme_data_range WHERE "
+		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3",
+		&stmt_scheme_get_valid_max);
+	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_scheme_data_range ("
 		"scheme_key,range_start,range_end"
 		") VALUES (?1, ?2, ?3)",
 		&stmt_scheme_set_valid);
+	j_sqlite3_prepare_v3(
+		"UPDATE smd_scheme_data_range SET range_start = ?4, range_end = ?5 "
+		"WHERE scheme_key = ?1 AND range_start = ?2 AND range_end = ?3",
+		&stmt_scheme_update_valid);
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes " //
 		"WHERE name = ? AND parent_key = ?",
@@ -488,7 +503,10 @@ backend_fini_sql(void)
 	sqlite3_finalize(stmt_file_delete1);
 	sqlite3_finalize(stmt_type_delete);
 	sqlite3_finalize(stmt_scheme_set_valid);
+	sqlite3_finalize(stmt_scheme_update_valid);
 	sqlite3_finalize(stmt_scheme_get_valid);
+	sqlite3_finalize(stmt_scheme_delete_valid);
+	sqlite3_finalize(stmt_scheme_get_valid_max);
 	sqlite3_finalize(stmt_scheme_create);
 	sqlite3_finalize(stmt_scheme_delete0);
 	sqlite3_finalize(stmt_scheme_delete1);

@@ -524,17 +524,15 @@ j_smd_get_valid_exec_read_data(JSMDSchemeOperation* smd_op, GArray* arr, JBatch*
 	J_SMD_Range_t* range;
 	J_SMD_Range_t* range_end;
 	ptr = smd_op->buf_read;
-	J_DEBUG("reading data %d %d", smd_op->buf_offset, smd_op->buf_size);
 	if (arr->len == 0)
 	{
-		J_DEBUG("memset %d %d", smd_op->buf_offset, smd_op->buf_size);
 		memset(ptr, 0, smd_op->buf_size);
 	}
 	else
 	{
 		offset = smd_op->buf_offset;
 		offset_end = offset + smd_op->buf_size;
-		range = arr->data;
+		range = (J_SMD_Range_t*)arr->data;
 		range_end = range + arr->len;
 		while (offset < offset_end && range < range_end)
 		{
@@ -550,7 +548,6 @@ j_smd_get_valid_exec_read_data(JSMDSchemeOperation* smd_op, GArray* arr, JBatch*
 			len = range->start - offset;
 			if (len)
 			{
-				J_DEBUG("memset %d %d", offset, len);
 				memset(ptr, 0, len);
 				ptr += len;
 				offset += len;
@@ -558,7 +555,6 @@ j_smd_get_valid_exec_read_data(JSMDSchemeOperation* smd_op, GArray* arr, JBatch*
 			len = range->end - range->start;
 			if (len)
 			{
-				J_DEBUG("read %d %d", offset, len);
 				j_distributed_object_read(smd_op->scheme->object, ptr, len, offset, &bytes_read, batch);
 				offset += len;
 				ptr += len;
@@ -568,10 +564,10 @@ j_smd_get_valid_exec_read_data(JSMDSchemeOperation* smd_op, GArray* arr, JBatch*
 		len = offset_end - offset;
 		if (len)
 		{
-			J_DEBUG("memset %d %d", offset, len);
 			memset(ptr, 0, len);
 		}
 	}
+	return TRUE;
 }
 static gboolean
 j_smd_get_valid_exec(JList* operations, JSemantics* semantics)
@@ -639,7 +635,6 @@ j_smd_get_valid_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
-	J_DEBUG("execute read");
 	j_batch_execute(batch);
 	j_smd_timer_stop(j_smd_read_exec);
 	return TRUE;
@@ -767,21 +762,17 @@ j_smd_set_valid_exec(JList* operations, JSemantics* semantics)
 	g_return_val_if_fail(semantics != NULL, FALSE);
 	it = j_list_iterator_new(operations);
 	smd_backend = j_smd_backend();
-	J_DEBUG("a%d", 0);
 	if (smd_backend == NULL)
 	{
 		message = j_message_new(J_MESSAGE_SMD_SCHEME_SET_VALID, 0);
 		j_message_set_safety(message, semantics);
 	}
-	J_DEBUG("a%d", 0);
 	while (j_list_iterator_next(it))
 	{
 		smd_op = j_list_iterator_get(it);
 		if (smd_backend != NULL)
 		{
-			J_DEBUG("a%d", 0);
 			j_backend_smd_scheme_set_valid(smd_backend, smd_op->scheme->key, smd_op->buf_offset, smd_op->buf_size);
-			J_DEBUG("a%d", 0);
 		}
 		else
 		{
@@ -790,10 +781,8 @@ j_smd_set_valid_exec(JList* operations, JSemantics* semantics)
 			j_message_append_n(message, smd_op->scheme->key, SMD_KEY_LENGTH);
 			j_message_append_4(message, &smd_op->buf_offset);
 			j_message_append_4(message, &smd_op->buf_size);
-			J_DEBUG("a%d", 0);
 		}
 	}
-	J_DEBUG("a%d", 0);
 	if (smd_backend == NULL)
 	{
 		smd_connection = j_connection_pool_pop_smd(index);
@@ -812,17 +801,14 @@ j_smd_set_valid_exec(JList* operations, JSemantics* semantics)
 		j_connection_pool_push_smd(index, smd_connection);
 	}
 	j_smd_timer_stop(j_smd_write_exec);
-	J_DEBUG("a%d", 0);
 	return TRUE;
 }
 static void
 j_smd_set_valid_free(gpointer data)
 {
 	JSMDSchemeOperation* smd_op = data;
-	J_DEBUG("a%d", 0);
 	j_smd_scheme_unref(smd_op->scheme);
 	g_free(data);
-	J_DEBUG("a%d", 0);
 }
 static guint64 bytes_written;
 gboolean
@@ -838,10 +824,8 @@ j_smd_scheme_write(void* _scheme, const void* buf, guint64 buf_offset, guint64 b
 	smd_op->scheme = j_smd_scheme_ref(_scheme);
 	if (((J_Scheme_t*)_scheme)->distribution_type != J_DISTRIBUTION_DATABASE)
 	{
-		J_DEBUG("a%d", 0);
 		j_distributed_object_write(((J_Scheme_t*)_scheme)->object, buf, buf_size * ((J_Scheme_t*)_scheme)->type->total_size, buf_offset * ((J_Scheme_t*)_scheme)->type->total_size, &bytes_written, batch);
 		j_batch_execute(batch);
-		J_DEBUG("a%d", 0);
 		op->exec_func = j_smd_set_valid_exec;
 		op->free_func = j_smd_set_valid_free;
 	}
@@ -855,10 +839,7 @@ j_smd_scheme_write(void* _scheme, const void* buf, guint64 buf_offset, guint64 b
 	smd_op->buf_write = buf;
 	op->key = NULL;
 	op->data = smd_op;
-	J_DEBUG("a%d", 0);
 	j_batch_add(batch, op);
-	J_DEBUG("a%d", 0);
 	j_smd_timer_stop(j_smd_scheme_write);
-	J_DEBUG("a%d", 0);
 	return TRUE;
 }
