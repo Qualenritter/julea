@@ -105,6 +105,7 @@ struct JBackend
 			gboolean (*backend_file_delete)(const char* name);
 			gboolean (*backend_file_open)(const char* name, bson_t* bson, void* key);
 			gboolean (*backend_scheme_set_valid)(void* key, guint offset, guint size);
+			gboolean (*backend_scheme_get_valid)(void* key, guint offset, guint size, void* result);
 			gboolean (*backend_scheme_read)(void* key, void* buf, guint offset, guint size);
 			gboolean (*backend_scheme_write)(void* key, const void* buf, guint offset, guint size);
 			gboolean (*backend_scheme_create)(const char* name, void* parent, const void* space, const void* type, guint distribution, void* key);
@@ -155,6 +156,7 @@ void j_backend_smd_fini(JBackend* backend);
 gboolean j_backend_smd_file_create(JBackend*, const char* name, bson_t* bson, void* key);
 gboolean j_backend_smd_file_delete(JBackend*, const char* name);
 gboolean j_backend_smd_file_open(JBackend*, const char* name, bson_t* bson, void* key);
+gboolean j_backend_smd_scheme_get_valid(JBackend*, void* key, guint offset, guint size, void* result);
 gboolean j_backend_smd_scheme_set_valid(JBackend*, void* key, guint offset, guint size);
 gboolean j_backend_smd_scheme_read(JBackend*, void* key, void* buf, guint offset, guint size);
 gboolean j_backend_smd_scheme_write(JBackend*, void* key, const void* buf, guint offset, guint size);

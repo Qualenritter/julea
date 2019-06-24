@@ -677,6 +677,28 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			}
 			j_message_send(reply, connection);
 		}
+		case J_MESSAGE_SMD_SCHEME_GET_VALID:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			char _key[SMD_KEY_LENGTH];
+			guint buf_offset;
+			guint buf_size;
+			GArray* arr;
+			reply = j_message_new_reply(message);
+			for (i = 0; i < operation_count; i++)
+			{
+				arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Range_t));
+				memcpy(_key, j_message_get_n(message, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
+				buf_offset = j_message_get_4(message);
+				buf_size = j_message_get_4(message);
+				j_backend_smd_scheme_get_valid(jd_smd_backend, _key, buf_offset, buf_size, arr);
+				j_message_add_operation(reply, 4 + 4 + sizeof(J_SMD_Range_t) * arr->len);
+				j_message_append_4(reply, &arr->len);
+				j_message_append_n(reply, arr->data, arr->len);
+				g_array_free(arr, TRUE);
+			}
+			j_message_send(reply, connection);
+		}
 		break;
 		case J_MESSAGE_SMD_FILE_CREATE:
 		{

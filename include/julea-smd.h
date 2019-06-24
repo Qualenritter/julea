@@ -54,6 +54,12 @@ typedef enum J_SMD_Atomic_Type_t J_SMD_Atomic_Type_t;
 					  : SMD_TYPE_BLOB)
 
 /*TODO make all structs internal*/
+struct J_SMD_Range_t
+{
+	guint start;
+	guint end;
+};
+typedef struct J_SMD_Range_t J_SMD_Range_t;
 struct J_SMD_Space_t
 {
 	guint ndims;

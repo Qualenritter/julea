@@ -230,12 +230,47 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 	return TRUE;
 }
 static gboolean
+backend_scheme_get_valid(void* key, guint offset, guint size, void* result)
+{
+	guint ret;
+	J_SMD_Range_t range;
+	GArray* arr = result;
+	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_int64(stmt_scheme_get_valid, 1, *((sqlite3_int64*)key));
+	j_sqlite3_bind_int64(stmt_scheme_get_valid, 2, offset + size);
+	j_sqlite3_bind_int64(stmt_scheme_get_valid, 3, offset);
+	do
+	{
+		ret = sqlite3_step(stmt_scheme_get_valid);
+		if (ret == SQLITE_ROW)
+		{
+			range.start = sqlite3_column_int64(stmt_scheme_get_valid, 0);
+			range.end = sqlite3_column_int64(stmt_scheme_get_valid, 1);
+			J_DEBUG("found valid %d %d", range.start, range.end);
+			g_array_append_val(arr, range);
+		}
+		else if (ret != SQLITE_DONE)
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	} while (ret != SQLITE_DONE);
+	j_sqlite3_reset(stmt_scheme_get_valid);
+	if (arr->len)
+	{
+		if (g_array_index(arr, J_SMD_Range_t, 0).start < offset)
+			g_array_index(arr, J_SMD_Range_t, 0).start = offset;
+		if (g_array_index(arr, J_SMD_Range_t, arr->len - 1).start > offset + size)
+			g_array_index(arr, J_SMD_Range_t, arr->len - 1).end = offset + size;
+	}
+	j_sqlite3_transaction_commit();
+	return TRUE;
+}
+static gboolean
 backend_scheme_set_valid(void* key, guint offset, guint size)
 {
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_int64(stmt_scheme_set_valid, 1, *((sqlite3_int64*)key));
 	j_sqlite3_bind_int64(stmt_scheme_set_valid, 2, offset);
-	j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, size);
+	j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, offset + size);
+	J_DEBUG("marked valid %d %d", offset, offset + size);
 	j_sqlite3_step_and_reset_check_done(stmt_scheme_set_valid);
 	j_sqlite3_transaction_commit();
 	J_DEBUG("scheme set_valid success %lld", *((sqlite3_int64*)key));

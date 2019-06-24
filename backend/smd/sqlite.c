@@ -219,6 +219,7 @@ static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
 static sqlite3_stmt* stmt_file_delete1;
 static sqlite3_stmt* stmt_type_delete;
+static sqlite3_stmt* stmt_scheme_get_valid;
 static sqlite3_stmt* stmt_scheme_set_valid;
 static sqlite3_stmt* stmt_scheme_delete0;
 static sqlite3_stmt* stmt_scheme_delete1;
@@ -378,6 +379,10 @@ GROUP BY Num - Rn
 		&stmt_type_read);
 
 	j_sqlite3_prepare_v3(
+		"SELECT range_start, range_end FROM smd_scheme_data_range WHERE "
+		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3 ORDER BY range_start ASC",
+		&stmt_scheme_get_valid);
+	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_scheme_data_range ("
 		"scheme_key,range_start,range_end"
 		") VALUES (?1, ?2, ?3)",
@@ -483,6 +488,7 @@ backend_fini_sql(void)
 	sqlite3_finalize(stmt_file_delete1);
 	sqlite3_finalize(stmt_type_delete);
 	sqlite3_finalize(stmt_scheme_set_valid);
+	sqlite3_finalize(stmt_scheme_get_valid);
 	sqlite3_finalize(stmt_scheme_create);
 	sqlite3_finalize(stmt_scheme_delete0);
 	sqlite3_finalize(stmt_scheme_delete1);
@@ -617,6 +623,7 @@ static JBackend sqlite_backend = { .type = J_BACKEND_TYPE_SMD, //
 		.backend_file_delete = backend_file_delete, //
 		.backend_file_open = backend_file_open, //
 		.backend_scheme_set_valid = backend_scheme_set_valid, //
+		.backend_scheme_get_valid = backend_scheme_get_valid, //
 		.backend_scheme_read = backend_scheme_read, //
 		.backend_scheme_write = backend_scheme_write, //
 		.backend_scheme_create = backend_scheme_create, //

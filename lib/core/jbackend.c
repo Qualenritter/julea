@@ -557,6 +557,17 @@ j_backend_smd_scheme_write(JBackend* backend, void* key, const void* buf, guint 
 	return ret;
 }
 gboolean
+j_backend_smd_scheme_get_valid(JBackend* backend, void* key, guint offset, guint size, void* result)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	ret = backend->smd.backend_scheme_get_valid(key, offset, size, result);
+	return ret;
+}
+gboolean
 j_backend_smd_scheme_set_valid(JBackend* backend, void* key, guint offset, guint size)
 {
 	gboolean ret;
