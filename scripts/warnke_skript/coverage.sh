@@ -5,20 +5,18 @@ do
 	lcov --capture --directory afl/cov/gcc/fuzzer$i --base-directory afl --output-file afl/cov/fuzzer$i.info
 done
 lcov --capture --directory afl/cov/gcc/server0 --base-directory afl --output-file afl/cov/server0.info
-for i in {12..22}
-do
-	lcov --capture --directory afl/cov/clang/fuzzer$i --base-directory afl --gcov-tool /src/julea/julea/scripts/warnke_skript/llvm-gcov.sh --output-file afl/cov/fuzzer$i.info
-done
+#for i in {12..22}
+#do
+#	lcov --capture --directory afl/cov/clang/fuzzer$i --base-directory afl --gcov-tool /src/julea/julea/scripts/warnke_skript/llvm-gcov.sh --output-file afl/cov/fuzzer$i.info
+#done
 lcov --zerocounters -d build-gcc-gcov && lcov -c -i -d build-gcc-gcov -o afl/cov/build-gcc-gcov.info
 lcov --zerocounters -d build-gcc-gcov-debug-asan && lcov -c -i -d build-gcc-gcov-debug-asan -o afl/cov/build-gcc-gcov-debug-asan.info
-lcov --zerocounters -d build-clang-gcov && lcov -c -i -d build-clang-gcov -o afl/cov/build-clang-gcov.info
-lcov --zerocounters -d build-clang-gcov-debug && lcov -c -i -d build-clang-gcov-debug -o afl/cov/build-clang-gcov-debug.info
+#lcov --zerocounters -d build-clang-gcov && lcov -c -i -d build-clang-gcov -o afl/cov/build-clang-gcov.info
+#lcov --zerocounters -d build-clang-gcov-debug && lcov -c -i -d build-clang-gcov-debug -o afl/cov/build-clang-gcov-debug.info
 (cd afl/cov
 lcov \
 	-a build-gcc-gcov.info \
 	-a build-gcc-gcov-debug-asan.info \
-	-a build-clang-gcov.info \
-	-a build-clang-gcov-debug.info \
 	-a fuzzer0.info \
 	-a fuzzer1.info \
 	-a fuzzer2.info \
@@ -31,17 +29,6 @@ lcov \
 	-a fuzzer9.info \
 	-a fuzzer10.info \
 	-a fuzzer11.info \
-	-a fuzzer12.info \
-	-a fuzzer13.info \
-	-a fuzzer14.info \
-	-a fuzzer15.info \
-	-a fuzzer16.info \
-	-a fuzzer17.info \
-	-a fuzzer18.info \
-	-a fuzzer19.info \
-	-a fuzzer20.info \
-	-a fuzzer21.info \
-	-a fuzzer22.info \
 	-a server0.info \
 	-o coverage.info
 genhtml coverage.info --output-directory html)

@@ -280,7 +280,7 @@ backend_scheme_set_valid(void* key, guint offset, guint size)
 	guint end;
 	guint start_new;
 	guint end_new;
-	guint count;
+	guint count = 0;
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_int64(stmt_scheme_get_valid_max, 1, *((sqlite3_int64*)key));
 	j_sqlite3_bind_int64(stmt_scheme_get_valid_max, 2, offset + size);

@@ -1,9 +1,8 @@
 files=$(ls afl/start-files/* | grep -v README )
-files="${files} $(ls afl/out/gcc/*/crashes/* | grep -v README )"
-files="${files} $(ls afl/out/clang/*/crashes/* | grep -v README )"
+files="${files} $(ls afl/out/*/crashes/* | grep -v README )"
 rm -rf b
 mkdir b
-for g in clang-gcov-debug clang-gcov clang gcc-gcov gcc-gcov-debug-asan
+for g in gcc-gcov-debug-asan clang gcc-gcov
 do
 mkdir b/${g}
 for f in ${files}
