@@ -15,11 +15,8 @@ backend_file_delete(const char* name)
 			if (g_hash_table_add(smd_cache.types_to_delete_keys, GINT_TO_POINTER(tmp)))
 				g_array_append_val(smd_cache.types_to_delete, tmp);
 		}
-		else if (ret != SQLITE_DONE)
-		{
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-			exit(1);
-		}
+		else
+			j_debug_check(ret, SQLITE_DONE);
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_file_delete0);
 	j_sqlite3_bind_text(stmt_file_delete1, 1, name, -1);
@@ -51,10 +48,10 @@ backend_file_create(const char* name, bson_t* bson, void* key)
 		J_DEBUG("file create failed %s", name);
 		return FALSE;
 	}
-	else if (ret0 != SQLITE_DONE || ret1 != SQLITE_DONE)
+	else
 	{
-		J_CRITICAL("sql_error %d %d %s", ret0, ret1, sqlite3_errmsg(backend_db));
-		exit(1);
+		j_debug_check(ret0, SQLITE_DONE);
+		j_debug_check(ret1, SQLITE_DONE);
 	}
 	j_sqlite3_reset(stmt_file_create0);
 	j_sqlite3_reset(stmt_file_create1);
@@ -87,10 +84,7 @@ backend_file_open(const char* name, bson_t* bson, void* key)
 		return FALSE;
 	}
 	else
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		exit(1);
-	}
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_file_open);
 	j_sqlite3_transaction_commit();
 	J_DEBUG("file open success %s %lld", name, file_key);

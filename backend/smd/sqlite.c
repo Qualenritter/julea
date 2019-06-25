@@ -38,13 +38,13 @@ static sqlite3* backend_db;
 
 #ifdef JULEA_DEBUG
 static guint db_modified_since_start = 0;
-#define _j_done_check(ret)                                                              \
+#define j_debug_check(ret, flag)                                                        \
 	do                                                                              \
 	{                                                                               \
-		if (ret != SQLITE_DONE)                                                 \
+		if (ret != flag)                                                        \
 		{                                                                       \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-			exit(1);                                                        \
+			abort();                                                        \
 		}                                                                       \
 	} while (0)
 #define _j_done_constraint_check(ret)                                                   \
@@ -53,16 +53,7 @@ static guint db_modified_since_start = 0;
 		if ((ret != SQLITE_DONE) && (ret != SQLITE_CONSTRAINT))                 \
 		{                                                                       \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-			exit(1);                                                        \
-		}                                                                       \
-	} while (0)
-#define _j_ok_check(ret)                                                                \
-	do                                                                              \
-	{                                                                               \
-		if (ret != SQLITE_OK)                                                   \
-		{                                                                       \
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-			exit(1);                                                        \
+			abort();                                                        \
 		}                                                                       \
 	} while (0)
 #define _j_ok_constraint_check(ret)                                                     \
@@ -71,7 +62,7 @@ static guint db_modified_since_start = 0;
 		if ((ret != SQLITE_OK) && (ret != SQLITE_CONSTRAINT))                   \
 		{                                                                       \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
-			exit(1);                                                        \
+			abort();                                                        \
 		}                                                                       \
 	} while (0)
 #define j_sqlite3_reset(stmt)                     \
@@ -79,7 +70,7 @@ static guint db_modified_since_start = 0;
 	{                                         \
 		gint _ret_ = sqlite3_reset(stmt); \
 		db_modified_since_start = 1;      \
-		_j_ok_check(_ret_);               \
+		j_debug_check(_ret_, SQLITE_OK);  \
 	} while (0)
 #define j_sqlite3_reset_constraint(stmt)          \
 	do                                        \
@@ -89,15 +80,19 @@ static guint db_modified_since_start = 0;
 		_j_ok_constraint_check(_ret_);    \
 	} while (0)
 #else
-#define _j_done_check(ret) (void)ret
+#define j_debug_check(ret, flag) \
+	do                       \
+	{                        \
+		(void)ret;       \
+		(void)flag;      \
+	} while (0)
 #define _j_done_constraint_check(ret) (void)ret
-#define _j_ok_check(ret) (void)ret
 #define _j_ok_constraint_check(ret) (void)ret
 #define j_sqlite3_reset(stmt)                     \
 	do                                        \
 	{                                         \
 		gint _ret_ = sqlite3_reset(stmt); \
-		_j_ok_check(_ret_);               \
+		j_debug_check(_ret_, SQLITE_OK);  \
 	} while (0)
 #define j_sqlite3_reset_constraint(stmt)          \
 	do                                        \
@@ -107,13 +102,13 @@ static guint db_modified_since_start = 0;
 	} while (0)
 #endif
 
-#define j_sqlite3_step_and_reset_check_done(stmt) \
-	do                                        \
-	{                                         \
-		gint _ret_ = sqlite3_step(stmt);  \
-		_j_done_check(_ret_);             \
-		_ret_ = sqlite3_reset(stmt);      \
-		_j_ok_check(_ret_);               \
+#define j_sqlite3_step_and_reset_check_done(stmt)  \
+	do                                         \
+	{                                          \
+		gint _ret_ = sqlite3_step(stmt);   \
+		j_debug_check(_ret_, SQLITE_DONE); \
+		_ret_ = sqlite3_reset(stmt);       \
+		j_debug_check(_ret_, SQLITE_OK);   \
 	} while (0)
 #define j_sqlite3_step_and_reset_check_done_constraint(stmt) \
 	do                                                   \
@@ -142,43 +137,43 @@ static guint db_modified_since_start = 0;
 	do                                                 \
 	{                                                  \
 		gint _ret_ = sqlite3_bind_null(stmt, idx); \
-		_j_ok_check(_ret_);                        \
+		j_debug_check(_ret_, SQLITE_OK);           \
 	} while (0)
 #define j_sqlite3_bind_int64(stmt, idx, val)                     \
 	do                                                       \
 	{                                                        \
 		gint _ret_ = sqlite3_bind_int64(stmt, idx, val); \
-		_j_ok_check(_ret_);                              \
+		j_debug_check(_ret_, SQLITE_OK);                 \
 	} while (0)
 #define j_sqlite3_bind_int(stmt, idx, val)                     \
 	do                                                     \
 	{                                                      \
 		gint _ret_ = sqlite3_bind_int(stmt, idx, val); \
-		_j_ok_check(_ret_);                            \
+		j_debug_check(_ret_, SQLITE_OK);               \
 	} while (0)
 #define j_sqlite3_bind_blob(stmt, idx, val, val_len)                           \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_blob(stmt, idx, val, val_len, NULL); \
-		_j_ok_check(_ret_);                                            \
+		j_debug_check(_ret_, SQLITE_OK);                               \
 	} while (0)
 #define j_sqlite3_bind_double(stmt, idx, val)                     \
 	do                                                        \
 	{                                                         \
 		gint _ret_ = sqlite3_bind_double(stmt, idx, val); \
-		_j_ok_check(_ret_);                               \
+		j_debug_check(_ret_, SQLITE_OK);                  \
 	} while (0)
 #define j_sqlite3_bind_text(stmt, idx, val, val_len)                           \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_text(stmt, idx, val, val_len, NULL); \
-		_j_ok_check(_ret_);                                            \
+		j_debug_check(_ret_, SQLITE_OK);                               \
 	} while (0)
 #define j_sqlite3_prepare_v3(sql, stmt)                                                                      \
 	do                                                                                                   \
 	{                                                                                                    \
 		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL); \
-		_j_ok_check(_ret_);                                                                          \
+		j_debug_check(_ret_, SQLITE_OK);                                                             \
 	} while (0)
 #define j_sqlite3_exec_done_or_error(sql)                                                   \
 	do                                                                                  \
@@ -485,7 +480,7 @@ GROUP BY Num - Rn
 	j_sqlite3_prepare_v3(
 		"SELECT t.type_key "
 		"FROM smd_schemes t "
-		"WHERE t.file_key = (SELECT t3.file_key FROM smd_schemes t3 WHERE t3.name = ?1 AND t3.file_key = t3.key",
+		"WHERE t.file_key = (SELECT t3.file_key FROM smd_schemes t3 WHERE t3.name = ?1 AND t3.file_key = t3.key)",
 		&stmt_file_delete0);
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key",
@@ -521,6 +516,7 @@ GROUP BY Num - Rn
 
 	return TRUE;
 error:
+	abort();
 	return FALSE;
 }
 static void
@@ -587,6 +583,7 @@ error: /*makros jump here*/
 static gboolean
 backend_init(gchar const* path)
 {
+	guint ret;
 	g_autofree gchar* dirname = NULL;
 	J_CRITICAL("%s", path);
 	g_return_val_if_fail(path != NULL, FALSE);
@@ -595,17 +592,28 @@ backend_init(gchar const* path)
 	if (strncmp(":memory:", path, 7))
 	{
 		J_CRITICAL("useing path=%s", path);
-		if (sqlite3_open(path, &backend_db) != SQLITE_OK)
+		ret = sqlite3_open(path, &backend_db);
+		if (ret != SQLITE_OK)
+		{
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 			goto error;
+		}
 	}
 	else
 	{
 		J_CRITICAL("useing path=%s", ":memory:");
-		if (sqlite3_open(":memory:", &backend_db) != SQLITE_OK)
+		ret = sqlite3_open(":memory:", &backend_db);
+		if (ret != SQLITE_OK)
+		{
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 			goto error;
+		}
 	}
 	if (!backend_init_sql())
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 		goto error;
+	}
 	smd_cache.types_to_delete_keys = g_hash_table_new(g_direct_hash, NULL);
 	smd_cache.types_to_delete = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
 #ifdef JULEA_DEBUG
@@ -657,7 +665,7 @@ backend_sync(void)
 				else if (ret != SQLITE_DONE)
 				{
 					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					exit(1);
+					abort();
 				}
 			} while (ret != SQLITE_DONE);
 			j_sqlite3_reset(stmt_type_delete0);

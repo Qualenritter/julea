@@ -85,6 +85,10 @@ j_smd_file_create_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
+	}
 	return TRUE;
 }
 static void
@@ -156,6 +160,10 @@ j_smd_file_delete_exec(JList* operations, JSemantics* semantics)
 		reply = j_message_new_reply(message);
 		j_message_receive(reply, smd_connection);
 		j_connection_pool_push_smd(index, smd_connection);
+	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
 	}
 	return TRUE;
 }
@@ -232,6 +240,10 @@ j_smd_file_open_exec(JList* operations, JSemantics* semantics)
 			memcpy(operation->scheme->key, j_message_get_n(reply, SMD_KEY_LENGTH), SMD_KEY_LENGTH);
 		}
 		j_connection_pool_push_smd(index, smd_connection);
+	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
 	}
 	return TRUE;
 }

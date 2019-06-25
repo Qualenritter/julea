@@ -11,37 +11,33 @@ backend_scheme_delete(const char* name, void* parent)
 	sqlite3_int64 tmp;
 	j_smd_timer_start(backend_scheme_delete);
 	j_sqlite3_transaction_begin();
+	//delete data from object store ->
+	j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
+	j_sqlite3_bind_int64(stmt_scheme_open, 2, *((sqlite3_int64*)parent));
+	ret = sqlite3_step(stmt_scheme_open);
+	if (ret == SQLITE_ROW)
 	{
-		/* delete data from objectstore - if it exist */
-		j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
-		j_sqlite3_bind_int64(stmt_scheme_open, 2, *((sqlite3_int64*)parent));
-		ret = sqlite3_step(stmt_scheme_open);
-		if (ret == SQLITE_ROW)
+		i = sqlite3_column_int64(stmt_scheme_open, 6);
+		if (i != J_DISTRIBUTION_DATABASE)
 		{
-			i = sqlite3_column_int64(stmt_scheme_open, 6);
-			if (i != J_DISTRIBUTION_DATABASE)
-			{
 
-				memset(key, 0, SMD_KEY_LENGTH);
-				tmp = sqlite3_column_int64(stmt_scheme_open, 0);
-				memcpy(key, &tmp, sizeof(sqlite3_int64));
-				SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
-				distribution = j_distribution_new(i);
-				object = j_distributed_object_new("smd", buf, distribution);
-				batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-				j_distributed_object_delete(object, batch);
-				j_distributed_object_unref(object);
-				j_distribution_unref(distribution);
-				j_batch_execute(batch);
-			}
+			memset(key, 0, SMD_KEY_LENGTH);
+			tmp = sqlite3_column_int64(stmt_scheme_open, 0);
+			memcpy(key, &tmp, sizeof(sqlite3_int64));
+			SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
+			distribution = j_distribution_new(i);
+			object = j_distributed_object_new("smd", buf, distribution);
+			batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+			j_distributed_object_delete(object, batch);
+			j_distributed_object_unref(object);
+			j_distribution_unref(distribution);
+			j_batch_execute(batch);
 		}
-		else if (ret != SQLITE_DONE)
-		{
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-			exit(1);
-		}
-		j_sqlite3_reset(stmt_scheme_open);
 	}
+	else
+		j_debug_check(ret, SQLITE_DONE);
+	j_sqlite3_reset(stmt_scheme_open);
+	//delete type ->
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
 	ret = sqlite3_step(stmt_scheme_delete0);
@@ -51,12 +47,10 @@ backend_scheme_delete(const char* name, void* parent)
 		if (g_hash_table_add(smd_cache.types_to_delete_keys, GINT_TO_POINTER(tmp)))
 			g_array_append_val(smd_cache.types_to_delete, tmp);
 	}
-	else if (ret != SQLITE_DONE)
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		exit(1);
-	}
+	else
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_delete0);
+	//delete scheme ->
 	j_sqlite3_bind_text(stmt_scheme_delete1, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete1, 2, *((sqlite3_int64*)parent));
 	j_sqlite3_step_and_reset_check_done(stmt_scheme_delete1);
@@ -79,7 +73,6 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	guint ret;
 	memset(key, 0, SMD_KEY_LENGTH);
 	j_smd_timer_start(backend_scheme_create);
-
 	j_sqlite3_transaction_begin();
 	if (type->arr->len == 0)
 		type_key = 0;
@@ -91,7 +84,6 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		J_DEBUG("scheme create failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
 	}
-
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
@@ -107,7 +99,7 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	if (ret == SQLITE_DONE)
 	{
 		ret = sqlite3_reset(stmt_scheme_create);
-		_j_ok_check(ret);
+		j_debug_check(ret, SQLITE_OK);
 		memcpy(key, &scheme_key, sizeof(scheme_key));
 		j_sqlite3_transaction_commit();
 	}
@@ -120,10 +112,7 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		return FALSE;
 	}
 	else
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		exit(1);
-	}
+		j_debug_check(ret, SQLITE_DONE);
 	if (_distribution != J_DISTRIBUTION_DATABASE)
 	{
 		distribution = j_distribution_new(_distribution);
@@ -174,10 +163,7 @@ backend_scheme_open(const char* name, void* parent, void* _space, void* _type, g
 		return FALSE;
 	}
 	else
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		exit(1);
-	}
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_open);
 	load_type(type, type_key);
 	j_sqlite3_transaction_commit();
@@ -214,10 +200,7 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 		return FALSE;
 	}
 	else
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		exit(1);
-	}
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_get_type_key);
 	write_type(type_key, *((sqlite3_int64*)key), buf, offset, size, 0, 0);
 	j_sqlite3_transaction_commit();
@@ -245,11 +228,8 @@ backend_scheme_get_valid(void* key, guint offset, guint size, void* result)
 			J_DEBUG("found valid %d %d", range.start, range.end);
 			g_array_append_val(arr, range);
 		}
-		else if (ret != SQLITE_DONE)
-		{
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-			exit(1);
-		}
+		else
+			j_debug_check(ret, SQLITE_DONE);
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_get_valid);
 	if (arr->len)
@@ -282,11 +262,8 @@ backend_scheme_set_valid(void* key, guint offset, guint size)
 		end = sqlite3_column_int64(stmt_scheme_get_valid_max, 1);
 		count = sqlite3_column_int64(stmt_scheme_get_valid_max, 2);
 	}
-	else if (ret != SQLITE_DONE)
-	{
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-		exit(1);
-	}
+	else
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_get_valid_max);
 	if (count == 0)
 	{

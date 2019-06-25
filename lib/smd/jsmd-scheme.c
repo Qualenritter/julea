@@ -153,6 +153,10 @@ j_smd_create_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
+	}
 	j_smd_timer_stop(j_smd_create_exec);
 	return TRUE;
 }
@@ -240,6 +244,10 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 		j_message_receive(reply, smd_connection);
 		j_smd_timer_stop(j_smd_delete_exec_server);
 		j_connection_pool_push_smd(index, smd_connection);
+	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
 	}
 	j_smd_timer_stop(j_smd_delete_exec);
 	return TRUE;
@@ -359,6 +367,10 @@ j_smd_open_exec(JList* operations, JSemantics* semantics)
 			}
 		}
 		j_connection_pool_push_smd(index, smd_connection);
+	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
 	}
 	j_smd_timer_stop(j_smd_open_exec);
 	return TRUE;
@@ -501,6 +513,10 @@ j_smd_read_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
+	}
 	j_smd_timer_stop(j_smd_read_exec);
 	return TRUE;
 }
@@ -635,6 +651,10 @@ j_smd_get_valid_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
+	}
 	j_batch_execute(batch);
 	j_smd_timer_stop(j_smd_read_exec);
 	return TRUE;
@@ -734,6 +754,10 @@ j_smd_write_exec(JList* operations, JSemantics* semantics)
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
+	}
 	j_smd_timer_stop(j_smd_write_exec);
 	return TRUE;
 }
@@ -799,6 +823,10 @@ j_smd_set_valid_exec(JList* operations, JSemantics* semantics)
 			(void)ret; //TODO ASSERT ret==smd_op->buf_size
 		}
 		j_connection_pool_push_smd(index, smd_connection);
+	}
+	else
+	{
+		j_backend_smd_sync(smd_backend);
 	}
 	j_smd_timer_stop(j_smd_write_exec);
 	return TRUE;

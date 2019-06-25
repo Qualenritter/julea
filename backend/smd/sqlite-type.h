@@ -26,13 +26,13 @@ get_hash_for_variable(const J_SMD_Variable_t* var)
 }
 
 static sqlite3_int64
-create_type(const J_SMD_Variable_t* type)
+create_type(J_SMD_Variable_t* type)
 {
 	sqlite3_int64 hash = 0;
 	sqlite3_int64 var_count = 0;
 	guint i;
 	const char* tmp;
-	const J_SMD_Variable_t* var = type;
+	J_SMD_Variable_t* var = type;
 	gint ret;
 	guint header_key = 0;
 	sqlite3_int64 subtype_key;
@@ -103,15 +103,15 @@ try_other:
 				goto try_other;
 			}
 		}
-		else if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		else
+			j_debug_check(ret, SQLITE_DONE);
 		//found a matching existing type
 		j_sqlite3_reset(stmt_type_load);
 		j_sqlite3_reset(stmt_type_get_header_by_hash);
 		return header_key;
 	}
-	else if (ret != SQLITE_DONE)
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	else
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_get_header_by_hash);
 	//create new type
 	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
@@ -140,7 +140,7 @@ start:
 	if (ret == SQLITE_CONSTRAINT)
 		return 0;
 	else
-		_j_done_check(ret);
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_create);
 	j_smd_timer_stop(create_type_sql);
 	if (var->nextindex)
@@ -197,8 +197,8 @@ _start:
 				goto _start;
 			}
 		}
-		else if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		else
+			j_debug_check(ret, SQLITE_DONE);
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_load);
 	j_smd_timer_stop(load_type);
@@ -223,7 +223,7 @@ calculate_struct_size(sqlite3_int64 type_key)
 		struct_size += sqlite3_column_int64(stmt_type_struct_size, 1);
 	}
 	else
-		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_struct_size);
 	j_smd_timer_stop(calculate_struct_size);
 	return struct_size;
@@ -257,8 +257,8 @@ get_type_structure(sqlite3_int64 type_key)
 				(*((sqlite3_int64*)var->sub_type_key)) = sqlite3_column_int64(stmt_type_write_get_structure, 9);
 			g_array_append_val(arr, var);
 		}
-		else if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		else
+			j_debug_check(ret, SQLITE_DONE);
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_write_get_structure);
 	j_smd_timer_stop(get_type_structure);
@@ -442,8 +442,8 @@ read_type(sqlite3_int64 scheme_key, char* buf, guint buf_offset, guint buf_len)
 				J_CRITICAL("this should never happen type=%lld", sqlite3_column_int64(stmt_type_read, 5));
 			}
 		}
-		else if (ret != SQLITE_DONE)
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		else
+			j_debug_check(ret, SQLITE_DONE);
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_read);
 	j_smd_timer_stop(read_type);
