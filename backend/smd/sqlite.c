@@ -79,6 +79,13 @@ static guint db_modified_since_start = 0;
 		db_modified_since_start = 1;      \
 		_j_ok_check(_ret_);               \
 	} while (0)
+#define j_sqlite3_reset_constraint(stmt)          \
+	do                                        \
+	{                                         \
+		gint _ret_ = sqlite3_reset(stmt); \
+		db_modified_since_start = 1;      \
+		_j_ok_constraint_check(_ret_);    \
+	} while (0)
 #else
 #define _j_done_check(ret) (void)ret
 #define _j_done_constraint_check(ret) (void)ret
@@ -89,6 +96,12 @@ static guint db_modified_since_start = 0;
 	{                                         \
 		gint _ret_ = sqlite3_reset(stmt); \
 		_j_ok_check(_ret_);               \
+	} while (0)
+#define j_sqlite3_reset_constraint(stmt)          \
+	do                                        \
+	{                                         \
+		gint _ret_ = sqlite3_reset(stmt); \
+		_j_ok_constraint_check(_ret_);    \
 	} while (0)
 #endif
 
@@ -214,7 +227,8 @@ static sqlite3_stmt* stmt_type_write;
 static sqlite3_stmt* stmt_type_read;
 static sqlite3_stmt* stmt_type_struct_size;
 static sqlite3_stmt* stmt_type_write_get_structure;
-static sqlite3_stmt* stmt_file_create;
+static sqlite3_stmt* stmt_file_create0;
+static sqlite3_stmt* stmt_file_create1;
 static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
 static sqlite3_stmt* stmt_file_delete1;
@@ -309,6 +323,13 @@ GROUP BY Num - Rn
 		"FOREIGN KEY(type_key) REFERENCES smd_scheme_type_header(key) ON DELETE RESTRICT, " //blockiere das löschen von einem typen, wenn der noch benutzt wird
 		"PRIMARY KEY(name, parent_key), "
 		"UNIQUE(name, parent_key) "
+		")");
+	j_sqlite3_exec_done_or_error(
+		"CREATE TABLE IF NOT EXISTS smd_scheme_file ("
+		"key INTEGER UNIQUE NOT NULL, "
+		"name TEXT NOT NULL PRIMARY KEY, "
+		"UNIQUE(name), "
+		"FOREIGN KEY(key) REFERENCES smd_schemes(key) ON DELETE CASCADE "
 		")");
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_data (" //table for storing the file-data inside the DB
@@ -425,7 +446,6 @@ GROUP BY Num - Rn
 		"FROM smd_schemes " //
 		"WHERE key = ?",
 		&stmt_scheme_get_type_key);
-
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes " //
 		"WHERE name = ? AND parent_key = ?",
@@ -460,8 +480,11 @@ GROUP BY Num - Rn
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key",
 		&stmt_file_delete1);
 	j_sqlite3_prepare_v3(
-		"INSERT INTO smd_schemes (key,parent_key,file_key,name) VALUES (?1,?1,?1,?2)",
-		&stmt_file_create);
+		"INSERT INTO smd_schemes (key,parent_key,file_key,name) VALUES (?1, NULL, ?1, ?2)",
+		&stmt_file_create0);
+	j_sqlite3_prepare_v3(
+		"INSERT INTO smd_scheme_file (key,name) VALUES (?1, ?2)",
+		&stmt_file_create1);
 	j_sqlite3_prepare_v3(
 		"SELECT key FROM smd_schemes WHERE name = ?1 AND file_key = key",
 		&stmt_file_open);
@@ -497,7 +520,8 @@ backend_fini_sql(void)
 	sqlite3_finalize(stmt_type_load);
 	sqlite3_finalize(stmt_type_write);
 	sqlite3_finalize(stmt_type_read);
-	sqlite3_finalize(stmt_file_create);
+	sqlite3_finalize(stmt_file_create0);
+	sqlite3_finalize(stmt_file_create1);
 	sqlite3_finalize(stmt_file_open);
 	sqlite3_finalize(stmt_file_delete0);
 	sqlite3_finalize(stmt_file_delete1);
@@ -532,6 +556,7 @@ backend_reset(void)
 		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_type");
 		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_data");
 		j_sqlite3_exec_done_or_error("DELETE FROM smd_schemes");
+		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_file");
 		j_sqlite3_exec_done_or_error("DELETE FROM smd_scheme_data_range");
 		j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = ON");
 		smd_schemes_primary_key = 1;

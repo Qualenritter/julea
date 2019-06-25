@@ -375,13 +375,15 @@ main(int argc, char* argv[])
 				default:
 					MYABORT();
 				}
-				//TODO delete not existing member
 				type_var_count[idx]--;
 				if (res == FALSE)
 					MYABORT();
 				if (type_var_count[idx] != j_smd_type_get_variable_count(type[idx]))
 					MYABORT();
 			}
+			res = j_smd_type_remove_variable(type[idx], "not_existing_name");
+			if (res != FALSE)
+				MYABORT();
 			break;
 		case SMD_AFL_TYPE_UNREF:
 			MY_READ_MAX(idx, AFL_LIMIT_TYPE_COUNT);
@@ -435,9 +437,18 @@ main(int argc, char* argv[])
 		case SMD_AFL_FILE_CREATE:
 			MY_READ_MAX(idx, AFL_LIMIT_FILE_COUNT);
 			J_DEBUG("SMD_AFL_FILE_CREATE idx=%d", idx);
-			sprintf(file_strbuf, "file_%d", idx); //TODO create duplicate files
+			sprintf(file_strbuf, "file_%d", idx);
 			if (file[idx])
 			{
+				ptr = j_smd_file_create(file_strbuf, batch);
+				if (!ptr)
+					MYABORT();
+				j_batch_execute(batch);
+				if (j_smd_is_initialized(ptr))
+					MYABORT();
+				res = j_smd_scheme_unref(ptr);
+				if (res != FALSE)
+					MYABORT();
 				j_smd_file_delete(file_strbuf, batch);
 				j_batch_execute(batch);
 				res = j_smd_file_unref(file[idx]);
@@ -573,9 +584,9 @@ main(int argc, char* argv[])
 			if (scheme_distributon == 0)
 				scheme_distributon = J_DISTRIBUTION_ROUND_ROBIN;
 			else
-				scheme_distributon = J_DISTRIBUTION_DATABASE; /*remove bias to object store*/
+				scheme_distributon = J_DISTRIBUTION_DATABASE;
 			J_DEBUG("SMD_AFL_SCHEME_CREATE idx=%d idx2=%d idx3=%d idx4=%d %d", idx, idx2, idx3, idx4, scheme_distributon);
-			sprintf(scheme_strbuf, "scheme_%d", idx2); //TODO create duplicate schemes
+			sprintf(scheme_strbuf, "scheme_%d", idx2);
 			ptr = scheme[idx][idx2];
 			res = j_smd_scheme_unref(ptr);
 			if (res != FALSE)
@@ -670,7 +681,7 @@ main(int argc, char* argv[])
 			MY_READ_MAX(idx2, AFL_LIMIT_SCHEME_COUNT);
 			MY_READ(scheme_offset);
 			MY_READ(scheme_size);
-			J_DEBUG("SMD_AFL_SCHEME_WRITE idx=%d idx2=%d distribution_type=%d", idx, idx2, scheme[idx][idx2] ? scheme[idx][idx2]->distribution_type : -1);
+			J_DEBUG("SMD_AFL_SCHEME_WRITE idx=%d idx2=%d distribution_type=%d", idx, idx2, scheme[idx][idx2] ? scheme[idx][idx2]->distribution_type : 100);
 			if (scheme[idx][idx2])
 			{
 				res = j_smd_type_calc_metadata(scheme_type[idx][idx2]);
@@ -696,7 +707,7 @@ main(int argc, char* argv[])
 				MY_READ(scheme_offset);
 				MY_READ(scheme_size);
 			}
-			J_DEBUG("SMD_AFL_SCHEME_READ idx=%d idx2=%d distribution_type=%d", idx, idx2, scheme[idx][idx2] ? scheme[idx][idx2]->distribution_type : -1);
+			J_DEBUG("SMD_AFL_SCHEME_READ idx=%d idx2=%d distribution_type=%d", idx, idx2, scheme[idx][idx2] ? scheme[idx][idx2]->distribution_type : 100);
 			if (scheme[idx][idx2])
 			{
 				res = j_smd_type_calc_metadata(scheme_type[idx][idx2]);
