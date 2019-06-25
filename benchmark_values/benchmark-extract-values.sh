@@ -1,6 +1,7 @@
+folders=$(find -type d | grep -v "^.$" | sort | grep -v "warnke-02" | grep -v "warnke-03" | grep -v "warnke-04" | grep -v "warnke-05")
 n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 rm *.csv
-for f in $(find -type d | grep -v "^.$" | sort); do
+for f in ${folders}; do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
 	for n in "${n_values[@]}"
 	do
@@ -26,10 +27,10 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [0:*]
+set yrange [5000:*]
 EOF
 str=""
-for f in $(find -type d | grep -v "^.$" | sort); do
+for f in ${folders}; do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
 	str="${str}, '${csv_name}' using 1:2 with lines title \"${f:2:9}-no-batch\""
 	str="${str}, '${csv_name}' using 1:5 with lines title \"${f:2:9}-batch\""
@@ -47,10 +48,10 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [0:*]
+set yrange [10000:*]
 EOF
 str=""
-for f in $(find -type d | grep -v "^.$" | sort); do
+for f in ${folders}; do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
 	str="${str}, '${csv_name}' using 1:3 with lines title \"${f:2:9}-no-batch\""
 	str="${str}, '${csv_name}' using 1:6 with lines title \"${f:2:9}-batch\""
@@ -68,10 +69,10 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [0:*]
+set yrange [5000:*]
 EOF
 str=""
-for f in $(find -type d | grep -v "^.$" | sort); do
+for f in ${folders}; do
 	csv_name=$(echo $f | sed "s/$/.csv/g")
 	str="${str}, '${csv_name}' using 1:4 with lines title \"${f:2:9}-no-batch\""
 	str="${str}, '${csv_name}' using 1:7 with lines title \"${f:2:9}-batch\""
@@ -89,10 +90,10 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [0:*]
+set yrange [15:*]
 EOF
 str=""
-for f in $(find -type d | grep -v "^.$" | sort); do
+for f in ${folders}; do
     csv_name=$(echo $f | sed "s/$/.csv/g")
 	str="${str}, '${csv_name}' using 1:8 with lines title\"${f:2:9}\""
 done
