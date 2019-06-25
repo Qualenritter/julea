@@ -603,7 +603,7 @@ j_smd_get_valid_exec(JList* operations, JSemantics* semantics)
 			arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Range_t));
 			j_backend_smd_scheme_get_valid(smd_backend, smd_op->scheme->key, smd_op->buf_offset, smd_op->buf_size, arr);
 			j_smd_get_valid_exec_read_data(smd_op, arr, batch);
-			g_array_free(arr, TRUE);
+			g_array_unref(arr);
 		}
 		else
 		{
@@ -631,7 +631,7 @@ j_smd_get_valid_exec(JList* operations, JSemantics* semantics)
 			if (ret)
 				g_array_append_vals(arr, j_message_get_n(reply, ret), ret);
 			j_smd_get_valid_exec_read_data(smd_op, arr, batch);
-			g_array_free(arr, TRUE);
+			g_array_unref(arr);
 		}
 		j_connection_pool_push_smd(index, smd_connection);
 	}

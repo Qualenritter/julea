@@ -26,12 +26,14 @@
 #include <julea.h>
 #include <julea-internal.h>
 #include <julea-smd.h>
-enum J_SMD_Metadata_Type
+
+struct J_SMD_cache
 {
-	SMD_METATYPE_FILE,
-	SMD_METATYPE_DATA
-}; /*TODO change to boolean?*/
-typedef enum J_SMD_Metadata_Type J_SMD_Metadata_Type;
+	GHashTable* types_to_delete_keys; /*keys only - fast existence check*/
+	GArray* types_to_delete; /*ordered list of types to delete to avoid reject because of dependencies deleted later*/
+};
+typedef struct J_SMD_cache J_SMD_cache;
+static J_SMD_cache smd_cache;
 static sqlite3* backend_db;
 
 #ifdef JULEA_DEBUG
@@ -226,6 +228,8 @@ static sqlite3_stmt* stmt_type_get_header_by_hash;
 static sqlite3_stmt* stmt_type_load;
 static sqlite3_stmt* stmt_type_write;
 static sqlite3_stmt* stmt_type_read;
+static sqlite3_stmt* stmt_type_delete0;
+static sqlite3_stmt* stmt_type_delete1;
 static sqlite3_stmt* stmt_type_struct_size;
 static sqlite3_stmt* stmt_type_write_get_structure;
 static sqlite3_stmt* stmt_file_create0;
@@ -233,7 +237,6 @@ static sqlite3_stmt* stmt_file_create1;
 static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
 static sqlite3_stmt* stmt_file_delete1;
-static sqlite3_stmt* stmt_type_delete;
 static sqlite3_stmt* stmt_scheme_delete_valid;
 static sqlite3_stmt* stmt_scheme_get_valid;
 static sqlite3_stmt* stmt_scheme_get_valid_max;
@@ -396,9 +399,6 @@ GROUP BY Num - Rn
 		"ORDER BY t.offset",
 		&stmt_type_write_get_structure);
 	j_sqlite3_prepare_v3(
-		"DELETE FROM smd_scheme_type_header WHERE key = ?1",
-		&stmt_type_delete);
-	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_scheme_data (scheme_key, type_key, offset, value_int, value_float, value_text, value_blob) "
 		"VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ON CONFLICT (scheme_key, type_key, offset) DO UPDATE SET value_int = ?4, value_float=?5,value_text=?6,value_blob=?7",
 		&stmt_type_write);
@@ -407,6 +407,14 @@ GROUP BY Num - Rn
 		"FROM smd_scheme_data a, smd_scheme_type t " //
 		"WHERE a.scheme_key = ?1 AND t.key = a.type_key AND a.offset >= ?2 AND (a.offset + t.size) <= ?3",
 		&stmt_type_read);
+	j_sqlite3_prepare_v3(
+		"WITH RECURSIVE "
+		"subtypes(x) AS (VALUES(?1) UNION SELECT subtype_key FROM smd_scheme_type t, subtypes s WHERE t.header_key = s.x) "
+		"SELECT x FROM subtypes",
+		&stmt_type_delete0);
+	j_sqlite3_prepare_v3(
+		"DELETE FROM smd_scheme_type_header WHERE key = ?1",
+		&stmt_type_delete1);
 
 	j_sqlite3_prepare_v3(
 		"SELECT range_start, range_end FROM smd_scheme_data_range WHERE "
@@ -434,9 +442,7 @@ GROUP BY Num - Rn
 		"WHERE name = ? AND parent_key = ?",
 		&stmt_scheme_delete1);
 	j_sqlite3_prepare_v3(
-		"WITH RECURSIVE "
-		"subtypes(x) AS (SELECT type_key FROM smd_schemes WHERE name = ?1 AND parent_key = ?2 UNION SELECT subtype_key FROM smd_scheme_type t, subtypes s WHERE t.header_key = s.x) "
-		"SELECT x FROM subtypes",
+		"SELECT type_key FROM smd_schemes WHERE name = ?1 AND parent_key = ?2",
 		&stmt_scheme_delete0);
 	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_schemes (name, parent_key, file_key, ndims, dims0, dims1, dims2, dims3, distribution, type_key, key) " //
@@ -477,10 +483,9 @@ GROUP BY Num - Rn
 		&stmt_scheme_get_type_key);
 
 	j_sqlite3_prepare_v3(
-		"WITH RECURSIVE " //
-		"subtypes(x) AS (SELECT t.type_key " //
+		"SELECT t.type_key "
 		"FROM smd_schemes t "
-		"WHERE t.file_key = (SELECT t3.file_key FROM smd_schemes t3 WHERE t3.name = ?1 AND t3.file_key = t3.key) UNION SELECT subtype_key FROM smd_scheme_type t2, subtypes s WHERE t2.header_key = s.x) SELECT x FROM subtypes",
+		"WHERE t.file_key = (SELECT t3.file_key FROM smd_schemes t3 WHERE t3.name = ?1 AND t3.file_key = t3.key",
 		&stmt_file_delete0);
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key",
@@ -526,13 +531,14 @@ backend_fini_sql(void)
 	sqlite3_finalize(stmt_type_get_header_by_hash);
 	sqlite3_finalize(stmt_type_load);
 	sqlite3_finalize(stmt_type_write);
+	sqlite3_finalize(stmt_type_delete0);
+	sqlite3_finalize(stmt_type_delete1);
 	sqlite3_finalize(stmt_type_read);
 	sqlite3_finalize(stmt_file_create0);
 	sqlite3_finalize(stmt_file_create1);
 	sqlite3_finalize(stmt_file_open);
 	sqlite3_finalize(stmt_file_delete0);
 	sqlite3_finalize(stmt_file_delete1);
-	sqlite3_finalize(stmt_type_delete);
 	sqlite3_finalize(stmt_scheme_set_valid);
 	sqlite3_finalize(stmt_scheme_update_valid);
 	sqlite3_finalize(stmt_scheme_get_valid);
@@ -600,7 +606,8 @@ backend_init(gchar const* path)
 	}
 	if (!backend_init_sql())
 		goto error;
-
+	smd_cache.types_to_delete_keys = g_hash_table_new(g_direct_hash, NULL);
+	smd_cache.types_to_delete = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
 #ifdef JULEA_DEBUG
 	j_smd_timer_alloc(backend_scheme_create);
 	j_smd_timer_alloc(backend_scheme_delete);
@@ -623,6 +630,53 @@ error:
 	J_CRITICAL("%s", path);
 	return FALSE;
 }
+static void
+backend_sync(void)
+{
+	gint ret;
+	guint i;
+	sqlite3_int64 tmp;
+	sqlite3_int64* key = NULL;
+	sqlite3_int64* key_end = NULL;
+	j_sqlite3_transaction_begin();
+	if (smd_cache.types_to_delete->len)
+	{
+		//recursively add all subtype definitions which may be deleted
+		for (i = smd_cache.types_to_delete->len; i > 0; i--)
+		{
+			j_sqlite3_bind_int64(stmt_type_delete0, 1, g_array_index(smd_cache.types_to_delete, sqlite3_int64, i - 1));
+			do
+			{
+				ret = sqlite3_step(stmt_type_delete0);
+				if (ret == SQLITE_ROW)
+				{
+					tmp = sqlite3_column_int64(stmt_type_delete0, 0);
+					if (g_hash_table_add(smd_cache.types_to_delete_keys, GINT_TO_POINTER(tmp)))
+						g_array_append_val(smd_cache.types_to_delete, tmp);
+				}
+				else if (ret != SQLITE_DONE)
+				{
+					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+					exit(1);
+				}
+			} while (ret != SQLITE_DONE);
+			j_sqlite3_reset(stmt_type_delete0);
+		}
+		key = (sqlite3_int64*)smd_cache.types_to_delete->data;
+		key_end = key + smd_cache.types_to_delete->len; //update the last key
+		//delete all the types
+		do
+		{
+			j_sqlite3_bind_int64(stmt_type_delete1, 1, *key);
+			j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete1);
+			key++;
+		} while (key < key_end);
+		g_array_set_size(smd_cache.types_to_delete, 0);
+		g_hash_table_remove_all(smd_cache.types_to_delete_keys);
+	}
+	J_DEBUG("sync complete %d", 0);
+	j_sqlite3_transaction_commit();
+}
 
 static void
 backend_fini(void)
@@ -630,6 +684,9 @@ backend_fini(void)
 	J_CRITICAL("%d", 0);
 	if (backend_db != NULL)
 	{
+		backend_sync();
+		g_hash_table_unref(smd_cache.types_to_delete_keys);
+		g_array_unref(smd_cache.types_to_delete);
 		backend_fini_sql();
 		sqlite3_close(backend_db);
 #ifdef JULEA_DEBUG
@@ -680,6 +737,7 @@ static JBackend sqlite_backend = { .type = J_BACKEND_TYPE_SMD, //
 		.backend_scheme_delete = backend_scheme_delete, //
 		.backend_scheme_open = backend_scheme_open, //
 		.backend_reset = backend_reset,
+		.backend_sync = backend_sync,
 	} };
 G_MODULE_EXPORT
 JBackend*

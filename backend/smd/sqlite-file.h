@@ -2,11 +2,8 @@ static gboolean
 backend_file_delete(const char* name)
 {
 	//TODO delete data in object-store if any
-	GArray* arr;
 	gint ret;
-	guint i;
 	sqlite3_int64 tmp;
-	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
 	j_sqlite3_transaction_begin();
 	j_sqlite3_bind_text(stmt_file_delete0, 1, name, -1);
 	do
@@ -15,7 +12,8 @@ backend_file_delete(const char* name)
 		if (ret == SQLITE_ROW)
 		{
 			tmp = sqlite3_column_int64(stmt_file_delete0, 0);
-			g_array_append_val(arr, tmp);
+			if (g_hash_table_add(smd_cache.types_to_delete_keys, GINT_TO_POINTER(tmp)))
+				g_array_append_val(smd_cache.types_to_delete, tmp);
 		}
 		else if (ret != SQLITE_DONE)
 		{
@@ -26,13 +24,7 @@ backend_file_delete(const char* name)
 	j_sqlite3_reset(stmt_file_delete0);
 	j_sqlite3_bind_text(stmt_file_delete1, 1, name, -1);
 	j_sqlite3_step_and_reset_check_done(stmt_file_delete1);
-	for (i = 0; i < arr->len; i++)
-	{
-		j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
-		j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete);
-	}
 	j_sqlite3_transaction_commit();
-	g_array_free(arr, TRUE);
 	J_DEBUG("file delete success %s", name);
 	return TRUE;
 }

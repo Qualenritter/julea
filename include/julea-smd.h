@@ -117,7 +117,6 @@ void* j_smd_scheme_ref(void* _scheme);
 gboolean j_smd_scheme_unref(void* _scheme);
 void* j_smd_scheme_get_type(void* scheme);
 void* j_smd_scheme_get_space(void* scheme);
-/*read write*/
 gboolean j_smd_scheme_read(void* scheme, void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
 gboolean j_smd_scheme_write(void* scheme, const void* buf, guint64 buf_offset, guint64 buf_size, JBatch* batch);
 

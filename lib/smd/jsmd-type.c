@@ -284,7 +284,7 @@ j_smd_type_unref(void* _type)
 	J_SMD_Type_t* type = _type;
 	if (type && g_atomic_int_dec_and_test(&(type->ref_count)))
 	{
-		g_array_free(type->arr, TRUE);
+		g_array_unref(type->arr);
 		g_free(type);
 		return FALSE;
 	}

@@ -658,6 +658,14 @@ j_backend_smd_scheme_open(JBackend* backend, const char* name, void* parent, voi
 	return ret;
 }
 void
+j_backend_smd_sync(JBackend* backend)
+{
+	g_return_if_fail(backend != NULL);
+	g_return_if_fail(backend->type == J_BACKEND_TYPE_SMD);
+	if (backend->smd.backend_sync)
+		backend->smd.backend_sync();
+}
+void
 j_backend_reset(JBackend* backend)
 {
 	if (backend)

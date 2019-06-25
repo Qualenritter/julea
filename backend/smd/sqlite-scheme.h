@@ -6,11 +6,9 @@ backend_scheme_delete(const char* name, void* parent)
 	JBatch* batch;
 	char buf[SMD_KEY_LENGTH * 2 + 1];
 	char key[SMD_KEY_LENGTH];
-	GArray* arr;
 	guint i;
 	guint ret;
 	sqlite3_int64 tmp;
-	arr = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64)); //TODO cache array
 	j_smd_timer_start(backend_scheme_delete);
 	j_sqlite3_transaction_begin();
 	{
@@ -46,32 +44,24 @@ backend_scheme_delete(const char* name, void* parent)
 	}
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
-	do
+	ret = sqlite3_step(stmt_scheme_delete0);
+	if (ret == SQLITE_ROW)
 	{
-		ret = sqlite3_step(stmt_scheme_delete0);
-		if (ret == SQLITE_ROW)
-		{
-			tmp = sqlite3_column_int64(stmt_scheme_delete0, 0);
-			g_array_append_val(arr, tmp);
-		}
-		else if (ret != SQLITE_DONE)
-		{
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-			exit(1);
-		}
-	} while (ret != SQLITE_DONE);
+		tmp = sqlite3_column_int64(stmt_scheme_delete0, 0);
+		if (g_hash_table_add(smd_cache.types_to_delete_keys, GINT_TO_POINTER(tmp)))
+			g_array_append_val(smd_cache.types_to_delete, tmp);
+	}
+	else if (ret != SQLITE_DONE)
+	{
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		exit(1);
+	}
 	j_sqlite3_reset(stmt_scheme_delete0);
 	j_sqlite3_bind_text(stmt_scheme_delete1, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete1, 2, *((sqlite3_int64*)parent));
 	j_sqlite3_step_and_reset_check_done(stmt_scheme_delete1);
-	for (i = 0; i < arr->len; i++)
-	{
-		j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
-		j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete);
-	}
 	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_delete);
-	g_array_free(arr, TRUE);
 	J_DEBUG("scheme delete success %s %lld", name, *((sqlite3_int64*)parent));
 	return TRUE;
 }

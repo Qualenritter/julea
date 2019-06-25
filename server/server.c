@@ -636,6 +636,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				}
 				g_free(buf);
 			}
+			j_backend_smd_sync(jd_smd_backend);
 			j_message_send(reply, connection);
 		}
 		break;
@@ -658,6 +659,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_message_append_4(reply, &buf_size);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 		case J_MESSAGE_SMD_SCHEME_SET_VALID:
@@ -677,6 +679,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_message_append_4(reply, &buf_size);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 		case J_MESSAGE_SMD_SCHEME_GET_VALID:
@@ -697,9 +700,10 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_message_add_operation(reply, 4 + 4 + sizeof(J_SMD_Range_t) * arr->len);
 				j_message_append_4(reply, &arr->len);
 				j_message_append_n(reply, arr->data, arr->len);
-				g_array_free(arr, TRUE);
+				g_array_unref(arr);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 		case J_MESSAGE_SMD_FILE_CREATE:
@@ -739,9 +743,9 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				bson_destroy(bson);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
-
 		case J_MESSAGE_SMD_FILE_DELETE:
 		{
 			g_autoptr(JMessage) reply = NULL;
@@ -754,9 +758,9 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_message_add_operation(reply, 0);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
-
 		case J_MESSAGE_SMD_FILE_OPEN:
 		{
 			g_autoptr(JMessage) reply = NULL;
@@ -787,6 +791,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				bson_destroy(bson);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 		case J_MESSAGE_SMD_SCHEME_CREATE:
@@ -826,9 +831,10 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					memset(buf, 0, SMD_KEY_LENGTH);
 					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
 				}
-				g_array_free(type.arr, TRUE);
+				g_array_unref(type.arr);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 
@@ -846,9 +852,9 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_message_add_operation(reply, 0);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
-
 		case J_MESSAGE_SMD_SCHEME_OPEN:
 		{
 			g_autoptr(JMessage) reply = NULL;
@@ -883,9 +889,10 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					memset(buf, 0, SMD_KEY_LENGTH);
 					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
 				}
-				g_array_free(type.arr, TRUE);
+				g_array_unref(type.arr);
 			}
 			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 		case J_MESSAGE_SMD_RESET:
