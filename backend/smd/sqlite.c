@@ -383,15 +383,15 @@ GROUP BY Num - Rn
 
 	j_sqlite3_prepare_v3(
 		"SELECT range_start, range_end FROM smd_scheme_data_range WHERE "
-		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3 ORDER BY range_start ASC",
+		"scheme_key = ?1 AND range_start <= ?2 AND range_end >= ?3 ORDER BY range_start ASC",
 		&stmt_scheme_get_valid);
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_scheme_data_range WHERE "
-		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3",
+		"scheme_key = ?1 AND range_start <= ?2 AND range_end >= ?3",
 		&stmt_scheme_delete_valid);
 	j_sqlite3_prepare_v3(
 		"SELECT MIN(range_start), MAX(range_end), COUNT(*) FROM smd_scheme_data_range WHERE "
-		"scheme_key = ?1 AND range_start < ?2 AND range_end > ?3",
+		"scheme_key = ?1 AND range_start <= ?2 AND range_end >= ?3",
 		&stmt_scheme_get_valid_max);
 	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_scheme_data_range ("

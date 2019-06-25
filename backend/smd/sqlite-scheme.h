@@ -329,18 +329,18 @@ backend_scheme_set_valid(void* key, guint offset, guint size)
 		j_sqlite3_bind_int64(stmt_scheme_update_valid, 5, end_new);
 		j_sqlite3_step_and_reset_check_done(stmt_scheme_update_valid);
 		j_sqlite3_transaction_commit();
-		J_DEBUG("scheme set_valid success update single %lld %d %d", *((sqlite3_int64*)key), offset, offset + size);
+		J_DEBUG("scheme set_valid success update single %lld %d %d %d %d", *((sqlite3_int64*)key), start, end, start_new, end_new);
 		return TRUE;
 	}
 	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 1, *((sqlite3_int64*)key));
-	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 2, offset);
-	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 3, offset + size);
+	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 2, offset + size);
+	j_sqlite3_bind_int64(stmt_scheme_delete_valid, 3, offset);
 	j_sqlite3_step_and_reset_check_done(stmt_scheme_delete_valid);
 	j_sqlite3_bind_int64(stmt_scheme_set_valid, 1, *((sqlite3_int64*)key));
 	j_sqlite3_bind_int64(stmt_scheme_set_valid, 2, start_new);
 	j_sqlite3_bind_int64(stmt_scheme_set_valid, 3, end_new);
 	j_sqlite3_step_and_reset_check_done(stmt_scheme_set_valid);
 	j_sqlite3_transaction_commit();
-	J_DEBUG("scheme set_valid success merge %lld %d %d", *((sqlite3_int64*)key), offset, offset + size);
+	J_DEBUG("scheme set_valid success merge %lld %d %d %d %d", *((sqlite3_int64*)key), offset, offset + size, start_new, end_new);
 	return TRUE;
 }
