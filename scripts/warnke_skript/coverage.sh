@@ -2,12 +2,12 @@ cp -r build afl/cov
 rm afl/cov/*.info
 for i in {0..11}
 do
-	lcov --capture --directory afl/cov/gcc/fuzzer$i --base-directory afl --output-file afl/cov/fuzzer$i.info
+	lcov --capture --directory afl/cov/fuzzer$i --base-directory afl --output-file afl/cov/fuzzer$i.info
 done
-lcov --capture --directory afl/cov/gcc/server0 --base-directory afl --output-file afl/cov/server0.info
+lcov --capture --directory afl/cov/server0 --base-directory afl --output-file afl/cov/server0.info
 #for i in {12..22}
 #do
-#	lcov --capture --directory afl/cov/clang/fuzzer$i --base-directory afl --gcov-tool /src/julea/julea/scripts/warnke_skript/llvm-gcov.sh --output-file afl/cov/fuzzer$i.info
+#	lcov --capture --directory afl/cov/fuzzer$i --base-directory afl --gcov-tool /src/julea/julea/scripts/warnke_skript/llvm-gcov.sh --output-file afl/cov/fuzzer$i.info
 #done
 lcov --zerocounters -d build-gcc-gcov && lcov -c -i -d build-gcc-gcov -o afl/cov/build-gcc-gcov.info
 lcov --zerocounters -d build-gcc-gcov-debug-asan && lcov -c -i -d build-gcc-gcov-debug-asan -o afl/cov/build-gcc-gcov-debug-asan.info

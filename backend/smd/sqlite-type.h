@@ -9,26 +9,118 @@ strnlen_s(const char* b, guint64 maxlen)
 	return len;
 }
 static sqlite3_int64
+get_hash_for_variable(const J_SMD_Variable_t* var)
+{
+	sqlite3_int64 hash = 0;
+	sqlite3_int64 subtypekey;
+	guint i;
+	memcpy(&subtypekey, var->sub_type_key, sizeof(subtypekey));
+	hash = hash ^ var->offset;
+	hash = hash ^ var->size;
+	hash = hash ^ var->type;
+	hash = hash ^ subtypekey;
+	hash = hash ^ var->space.ndims;
+	for (i = 0; i < SMD_MAX_NAME_LENGTH; i++)
+		hash = hash ^ ((var->name[i] & 0xFF) << (i % 40));
+	return hash;
+}
+
+static sqlite3_int64
 create_type(const J_SMD_Variable_t* type)
 {
+	sqlite3_int64 hash = 0;
+	sqlite3_int64 var_count = 0;
+	guint i;
+	const char* tmp;
 	const J_SMD_Variable_t* var = type;
 	gint ret;
 	guint header_key = 0;
 	sqlite3_int64 subtype_key;
 	j_smd_timer_start(create_type);
-	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
-	j_sqlite3_bind_int64(stmt_type_create_header, 1, header_key);
-	j_sqlite3_step_and_reset_check_done(stmt_type_create_header);
-start:
-	subtype_key = 0;
+//can reuse old type?
+start_reuse:
+	var_count++;
+	memset(var->sub_type_key, 0, SMD_KEY_LENGTH);
 	if (var->type == SMD_TYPE_SUB_TYPE)
 	{
 		j_smd_timer_stop(create_type);
 		subtype_key = create_type(var + var->subtypeindex);
 		if (!subtype_key)
 			return 0;
+		memcpy(var->sub_type_key, &subtype_key, sizeof(subtype_key));
 		j_smd_timer_start(create_type);
 	}
+	hash = hash ^ get_hash_for_variable(var);
+	if (var->nextindex)
+	{
+		var += var->nextindex;
+		goto start_reuse;
+	}
+	//check for hash in db here
+	j_sqlite3_bind_int64(stmt_type_get_header_by_hash, 1, hash);
+	j_sqlite3_bind_int64(stmt_type_get_header_by_hash, 2, var_count);
+try_other:
+	//iterate over matching hashes
+	ret = sqlite3_step(stmt_type_get_header_by_hash);
+	if (ret == SQLITE_ROW)
+	{
+		header_key = sqlite3_column_int64(stmt_type_get_header_by_hash, 0);
+		j_sqlite3_bind_int64(stmt_type_load, 1, header_key);
+		j_sqlite3_bind_int64(stmt_type_load, 2, 0);
+	found_variable:
+		//iterate over matching rows in hashes
+		ret = sqlite3_step(stmt_type_load);
+		if (ret == SQLITE_ROW)
+		{
+			var = type;
+		start_compare:
+			tmp = (const char*)sqlite3_column_text(stmt_type_load, 0);
+			if (strcmp(tmp, var->name) != 0)
+				goto try_next;
+			if (*((sqlite3_int64*)var->sub_type_key) != sqlite3_column_int64(stmt_type_load, 9))
+				goto try_next;
+			if (var->space.ndims != sqlite3_column_int64(stmt_type_load, 4))
+				goto try_next;
+			if (var->size != sqlite3_column_int64(stmt_type_load, 3))
+				goto try_next;
+			if (var->offset != sqlite3_column_int64(stmt_type_load, 2))
+				goto try_next;
+			if (var->type != sqlite3_column_int64(stmt_type_load, 1))
+				goto try_next;
+			for (i = 0; i < var->space.ndims; i++)
+				if (var->space.dims[i] != sqlite3_column_int64(stmt_type_load, 5 + i))
+					goto try_next;
+			goto found_variable;
+		try_next:
+			if (var->nextindex)
+			{
+				var += var->nextindex;
+				goto start_compare;
+			}
+			else
+			{
+				j_sqlite3_reset(stmt_type_load);
+				goto try_other;
+			}
+		}
+		else if (ret != SQLITE_DONE)
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+		//found a matching existing type
+		j_sqlite3_reset(stmt_type_load);
+		j_sqlite3_reset(stmt_type_get_header_by_hash);
+		return header_key;
+	}
+	else if (ret != SQLITE_DONE)
+		J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+	j_sqlite3_reset(stmt_type_get_header_by_hash);
+	//create new type
+	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
+	j_sqlite3_bind_int64(stmt_type_create_header, 1, header_key);
+	j_sqlite3_bind_int64(stmt_type_create_header, 2, hash);
+	j_sqlite3_bind_int64(stmt_type_create_header, 3, var_count);
+	j_sqlite3_step_and_reset_check_done(stmt_type_create_header);
+	var = type;
+start:
 	j_smd_timer_start(create_type_sql);
 	j_sqlite3_bind_int64(stmt_type_create, 1, header_key);
 	j_sqlite3_bind_text(stmt_type_create, 2, var->name, -1);
@@ -43,7 +135,7 @@ start:
 	if (var->type != SMD_TYPE_SUB_TYPE)
 		j_sqlite3_bind_null(stmt_type_create, 11);
 	else
-		j_sqlite3_bind_int64(stmt_type_create, 11, subtype_key);
+		j_sqlite3_bind_int64(stmt_type_create, 11, *((sqlite3_int64*)var->sub_type_key));
 	ret = sqlite3_step(stmt_type_create);
 	if (ret == SQLITE_CONSTRAINT)
 		return 0;

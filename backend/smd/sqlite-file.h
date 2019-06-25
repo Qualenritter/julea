@@ -29,7 +29,7 @@ backend_file_delete(const char* name)
 	for (i = 0; i < arr->len; i++)
 	{
 		j_sqlite3_bind_int64(stmt_type_delete, 1, g_array_index(arr, sqlite3_int64, i));
-		j_sqlite3_step_and_reset_check_done(stmt_type_delete);
+		j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete);
 	}
 	j_sqlite3_transaction_commit();
 	g_array_free(arr, TRUE);

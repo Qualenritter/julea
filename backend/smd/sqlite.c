@@ -222,6 +222,7 @@ static guint smd_schemes_primary_key;
 static guint smd_scheme_type_primary_key;
 static sqlite3_stmt* stmt_type_create;
 static sqlite3_stmt* stmt_type_create_header;
+static sqlite3_stmt* stmt_type_get_header_by_hash;
 static sqlite3_stmt* stmt_type_load;
 static sqlite3_stmt* stmt_type_write;
 static sqlite3_stmt* stmt_type_read;
@@ -283,7 +284,9 @@ GROUP BY Num - Rn
 	j_sqlite3_prepare_v3("ROLLBACK", &stmt_transaction_abort);
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_type_header (" //
-		"key INTEGER PRIMARY KEY"
+		"key INTEGER PRIMARY KEY, "
+		"hash INTEGER, "
+		"var_count INTEGER "
 		")");
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_type (" //
@@ -366,10 +369,13 @@ GROUP BY Num - Rn
 		&stmt_type_create);
 	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_scheme_type_header (" //
-		"key " //
+		"key,hash,var_count " //
 		") " //
-		"VALUES (?1)", //
+		"VALUES (?1,?2,?3)", //
 		&stmt_type_create_header);
+	j_sqlite3_prepare_v3(
+		"SELECT key FROM smd_scheme_type_header WHERE hash = ?1 AND var_count = ?2", //
+		&stmt_type_get_header_by_hash);
 	j_sqlite3_prepare_v3(
 		"SELECT name, type, offset, size, ndims, dims0, dims1, dims2, dims3, subtype_key " //
 		"FROM smd_scheme_type " //
@@ -517,6 +523,7 @@ backend_fini_sql(void)
 {
 	sqlite3_finalize(stmt_type_create);
 	sqlite3_finalize(stmt_type_create_header);
+	sqlite3_finalize(stmt_type_get_header_by_hash);
 	sqlite3_finalize(stmt_type_load);
 	sqlite3_finalize(stmt_type_write);
 	sqlite3_finalize(stmt_type_read);
