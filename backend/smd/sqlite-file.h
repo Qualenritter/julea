@@ -1,10 +1,40 @@
 static gboolean
 backend_file_delete(const char* name)
 {
-	//TODO delete data in object-store if any
+	JDistribution* distribution;
+	JDistributedObject* object;
+	g_autoptr(JBatch) batch;
+	char buf[SMD_KEY_LENGTH * 2 + 1];
+	char key[SMD_KEY_LENGTH];
 	gint ret;
+	guint i;
 	sqlite3_int64 tmp;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_sqlite3_transaction_begin();
+	//delete data from object store ->
+	j_sqlite3_bind_text(stmt_scheme_open_all_in_file, 1, name, -1);
+	ret = sqlite3_step(stmt_scheme_open_all_in_file);
+	if (ret == SQLITE_ROW)
+	{
+		i = sqlite3_column_int64(stmt_scheme_open_all_in_file, 6);
+		if (i != J_DISTRIBUTION_DATABASE)
+		{
+			memset(key, 0, SMD_KEY_LENGTH);
+			tmp = sqlite3_column_int64(stmt_scheme_open_all_in_file, 0);
+			memcpy(key, &tmp, sizeof(sqlite3_int64));
+			SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
+			distribution = j_distribution_new(i);
+			object = j_distributed_object_new("smd", buf, distribution);
+			j_distributed_object_delete(object, batch);
+			j_distributed_object_unref(object);
+			j_distribution_unref(distribution);
+		}
+	}
+	else
+		j_debug_check(ret, SQLITE_DONE);
+	j_sqlite3_reset(stmt_scheme_open_all_in_file);
+	j_batch_execute(batch);
+	//delete type ->
 	j_sqlite3_bind_text(stmt_file_delete0, 1, name, -1);
 	do
 	{
@@ -19,8 +49,9 @@ backend_file_delete(const char* name)
 			j_debug_check(ret, SQLITE_DONE);
 	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_file_delete0);
-	j_sqlite3_bind_text(stmt_file_delete1, 1, name, -1);
-	j_sqlite3_step_and_reset_check_done(stmt_file_delete1);
+	//delete file ->
+	j_sqlite3_bind_text(stmt_file_delete2, 1, name, -1);
+	j_sqlite3_step_and_reset_check_done(stmt_file_delete2);
 	j_sqlite3_transaction_commit();
 	J_DEBUG("file delete success %s", name);
 	return TRUE;

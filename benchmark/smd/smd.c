@@ -237,18 +237,22 @@ benchmark_smd(void)
 	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
 	{
 		n = n_values[i];
+		if (n < 1000)
+		{
+			//this is enough to demonstrate that batche messages are faster
+			sprintf(testname, "/smd/scheme_%d/create", n);
+			j_benchmark_run(testname, benchmark_smd_create_scheme);
+			sprintf(testname, "/smd/scheme_%d/open", n);
+			j_benchmark_run(testname, benchmark_smd_scheme_open);
+			sprintf(testname, "/smd/scheme_%d/delete", n);
+			j_benchmark_run(testname, benchmark_smd_scheme_delete);
+		}
 		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_01", cwd, n);
 		res = system(testname);
-		sprintf(testname, "/smd/scheme_%d/create", n);
-		j_benchmark_run(testname, benchmark_smd_create_scheme);
-		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_02", cwd, n);
-		res = system(testname);
-		sprintf(testname, "/smd/scheme_%d/open", n);
-		j_benchmark_run(testname, benchmark_smd_scheme_open);
-		sprintf(testname, "/smd/scheme_%d/delete", n);
-		j_benchmark_run(testname, benchmark_smd_scheme_delete);
 		sprintf(testname, "/smd/scheme_%d/create-batch", n);
 		j_benchmark_run(testname, benchmark_smd_create_scheme_batch);
+		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_02", cwd, n);
+		res = system(testname);
 		sprintf(testname, "/smd/scheme_%d/open-batch", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_open_batch);
 		sprintf(testname, "/smd/scheme_%d/delete-batch", n);

@@ -233,7 +233,8 @@ static sqlite3_stmt* stmt_file_create0;
 static sqlite3_stmt* stmt_file_create1;
 static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
-static sqlite3_stmt* stmt_file_delete1;
+static sqlite3_stmt* stmt_file_delete2;
+static sqlite3_stmt* stmt_scheme_open_all_in_file;
 static sqlite3_stmt* stmt_scheme_delete_valid;
 static sqlite3_stmt* stmt_scheme_get_valid;
 static sqlite3_stmt* stmt_scheme_get_valid_max;
@@ -470,6 +471,11 @@ backend_init_sql(void)
 		"FROM smd_schemes " //
 		"WHERE key = ?",
 		&stmt_scheme_get_type_key);
+	j_sqlite3_prepare_v3(
+		"SELECT key, ndims, dims0, dims1, dims2, dims3, distribution, type_key " //
+		"FROM smd_schemes " //
+		"WHERE file_key = (SELECT key FROM smd_scheme_file WHERE name = ?1)",
+		&stmt_scheme_open_all_in_file);
 
 	j_sqlite3_prepare_v3(
 		"SELECT t.type_key "
@@ -478,7 +484,7 @@ backend_init_sql(void)
 		&stmt_file_delete0);
 	j_sqlite3_prepare_v3(
 		"DELETE FROM smd_schemes WHERE name = ?1 AND file_key = key",
-		&stmt_file_delete1);
+		&stmt_file_delete2);
 	j_sqlite3_prepare_v3(
 		"INSERT INTO smd_schemes (key,parent_key,file_key,name) VALUES (?1, NULL, ?1, ?2)",
 		&stmt_file_create0);
@@ -514,7 +520,8 @@ backend_fini_sql(void)
 	sqlite3_finalize(stmt_file_create1);
 	sqlite3_finalize(stmt_file_open);
 	sqlite3_finalize(stmt_file_delete0);
-	sqlite3_finalize(stmt_file_delete1);
+	sqlite3_finalize(stmt_scheme_open_all_in_file);
+	sqlite3_finalize(stmt_file_delete2);
 	sqlite3_finalize(stmt_scheme_set_valid);
 	sqlite3_finalize(stmt_scheme_update_valid);
 	sqlite3_finalize(stmt_scheme_get_valid);

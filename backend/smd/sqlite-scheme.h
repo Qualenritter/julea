@@ -3,13 +3,14 @@ backend_scheme_delete(const char* name, void* parent)
 {
 	JDistribution* distribution;
 	JDistributedObject* object;
-	JBatch* batch;
+	g_autoptr(JBatch) batch;
 	char buf[SMD_KEY_LENGTH * 2 + 1];
 	char key[SMD_KEY_LENGTH];
 	guint i;
 	guint ret;
 	sqlite3_int64 tmp;
 	j_smd_timer_start(backend_scheme_delete);
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_sqlite3_transaction_begin();
 	//delete data from object store ->
 	j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
@@ -20,23 +21,21 @@ backend_scheme_delete(const char* name, void* parent)
 		i = sqlite3_column_int64(stmt_scheme_open, 6);
 		if (i != J_DISTRIBUTION_DATABASE)
 		{
-
 			memset(key, 0, SMD_KEY_LENGTH);
 			tmp = sqlite3_column_int64(stmt_scheme_open, 0);
 			memcpy(key, &tmp, sizeof(sqlite3_int64));
 			SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
 			distribution = j_distribution_new(i);
 			object = j_distributed_object_new("smd", buf, distribution);
-			batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 			j_distributed_object_delete(object, batch);
 			j_distributed_object_unref(object);
 			j_distribution_unref(distribution);
-			j_batch_execute(batch);
 		}
 	}
 	else
 		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_open);
+	j_batch_execute(batch);
 	//delete type ->
 	j_sqlite3_bind_text(stmt_scheme_delete0, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_delete0, 2, *((sqlite3_int64*)parent));
