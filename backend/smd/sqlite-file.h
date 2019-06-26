@@ -13,25 +13,28 @@ backend_file_delete(const char* name)
 	j_sqlite3_transaction_begin();
 	//delete data from object store ->
 	j_sqlite3_bind_text(stmt_scheme_open_all_in_file, 1, name, -1);
-	ret = sqlite3_step(stmt_scheme_open_all_in_file);
-	if (ret == SQLITE_ROW)
+	do
 	{
-		i = sqlite3_column_int64(stmt_scheme_open_all_in_file, 6);
-		if (i != J_DISTRIBUTION_DATABASE)
+		ret = sqlite3_step(stmt_scheme_open_all_in_file);
+		if (ret == SQLITE_ROW)
 		{
-			memset(key, 0, SMD_KEY_LENGTH);
-			tmp = sqlite3_column_int64(stmt_scheme_open_all_in_file, 0);
-			memcpy(key, &tmp, sizeof(sqlite3_int64));
-			SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
-			distribution = j_distribution_new(i);
-			object = j_distributed_object_new("smd", buf, distribution);
-			j_distributed_object_delete(object, batch);
-			j_distributed_object_unref(object);
-			j_distribution_unref(distribution);
+			i = sqlite3_column_int64(stmt_scheme_open_all_in_file, 6);
+			if (i != J_DISTRIBUTION_DATABASE)
+			{
+				memset(key, 0, SMD_KEY_LENGTH);
+				tmp = sqlite3_column_int64(stmt_scheme_open_all_in_file, 0);
+				memcpy(key, &tmp, sizeof(sqlite3_int64));
+				SMD_BUF_TO_HEX(key, buf, SMD_KEY_LENGTH);
+				distribution = j_distribution_new(i);
+				object = j_distributed_object_new("smd", buf, distribution);
+				j_distributed_object_delete(object, batch);
+				j_distributed_object_unref(object);
+				j_distribution_unref(distribution);
+			}
 		}
-	}
-	else
-		j_debug_check(ret, SQLITE_DONE);
+		else
+			j_debug_check(ret, SQLITE_DONE);
+	} while (ret != SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_open_all_in_file);
 	j_batch_execute(batch);
 	//delete type ->
