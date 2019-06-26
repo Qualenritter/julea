@@ -85,9 +85,11 @@ backend_scheme_write(void* key, const void* buf, guint offset, guint size)
 	(void)size;
 	return TRUE;
 }
-static void
+static gboolean
 backend_reset(void)
-{}
+{
+	return TRUE;
+}
 static JBackend null_backend = { .type = J_BACKEND_TYPE_SMD, //
 	.component = J_BACKEND_COMPONENT_SERVER, //
 	.smd = { //

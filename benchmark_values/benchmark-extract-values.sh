@@ -1,4 +1,4 @@
-folders=$(find -type d | grep -v "^.$" | sort | grep -v "warnke-02" | grep -v "warnke-03" | grep -v "warnke-04" | grep -v "warnke-05")
+folders=$(find -type d | grep -v "^.$" | sort | grep -v "warnke-02" | grep -v "warnke-03" | grep -v "warnke-04" | grep -v "warnke-05"| grep -v "warnke-06")
 n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 rm *.csv
 for f in ${folders}; do

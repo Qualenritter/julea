@@ -24,9 +24,9 @@ lcov --zerocounters -d build-gcc-gcov-debug-asan && lcov -c -i -d build-gcc-gcov
 #(export CC=afl-clang-fast; ./waf configure --gcov --out build-clang-gcov --prefix=prefix-clang-gcov --libdir=prefix-clang-gcov --bindir=prefix-clang-gcov --destdir=prefix-clang-gcov && ./waf.sh build && ./waf.sh install)
 #rc=$?; if [[ $rc != 0 ]]; then echo "build-clang-gcov failed";exit $rc; fi
 #lcov --zerocounters -d build-clang-gcov && lcov -c -i -d build-clang-gcov -o afl/cov/build-clang-gcov.info
-#(export CC=afl-clang-fast; ./waf configure --gcov --debug --out build-clang-gcov-debug --prefix=prefix-clang-gcov-debug --libdir=prefix-clang-gcov-debug --bindir=prefix-clang-gcov-debug --destdir=prefix-clang-gcov-debug && ./waf.sh build && ./waf.sh install)
-#rc=$?; if [[ $rc != 0 ]]; then echo "build-clang-gcov-debug failed";exit $rc; fi
-#lcov --zerocounters -d build-clang-gcov-debug && lcov -c -i -d build-clang-gcov-debug -o afl/cov/build-clang-gcov-debug.info
+(export CC=afl-clang-fast; ./waf configure --gcov --debug --out build-clang-gcov-debug --prefix=prefix-clang-gcov-debug --libdir=prefix-clang-gcov-debug --bindir=prefix-clang-gcov-debug --destdir=prefix-clang-gcov-debug && ./waf.sh build && ./waf.sh install)
+rc=$?; if [[ $rc != 0 ]]; then echo "build-clang-gcov-debug failed";exit $rc; fi
+lcov --zerocounters -d build-clang-gcov-debug && lcov -c -i -d build-clang-gcov-debug -o afl/cov/build-clang-gcov-debug.info
 (export CC=afl-clang-fast; ./waf configure --out build-clang --prefix=prefix-clang --libdir=prefix-clang --bindir=prefix-clang --destdir=prefix-clang && ./waf.sh build && ./waf.sh install)
 rc=$?; if [[ $rc != 0 ]]; then echo "build-clang failed";exit $rc; fi
 
@@ -69,6 +69,7 @@ do
 	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/server${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; ./build-gcc-gcov/server/julea-server) &
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
+	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test/julea-test)
 	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -M fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
 #	sleep 2
 done
@@ -77,7 +78,6 @@ for i in 1
 do
 	mkdir -p ./afl/cov/fuzzer${i}/src/julea/julea/
 	cp -r build-gcc-gcov ./afl/cov/fuzzer${i}/src/julea/julea/
-	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; ./build-gcc-gcov/test/julea-test) &
 	(export AFL_NO_UI=1; export AFL_NO_AFFINITY=1;export LD_LIBRARY_PATH=prefix-gcc-gcov/lib/:$LD_LIBRARY_PATH; export GCOV_PREFIX=afl/cov/fuzzer${i}; export JULEA_CONFIG=~/.config/julea/julea${i}; export AFL_SKIP_CRASHES=1; afl-fuzz -m none -t 100000 -M fuzzer${i} -i /src/julea/julea/afl/start-files -o /src/julea/julea/afl/out ./build-gcc-gcov/test-afl/julea-test-afl) &
 #	sleep 2
 done

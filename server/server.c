@@ -801,29 +801,24 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			char* parent;
 			char _key[SMD_KEY_LENGTH];
 			void* space;
-			J_SMD_Type_t type;
+			J_SMD_Type_t* type;
 			guint len;
 			guint distribution;
-
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
+				type = j_smd_type_create();
 				name = j_message_get_string(message);
 				parent = j_message_get_n(message, SMD_KEY_LENGTH);
 				distribution = j_message_get_4(message);
 				space = j_message_get_n(message, sizeof(J_SMD_Space_t));
-				type.first_index = j_message_get_4(message);
+				type->first_index = j_message_get_4(message);
 				len = j_message_get_4(message);
-				type.arr = g_array_sized_new(FALSE, FALSE, sizeof(J_SMD_Variable_t), len);
 				if (len)
-				{
-					g_array_append_vals(type.arr, j_message_get_n(message, len * sizeof(J_SMD_Variable_t)), len);
-				}
+					g_array_append_vals(type->arr, j_message_get_n(message, len * sizeof(J_SMD_Variable_t)), len);
 				j_message_add_operation(reply, SMD_KEY_LENGTH);
-				if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, space, &type, distribution, _key))
-				{
+				if (j_backend_smd_scheme_create(jd_smd_backend, name, parent, space, type, distribution, _key))
 					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
-				}
 				else
 				{
 					char buf[SMD_KEY_LENGTH];
@@ -831,13 +826,12 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					memset(buf, 0, SMD_KEY_LENGTH);
 					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
 				}
-				g_array_unref(type.arr);
+				j_smd_type_unref(type);
 			}
 			j_message_send(reply, connection);
 			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
-
 		case J_MESSAGE_SMD_SCHEME_DELETE:
 		{
 			g_autoptr(JMessage) reply = NULL;
@@ -863,24 +857,22 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			char _key[SMD_KEY_LENGTH];
 			guint distribution;
 			J_SMD_Space_t space;
-			J_SMD_Type_t type;
+			J_SMD_Type_t* type;
 			reply = j_message_new_reply(message);
 			for (i = 0; i < operation_count; i++)
 			{
-				type.arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t));
+				type = j_smd_type_create();
 				name = j_message_get_string(message);
 				parent = j_message_get_n(message, SMD_KEY_LENGTH);
-				if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, &space, &type, &distribution, _key))
+				if (j_backend_smd_scheme_open(jd_smd_backend, name, parent, &space, type, &distribution, _key))
 				{
-					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + sizeof(J_SMD_Space_t) + 4 + type.arr->len * sizeof(J_SMD_Variable_t));
+					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + sizeof(J_SMD_Space_t) + 4 + type->arr->len * sizeof(J_SMD_Variable_t));
 					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
 					j_message_append_4(reply, &distribution);
 					j_message_append_n(reply, &space, sizeof(J_SMD_Space_t));
-					j_message_append_4(reply, &type.arr->len);
-					if (type.arr->len)
-					{
-						j_message_append_n(reply, type.arr->data, type.arr->len * sizeof(J_SMD_Variable_t));
-					}
+					j_message_append_4(reply, &type->arr->len);
+					if (type->arr->len)
+						j_message_append_n(reply, type->arr->data, type->arr->len * sizeof(J_SMD_Variable_t));
 				}
 				else
 				{
@@ -889,22 +881,29 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					memset(buf, 0, SMD_KEY_LENGTH);
 					j_message_append_n(reply, buf, SMD_KEY_LENGTH);
 				}
-				g_array_unref(type.arr);
+				j_smd_type_unref(type);
 			}
 			j_message_send(reply, connection);
 			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
 		case J_MESSAGE_SMD_RESET:
-			j_backend_reset(jd_smd_backend);
-			j_backend_reset(jd_object_backend);
-			break;
+		{
+			guint result = TRUE;
+			g_autoptr(JMessage) reply = NULL;
+			result = result && j_backend_reset(jd_smd_backend);
+			result = result && j_backend_reset(jd_object_backend);
+			reply = j_message_new_reply(message);
+			j_message_add_operation(reply, 4);
+			j_message_append_4(reply, &result);
+			j_message_send(reply, connection);
+		}
+		break;
 		default:
 			g_warn_if_reached();
 			break;
 		}
 	}
-
 	{
 		guint64 value;
 

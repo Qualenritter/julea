@@ -665,16 +665,17 @@ j_backend_smd_sync(JBackend* backend)
 	if (backend->smd.backend_sync)
 		backend->smd.backend_sync();
 }
-void
+gboolean
 j_backend_reset(JBackend* backend)
 {
 	if (backend)
 	{
 		if (backend->type == J_BACKEND_TYPE_SMD && backend->smd.backend_reset)
-			backend->smd.backend_reset();
+			return backend->smd.backend_reset();
 		if (backend->type == J_BACKEND_TYPE_OBJECT && backend->object.backend_reset)
-			backend->object.backend_reset();
+			return backend->object.backend_reset();
 	}
+	return TRUE;
 }
 /**
  * @}

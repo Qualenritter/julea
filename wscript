@@ -474,7 +474,7 @@ def build(ctx):
 	ctx.program(
 		source=ctx.path.ant_glob('server/*.c'),
 		target='server/julea-server',
-		use=use_julea_core + ['lib/julea', 'GIO', 'GMODULE', 'GOBJECT', 'GTHREAD'],
+		use=use_julea_core + ['lib/julea', 'lib/julea-smd', 'GIO', 'GMODULE', 'GOBJECT', 'GTHREAD'],
 		includes=include_julea_core,
 		rpath=get_rpath(ctx),
 		install_path='${BINDIR}'

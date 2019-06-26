@@ -260,18 +260,27 @@ j_smd_type_ref(void* _type)
 		g_atomic_int_inc(&(type->ref_count));
 	return type;
 }
-void*
-j_smd_type_copy(void* _type)
+void
+j_smd_type_copy2(void* target, void* source)
 {
-	J_SMD_Type_t* type = _type;
-	J_SMD_Type_t* type2 = NULL;
-	if (type)
+	J_SMD_Type_t* type = source;
+	J_SMD_Type_t* type2 = target;
+	if (source && target)
 	{
-		type2 = j_smd_type_create();
 		type2->last_index = type->last_index;
 		type2->first_index = type->first_index;
 		type2->element_count = type->element_count;
 		g_array_append_vals(type2->arr, type->arr->data, type->arr->len);
+	}
+}
+void*
+j_smd_type_copy(void* type)
+{
+	J_SMD_Type_t* type2 = NULL;
+	if (type)
+	{
+		type2 = j_smd_type_create();
+		j_smd_type_copy2(type2, type);
 	}
 	return type2;
 }

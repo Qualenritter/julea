@@ -84,6 +84,8 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		J_DEBUG("scheme create failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
 	}
+	if (!g_hash_table_lookup(smd_cache.types_cached, GINT_TO_POINTER(type_key)))
+		g_hash_table_insert(smd_cache.types_cached, GINT_TO_POINTER(type_key), j_smd_type_ref(_type));
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
@@ -133,6 +135,7 @@ backend_scheme_open(const char* name, void* parent, void* _space, void* _type, g
 {
 	J_SMD_Space_t* space = _space;
 	J_SMD_Type_t* type = _type;
+	J_SMD_Type_t* type_tmp;
 	gint ret;
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;
@@ -165,7 +168,16 @@ backend_scheme_open(const char* name, void* parent, void* _space, void* _type, g
 	else
 		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_scheme_open);
-	load_type(type, type_key);
+	type_tmp = g_hash_table_lookup(smd_cache.types_cached, GINT_TO_POINTER(type_key));
+	if (type_tmp)
+	{
+		j_smd_type_copy2(type, type_tmp);
+	}
+	else
+	{
+		load_type(type, type_key);
+		g_hash_table_insert(smd_cache.types_cached, GINT_TO_POINTER(type_key), j_smd_type_ref(type));
+	}
 	j_sqlite3_transaction_commit();
 	j_smd_timer_stop(backend_scheme_open);
 	J_DEBUG("scheme open success %s %lld %lld", name, *((sqlite3_int64*)parent), scheme_key);

@@ -755,6 +755,7 @@ main(int argc, char* argv[])
 		}
 		goto loop;
 	cleanup:;
+		J_DEBUG("cleanup%d", 0);
 		for (i = 0; i < AFL_LIMIT_SPACE_COUNT; i++)
 		{
 			res = j_smd_space_unref(space[i]);
@@ -769,11 +770,17 @@ main(int argc, char* argv[])
 		}
 		for (i = 0; i < AFL_LIMIT_FILE_COUNT; i++)
 		{
-			res = j_smd_file_unref(file[i]);
-			if (res != FALSE)
-				MYABORT();
 			for (j = 0; j < AFL_LIMIT_SCHEME_COUNT; j++)
 			{
+				if (file[i] && scheme[i][j])
+				{
+					J_DEBUG("SMD_AFL_SCHEME_DELETE|UNREF idx=%d idx2=%d", i, j);
+					sprintf(scheme_strbuf, "scheme_%d", j);
+					res = j_smd_scheme_delete(scheme_strbuf, file[i], batch);
+					j_batch_execute(batch);
+					if (res == FALSE)
+						MYABORT();
+				}
 				res = j_smd_scheme_unref(scheme[i][j]);
 				if (res != FALSE)
 					MYABORT();
@@ -784,7 +791,21 @@ main(int argc, char* argv[])
 				if (res != FALSE)
 					MYABORT();
 			}
+			if (file[i])
+			{
+				J_DEBUG("SMD_AFL_FILE_DELETE|UNREF idx=%d", i);
+				sprintf(file_strbuf, "file_%d", i);
+				res = j_smd_file_delete(file_strbuf, batch);
+				j_batch_execute(batch);
+				if (res == FALSE)
+					MYABORT();
+			}
+			res = j_smd_file_unref(file[i]);
+			if (res != FALSE)
+				MYABORT();
 		}
+		if (!j_smd_reset())
+			MYABORT();
 	}
 	j_smd_debug_exit();
 	return 0;

@@ -64,7 +64,7 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
-			void (*backend_reset)(void);
+			gboolean (*backend_reset)(void);
 
 			gboolean (*backend_create)(gchar const*, gchar const*, gpointer*);
 			gboolean (*backend_open)(gchar const*, gchar const*, gpointer*);
@@ -100,7 +100,7 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
-			void (*backend_reset)(void);
+			gboolean (*backend_reset)(void);
 
 			void (*backend_sync)(void);
 
@@ -156,7 +156,7 @@ gboolean j_backend_kv_iterate(JBackend*, gpointer, gconstpointer*, guint32*);
 
 gboolean j_backend_smd_init(JBackend* backend, gchar const*);
 void j_backend_smd_fini(JBackend* backend);
-void j_backend_reset(JBackend*);
+gboolean j_backend_reset(JBackend*);
 void j_backend_smd_sync(JBackend*);
 
 gboolean j_backend_smd_file_create(JBackend*, const char* name, bson_t* bson, void* key);
