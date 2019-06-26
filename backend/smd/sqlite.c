@@ -32,6 +32,7 @@ struct J_SMD_cache
 	//type deletion:
 	GHashTable* types_to_delete_keys; /*keys only - fast existence check*/
 	GArray* types_to_delete; /*ordered list of types to delete to avoid reject because of dependencies deleted later*/
+	GArray* types_to_delete_tmp;
 	//type cache
 	GHashTable* types_cached;
 };
@@ -617,6 +618,7 @@ backend_init(gchar const* path)
 	}
 	smd_cache.types_to_delete_keys = g_hash_table_new(g_direct_hash, NULL);
 	smd_cache.types_to_delete = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
+	smd_cache.types_to_delete_tmp = g_array_new(FALSE, FALSE, sizeof(sqlite3_int64));
 	smd_cache.types_cached = g_hash_table_new_full(g_direct_hash, NULL, do_nothing, j_smd_type_unref_wrapper);
 #ifdef JULEA_DEBUG
 	j_smd_timer_alloc(backend_scheme_create);
@@ -645,6 +647,7 @@ backend_sync(void)
 {
 	gint ret;
 	guint i;
+	guint delete_sth = 0;
 	sqlite3_int64 tmp;
 	sqlite3_int64* key = NULL;
 	sqlite3_int64* key_end = NULL;
@@ -664,25 +667,45 @@ backend_sync(void)
 					if (g_hash_table_add(smd_cache.types_to_delete_keys, GINT_TO_POINTER(tmp)))
 						g_array_append_val(smd_cache.types_to_delete, tmp);
 				}
-				else if (ret != SQLITE_DONE)
-				{
-					J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-					abort();
-				}
+				else
+					j_debug_check(ret, SQLITE_DONE);
 			} while (ret != SQLITE_DONE);
 			j_sqlite3_reset(stmt_type_delete0);
 		}
 		key = (sqlite3_int64*)smd_cache.types_to_delete->data;
 		key_end = key + smd_cache.types_to_delete->len; //update the last key
-		//delete all the types
+	_delete_all_types:
 		do
 		{
 			j_sqlite3_bind_int64(stmt_type_delete1, 1, *key);
-			j_sqlite3_step_and_reset_check_done_constraint(stmt_type_delete1);
+			ret = sqlite3_step(stmt_type_delete1);
+			if (ret == SQLITE_CONSTRAINT)
+			{
+				g_array_append_val(smd_cache.types_to_delete_tmp, *key);
+			}
+			else if (ret == SQLITE_DONE)
+			{
+				delete_sth = 1;
+			}
+			else
+				j_debug_check(ret, SQLITE_DONE);
+			j_sqlite3_reset(stmt_type_delete1);
 			key++;
 		} while (key < key_end);
 		g_array_set_size(smd_cache.types_to_delete, 0);
 		g_hash_table_remove_all(smd_cache.types_to_delete_keys);
+		if (delete_sth && smd_cache.types_to_delete_tmp->len)
+		{
+			//while something is deleted successfully repeat deleteing the remaining types, because a constraint may not be blocking any more
+			g_array_append_vals(smd_cache.types_to_delete, smd_cache.types_to_delete_tmp->data, smd_cache.types_to_delete_tmp->len);
+			g_array_set_size(smd_cache.types_to_delete_tmp, 0);
+			delete_sth = 0;
+			goto _delete_all_types;
+		}
+		else
+		{
+			g_array_set_size(smd_cache.types_to_delete_tmp, 0);
+		}
 	}
 	g_hash_table_remove_all(smd_cache.types_cached);
 	J_DEBUG("sync complete %d", 0);
@@ -698,6 +721,7 @@ backend_fini(void)
 		backend_sync();
 		g_hash_table_unref(smd_cache.types_to_delete_keys);
 		g_array_unref(smd_cache.types_to_delete);
+		g_array_unref(smd_cache.types_to_delete_tmp);
 		g_hash_table_unref(smd_cache.types_cached);
 		backend_fini_sql();
 		sqlite3_close(backend_db);
