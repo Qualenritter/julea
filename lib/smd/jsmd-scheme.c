@@ -645,7 +645,7 @@ j_smd_get_valid_exec(JList* operations, JSemantics* semantics)
 			ret = j_message_get_4(reply);
 			arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Range_t));
 			if (ret)
-				g_array_append_vals(arr, j_message_get_n(reply, ret), ret);
+				g_array_append_vals(arr, j_message_get_n(reply, ret * sizeof(J_SMD_Range_t)), ret);
 			j_smd_get_valid_exec_read_data(smd_op, arr, batch);
 			g_array_unref(arr);
 		}

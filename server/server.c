@@ -697,9 +697,9 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				buf_offset = j_message_get_4(message);
 				buf_size = j_message_get_4(message);
 				j_backend_smd_scheme_get_valid(jd_smd_backend, _key, buf_offset, buf_size, arr);
-				j_message_add_operation(reply, 4 + 4 + sizeof(J_SMD_Range_t) * arr->len);
+				j_message_add_operation(reply, 4 + sizeof(J_SMD_Range_t) * arr->len);
 				j_message_append_4(reply, &arr->len);
-				j_message_append_n(reply, arr->data, arr->len);
+				j_message_append_n(reply, arr->data, arr->len * sizeof(J_SMD_Range_t));
 				g_array_unref(arr);
 			}
 			j_message_send(reply, connection);

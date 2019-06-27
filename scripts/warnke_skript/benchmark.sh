@@ -17,8 +17,8 @@ rm -rf /mnt2/julea/*
   --smd-backend=sqlite --smd-component=server --smd-path=/mnt2/julea/smd)
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 githash=$(git log --pretty=format:'%H' -n 1)
-rm -rf benchmark_values/warnke-${githash}
-mkdir benchmark_values/warnke-${githash}
+#rm -rf benchmark_values/warnke-${githash}
+#mkdir benchmark_values/warnke-${githash}
 (export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH; export JULEA_CONFIG=~/.config/julea/julea-benchmark; ./build-gcc-benchmark/server/julea-server )&
 sleep 2
 (cd benchmark_values/warnke-${githash}; export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH; export JULEA_CONFIG=~/.config/julea/julea-benchmark; ../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values)

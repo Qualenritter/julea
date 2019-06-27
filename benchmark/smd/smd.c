@@ -40,8 +40,9 @@ _benchmark_smd_scheme_write(BenchmarkResult* result, const gboolean use_batch, J
 	void* type;
 	void* space;
 	void* scheme;
-	int databuffer[array_length * space_length]; //random data - not initialized
+	int* databuffer;
 	guint one = 1;
+	databuffer = g_new(int, array_length* space_length);
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
 	gdouble elapsed = 0;
@@ -49,7 +50,8 @@ _benchmark_smd_scheme_write(BenchmarkResult* result, const gboolean use_batch, J
 	batch = j_batch_new(semantics);
 	file = j_smd_file_create(filename, batch);
 	j_batch_execute(batch);
-	space = j_smd_space_create(one, &space_length);
+	i = space_length * n;
+	space = j_smd_space_create(one, &i);
 	type = j_smd_type_create();
 	j_smd_type_add_atomic_type(type, "data", 0, sizeof(int), SMD_TYPE_INT, one, &array_length);
 	scheme = j_smd_scheme_create(schemename, file, type, space, distribution, batch);
@@ -57,14 +59,8 @@ _benchmark_smd_scheme_write(BenchmarkResult* result, const gboolean use_batch, J
 start:
 	m++;
 	j_benchmark_timer_start();
-	for (i = 0; i < n; i++)
-	{
-		j_smd_scheme_write(scheme, databuffer, i, space_length, batch);
-		if (!use_batch)
-			j_batch_execute(batch);
-	}
-	if (use_batch)
-		j_batch_execute(batch);
+	j_smd_scheme_write(scheme, databuffer, 0, space_length, batch); //write entire file at once
+	j_batch_execute(batch);
 	elapsed += j_benchmark_timer_elapsed();
 	if (elapsed < target_time)
 	{
@@ -76,6 +72,8 @@ start:
 	j_smd_file_unref(file);
 	result->elapsed_time = elapsed;
 	result->operations = n * m * array_length;
+	g_free(databuffer);
+	(void)use_batch;
 }
 static void
 _benchmark_smd_scheme_read(BenchmarkResult* result, const gboolean use_batch, JDistributionType distribution)
@@ -84,32 +82,25 @@ _benchmark_smd_scheme_read(BenchmarkResult* result, const gboolean use_batch, JD
 	guint array_length = 100;
 	const char* filename = "filename";
 	const char* schemename = "schemename";
-	guint i = 0;
 	guint m = 0;
 	void* file;
 	void* scheme;
-	int databuffer[array_length * space_length]; //random data - not initialized
-	guint one = 1;
+	int* databuffer;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
+	databuffer = g_new(int, array_length* space_length);
 	gdouble elapsed = 0;
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
 	file = j_smd_file_open(filename, batch);
 	j_batch_execute(batch);
-	scheme = j_smd_scheme_open(schemename, file, batch);
+	scheme = j_smd_scheme_open(schemename, file, batch); //read entire file at once
 	j_batch_execute(batch);
 start:
 	m++;
 	j_benchmark_timer_start();
-	for (i = 0; i < n; i++)
-	{
-		j_smd_scheme_read(scheme, databuffer, i, space_length, batch);
-		if (!use_batch)
-			j_batch_execute(batch);
-	}
-	if (use_batch)
-		j_batch_execute(batch);
+	j_smd_scheme_read(scheme, databuffer, 0, space_length, batch);
+	j_batch_execute(batch);
 	elapsed += j_benchmark_timer_elapsed();
 	if (elapsed < target_time)
 	{
@@ -121,6 +112,9 @@ start:
 	j_smd_file_unref(file);
 	result->elapsed_time = elapsed;
 	result->operations = n * m * array_length;
+	g_free(databuffer);
+	(void)use_batch;
+	(void)distribution;
 }
 static void
 _benchmark_smd_scheme_create(BenchmarkResult* result, const gboolean use_batch)
@@ -313,19 +307,9 @@ benchmark_smd_write_scheme_db(BenchmarkResult* result)
 	_benchmark_smd_scheme_write(result, FALSE, J_DISTRIBUTION_DATABASE);
 }
 static void
-benchmark_smd_write_scheme_db_batch(BenchmarkResult* result)
-{
-	_benchmark_smd_scheme_write(result, TRUE, J_DISTRIBUTION_DATABASE);
-}
-static void
 benchmark_smd_write_scheme_object(BenchmarkResult* result)
 {
 	_benchmark_smd_scheme_write(result, FALSE, J_DISTRIBUTION_SINGLE_SERVER);
-}
-static void
-benchmark_smd_write_scheme_object_batch(BenchmarkResult* result)
-{
-	_benchmark_smd_scheme_write(result, TRUE, J_DISTRIBUTION_SINGLE_SERVER);
 }
 static void
 benchmark_smd_read_scheme_db(BenchmarkResult* result)
@@ -333,19 +317,9 @@ benchmark_smd_read_scheme_db(BenchmarkResult* result)
 	_benchmark_smd_scheme_read(result, FALSE, J_DISTRIBUTION_DATABASE);
 }
 static void
-benchmark_smd_read_scheme_db_batch(BenchmarkResult* result)
-{
-	_benchmark_smd_scheme_read(result, TRUE, J_DISTRIBUTION_DATABASE);
-}
-static void
 benchmark_smd_read_scheme_object(BenchmarkResult* result)
 {
 	_benchmark_smd_scheme_read(result, FALSE, J_DISTRIBUTION_SINGLE_SERVER);
-}
-static void
-benchmark_smd_read_scheme_object_batch(BenchmarkResult* result)
-{
-	_benchmark_smd_scheme_read(result, TRUE, J_DISTRIBUTION_SINGLE_SERVER);
 }
 
 void
@@ -357,7 +331,8 @@ benchmark_smd(void)
 		10, 50, //
 		100, 500, //
 		1000, 5000, //
-		10000, 50000, //
+		10000,
+		50000, //
 		100000, //
 		1000000, //
 	};
@@ -366,8 +341,23 @@ benchmark_smd(void)
 	char* res2;
 	char testname[500 + PATH_MAX];
 	res2 = getcwd(cwd, sizeof(cwd));
+	/*	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
+	{ //read write benchmark
+		n = n_values[i];
+		sprintf(testname, "/smd/scheme_%d/write/db", n);
+		j_benchmark_run(testname, benchmark_smd_write_scheme_db);
+		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_03", cwd, n);
+		res = system(testname);
+		sprintf(testname, "/smd/scheme_%d/read/db", n);
+		j_benchmark_run(testname, benchmark_smd_read_scheme_db);
+		sprintf(testname, "/smd/scheme_%d/write/object", n);
+		j_benchmark_run(testname, benchmark_smd_write_scheme_object);
+		sprintf(testname, "/smd/scheme_%d/read/object", n);
+		j_benchmark_run(testname, benchmark_smd_read_scheme_object);
+	}
+*/
 	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
-	{
+	{ //create open delete benchmark
 		n = n_values[i];
 		if (n < 1000)
 		{
@@ -378,14 +368,6 @@ benchmark_smd(void)
 			j_benchmark_run(testname, benchmark_smd_scheme_open);
 			sprintf(testname, "/smd/scheme_%d/delete", n);
 			j_benchmark_run(testname, benchmark_smd_scheme_delete);
-			sprintf(testname, "/smd/scheme_%d/write/db", n);
-			j_benchmark_run(testname, benchmark_smd_write_scheme_db);
-			sprintf(testname, "/smd/scheme_%d/read/db", n);
-			j_benchmark_run(testname, benchmark_smd_read_scheme_db);
-			sprintf(testname, "/smd/scheme_%d/write/object", n);
-			j_benchmark_run(testname, benchmark_smd_write_scheme_object);
-			sprintf(testname, "/smd/scheme_%d/read/object", n);
-			j_benchmark_run(testname, benchmark_smd_read_scheme_object);
 		}
 		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_01", cwd, n);
 		res = system(testname);
@@ -397,16 +379,6 @@ benchmark_smd(void)
 		j_benchmark_run(testname, benchmark_smd_scheme_open_batch);
 		sprintf(testname, "/smd/scheme_%d/delete-batch", n);
 		j_benchmark_run(testname, benchmark_smd_scheme_delete_batch);
-		sprintf(testname, "/smd/scheme_%d/write/db-batch", n);
-		j_benchmark_run(testname, benchmark_smd_write_scheme_db_batch);
-		sprintf(testname, "du -s /mnt2/julea/* >> %s/benchmark_values_size_%d_03", cwd, n);
-		res = system(testname);
-		sprintf(testname, "/smd/scheme_%d/read/db-batch", n);
-		j_benchmark_run(testname, benchmark_smd_read_scheme_db_batch);
-		sprintf(testname, "/smd/scheme_%d/write/object-batch", n);
-		j_benchmark_run(testname, benchmark_smd_write_scheme_object_batch);
-		sprintf(testname, "/smd/scheme_%d/read/object-batch", n);
-		j_benchmark_run(testname, benchmark_smd_read_scheme_object_batch);
 	}
 	(void)res;
 	(void)res2;
