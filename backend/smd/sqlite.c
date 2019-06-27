@@ -216,39 +216,40 @@ static sqlite3* backend_db;
 			number = sqlite3_column_int64(_stmt0_, 0); \
 		else                                               \
 			j_debug_check(_ret0_, SQLITE_DONE);        \
+		sqlite3_finalize(_stmt0_);                         \
 	} while (0)
 
 static guint smd_schemes_primary_key;
 static guint smd_scheme_type_primary_key;
-static sqlite3_stmt* stmt_type_create;
-static sqlite3_stmt* stmt_type_create_header;
-static sqlite3_stmt* stmt_type_get_header_by_hash;
-static sqlite3_stmt* stmt_type_load;
-static sqlite3_stmt* stmt_type_write;
-static sqlite3_stmt* stmt_type_read;
-static sqlite3_stmt* stmt_type_delete0;
-static sqlite3_stmt* stmt_type_delete1;
-static sqlite3_stmt* stmt_type_struct_size;
-static sqlite3_stmt* stmt_type_write_get_structure;
 static sqlite3_stmt* stmt_file_create0;
 static sqlite3_stmt* stmt_file_create1;
-static sqlite3_stmt* stmt_file_open;
 static sqlite3_stmt* stmt_file_delete0;
 static sqlite3_stmt* stmt_file_delete2;
-static sqlite3_stmt* stmt_scheme_open_all_in_file;
-static sqlite3_stmt* stmt_scheme_delete_valid;
-static sqlite3_stmt* stmt_scheme_get_valid;
-static sqlite3_stmt* stmt_scheme_get_valid_max;
-static sqlite3_stmt* stmt_scheme_set_valid;
-static sqlite3_stmt* stmt_scheme_update_valid;
+static sqlite3_stmt* stmt_file_open;
+static sqlite3_stmt* stmt_scheme_create;
 static sqlite3_stmt* stmt_scheme_delete0;
 static sqlite3_stmt* stmt_scheme_delete1;
-static sqlite3_stmt* stmt_scheme_create;
-static sqlite3_stmt* stmt_scheme_open;
+static sqlite3_stmt* stmt_scheme_delete_valid;
 static sqlite3_stmt* stmt_scheme_get_type_key;
+static sqlite3_stmt* stmt_scheme_get_valid;
+static sqlite3_stmt* stmt_scheme_get_valid_max;
+static sqlite3_stmt* stmt_scheme_open;
+static sqlite3_stmt* stmt_scheme_open_all_in_file;
+static sqlite3_stmt* stmt_scheme_set_valid;
+static sqlite3_stmt* stmt_scheme_update_valid;
+static sqlite3_stmt* stmt_transaction_abort;
 static sqlite3_stmt* stmt_transaction_begin;
 static sqlite3_stmt* stmt_transaction_commit;
-static sqlite3_stmt* stmt_transaction_abort;
+static sqlite3_stmt* stmt_type_create;
+static sqlite3_stmt* stmt_type_create_header;
+static sqlite3_stmt* stmt_type_delete0;
+static sqlite3_stmt* stmt_type_delete1;
+static sqlite3_stmt* stmt_type_get_header_by_hash;
+static sqlite3_stmt* stmt_type_load;
+static sqlite3_stmt* stmt_type_read;
+static sqlite3_stmt* stmt_type_struct_size;
+static sqlite3_stmt* stmt_type_write;
+static sqlite3_stmt* stmt_type_write_get_structure;
 #ifdef JULEA_DEBUG
 j_smd_timer_variables(backend_scheme_create);
 j_smd_timer_variables(backend_scheme_delete);
@@ -272,9 +273,6 @@ static guint
 backend_init_sql(void)
 {
 	j_sqlite3_exec_done_or_error("PRAGMA foreign_keys = ON");
-	j_sqlite3_prepare_v3("BEGIN TRANSACTION", &stmt_transaction_begin);
-	j_sqlite3_prepare_v3("COMMIT", &stmt_transaction_commit);
-	j_sqlite3_prepare_v3("ROLLBACK", &stmt_transaction_abort);
 	j_sqlite3_exec_done_or_error(
 		"CREATE TABLE IF NOT EXISTS smd_scheme_type_header (" //
 		"key INTEGER PRIMARY KEY, "
@@ -471,6 +469,9 @@ backend_init_sql(void)
 	j_sqlite3_prepare_v3(
 		"SELECT key FROM smd_schemes WHERE name = ?1 AND file_key = key",
 		&stmt_file_open);
+	j_sqlite3_prepare_v3("BEGIN TRANSACTION", &stmt_transaction_begin);
+	j_sqlite3_prepare_v3("COMMIT", &stmt_transaction_commit);
+	j_sqlite3_prepare_v3("ROLLBACK", &stmt_transaction_abort);
 
 	j_sqlite3_exec_and_get_number("SELECT max(key) FROM smd_schemes", smd_schemes_primary_key);
 	smd_schemes_primary_key++;
@@ -485,34 +486,34 @@ error:
 static void
 backend_fini_sql(void)
 {
-	sqlite3_finalize(stmt_type_create);
-	sqlite3_finalize(stmt_type_create_header);
-	sqlite3_finalize(stmt_type_get_header_by_hash);
-	sqlite3_finalize(stmt_type_load);
-	sqlite3_finalize(stmt_type_write);
-	sqlite3_finalize(stmt_type_delete0);
-	sqlite3_finalize(stmt_type_delete1);
-	sqlite3_finalize(stmt_type_read);
 	sqlite3_finalize(stmt_file_create0);
 	sqlite3_finalize(stmt_file_create1);
-	sqlite3_finalize(stmt_file_open);
 	sqlite3_finalize(stmt_file_delete0);
-	sqlite3_finalize(stmt_scheme_open_all_in_file);
 	sqlite3_finalize(stmt_file_delete2);
-	sqlite3_finalize(stmt_scheme_set_valid);
-	sqlite3_finalize(stmt_scheme_update_valid);
-	sqlite3_finalize(stmt_scheme_get_valid);
-	sqlite3_finalize(stmt_scheme_delete_valid);
-	sqlite3_finalize(stmt_scheme_get_valid_max);
+	sqlite3_finalize(stmt_file_open);
 	sqlite3_finalize(stmt_scheme_create);
 	sqlite3_finalize(stmt_scheme_delete0);
 	sqlite3_finalize(stmt_scheme_delete1);
+	sqlite3_finalize(stmt_scheme_delete_valid);
 	sqlite3_finalize(stmt_scheme_get_type_key);
+	sqlite3_finalize(stmt_scheme_get_valid);
+	sqlite3_finalize(stmt_scheme_get_valid_max);
 	sqlite3_finalize(stmt_scheme_open);
-	sqlite3_finalize(stmt_type_struct_size);
+	sqlite3_finalize(stmt_scheme_open_all_in_file);
+	sqlite3_finalize(stmt_scheme_set_valid);
+	sqlite3_finalize(stmt_scheme_update_valid);
 	sqlite3_finalize(stmt_transaction_abort);
 	sqlite3_finalize(stmt_transaction_begin);
 	sqlite3_finalize(stmt_transaction_commit);
+	sqlite3_finalize(stmt_type_create);
+	sqlite3_finalize(stmt_type_create_header);
+	sqlite3_finalize(stmt_type_delete0);
+	sqlite3_finalize(stmt_type_delete1);
+	sqlite3_finalize(stmt_type_get_header_by_hash);
+	sqlite3_finalize(stmt_type_load);
+	sqlite3_finalize(stmt_type_read);
+	sqlite3_finalize(stmt_type_struct_size);
+	sqlite3_finalize(stmt_type_write);
 	sqlite3_finalize(stmt_type_write_get_structure);
 }
 static gboolean
@@ -715,6 +716,7 @@ backend_sync(void)
 static void
 backend_fini(void)
 {
+	gint ret;
 	J_DEBUG("%d", 0);
 	if (backend_db != NULL)
 	{
@@ -724,7 +726,8 @@ backend_fini(void)
 		g_array_unref(smd_cache.types_to_delete_tmp);
 		g_hash_table_unref(smd_cache.types_cached);
 		backend_fini_sql();
-		sqlite3_close(backend_db);
+		ret = sqlite3_close(backend_db);
+		j_debug_check(ret, SQLITE_OK);
 #ifdef JULEA_DEBUG
 		j_smd_timer_print(backend_scheme_create);
 		j_smd_timer_print(backend_scheme_delete);

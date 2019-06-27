@@ -196,6 +196,8 @@ j_smd_scheme_create(const char* name, void* parent, void* type, void* space, JDi
 	smd_op->scheme->distribution_type = distribution;
 	if (smd_op->scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 		smd_op->scheme->distribution = j_distribution_new(distribution);
+	else
+		smd_op->scheme->distribution = NULL;
 	j_batch_add(batch, op);
 	j_smd_timer_stop(j_smd_scheme_create);
 	return smd_op->scheme;
@@ -401,6 +403,7 @@ j_smd_scheme_open(const char* name, void* parent, JBatch* batch)
 	memset(smd_op->scheme->key, 0, SMD_KEY_LENGTH);
 	smd_op->scheme->type = NULL;
 	smd_op->scheme->space = NULL;
+	smd_op->scheme->distribution = NULL;
 	op = j_operation_new();
 	op->key = NULL;
 	op->data = smd_op;
@@ -433,8 +436,9 @@ j_smd_scheme_unref(void* _scheme)
 		if (j_smd_is_initialized(scheme) && scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 		{
 			j_distributed_object_unref(scheme->object);
-			j_distribution_unref(scheme->distribution);
 		}
+		if (scheme->distribution)
+			j_distribution_unref(scheme->distribution);
 		j_smd_type_unref(scheme->type);
 		j_smd_space_unref(scheme->space);
 		g_free(scheme->name);

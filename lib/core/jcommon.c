@@ -249,6 +249,11 @@ j_fini(void)
 		j_backend_kv_fini(common->kv_backend);
 	}
 
+	if (common->smd_backend != NULL)
+	{
+		j_backend_smd_fini(common->smd_backend);
+	}
+
 	if (common->object_backend != NULL)
 	{
 		j_backend_object_fini(common->object_backend);
@@ -262,6 +267,11 @@ j_fini(void)
 	if (common->object_module)
 	{
 		g_module_close(common->object_module);
+	}
+
+	if (common->smd_module)
+	{
+		g_module_close(common->smd_module);
 	}
 
 	j_configuration_unref(common->configuration);

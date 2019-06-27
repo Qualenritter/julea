@@ -808,6 +808,8 @@ main(int argc, char* argv[])
 			MYABORT();
 	}
 	j_smd_debug_exit();
+	j_fini();
+	J_DEBUG("called j_fini");
 	return 0;
 }
 
