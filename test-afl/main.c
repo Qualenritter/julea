@@ -446,7 +446,7 @@ main(int argc, char* argv[])
 				j_batch_execute(batch);
 				if (j_smd_is_initialized(ptr))
 					MYABORT();
-				res = j_smd_scheme_unref(ptr);
+				res = j_smd_file_unref(ptr);
 				if (res != FALSE)
 					MYABORT();
 				j_smd_file_delete(file_strbuf, batch);

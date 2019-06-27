@@ -47,8 +47,11 @@ j_smd_space_create(guint ndims, guint* dims)
 	space = g_new(J_SMD_Space_t, 1);
 	space->ref_count = 1;
 	space->ndims = ndims;
-	for (i = 0; i < ndims; i++)
-		space->dims[i] = dims[i];
+	for (i = 0; i < SMD_MAX_NDIMS; i++)
+		if (i < ndims)
+			space->dims[i] = dims[i];
+		else
+			space->dims[i] = 0;
 	return space;
 }
 /**

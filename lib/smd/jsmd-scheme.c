@@ -430,7 +430,7 @@ j_smd_scheme_unref(void* _scheme)
 	j_smd_timer_start(j_smd_scheme_unref);
 	if (scheme && g_atomic_int_dec_and_test(&(scheme->ref_count)))
 	{
-		if (scheme->distribution_type != J_DISTRIBUTION_DATABASE && j_smd_is_initialized(scheme))
+		if (j_smd_is_initialized(scheme) && scheme->distribution_type != J_DISTRIBUTION_DATABASE)
 		{
 			j_distributed_object_unref(scheme->object);
 			j_distribution_unref(scheme->distribution);
@@ -734,7 +734,8 @@ j_smd_write_exec(JList* operations, JSemantics* semantics)
 			j_message_append_n(message, smd_op->scheme->key, SMD_KEY_LENGTH);
 			j_message_append_4(message, &smd_op->buf_offset);
 			j_message_append_4(message, &smd_op->buf_size);
-			j_message_append_n(message, smd_op->buf_write, smd_op->buf_size);
+			if (smd_op->buf_size)
+				j_message_append_n(message, smd_op->buf_write, smd_op->buf_size);
 		}
 	}
 	if (smd_backend == NULL)

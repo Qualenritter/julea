@@ -672,9 +672,9 @@ backend_sync(void)
 			} while (ret != SQLITE_DONE);
 			j_sqlite3_reset(stmt_type_delete0);
 		}
+	_delete_all_types:
 		key = (sqlite3_int64*)smd_cache.types_to_delete->data;
 		key_end = key + smd_cache.types_to_delete->len; //update the last key
-	_delete_all_types:
 		do
 		{
 			j_sqlite3_bind_int64(stmt_type_delete1, 1, *key);
@@ -689,7 +689,7 @@ backend_sync(void)
 			}
 			else
 				j_debug_check(ret, SQLITE_DONE);
-			j_sqlite3_reset(stmt_type_delete1);
+			j_sqlite3_reset_constraint(stmt_type_delete1);
 			key++;
 		} while (key < key_end);
 		g_array_set_size(smd_cache.types_to_delete, 0);

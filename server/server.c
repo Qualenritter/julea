@@ -626,7 +626,8 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				{
 					j_message_add_operation(reply, 4 + buf_size);
 					j_message_append_4(reply, &buf_size);
-					j_message_append_n(reply, buf, buf_size);
+					if (buf_size)
+						j_message_append_n(reply, buf, buf_size);
 				}
 				else
 				{
@@ -699,7 +700,8 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 				j_backend_smd_scheme_get_valid(jd_smd_backend, _key, buf_offset, buf_size, arr);
 				j_message_add_operation(reply, 4 + sizeof(J_SMD_Range_t) * arr->len);
 				j_message_append_4(reply, &arr->len);
-				j_message_append_n(reply, arr->data, arr->len * sizeof(J_SMD_Range_t));
+				if (arr->len)
+					j_message_append_n(reply, arr->data, arr->len * sizeof(J_SMD_Range_t));
 				g_array_unref(arr);
 			}
 			j_message_send(reply, connection);
@@ -778,7 +780,8 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 					j_message_add_operation(reply, SMD_KEY_LENGTH + 4 + bson_len);
 					j_message_append_n(reply, _key, SMD_KEY_LENGTH);
 					j_message_append_4(reply, &bson_len);
-					j_message_append_n(reply, bson_get_data(bson), bson_len);
+					if (bson_len)
+						j_message_append_n(reply, bson_get_data(bson), bson_len);
 				}
 				else
 				{
