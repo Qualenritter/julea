@@ -93,7 +93,7 @@ j_smd_type_create(void)
 	J_SMD_Type_t* type;
 	type = g_new(J_SMD_Type_t, 1);
 	type->ref_count = 1;
-	type->arr = g_array_new(FALSE, TRUE, sizeof(J_SMD_Variable_t));
+	type->arr = g_array_new(FALSE, FALSE, sizeof(J_SMD_Variable_t));
 	type->element_count = 0;
 	type->last_index = 0;
 	type->first_index = 0;
@@ -150,11 +150,15 @@ j_smd_type_add_atomic_type_internal(J_SMD_Type_t* type, const char* var_name, in
 	variable.offset = var_offset;
 	variable.size = var_size;
 	variable.type = var_type;
+	memset(variable.name, 0, SMD_MAX_NAME_LENGTH);
 	memcpy(variable.name, var_name, strlen(var_name));
 	variable.name[strlen(var_name)] = 0;
 	variable.space.ndims = var_ndims;
-	for (i = 0; i < var_ndims; i++)
-		variable.space.dims[i] = var_dims[i];
+	for (i = 0; i < SMD_MAX_NDIMS; i++)
+		if (i < var_ndims)
+			variable.space.dims[i] = var_dims[i];
+		else
+			variable.space.dims[i] = 0;
 	my_idx = type->arr->len;
 	g_array_append_val(type->arr, variable);
 	if (my_idx)
@@ -228,11 +232,15 @@ j_smd_type_add_compound_type_internal(J_SMD_Type_t* type, const char* var_name, 
 	variable.type = SMD_TYPE_SUB_TYPE;
 	variable.offset = var_offset;
 	variable.size = var_size;
+	memset(variable.name, 0, SMD_MAX_NAME_LENGTH);
 	memcpy(variable.name, var_name, strlen(var_name));
 	variable.name[strlen(var_name)] = 0;
 	variable.space.ndims = var_ndims;
-	for (i = 0; i < var_ndims; i++)
-		variable.space.dims[i] = var_dims[i];
+	for (i = 0; i < SMD_MAX_NDIMS; i++)
+		if (i < var_ndims)
+			variable.space.dims[i] = var_dims[i];
+		else
+			variable.space.dims[i] = 0;
 	my_idx = type->arr->len;
 	g_array_append_val(type->arr, variable);
 	if (my_idx)
@@ -391,7 +399,7 @@ start:
 			}
 			else
 			{ //remove first AND last element -> ALL
-				g_array_remove_range(type->arr, 0, type->arr->len);
+				g_array_set_size(type->arr, 0);
 				type->last_index = 0;
 				type->first_index = 0;
 			}

@@ -64,9 +64,9 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	char buf[SMD_KEY_LENGTH * 2 + 1];
 	const J_SMD_Space_t* space = _space;
 	const J_SMD_Type_t* type = _type;
-	JDistributedObject* object;
-	JDistribution* distribution;
-	g_autoptr(JBatch) batch;
+	JDistributedObject* object = NULL;
+	JDistribution* distribution = NULL;
+	g_autoptr(JBatch) batch = NULL;
 	sqlite3_int64 scheme_key = 0;
 	sqlite3_int64 type_key = 0;
 	guint ret;
