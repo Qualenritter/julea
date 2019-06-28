@@ -386,8 +386,9 @@ backend_reset(void)
 	GDir* dir;
 	GError* err = NULL;
 	gboolean result = TRUE;
+	G_LOCK(jd_backend_file_cache);
+	g_hash_table_remove_all(jd_backend_file_cache);
 	g_assert(g_hash_table_size(jd_backend_file_cache) == 0);
-	g_hash_table_destroy(jd_backend_file_cache);
 	{
 		//verify dir was emtpy for testing purposes
 		full_path = g_build_filename(jd_backend_path, "smd", NULL);
@@ -414,9 +415,9 @@ backend_reset(void)
 		g_free(full_path);
 	}
 	g_rmdir(jd_backend_path);
-	jd_backend_file_cache = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 	g_mkdir_with_parents(jd_backend_path, 0700);
 	J_DEBUG("reset posix %d", result);
+	G_UNLOCK(jd_backend_file_cache);
 	return result;
 }
 static JBackend posix_backend = {

@@ -288,6 +288,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	for (i = 0; i < arr->len; i++)
 	{
 		var = g_array_index(arr, J_SMD_Variable_t*, i);
+
 		array_length = var->space.dims[0];
 		for (j = 1; j < var->space.ndims; j++)
 			array_length *= var->space.dims[j];
@@ -380,6 +381,7 @@ write_type(sqlite3_int64 type_key, sqlite3_int64 scheme_key, const char* buf, gu
 	}
 	for (i = 0; i < arr->len; i++)
 		g_free(g_array_index(arr, J_SMD_Variable_t*, i));
+	g_array_unref(arr);
 	j_smd_timer_stop(write_type);
 	return TRUE;
 }

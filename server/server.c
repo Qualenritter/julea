@@ -1016,7 +1016,11 @@ main(int argc, char** argv)
 	g_autofree gchar* smd_path_port = NULL;
 #endif
 
-	GOptionEntry entries[] = { { "daemon", 0, 0, G_OPTION_ARG_NONE, &opt_daemon, "Run as daemon", NULL }, { "port", 0, 0, G_OPTION_ARG_INT, &opt_port, "Port to use", "4711" }, { NULL, 0, 0, 0, NULL, NULL, NULL } };
+	GOptionEntry entries[] = {
+		{ "daemon", 0, 0, G_OPTION_ARG_NONE, &opt_daemon, "Run as daemon", NULL },
+		{ "port", 0, 0, G_OPTION_ARG_INT, &opt_port, "Port to use", "4711" },
+		{ NULL, 0, 0, 0, NULL, NULL, NULL },
+	};
 
 	context = g_option_context_new(NULL);
 	g_option_context_add_main_entries(context, entries, NULL);

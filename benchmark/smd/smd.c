@@ -341,7 +341,7 @@ benchmark_smd(void)
 	char* res2;
 	char testname[500 + PATH_MAX];
 	res2 = getcwd(cwd, sizeof(cwd));
-	/*	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
+	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
 	{ //read write benchmark
 		n = n_values[i];
 		sprintf(testname, "/smd/scheme_%d/write/db", n);
@@ -355,7 +355,6 @@ benchmark_smd(void)
 		sprintf(testname, "/smd/scheme_%d/read/object", n);
 		j_benchmark_run(testname, benchmark_smd_read_scheme_object);
 	}
-*/
 	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
 	{ //create open delete benchmark
 		n = n_values[i];
