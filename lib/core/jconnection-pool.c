@@ -25,6 +25,7 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>
+#include <stdlib.h>
 
 #include <jconnection-pool-internal.h>
 #include <jconnection-pool.h>
@@ -175,9 +176,11 @@ j_connection_pool_fini(void)
 }
 
 static GSocketConnection*
-j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* server)
+j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* server_string)
 {
 	GSocketConnection* connection;
+	gchar** server = NULL;
+	guint server_port = 4711;
 
 	g_return_val_if_fail(queue != NULL, NULL);
 	g_return_val_if_fail(count != NULL, NULL);
@@ -203,9 +206,16 @@ j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* se
 			g_autoptr(JMessage) reply = NULL;
 
 			guint op_count;
-
+			server = g_strsplit(server_string, "@", 2); //allow the user to specify a port for each server
+			if (server[1])
+			{
+				server_port = strtol(server[1], NULL, 10);
+			}
+			J_DEBUG("parsing %s into name=%s port=%d=(%s)", server_string, server[0], server_port, server[1]);
 			client = g_socket_client_new();
-			connection = g_socket_client_connect_to_host(client, server, 4711, NULL, &error);
+			J_DEBUG("%d", 0);
+			connection = g_socket_client_connect_to_host(client, server[0], server_port, NULL, &error);
+			J_DEBUG("%d", 0);
 
 			if (error != NULL)
 			{
@@ -215,10 +225,11 @@ j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* se
 
 			if (connection == NULL)
 			{
-				J_CRITICAL("Can not connect to %s [%d].", server, g_atomic_int_get(count));
+				J_CRITICAL("Can not connect to %s [%d].", server[0], g_atomic_int_get(count));
 			}
 
 			j_helper_set_nodelay(connection, TRUE);
+			J_DEBUG("%d", 0);
 
 			message = j_message_new(J_MESSAGE_PING, 0);
 			j_message_send(message, connection);
@@ -226,6 +237,7 @@ j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* se
 			reply = j_message_new_reply(message);
 			j_message_receive(reply, connection);
 
+			J_DEBUG("%d", 0);
 			op_count = j_message_get_count(reply);
 
 			for (guint i = 0; i < op_count; i++)
@@ -253,15 +265,23 @@ j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* se
 			g_atomic_int_add(count, -1);
 		}
 	}
-
+	J_DEBUG("%d", 0);
 	if (connection != NULL)
 	{
 		goto end;
 	}
+	J_DEBUG("%d", 0);
 
 	connection = g_async_queue_pop(queue);
 
 end:
+	J_DEBUG("%d", 0);
+	if (server)
+	{
+		g_free(server[0]);
+		g_free(server[1]);
+		g_free(server);
+	}
 	j_trace_leave(G_STRFUNC);
 
 	return connection;

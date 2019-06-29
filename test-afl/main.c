@@ -154,6 +154,7 @@ main(int argc, char* argv[])
 	guint i, j;
 	gboolean res;
 	gboolean res_expected;
+	J_DEBUG("%d", 0);
 	if (argc > 1)
 	{
 		create_raw_test_files(argv[1]);
@@ -166,7 +167,9 @@ main(int argc, char* argv[])
 //	while (__AFL_LOOP(1000))
 #endif
 	{
+		J_DEBUG("%d", 0);
 		j_smd_reset();
+		J_DEBUG("%d", 0);
 		for (i = 0; i < AFL_LIMIT_SPACE_COUNT; i++)
 			space[i] = NULL;
 		for (i = 0; i < AFL_LIMIT_TYPE_COUNT; i++)
@@ -182,6 +185,7 @@ main(int argc, char* argv[])
 				memset(&scheme_buf[i][j][0], 0, AFL_LIMIT_SCHEME_BUF_SIZE);
 			}
 		}
+		J_DEBUG("%d", 0);
 	loop:
 		MY_READ_MAX(event, _SMD_AFL_EVENT_COUNT);
 		switch (event)
@@ -809,7 +813,6 @@ main(int argc, char* argv[])
 	}
 	j_smd_debug_exit();
 	j_fini();
-	J_DEBUG("called j_fini");
 	return 0;
 }
 

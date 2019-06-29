@@ -25,3 +25,4 @@ afl
 
 # Benchmarks temporary file
 nohup.out
+log

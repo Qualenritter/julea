@@ -101,6 +101,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 
 	j_helper_set_nodelay(connection, TRUE);
 
+	J_DEBUG("%d", 0);
 	statistics = j_statistics_new(TRUE);
 	memory_chunk_size = j_configuration_get_max_operation_size(jd_configuration);
 	memory_chunk = j_memory_chunk_new(memory_chunk_size);
@@ -108,6 +109,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 	message = j_message_new(J_MESSAGE_NONE, 0);
 	input = g_io_stream_get_input_stream(G_IO_STREAM(connection));
 
+	J_DEBUG("%d", 0);
 	while (j_message_receive(message, connection))
 	{
 		gchar const* key;
@@ -120,6 +122,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		operation_count = j_message_get_count(message);
 		type_modifier = j_message_get_flags(message);
 		safety = jd_safety_message_to_semantics(type_modifier);
+		J_DEBUG("%d", 0);
 
 		switch (j_message_get_type(message))
 		{
@@ -1037,6 +1040,7 @@ main(int argc, char** argv)
 
 		return 1;
 	}
+	J_DEBUG("server opt_port=%d, opt_daemon=%d", opt_port, opt_daemon);
 
 	if (opt_daemon && !jd_daemon())
 	{
@@ -1129,6 +1133,7 @@ main(int argc, char** argv)
 	g_unix_signal_add(SIGINT, jd_signal, main_loop);
 	g_unix_signal_add(SIGTERM, jd_signal, main_loop);
 
+	J_DEBUG("server_running%d", 0);
 	g_main_loop_run(main_loop);
 
 	g_socket_service_stop(socket_service);

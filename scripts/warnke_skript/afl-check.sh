@@ -6,7 +6,7 @@ rm -rf /mnt2/julea/* b
 mkdir b
 (export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
 i=300
-(export LD_LIBRARY_PATH=prefix-clang/lib/:$LD_LIBRARY_PATH; ./build-clang/tools/julea-config --user \
+(export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
@@ -15,15 +15,23 @@ i=300
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 
-for g in gcc-asan gcc-gcov-debug-asan clang-gcov-debug clang gcc-gcov
+for g in gcc-asan
+# gcc-gcov-debug-asan clang-gcov-debug clang gcc-gcov
 do
 echo "using binary : $g"
 mkdir b/${g}
 for f in ${files}
 do
 
-	(export G_DEBUG=resident-modules; export G_MESSAGES_DEBUG=all; export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH; export JULEA_CONFIG=~/.config/julea/julea${i}; export ASAN_OPTIONS=fast_unwind_on_malloc=0; cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  --suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
-		./build-${g}/test-afl/julea-test-afl > x 2>&1)
+	(
+		export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH
+		export JULEA_CONFIG=~/.config/julea/julea${i}
+		export ASAN_OPTIONS=fast_unwind_on_malloc=0
+		export G_DEBUG=resident-modules,gc-friendly
+		export G_MESSAGES_DEBUG=all
+		export G_SLICE=always-malloc
+		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  --suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
+			./build-${g}/test-afl/julea-test-afl > x 2>&1)
 	r=$?
 	if [ $r -eq 0 ]; then
 		echo "invalid $f $g"
