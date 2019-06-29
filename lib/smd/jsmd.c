@@ -73,7 +73,9 @@ j_smd_reset(void)
 		j_connection_pool_push_smd(0, smd_connection);
 		//TODO reset ALL backends
 		j_message_unref(message);
-		j_message_unref(reply);message=NULL;reply=NULL;
+		j_message_unref(reply);
+		message = NULL;
+		reply = NULL;
 	}
 	else
 	{
@@ -93,7 +95,8 @@ j_smd_reset(void)
 		//TODO reset ALL backends
 		j_message_unref(message);
 		j_message_unref(reply);
-		message=NULL;reply=NULL;
+		message = NULL;
+		reply = NULL;
 	}
 	else
 	{

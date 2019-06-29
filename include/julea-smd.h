@@ -112,6 +112,8 @@ gboolean j_smd_file_unref(void* file);
 /*scheme structure*/
 void* j_smd_scheme_create(const char* name, void* parent, void* data_type, void* space_type, JDistributionType distribution, JBatch* batch);
 gboolean j_smd_scheme_delete(const char* name, void* parent, JBatch* batch);
+gboolean j_smd_scheme_link(void* scheme, void* parent, JBatch* batch);
+gboolean j_smd_scheme_unlink(void* scheme, void* parent, JBatch* batch);
 void* j_smd_scheme_open(const char* name, void* parent, JBatch* batch);
 void* j_smd_scheme_ref(void* _scheme);
 gboolean j_smd_scheme_unref(void* _scheme);

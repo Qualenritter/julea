@@ -855,6 +855,44 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_backend_smd_sync(jd_smd_backend);
 		}
 		break;
+		case J_MESSAGE_SMD_SCHEME_LINK:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			char* parent;
+			char* scheme_key;
+			guint res;
+			reply = j_message_new_reply(message);
+			for (i = 0; i < operation_count; i++)
+			{
+				scheme_key = j_message_get_n(message, SMD_KEY_LENGTH);
+				parent = j_message_get_n(message, SMD_KEY_LENGTH);
+				res = j_backend_smd_scheme_link(jd_smd_backend, scheme_key, parent);
+				j_message_add_operation(reply, 4);
+				j_message_append_4(reply, &res);
+			}
+			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
+		}
+		break;
+		case J_MESSAGE_SMD_SCHEME_UNLINK:
+		{
+			g_autoptr(JMessage) reply = NULL;
+			char* parent;
+			char* scheme_key;
+			guint res;
+			reply = j_message_new_reply(message);
+			for (i = 0; i < operation_count; i++)
+			{
+				scheme_key = j_message_get_n(message, SMD_KEY_LENGTH);
+				parent = j_message_get_n(message, SMD_KEY_LENGTH);
+				res = j_backend_smd_scheme_unlink(jd_smd_backend, scheme_key, parent);
+				j_message_add_operation(reply, 4);
+				j_message_append_4(reply, &res);
+			}
+			j_message_send(reply, connection);
+			j_backend_smd_sync(jd_smd_backend);
+		}
+		break;
 		case J_MESSAGE_SMD_SCHEME_OPEN:
 		{
 			g_autoptr(JMessage) reply = NULL;

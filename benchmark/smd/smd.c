@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-float target_time = 60;
+gdouble target_time = 60;
 guint n = 1; //overwrite in benchmark_smd
 static void
 _benchmark_smd_scheme_write(BenchmarkResult* result, const gboolean use_batch, JDistributionType distribution)
@@ -42,10 +42,10 @@ _benchmark_smd_scheme_write(BenchmarkResult* result, const gboolean use_batch, J
 	void* scheme;
 	int* databuffer;
 	guint one = 1;
-	databuffer = g_new(int, array_length* space_length);
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
 	gdouble elapsed = 0;
+	databuffer = g_new(int, array_length* space_length);
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
 	file = j_smd_file_create(filename, batch);
@@ -88,8 +88,8 @@ _benchmark_smd_scheme_read(BenchmarkResult* result, const gboolean use_batch, JD
 	int* databuffer;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
-	databuffer = g_new(int, array_length* space_length);
 	gdouble elapsed = 0;
+	databuffer = g_new(int, array_length* space_length);
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
 	file = j_smd_file_open(filename, batch);

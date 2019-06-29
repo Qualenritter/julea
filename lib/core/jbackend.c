@@ -115,7 +115,7 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	}
 	if (type == J_BACKEND_TYPE_SMD)
 	{
-		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_scheme_read == NULL || tmp_backend->smd.backend_scheme_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_scheme_create == NULL || tmp_backend->smd.backend_scheme_delete == NULL || tmp_backend->smd.backend_scheme_open == NULL)
+		if (tmp_backend->smd.backend_init == NULL || tmp_backend->smd.backend_fini == NULL || tmp_backend->smd.backend_scheme_read == NULL || tmp_backend->smd.backend_scheme_write == NULL || tmp_backend->smd.backend_file_create == NULL || tmp_backend->smd.backend_file_delete == NULL || tmp_backend->smd.backend_file_open == NULL || tmp_backend->smd.backend_scheme_create == NULL || tmp_backend->smd.backend_scheme_delete == NULL || tmp_backend->smd.backend_scheme_open == NULL || tmp_backend->smd.backend_scheme_link == NULL || tmp_backend->smd.backend_scheme_unlink == NULL)
 		{
 			goto error;
 		}
@@ -640,6 +640,30 @@ j_backend_smd_scheme_delete(JBackend* backend, const char* name, void* parent)
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(parent != NULL, FALSE);
 	ret = backend->smd.backend_scheme_delete(name, parent);
+	return ret;
+}
+gboolean
+j_backend_smd_scheme_link(JBackend* backend, void* key, void* parent)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	ret = backend->smd.backend_scheme_link(key, parent);
+	return ret;
+}
+gboolean
+j_backend_smd_scheme_unlink(JBackend* backend, void* key, void* parent)
+{
+	gboolean ret;
+
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_SMD, FALSE);
+	g_return_val_if_fail(key != NULL, FALSE);
+	g_return_val_if_fail(parent != NULL, FALSE);
+	ret = backend->smd.backend_scheme_unlink(key, parent);
 	return ret;
 }
 gboolean

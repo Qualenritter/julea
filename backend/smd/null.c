@@ -46,6 +46,20 @@ backend_scheme_delete(const char* name, void* parent)
 	return TRUE;
 }
 static gboolean
+backend_scheme_link(void* key, void* parent)
+{
+	(void)key;
+	(void)parent;
+	return TRUE;
+}
+static gboolean
+backend_scheme_unlink(void* key, void* parent)
+{
+	(void)key;
+	(void)parent;
+	return TRUE;
+}
+static gboolean
 backend_scheme_create(const char* name, void* parent, const void* _space, const void* _type, guint distribution, void* key)
 {
 	(void)name;
@@ -103,6 +117,8 @@ static JBackend null_backend = { .type = J_BACKEND_TYPE_SMD, //
 		.backend_scheme_create = backend_scheme_create, //
 		.backend_scheme_delete = backend_scheme_delete, //
 		.backend_scheme_open = backend_scheme_open, //
+		.backend_scheme_link = backend_scheme_link, //
+		.backend_scheme_unlink = backend_scheme_unlink, //
 		.backend_reset = backend_reset } };
 G_MODULE_EXPORT
 JBackend*

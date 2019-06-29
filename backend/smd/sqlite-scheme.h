@@ -1,4 +1,39 @@
 static gboolean
+backend_scheme_link(void* key, void* parent)
+{
+	gint ret;
+	gboolean result = TRUE;
+	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_int64(stmt_scheme_link, 1, *((sqlite3_int64*)key));
+	j_sqlite3_bind_int64(stmt_scheme_link, 2, *((sqlite3_int64*)parent));
+	ret = sqlite3_step(stmt_scheme_link);
+	if (ret == SQLITE_CONSTRAINT)
+		result = FALSE;
+	else
+		j_debug_check(ret, SQLITE_DONE);
+	j_sqlite3_reset_constraint(stmt_scheme_link);
+	j_sqlite3_transaction_commit();
+	return result;
+}
+static gboolean
+backend_scheme_unlink(void* key, void* parent)
+{
+	gint ret;
+	gboolean result = TRUE;
+	j_sqlite3_transaction_begin();
+	j_sqlite3_bind_int64(stmt_scheme_unlink, 1, *((sqlite3_int64*)key));
+	j_sqlite3_bind_int64(stmt_scheme_unlink, 2, *((sqlite3_int64*)parent));
+	ret = sqlite3_step(stmt_scheme_unlink);
+	if (ret == SQLITE_CONSTRAINT)
+		result = FALSE;
+	else
+		j_debug_check(ret, SQLITE_DONE);
+	j_sqlite3_reset_constraint(stmt_scheme_unlink);
+	j_sqlite3_transaction_commit();
+	return result;
+}
+
+static gboolean
 backend_scheme_delete(const char* name, void* parent)
 {
 	JDistribution* distribution;
@@ -73,6 +108,21 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	memset(key, 0, SMD_KEY_LENGTH);
 	j_smd_timer_start(backend_scheme_create);
 	j_sqlite3_transaction_begin();
+	//avoid name conflict
+	j_sqlite3_bind_text(stmt_scheme_open, 1, name, -1);
+	j_sqlite3_bind_int64(stmt_scheme_open, 2, *((sqlite3_int64*)parent));
+	ret = sqlite3_step(stmt_scheme_open);
+	memset(key, 0, SMD_KEY_LENGTH);
+	if (ret == SQLITE_ROW)
+	{ //name exists with this parent
+		j_sqlite3_reset(stmt_scheme_open);
+		j_sqlite3_transaction_abort();
+		return FALSE;
+	}
+	else
+		j_debug_check(ret, SQLITE_DONE);
+	j_sqlite3_reset(stmt_scheme_open);
+	//create type
 	if (type->arr->len == 0)
 		type_key = 0;
 	else
@@ -83,9 +133,11 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 		J_DEBUG("scheme create failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
 	}
+	//insert type into cache
 	if (!g_hash_table_lookup(smd_cache.types_cached, GINT_TO_POINTER(type_key)))
 		g_hash_table_insert(smd_cache.types_cached, GINT_TO_POINTER(type_key), j_smd_type_ref(_type));
 	scheme_key = g_atomic_int_add(&smd_schemes_primary_key, 1);
+	//create new scheme
 	j_sqlite3_bind_text(stmt_scheme_create, 1, name, -1);
 	j_sqlite3_bind_int64(stmt_scheme_create, 2, *((sqlite3_int64*)parent));
 	j_sqlite3_bind_int(stmt_scheme_create, 3, space->ndims);
@@ -106,14 +158,18 @@ backend_scheme_create(const char* name, void* parent, const void* _space, const 
 	}
 	else if (ret == SQLITE_CONSTRAINT)
 	{
-		ret = sqlite3_reset(stmt_scheme_create);
-		_j_ok_constraint_check(ret);
+		j_sqlite3_reset_constraint(stmt_scheme_create);
 		j_sqlite3_transaction_abort();
 		J_DEBUG("scheme create failed %s %lld", name, *((sqlite3_int64*)parent));
 		return FALSE;
 	}
 	else
 		j_debug_check(ret, SQLITE_DONE);
+	//create link to parent scheme
+	j_sqlite3_bind_int64(stmt_scheme_link, 1, scheme_key);
+	j_sqlite3_bind_int64(stmt_scheme_link, 2, *((sqlite3_int64*)parent));
+	j_sqlite3_step_and_reset_check_done_constraint(stmt_scheme_link);
+	//create object-store-file if neccessary
 	if (_distribution != J_DISTRIBUTION_DATABASE)
 	{
 		distribution = j_distribution_new(_distribution);
