@@ -30,7 +30,8 @@ do
 		export G_DEBUG=resident-modules,gc-friendly
 		export G_MESSAGES_DEBUG=all
 		export G_SLICE=always-malloc
-		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  --suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
+		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
+			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
 			./build-${g}/test-afl/julea-test-afl > x 2>&1)
 	r=$?
 	if [ $r -eq 0 ]; then

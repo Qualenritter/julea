@@ -26,6 +26,7 @@ function julea_compile(){
 		./waf.sh install
 		rc=$?; if [[ $rc != 0 ]]; then echo "compile build-${name} failed";exit $rc; fi
 		lcov --zerocounters -d "build-${name}"
+		mkdir -p afl/cov
 		lcov -c -i -d "build-${name}" -o "afl/cov/build-${name}.info"
 	)
 }
@@ -53,7 +54,11 @@ function julea_run(){
 			done
 		fi
 		name=$(echo "${compiler}-${flags}" | sed "s/ /-/g" | sed "s/--/-/g" | sed "s/--/-/g")
-		if [ "${asan}" = "asan" ]; then
+		unset AFL_USE_ASAN
+		unset ASAN_OPTIONS
+		export G_MESSAGES_DEBUG=
+		if [ "${asan}" == "asan" ]
+		then
 			export AFL_USE_ASAN=1
 			export ASAN_OPTIONS=abort_on_error=1,symbolize=0
 			name="${name}-asan"
@@ -70,9 +75,8 @@ function julea_run(){
 			--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="/mnt2/julea/kv${index}" \
 			--smd-servers="${servers}"    --smd-backend=sqlite   --smd-component="${component}"    --smd-path=":memory:"
 		eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
-#		export G_MESSAGES_DEBUG=all
 		export G_SLICE=always-malloc
-		export G_DEBUG=gc-friendly
+		export G_DEBUG=gc-friendly,resident-modules
 		export AFL_NO_UI=1
 		export AFL_NO_AFFINITY=1
 		export AFL_SKIP_CRASHES=1
@@ -106,24 +110,19 @@ function julea_run(){
 			echo "cat ./afl/start-files/$a.bin | ./build-${name}/test-afl/julea-test-afl"
 			      cat ./afl/start-files/$a.bin | ./build-${name}/test-afl/julea-test-afl
 		done
-		./build-${name}/test/julea-test
-		rc=$?; if [[ $rc != 0 ]]; then echo "julea-test build-${name} failed";exit $rc; fi
+		if [ "${asan}" != "asan" ]
+		then
+			#asan not first in library list - first ist afl - all asan tests will fail
+			if [ "${servercount}" -gt "0" ]
+			then
+				#some julea-tests assume that component=server
+				(
+					./build-${name}/test/julea-test
+					rc=$?; if [[ $rc != 0 ]]; then echo "julea-test build-${test_name} failed";exit $rc; fi
+				)
+			fi
+		fi
 		afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-${name}/test-afl/julea-test-afl
-#		if [ "${name}" = "afl-clang-fast-" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-clang-fast-/test-afl/julea-test-afl
-#		elif [ "${name}" = "afl-clang-fast-gcov" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-clang-fast-gcov/test-afl/julea-test-afl
-#		elif [ "${name}" = "afl-clang-fast-gcov-debug" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-clang-fast-gcov-debug/test-afl/julea-test-afl
-#		elif [ "${name}" = "afl-gcc-" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-gcc-/test-afl/julea-test-afl
-#		elif [ "${name}" = "afl-gcc-gcov" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-gcc-gcov/test-afl/julea-test-afl
-#		elif [ "${name}" = "afl-gcc-gcov-debug" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-gcc-gcov-debug/test-afl/julea-test-afl
-#		elif [ "${name}" = "afl-gcc-gcov-asan" ]; then
-#			afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-afl-gcc-gcov-asan/test-afl/julea-test-afl
-#		fi
 	)
 }
 julea_compile "afl-gcc" "" "" > log/compile1 2>&1
@@ -133,6 +132,7 @@ julea_compile "afl-gcc" "--gcov" "asan" > log/compile4 2>&1
 julea_compile "afl-clang-fast" "" "" > log/compile5 2>&1
 julea_compile "afl-clang-fast" "--gcov" "" > log/compile6 2>&1
 julea_compile "afl-clang-fast" "--gcov --debug" "" > log/compile7 2>&1
+julea_compile "gcc" "--gcov" "asan" > log/compile14 2>&1
 
 cp test-afl/bin/* ./afl/start-files/
 c=$(ls -la ./afl/start-files/ | wc -l)
