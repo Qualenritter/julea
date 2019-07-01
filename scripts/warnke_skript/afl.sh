@@ -13,6 +13,7 @@ function julea_compile(){
 		compiler=$1
 		flags=$2
 		asan=$3
+		hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 		name=$(echo "${compiler}-${flags}" | sed "s/ /-/g" | sed "s/--/-/g" | sed "s/--/-/g")
 		export CC=${compiler}
 		if [ "${asan}" = "asan" ]; then
@@ -21,7 +22,7 @@ function julea_compile(){
 			flags="${flags} --debug"
 			name="${name}-asan"
 		fi
-		./waf configure ${flags} --out "build-${name}" --prefix="prefix-${name}" --libdir="prefix-${name}" --bindir="prefix-${name}" --destdir="prefix-${name}"
+		./waf configure ${flags} --out "build-${name}" --prefix="prefix-${name}" --libdir="prefix-${name}" --bindir="prefix-${name}" --destdir="prefix-${name}" --hdf=${hdf}
 		./waf.sh build
 		./waf.sh install
 		rc=$?; if [[ $rc != 0 ]]; then echo "compile build-${name} failed";exit $rc; fi

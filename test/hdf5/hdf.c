@@ -156,7 +156,7 @@ test_hdf_read_write(void)
 	H5VLinitialize(julea_vol_id, H5P_DEFAULT);
 	acc_tpl = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_vol(acc_tpl, julea_vol_id, NULL);
-
+//env_h5_drvr_to_test_vol_id
 	file = H5Fcreate("JULEA.h5", H5F_ACC_TRUNC, H5P_DEFAULT, acc_tpl);
 
 	write_dataset(file);

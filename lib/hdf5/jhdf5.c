@@ -67,6 +67,7 @@ typedef struct J_HDF_Scheme_t J_HDF_Scheme_t;
 static herr_t
 H5VL_julea_init(hid_t vipl_id __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	return 0;
 }
 
@@ -78,6 +79,7 @@ H5VL_julea_init(hid_t vipl_id __attribute__((unused)))
 static herr_t
 H5VL_julea_term(void)
 {
+	J_DEBUG("start%d", 0);
 	return 0;
 }
 
@@ -208,6 +210,7 @@ hdf5_type_import_base(J_SMD_Variable_t* var)
 	case SMD_TYPE_BLOB:
 		return H5T_NATIVE_CHAR;
 	case SMD_TYPE_SUB_TYPE:
+	case _SMD_TYPE_COUNT:
 	default:
 		J_CRITICAL("this should never happen%d", 0);
 	}
@@ -228,14 +231,15 @@ hdf5_type_import_array(J_SMD_Variable_t* var, hid_t base_type)
 	return H5Tarray_create(base_type, var->space.ndims, dims);
 }
 static gboolean
-hdf5_type_import(void* type __attribute__((unused)), hid_t* type_id __attribute__((unused)))
+hdf5_type_import(void* _type __attribute__((unused)), hid_t* type_id __attribute__((unused)))
 {
+	J_SMD_Type_t* type = _type;
 	J_SMD_Variable_t* var;
 	hid_t base_type;
 	guint i;
-	if (type->arr->len > 0)
+	if (type->element_count > 0)
 	{
-		var = g_array_index(type->arr, J_SMD_Variable_t*, 0);
+		var = &g_array_index(type->arr, J_SMD_Variable_t, type->first_index);
 		base_type = hdf5_type_import_base(var);
 		if (type->arr->len == 1 || var->type == SMD_TYPE_SUB_TYPE)
 			*type_id = hdf5_type_import_array(var, base_type);
@@ -258,8 +262,8 @@ hdf5_type_import(void* type __attribute__((unused)), hid_t* type_id __attribute_
 static gboolean
 calculate_constants(J_Scheme_t* scheme)
 {
-	guint type_size;
 	guint i, j;
+	guint type_size = 0;
 	J_SMD_Variable_t* var;
 	J_HDF_Scheme_t* user_data = scheme->user_data;
 	user_data->type_size = 0;
@@ -290,6 +294,7 @@ H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* scheme;
 	g_autoptr(JBatch) batch = NULL;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	type = hdf5_type_export(type_id);
@@ -316,13 +321,13 @@ H5VL_julea_attr_read(void* _scheme __attribute__((unused)), //
 	guint i;
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	len = 1;
 	for (i = 0; i < scheme->space->ndims; i++)
 		len *= scheme->space->dims[i];
-	len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
 	j_smd_scheme_read(scheme, buf, 0, len, batch);
 	j_batch_execute(batch);
 	return 0;
@@ -338,6 +343,7 @@ H5VL_julea_attr_write(void* _scheme __attribute__((unused)), //
 	guint len;
 	guint i;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -346,7 +352,6 @@ H5VL_julea_attr_write(void* _scheme __attribute__((unused)), //
 	{
 		len *= scheme->space->dims[i];
 	}
-	len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
 	j_smd_scheme_write(scheme, buf, 0, len, batch);
 	j_batch_execute(batch);
 	return 0;
@@ -359,6 +364,7 @@ H5VL_julea_dataset_get(void* _scheme, //
 	va_list arguments)
 {
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	switch (get_type)
@@ -388,6 +394,7 @@ H5VL_julea_attr_get(void* _scheme __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	switch (get_type)
@@ -409,10 +416,31 @@ H5VL_julea_attr_get(void* _scheme __attribute__((unused)), //
 	return 0;
 }
 static herr_t
-H5VL_julea_scheme_close(void* scheme __attribute__((unused)), //
+H5VL_julea_attr_close(void* scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
+	g_free(((J_Scheme_t*)scheme)->user_data);
+	j_smd_scheme_unref(scheme);
+	return 0;
+}
+static herr_t
+H5VL_julea_group_close(void* scheme __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	g_free(((J_Scheme_t*)scheme)->user_data);
+	j_smd_scheme_unref(scheme);
+	return 0;
+}
+static herr_t
+H5VL_julea_dataset_close(void* scheme __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
 	g_free(((J_Scheme_t*)scheme)->user_data);
 	j_smd_scheme_unref(scheme);
 	return 0;
@@ -427,6 +455,7 @@ H5VL_julea_file_create(const char* name __attribute__((unused)), //
 {
 	J_Scheme_t* scheme;
 	g_autoptr(JBatch) batch = NULL;
+	J_DEBUG("start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	scheme = j_smd_file_create(name, batch);
 	j_batch_execute(batch);
@@ -441,6 +470,7 @@ H5VL_julea_file_open(const char* name __attribute__((unused)),
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme;
+	J_DEBUG("start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	scheme = j_smd_file_open(name, batch);
 	j_batch_execute(batch);
@@ -451,6 +481,7 @@ H5VL_julea_file_close(void* _scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	j_smd_file_unref(_scheme);
 	return 0;
 }
@@ -467,6 +498,7 @@ H5VL_julea_group_create(void* _parent __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -492,6 +524,7 @@ H5VL_julea_dataset_create(void* _parent __attribute__((unused)), //
 	void* space;
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -509,7 +542,7 @@ H5VL_julea_dataset_create(void* _parent __attribute__((unused)), //
 	return scheme;
 }
 static void*
-H5VL_julea_scheme_open(void* obj __attribute__((unused)), //
+H5VL_julea_attr_open(void* obj __attribute__((unused)), //
 	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
 	const char* name __attribute__((unused)), //
 	hid_t dapl_id __attribute__((unused)), //
@@ -519,6 +552,63 @@ H5VL_julea_scheme_open(void* obj __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)obj;
 	J_Scheme_t* scheme;
+	J_DEBUG("start%d", 0);
+	if (!j_is_key_initialized(parent->key))
+		return 0;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	scheme = j_smd_scheme_open(name, parent, batch);
+	j_batch_execute(batch);
+	if (!j_is_key_initialized(scheme->key))
+	{
+		j_smd_scheme_unref(scheme);
+		return NULL;
+	}
+	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
+	calculate_constants(scheme);
+	hdf5_space_import(scheme->space, &((J_HDF_Scheme_t*)scheme->user_data)->space_id);
+	hdf5_type_import(scheme->type, &((J_HDF_Scheme_t*)scheme->user_data)->type_id);
+	return scheme;
+}
+static void*
+H5VL_julea_group_open(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	const char* name __attribute__((unused)), //
+	hid_t dapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	g_autoptr(JBatch) batch = NULL;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* scheme;
+	J_DEBUG("start%d", 0);
+	if (!j_is_key_initialized(parent->key))
+		return 0;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	scheme = j_smd_scheme_open(name, parent, batch);
+	j_batch_execute(batch);
+	if (!j_is_key_initialized(scheme->key))
+	{
+		j_smd_scheme_unref(scheme);
+		return NULL;
+	}
+	scheme->user_data = g_new(J_HDF_Scheme_t, 1);
+	calculate_constants(scheme);
+	hdf5_space_import(scheme->space, &((J_HDF_Scheme_t*)scheme->user_data)->space_id);
+	hdf5_type_import(scheme->type, &((J_HDF_Scheme_t*)scheme->user_data)->type_id);
+	return scheme;
+}
+static void*
+H5VL_julea_dataset_open(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	const char* name __attribute__((unused)), //
+	hid_t dapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	g_autoptr(JBatch) batch = NULL;
+	J_Scheme_t* parent = (J_Scheme_t*)obj;
+	J_Scheme_t* scheme;
+	J_DEBUG("start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -546,7 +636,6 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	guint64 bytes_read;
 	guint i, j, k, l;
 	gint m;
 	guint len;
@@ -554,8 +643,8 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 	hsize_t dims_end[SMD_MAX_NDIMS];
 	guint off_layer[SMD_MAX_NDIMS];
 	guint size_layer[SMD_MAX_NDIMS];
+	J_DEBUG("start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	bytes_read = 0;
 	g_assert(buf != NULL);
 	g_assert(scheme->object != NULL);
 	if (H5Tequal(mem_type_id, ((J_HDF_Scheme_t*)scheme->user_data)->type_id))
@@ -570,8 +659,7 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 			len = 1;
 			for (i = 0; i < scheme->space->ndims; i++)
 				len *= scheme->space->dims[i];
-			len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
-			j_smd_dataset_read(scheme, buf, len, 0, &bytes_read, batch);
+			j_smd_scheme_read(scheme, buf, 0, len, batch);
 		}
 		else
 		{
@@ -581,7 +669,7 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 				dims_start[i] = 0;
 				dims_end[i] = 1;
 			}
-			size_layer[SMD_MAX_NDIMS - 1] = ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+			size_layer[SMD_MAX_NDIMS - 1] = 1;
 			for (m = SMD_MAX_NDIMS - 2; m >= 0; m--)
 			{
 				if ((guint)m > scheme->space->ndims)
@@ -601,7 +689,7 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 						for (l = dims_start[3]; l < dims_end[3]; l++)
 						{
 							off_layer[3] = off_layer[2] + size_layer[3] * l;
-							j_smd_dataset_read(scheme, buf, size_layer[3], off_layer[3], &bytes_read, batch);
+							j_smd_scheme_read(scheme, buf, off_layer[3], size_layer[3], batch);
 						}
 					}
 				}
@@ -627,7 +715,6 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	guint64 bytes_written;
 	guint i, j, k, l;
 	gint m;
 	guint len;
@@ -635,8 +722,8 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 	hsize_t dims_end[SMD_MAX_NDIMS];
 	guint off_layer[SMD_MAX_NDIMS];
 	guint size_layer[SMD_MAX_NDIMS];
+	J_DEBUG("start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	bytes_written = 0;
 	g_assert(buf != NULL);
 	g_assert(scheme->object != NULL);
 	if (H5Tequal(mem_type_id, ((J_HDF_Scheme_t*)scheme->user_data)->type_id))
@@ -651,8 +738,7 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 			len = 1;
 			for (i = 0; i < scheme->space->ndims; i++)
 				len *= scheme->space->dims[i];
-			len *= ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
-			j_smd_dataset_write(scheme, buf, len, 0, &bytes_written, batch);
+			j_smd_scheme_write(scheme, buf, 0, len, batch);
 		}
 		else
 		{
@@ -662,7 +748,7 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 				dims_start[i] = 0;
 				dims_end[i] = 1;
 			}
-			size_layer[SMD_MAX_NDIMS - 1] = ((J_HDF_Scheme_t*)scheme->user_data)->type_size;
+			size_layer[SMD_MAX_NDIMS - 1] = 1;
 			for (m = SMD_MAX_NDIMS - 2; m >= 0; m--)
 			{
 				if ((guint)m > scheme->space->ndims)
@@ -682,7 +768,7 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 						for (l = dims_start[3]; l < dims_end[3]; l++)
 						{
 							off_layer[3] = off_layer[2] + size_layer[3] * l;
-							j_smd_dataset_write(scheme, buf, size_layer[3], off_layer[3], &bytes_written, batch);
+							j_smd_scheme_write(scheme, buf, off_layer[3], size_layer[3], batch);
 						}
 					}
 				}
@@ -705,39 +791,43 @@ H5VL_julea_attr_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_attr_optional(void* obj __attribute__((unused)), //
+H5VL_julea_attr_optional(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_dataset_specific(void* obj __attribute__((unused)), //
+H5VL_julea_dataset_specific(void* obj __attribute__((unused)), //
 	H5VL_dataset_specific_t specific_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_dataset_optional(void* obj __attribute__((unused)), //
+H5VL_julea_dataset_optional(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static void*
-H5VL__native_datatype_commit(void* obj __attribute__((unused)), //
+H5VL_julea_datatype_commit(void* obj __attribute__((unused)), //
 	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
 	const char* name __attribute__((unused)), //
 	hid_t type_id __attribute__((unused)), //
@@ -747,22 +837,24 @@ H5VL__native_datatype_commit(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static void*
-H5VL__native_datatype_open(void* obj __attribute__((unused)), //
+H5VL_julea_datatype_open(void* obj __attribute__((unused)), //
 	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
 	const char* name __attribute__((unused)), //
 	hid_t tapl_id __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_datatype_get(void* obj __attribute__((unused)), //
+H5VL_julea_datatype_get(void* obj __attribute__((unused)), //
 	H5VL_datatype_get_t get_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
@@ -772,17 +864,18 @@ H5VL__native_datatype_get(void* obj __attribute__((unused)), //
 	exit(1);
 }
 static herr_t
-H5VL__native_datatype_specific(void* obj __attribute__((unused)), //
+H5VL_julea_datatype_specific(void* obj __attribute__((unused)), //
 	H5VL_datatype_specific_t specific_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_datatype_close(void* dt __attribute__((unused)), //
+H5VL_julea_datatype_close(void* dt __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
@@ -790,140 +883,296 @@ H5VL__native_datatype_close(void* dt __attribute__((unused)), //
 	exit(1);
 }
 static herr_t
-H5VL__native_file_get(void* obj __attribute__((unused)), //
+H5VL_julea_file_get(void* obj __attribute__((unused)), //
 	H5VL_file_get_t get_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_file_specific(void* obj __attribute__((unused)), //
+H5VL_julea_file_specific(void* obj __attribute__((unused)), //
 	H5VL_file_specific_t specific_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_file_optional(void* obj __attribute__((unused)), //
+H5VL_julea_file_optional(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_group_get(void* obj __attribute__((unused)), //
+H5VL_julea_group_get(void* obj __attribute__((unused)), //
 	H5VL_group_get_t get_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_group_specific(void* obj __attribute__((unused)), //
+H5VL_julea_group_specific(void* obj __attribute__((unused)), //
 	H5VL_group_specific_t specific_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 static herr_t
-H5VL__native_group_optional(void* obj __attribute__((unused)), //
+H5VL_julea_group_optional(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_link_create(H5VL_link_create_type_t create_type __attribute__((unused)), //
+	void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	hid_t lcpl_id __attribute__((unused)), //
+	hid_t lapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_link_copy(void* src_obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params1 __attribute__((unused)), //
+	void* dst_obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params2 __attribute__((unused)), //
+	hid_t lcpl_id __attribute__((unused)), //
+	hid_t lapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_link_move(void* src_obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params1 __attribute__((unused)), //
+	void* dst_obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params2 __attribute__((unused)), //
+	hid_t lcpl_id __attribute__((unused)), //
+	hid_t lapl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_link_get(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	H5VL_link_get_t get_type __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_link_specific(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	H5VL_link_specific_t specific_type __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static void*
+H5VL_julea_object_open(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	H5I_type_t* opened_type __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_object_copy(void* src_obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params1 __attribute__((unused)), //
+	const char* src_name __attribute__((unused)), //
+	void* dst_obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params2 __attribute__((unused)), //
+	const char* dst_name __attribute__((unused)), //
+	hid_t ocpypl_id __attribute__((unused)), //
+	hid_t lcpl_id __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_object_get(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	H5VL_object_get_t get_type __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_object_specific(void* obj __attribute__((unused)), //
+	const H5VL_loc_params_t* loc_params __attribute__((unused)), //
+	H5VL_object_specific_t specific_type __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
+	J_CRITICAL("not implemented %d", 0);
+	exit(1);
+}
+static herr_t
+H5VL_julea_object_optional(void* obj __attribute__((unused)), //
+	hid_t dxpl_id __attribute__((unused)), //
+	void** req __attribute__((unused)), //
+	va_list arguments __attribute__((unused)))
+{
+	J_DEBUG("start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
 
-static const H5VL_class_t H5VL_julea_g = { 0,
+const H5VL_class_t H5VL_julea_g = {
+	//
+	0,
 	JULEA,
 	"julea", /* name */
 	0,
 	H5VL_julea_init, /* initialize */
 	H5VL_julea_term, /* terminate */
-	{ 0, NULL, NULL, NULL, NULL, NULL },
-	{ NULL, NULL, NULL, NULL, NULL },
+	{
+		0,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
 	{
 		/* attribute_cls */
 		H5VL_julea_attr_create, /* create */
-		H5VL_julea_scheme_open, /* open */
+		H5VL_julea_attr_open, /* open */
 		H5VL_julea_attr_read, /* read */
 		H5VL_julea_attr_write, /* write */
 		H5VL_julea_attr_get, /* get */
 		H5VL_julea_attr_specific, // H5VL_julea_attr_specific,              /* specific */
-		H5VL__native_attr_optional, // H5VL_julea_attr_optional,              /* optional */
-		H5VL_julea_scheme_close /* close */
+		H5VL_julea_attr_optional, // H5VL_julea_attr_optional,              /* optional */
+		H5VL_julea_attr_close /* close */
 	},
 	{
 		/* dataset_cls */
 		H5VL_julea_dataset_create, /* create */
-		H5VL_julea_scheme_open, /* open */
+		H5VL_julea_dataset_open, /* open */
 		H5VL_julea_dataset_read, /* read */
 		H5VL_julea_dataset_write, /* write */
 		H5VL_julea_dataset_get, /* get */
-		H5VL__native_dataset_specific, // H5VL_julea_dataset_specific,          /* specific */
-		H5VL__native_dataset_optional, // H5VL_julea_dataset_optional,          /* optional */
-		H5VL_julea_scheme_close /* close */
+		H5VL_julea_dataset_specific, /* specific */
+		H5VL_julea_dataset_optional, /* optional */
+		H5VL_julea_dataset_close /* close */
 	},
 	{
 		/* datatype_cls */
-		H5VL__native_datatype_commit, // H5VL_julea_datatype_commit, /* commit */
-		H5VL__native_datatype_open, // H5VL_julea_datatype_open,   /* open */
-		H5VL__native_datatype_get, // H5VL_julea_datatype_get,	/* get_size */
-		H5VL__native_datatype_specific, // H5VL_julea_datatype_specific,         /* specific */
-		H5VL__native_file_optional, // H5VL_julea_datatype_optional,         /* optional */
-		H5VL__native_datatype_close, // H5VL_julea_datatype_close   /* close */
+		H5VL_julea_datatype_commit, /* commit */
+		H5VL_julea_datatype_open, /* open */
+		H5VL_julea_datatype_get, /* get_size */
+		H5VL_julea_datatype_specific, /* specific */
+		NULL, //H5VL_julea_datatype_optional,/* optional */
+		H5VL_julea_datatype_close, /* close */
 	},
 	{
 		/* file_cls */
 		H5VL_julea_file_create, /* create */
 		H5VL_julea_file_open, /* open */
-		H5VL__native_file_get, // H5VL_julea_file_get,	/* get */
-		H5VL__native_file_specific, // H5VL_julea_file_specific,            /* specific */
-		NULL, // H5VL_julea_file_optional,            /* optional */
+		H5VL_julea_file_get, /* get */
+		H5VL_julea_file_specific, /* specific */
+		H5VL_julea_file_optional, /* optional */
 		H5VL_julea_file_close /* close */
 	},
 	{
 		/* group_cls */
 		H5VL_julea_group_create, /* create */
-		H5VL_julea_scheme_open, /* open */
-		H5VL__native_group_get, // H5VL_julea_group_get,	/* get */
-		H5VL__native_group_specific, // H5VL_julea_group_specific,           /* specific */
-		H5VL__native_group_optional, // H5VL_julea_group_optional,           /* optional */
-		H5VL_julea_scheme_close /* close */
+		H5VL_julea_group_open, /* open */
+		H5VL_julea_group_get, /* get */
+		H5VL_julea_group_specific, /* specific */
+		H5VL_julea_group_optional, /* optional */
+		H5VL_julea_group_close /* close */
 	},
 	{
 		/* link_cls */
-		NULL, // H5VL_julea_link_create,                /* create */
-		NULL, // H5VL_julea_link_copy,                  /* copy */
-		NULL, // H5VL_julea_link_move,                  /* move */
-		NULL, // H5VL_julea_link_get,                   /* get */
-		NULL, // H5VL_julea_link_specific,              /* specific */
-		NULL, // H5VL_julea_link_optional,              /* optional */
+		H5VL_julea_link_create, /* create */
+		H5VL_julea_link_copy, /* copy */
+		H5VL_julea_link_move, /* move */
+		H5VL_julea_link_get, /* get */
+		H5VL_julea_link_specific, /* specific */
+		NULL, //H5VL_julea_link_optional, /* optional */
 	},
 	{
 		/* object_cls */
-		NULL, // H5VL_julea_object_open,                        /* open */
-		NULL, // H5VL_julea_object_copy,                /* copy */
-		NULL, // H5VL_julea_object_get,                 /* get */
-		NULL, // H5VL_julea_object_specific,                    /* specific */
-		NULL, // H5VL_julea_object_optional,            /* optional */
+		H5VL_julea_object_open, /* open */
+		H5VL_julea_object_copy, /* copy */
+		H5VL_julea_object_get, /* get */
+		H5VL_julea_object_specific, /* specific */
+		H5VL_julea_object_optional, /* optional */
 	},
-	{ NULL, NULL, NULL, NULL, NULL, NULL },
-	NULL };
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	NULL,
+};
 
 /**
  * Provides the plugin type
@@ -931,6 +1180,7 @@ static const H5VL_class_t H5VL_julea_g = { 0,
 H5PL_type_t
 H5PLget_plugin_type(void)
 {
+	J_DEBUG("start%d", 0);
 	return H5PL_TYPE_VOL;
 }
 
@@ -940,5 +1190,6 @@ H5PLget_plugin_type(void)
 const void*
 H5PLget_plugin_info(void)
 {
+	J_DEBUG("start%d", 0);
 	return &H5VL_julea_g;
 }
