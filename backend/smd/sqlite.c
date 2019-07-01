@@ -305,7 +305,7 @@ backend_init_sql(void)
 		"CREATE TABLE IF NOT EXISTS smd_schemes (" //
 		"key INTEGER UNIQUE NOT NULL, " //identify scheme/file
 		"file_key INTEGER, " // reference to file for fast delete|fetch
-		"name TEXT NOT NULL, " // name of file|scheme
+		"name TEXT NOT NULL, " // name of file|scheme TODO move name to smd_schemes_link table -> unique contraint there -> faster AND required by hdf5 AND removes duplicate storage of name
 		"type_key INTEGER, " //the key of the data-type in the smd_type_header table
 		"ndims INTEGER, " // number of dimensions/*TODO allow larger dimensions - requires separate table?!?*/
 		"dims0 INTEGER, " // number of dimension[0]

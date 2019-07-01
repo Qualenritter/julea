@@ -51,6 +51,9 @@
 
 #define JULEA 520
 
+#define SUCCEED 0
+#define FAIL -1
+
 struct J_HDF_Scheme_t
 {
 	hid_t type_id;
@@ -67,7 +70,7 @@ typedef struct J_HDF_Scheme_t J_HDF_Scheme_t;
 static herr_t
 H5VL_julea_init(hid_t vipl_id __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	return 0;
 }
 
@@ -79,7 +82,7 @@ H5VL_julea_init(hid_t vipl_id __attribute__((unused)))
 static herr_t
 H5VL_julea_term(void)
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	return 0;
 }
 
@@ -294,7 +297,7 @@ H5VL_julea_attr_create(void* _parent __attribute__((unused)), //
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* scheme;
 	g_autoptr(JBatch) batch = NULL;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	type = hdf5_type_export(type_id);
@@ -321,7 +324,7 @@ H5VL_julea_attr_read(void* _scheme __attribute__((unused)), //
 	guint i;
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -343,7 +346,7 @@ H5VL_julea_attr_write(void* _scheme __attribute__((unused)), //
 	guint len;
 	guint i;
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -364,7 +367,7 @@ H5VL_julea_dataset_get(void* _scheme, //
 	va_list arguments)
 {
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	switch (get_type)
@@ -381,7 +384,7 @@ H5VL_julea_dataset_get(void* _scheme, //
 	case H5VL_DATASET_GET_SPACE_STATUS:
 	case H5VL_DATASET_GET_DAPL:
 	default:
-		printf("ERROR: unsupported type %s:%d\n", __FILE__, __LINE__);
+		J_CRITICAL("unsupported get_type %d", get_type);
 		exit(1);
 	}
 	return 0;
@@ -394,7 +397,7 @@ H5VL_julea_attr_get(void* _scheme __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
 	J_Scheme_t* scheme = (J_Scheme_t*)_scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(scheme->key))
 		return 1;
 	switch (get_type)
@@ -410,7 +413,7 @@ H5VL_julea_attr_get(void* _scheme __attribute__((unused)), //
 	case H5VL_ATTR_GET_NAME:
 	case H5VL_ATTR_GET_STORAGE_SIZE:
 	default:
-		printf("ERROR: unsupported type %s:%d\n", __FILE__, __LINE__);
+		J_CRITICAL("unsupported get_type %d", get_type);
 		exit(1);
 	}
 	return 0;
@@ -420,7 +423,7 @@ H5VL_julea_attr_close(void* scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	g_free(((J_Scheme_t*)scheme)->user_data);
 	j_smd_scheme_unref(scheme);
 	return 0;
@@ -430,7 +433,7 @@ H5VL_julea_group_close(void* scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	g_free(((J_Scheme_t*)scheme)->user_data);
 	j_smd_scheme_unref(scheme);
 	return 0;
@@ -440,7 +443,7 @@ H5VL_julea_dataset_close(void* scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	g_free(((J_Scheme_t*)scheme)->user_data);
 	j_smd_scheme_unref(scheme);
 	return 0;
@@ -455,7 +458,7 @@ H5VL_julea_file_create(const char* name __attribute__((unused)), //
 {
 	J_Scheme_t* scheme;
 	g_autoptr(JBatch) batch = NULL;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	scheme = j_smd_file_create(name, batch);
 	j_batch_execute(batch);
@@ -470,7 +473,7 @@ H5VL_julea_file_open(const char* name __attribute__((unused)),
 {
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	scheme = j_smd_file_open(name, batch);
 	j_batch_execute(batch);
@@ -481,7 +484,7 @@ H5VL_julea_file_close(void* _scheme __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	j_smd_file_unref(_scheme);
 	return 0;
 }
@@ -498,7 +501,7 @@ H5VL_julea_group_create(void* _parent __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -524,7 +527,7 @@ H5VL_julea_dataset_create(void* _parent __attribute__((unused)), //
 	void* space;
 	J_Scheme_t* parent = (J_Scheme_t*)_parent;
 	J_Scheme_t* scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -552,7 +555,7 @@ H5VL_julea_attr_open(void* obj __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)obj;
 	J_Scheme_t* scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -580,7 +583,7 @@ H5VL_julea_group_open(void* obj __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)obj;
 	J_Scheme_t* scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -608,7 +611,7 @@ H5VL_julea_dataset_open(void* obj __attribute__((unused)), //
 	g_autoptr(JBatch) batch = NULL;
 	J_Scheme_t* parent = (J_Scheme_t*)obj;
 	J_Scheme_t* scheme;
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	if (!j_is_key_initialized(parent->key))
 		return 0;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
@@ -643,7 +646,7 @@ H5VL_julea_dataset_read(void* _scheme __attribute__((unused)), //
 	hsize_t dims_end[SMD_MAX_NDIMS];
 	guint off_layer[SMD_MAX_NDIMS];
 	guint size_layer[SMD_MAX_NDIMS];
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	g_assert(buf != NULL);
 	g_assert(scheme->object != NULL);
@@ -722,7 +725,7 @@ H5VL_julea_dataset_write(void* _scheme __attribute__((unused)), //
 	hsize_t dims_end[SMD_MAX_NDIMS];
 	guint off_layer[SMD_MAX_NDIMS];
 	guint size_layer[SMD_MAX_NDIMS];
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	g_assert(buf != NULL);
 	g_assert(scheme->object != NULL);
@@ -791,7 +794,7 @@ H5VL_julea_attr_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -801,7 +804,7 @@ H5VL_julea_attr_optional(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -812,7 +815,7 @@ H5VL_julea_dataset_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -822,7 +825,7 @@ H5VL_julea_dataset_optional(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -837,7 +840,7 @@ H5VL_julea_datatype_commit(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -849,7 +852,7 @@ H5VL_julea_datatype_open(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -870,7 +873,7 @@ H5VL_julea_datatype_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -883,15 +886,54 @@ H5VL_julea_datatype_close(void* dt __attribute__((unused)), //
 	exit(1);
 }
 static herr_t
-H5VL_julea_file_get(void* obj __attribute__((unused)), //
+H5VL_julea_file_get(void* _obj __attribute__((unused)), //
 	H5VL_file_get_t get_type __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
-	J_CRITICAL("not implemented %d", 0);
-	exit(1);
+	J_Scheme_t* file = (J_Scheme_t*)_obj;
+	J_CRITICAL("DEBUG start%d", 0);
+	switch (get_type)
+	{
+	case H5VL_FILE_GET_NAME:
+	{
+		H5I_type_t type = (H5I_type_t)va_arg(arguments, int);
+		size_t size = va_arg(arguments, size_t);
+		char* name = va_arg(arguments, char*);
+		ssize_t* ret = va_arg(arguments, ssize_t*);
+		size_t len;
+		len = strlen(file->name) + 1;
+		if (name)
+			memcpy(name, file->name, len < size ? len : size);
+		if (len >= size)
+			name[size - 1] = '\0';
+		*ret = (ssize_t)len;
+		(void)type;
+		break;
+	}
+	case H5VL_FILE_GET_OBJ_COUNT:{
+		unsigned    types = HDva_arg(arguments, unsigned);
+		ssize_t    *ret = HDva_arg(arguments, ssize_t *);
+		size_t      obj_count = 0;
+
+		J_CRITICAL("count objects !! %d", get_type);
+		exit(1);
+
+		//count only where types == H5F_OBJ_FILE|H5F_OBJ_DATASET|H5F_OBJ_GROUP|H5F_OBJ_DATATYPE|H5F_OBJ_ATTR
+		*ret = (ssize_t)obj_count;
+		break;
+	}
+	case H5VL_FILE_GET_FAPL:
+	case H5VL_FILE_GET_FCPL:
+	case H5VL_FILE_GET_INTENT:
+	case H5VL_FILE_GET_FILENO:
+	case H5VL_FILE_GET_OBJ_IDS:
+	default:
+		J_CRITICAL("unsupported get_type %d", get_type);
+		exit(1);
+	}
+	return SUCCEED;
 }
 static herr_t
 H5VL_julea_file_specific(void* obj __attribute__((unused)), //
@@ -900,7 +942,7 @@ H5VL_julea_file_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -910,7 +952,7 @@ H5VL_julea_file_optional(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -921,7 +963,7 @@ H5VL_julea_group_get(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -932,7 +974,7 @@ H5VL_julea_group_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -942,7 +984,7 @@ H5VL_julea_group_optional(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -956,7 +998,7 @@ H5VL_julea_link_create(H5VL_link_create_type_t create_type __attribute__((unused
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -970,7 +1012,7 @@ H5VL_julea_link_copy(void* src_obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -984,7 +1026,7 @@ H5VL_julea_link_move(void* src_obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -996,7 +1038,7 @@ H5VL_julea_link_get(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1008,7 +1050,7 @@ H5VL_julea_link_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1019,7 +1061,7 @@ H5VL_julea_object_open(void* obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1035,7 +1077,7 @@ H5VL_julea_object_copy(void* src_obj __attribute__((unused)), //
 	hid_t dxpl_id __attribute__((unused)), //
 	void** req __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1047,7 +1089,7 @@ H5VL_julea_object_get(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1059,7 +1101,7 @@ H5VL_julea_object_specific(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1069,7 +1111,7 @@ H5VL_julea_object_optional(void* obj __attribute__((unused)), //
 	void** req __attribute__((unused)), //
 	va_list arguments __attribute__((unused)))
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	J_CRITICAL("not implemented %d", 0);
 	exit(1);
 }
@@ -1180,7 +1222,7 @@ const H5VL_class_t H5VL_julea_g = {
 H5PL_type_t
 H5PLget_plugin_type(void)
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	return H5PL_TYPE_VOL;
 }
 
@@ -1190,6 +1232,6 @@ H5PLget_plugin_type(void)
 const void*
 H5PLget_plugin_info(void)
 {
-	J_DEBUG("start%d", 0);
+	J_CRITICAL("DEBUG start%d", 0);
 	return &H5VL_julea_g;
 }
