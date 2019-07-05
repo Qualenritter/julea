@@ -114,7 +114,7 @@ try_other:
 		j_debug_check(ret, SQLITE_DONE);
 	j_sqlite3_reset(stmt_type_get_header_by_hash);
 	//create new type
-	header_key = g_atomic_int_add(&smd_scheme_type_primary_key, 1);
+	header_key = g_atomic_int_add(&smd_type_primary_key, 1);
 	j_sqlite3_bind_int64(stmt_type_create_header, 1, header_key);
 	j_sqlite3_bind_int64(stmt_type_create_header, 2, hash);
 	j_sqlite3_bind_int64(stmt_type_create_header, 3, var_count);

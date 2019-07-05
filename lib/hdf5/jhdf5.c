@@ -913,8 +913,8 @@ H5VL_julea_file_get(void* _obj __attribute__((unused)), //
 		break;
 	}
 	case H5VL_FILE_GET_OBJ_COUNT:{
-		unsigned    types = HDva_arg(arguments, unsigned);
-		ssize_t    *ret = HDva_arg(arguments, ssize_t *);
+		unsigned    types = va_arg(arguments, unsigned);
+		ssize_t    *ret = va_arg(arguments, ssize_t *);
 		size_t      obj_count = 0;
 
 		J_CRITICAL("count objects !! %d", get_type);
