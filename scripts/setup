@@ -89,23 +89,31 @@ setup_init ()
 
 	SERVERS_OBJECT="$(get_config | grep ^object=)"
 	SERVERS_KV="$(get_config | grep ^kv=)"
+	SERVERS_SMD="$(get_config | grep ^smd=)"
 	OBJECT_BACKEND="$(get_config | grep ^backend= | head --lines=1)"
 	KV_BACKEND="$(get_config | grep ^backend= | tail --lines=1)"
+	SMD_BACKEND="$(get_config | grep ^backend= | tail --lines=1)"
 	OBJECT_PATH="$(get_config | grep ^path= | head --lines=1)"
 	KV_PATH="$(get_config | grep ^path= | tail --lines=1)"
+	SMD_PATH="$(get_config | grep ^path= | tail --lines=1)"
 
 	SERVERS_OBJECT="${SERVERS_OBJECT#object=}"
 	SERVERS_KV="${SERVERS_KV#kv=}"
+	SERVERS_SMD="${SERVERS_SMD#smd=}"
 	OBJECT_BACKEND="${OBJECT_BACKEND#backend=}"
 	KV_BACKEND="${KV_BACKEND#backend=}"
+	SMD_BACKEND="${SMD_BACKEND#backend=}"
 	OBJECT_PATH="${OBJECT_PATH#path=}"
 	KV_PATH="${KV_PATH#path=}"
+	SMD_PATH="${SMD_PATH#path=}"
 
 	SERVERS_OBJECT="${SERVERS_OBJECT%;}"
 	SERVERS_KV="${SERVERS_KV%;}"
+	SERVERS_SMD="${SERVERS_SMD%;}"
 
 	SERVERS_OBJECT=$(echo ${SERVERS_OBJECT} | sed 's/;/ /g')
 	SERVERS_KV=$(echo ${SERVERS_KV} | sed 's/;/ /g')
+	SERVERS_SMD=$(echo ${SERVERS_SMD} | sed 's/;/ /g')
 }
 
 setup_start ()
@@ -138,6 +146,22 @@ setup_start ()
 		then
 			# FIXME else
 			if test "${KV_BACKEND}" = 'mongodb'
+			then
+				mkdir --parents "${MONGO_PATH}/db"
+				mongod --fork --logpath "${MONGO_PATH}/mongod.log" --logappend --dbpath "${MONGO_PATH}/db" --journal
+			fi
+		fi
+	done
+
+	for server in ${SERVERS_SMD}
+	do
+		host="$(get_host "${server}")"
+		port="$(get_port "${server}")"
+
+		if test "${host}" = "${HOSTNAME}"
+		then
+			# FIXME else
+			if test "${SMD_BACKEND}" = 'mongodb'
 			then
 				mkdir --parents "${MONGO_PATH}/db"
 				mongod --fork --logpath "${MONGO_PATH}/mongod.log" --logappend --dbpath "${MONGO_PATH}/db" --journal
@@ -179,6 +203,19 @@ setup_stop ()
 			fi
 		fi
 	done
+	for server in ${SERVERS_SMD}
+	do
+		host="$(get_host "${server}")"
+		port="$(get_port "${server}")"
+
+		if test "${host}" = "${HOSTNAME}"
+		then
+			if test "${SMD_BACKEND}" = 'mongodb'
+			then
+				mongod --shutdown --dbpath "${MONGO_PATH}/db" || true
+			fi
+		fi
+	done
 }
 
 setup_clean ()
@@ -210,6 +247,21 @@ setup_clean ()
 				rm -rf "${MONGO_PATH}"
 			else
 				rm -rf "${KV_PATH}"
+			fi
+		fi
+	done
+	for server in ${SERVERS_SMD}
+	do
+		host="$(get_host "${server}")"
+		port="$(get_port "${server}")"
+
+		if test "${host}" = "${HOSTNAME}"
+		then
+			if test "${SMD_BACKEND}" = 'mongodb'
+			then
+				rm -rf "${MONGO_PATH}"
+			else
+				rm -rf "${SMD_PATH}"
 			fi
 		fi
 	done

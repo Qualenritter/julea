@@ -27,9 +27,8 @@
 
 #include "benchmark.h"
 
-static
-void
-_benchmark_kv_put (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_kv_put(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 200000;
 
@@ -74,23 +73,20 @@ _benchmark_kv_put (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static
-void
-benchmark_kv_put (BenchmarkResult* result)
+static void
+benchmark_kv_put(BenchmarkResult* result)
 {
 	_benchmark_kv_put(result, FALSE);
 }
 
-static
-void
-benchmark_kv_put_batch (BenchmarkResult* result)
+static void
+benchmark_kv_put_batch(BenchmarkResult* result)
 {
 	_benchmark_kv_put(result, TRUE);
 }
 
-static
-void
-_benchmark_kv_get_callback (gpointer value, guint32 len, gpointer data)
+static void
+_benchmark_kv_get_callback(gpointer value, guint32 len, gpointer data)
 {
 	(void)len;
 	(void)data;
@@ -98,9 +94,8 @@ _benchmark_kv_get_callback (gpointer value, guint32 len, gpointer data)
 	g_free(value);
 }
 
-static
-void
-_benchmark_kv_get (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_kv_get(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 200000;
 
@@ -157,23 +152,20 @@ _benchmark_kv_get (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static
-void
-benchmark_kv_get (BenchmarkResult* result)
+static void
+benchmark_kv_get(BenchmarkResult* result)
 {
 	_benchmark_kv_get(result, FALSE);
 }
 
-static
-void
-benchmark_kv_get_batch (BenchmarkResult* result)
+static void
+benchmark_kv_get_batch(BenchmarkResult* result)
 {
 	_benchmark_kv_get(result, TRUE);
 }
 
-static
-void
-_benchmark_kv_delete (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_kv_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 200000;
 
@@ -227,23 +219,20 @@ _benchmark_kv_delete (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static
-void
-benchmark_kv_delete (BenchmarkResult* result)
+static void
+benchmark_kv_delete(BenchmarkResult* result)
 {
 	_benchmark_kv_delete(result, FALSE);
 }
 
-static
-void
-benchmark_kv_delete_batch (BenchmarkResult* result)
+static void
+benchmark_kv_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_kv_delete(result, TRUE);
 }
 
-static
-void
-_benchmark_kv_unordered_put_delete (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_kv_unordered_put_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 100000;
 
@@ -286,22 +275,20 @@ _benchmark_kv_unordered_put_delete (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n * 2;
 }
 
-static
-void
-benchmark_kv_unordered_put_delete (BenchmarkResult* result)
+static void
+benchmark_kv_unordered_put_delete(BenchmarkResult* result)
 {
 	_benchmark_kv_unordered_put_delete(result, FALSE);
 }
 
-static
-void
-benchmark_kv_unordered_put_delete_batch (BenchmarkResult* result)
+static void
+benchmark_kv_unordered_put_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_kv_unordered_put_delete(result, TRUE);
 }
 
 void
-benchmark_kv (void)
+benchmark_kv(void)
 {
 	j_benchmark_run("/kv/put", benchmark_kv_put);
 	j_benchmark_run("/kv/put-batch", benchmark_kv_put_batch);

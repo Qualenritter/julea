@@ -75,7 +75,7 @@ struct JLock
  * \return A new item. Should be freed with j_lock_unref().
  **/
 JLock*
-j_lock_new (gchar const* namespace, gchar const* path)
+j_lock_new(gchar const* namespace, gchar const* path)
 {
 	JLock* lock;
 
@@ -109,7 +109,7 @@ j_lock_new (gchar const* namespace, gchar const* path)
  * \param lock A lock.
  **/
 void
-j_lock_free (JLock* lock)
+j_lock_free(JLock* lock)
 {
 	g_return_if_fail(lock != NULL);
 
@@ -131,7 +131,7 @@ j_lock_free (JLock* lock)
 }
 
 gboolean
-j_lock_acquire (JLock* lock)
+j_lock_acquire(JLock* lock)
 {
 	JBackend* kv_backend;
 	bson_t empty[1];
@@ -199,7 +199,7 @@ j_lock_acquire (JLock* lock)
 }
 
 gboolean
-j_lock_release (JLock* lock)
+j_lock_release(JLock* lock)
 {
 	JBackend* kv_backend;
 	gboolean released = TRUE;
@@ -257,7 +257,7 @@ j_lock_release (JLock* lock)
 }
 
 void
-j_lock_add (JLock* lock, guint64 block)
+j_lock_add(JLock* lock, guint64 block)
 {
 	g_return_if_fail(lock != NULL);
 

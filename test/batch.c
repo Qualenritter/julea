@@ -29,9 +29,8 @@
 
 static gint test_batch_flag;
 
-static
-void
-on_operation_completed (JBatch* batch, gboolean ret, gpointer user_data)
+static void
+on_operation_completed(JBatch* batch, gboolean ret, gpointer user_data)
 {
 	(void)batch;
 	(void)ret;
@@ -40,9 +39,8 @@ on_operation_completed (JBatch* batch, gboolean ret, gpointer user_data)
 	g_atomic_int_set(&test_batch_flag, 1);
 }
 
-static
-void
-test_batch_new_free (void)
+static void
+test_batch_new_free(void)
 {
 	g_autoptr(JBatch) batch = NULL;
 
@@ -50,9 +48,8 @@ test_batch_new_free (void)
 	g_assert(batch != NULL);
 }
 
-static
-void
-test_batch_semantics (void)
+static void
+test_batch_semantics(void)
 {
 	JBatch* batch;
 	g_autoptr(JSemantics) semantics = NULL;
@@ -71,9 +68,8 @@ test_batch_semantics (void)
 	j_batch_unref(batch);
 }
 
-static
-void
-_test_batch_execute (gboolean async)
+static void
+_test_batch_execute(gboolean async)
 {
 	g_autoptr(JCollection) collection = NULL;
 	g_autoptr(JItem) item = NULL;
@@ -109,22 +105,20 @@ _test_batch_execute (gboolean async)
 	}
 }
 
-static
-void
-test_batch_execute (void)
+static void
+test_batch_execute(void)
 {
 	_test_batch_execute(FALSE);
 }
 
-static
-void
-test_batch_execute_async (void)
+static void
+test_batch_execute_async(void)
 {
 	_test_batch_execute(TRUE);
 }
 
 void
-test_batch (void)
+test_batch(void)
 {
 	g_test_add_func("/batch/new_free", test_batch_new_free);
 	g_test_add_func("/batch/semantics", test_batch_semantics);

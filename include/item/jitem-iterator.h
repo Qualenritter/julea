@@ -41,11 +41,11 @@ G_END_DECLS
 
 G_BEGIN_DECLS
 
-JItemIterator* j_item_iterator_new (JCollection*);
-void j_item_iterator_free (JItemIterator*);
+JItemIterator* j_item_iterator_new(JCollection*);
+void j_item_iterator_free(JItemIterator*);
 
-gboolean j_item_iterator_next (JItemIterator*);
-JItem* j_item_iterator_get (JItemIterator*);
+gboolean j_item_iterator_next(JItemIterator*);
+JItem* j_item_iterator_get(JItemIterator*);
 
 G_END_DECLS
 

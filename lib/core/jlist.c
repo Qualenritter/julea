@@ -74,7 +74,7 @@ struct JList
  * \return A new list.
  **/
 JList*
-j_list_new (JListFreeFunc free_func)
+j_list_new(JListFreeFunc free_func)
 {
 	JList* list;
 
@@ -96,7 +96,7 @@ j_list_new (JListFreeFunc free_func)
  * \return The list.
  **/
 JList*
-j_list_ref (JList* list)
+j_list_ref(JList* list)
 {
 	g_return_val_if_fail(list != NULL, NULL);
 
@@ -115,7 +115,7 @@ j_list_ref (JList* list)
  * \param list A list.
  **/
 void
-j_list_unref (JList* list)
+j_list_unref(JList* list)
 {
 	g_return_if_fail(list != NULL);
 
@@ -138,7 +138,7 @@ j_list_unref (JList* list)
  * \return The list's length.
  **/
 guint
-j_list_length (JList* list)
+j_list_length(JList* list)
 {
 	g_return_val_if_fail(list != NULL, 0);
 
@@ -155,7 +155,7 @@ j_list_length (JList* list)
  * \param data A list element.
  **/
 void
-j_list_append (JList* list, gpointer data)
+j_list_append(JList* list, gpointer data)
 {
 	JListElement* element;
 
@@ -191,7 +191,7 @@ j_list_append (JList* list, gpointer data)
  * \param data A list element.
  **/
 void
-j_list_prepend (JList* list, gpointer data)
+j_list_prepend(JList* list, gpointer data)
 {
 	JListElement* element;
 
@@ -219,7 +219,7 @@ j_list_prepend (JList* list, gpointer data)
  * \return A list element, or NULL.
  **/
 gpointer
-j_list_get_first (JList* list)
+j_list_get_first(JList* list)
 {
 	gpointer data = NULL;
 
@@ -241,7 +241,7 @@ j_list_get_first (JList* list)
  * \return A list element, or NULL.
  **/
 gpointer
-j_list_get_last (JList* list)
+j_list_get_last(JList* list)
 {
 	gpointer data = NULL;
 
@@ -261,7 +261,7 @@ j_list_get_last (JList* list)
  * \param list A list.
  **/
 void
-j_list_delete_all (JList* list)
+j_list_delete_all(JList* list)
 {
 	JListElement* element;
 
@@ -303,7 +303,7 @@ j_list_delete_all (JList* list)
  * \return A JListElement.
  **/
 JListElement*
-j_list_head (JList* list)
+j_list_head(JList* list)
 {
 	g_return_val_if_fail(list != NULL, NULL);
 

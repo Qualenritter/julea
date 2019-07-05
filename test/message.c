@@ -29,9 +29,8 @@
 
 #include "test.h"
 
-static
-void
-test_message_new_ref_unref (void)
+static void
+test_message_new_ref_unref(void)
 {
 	g_autoptr(JMessage) message = NULL;
 
@@ -41,9 +40,8 @@ test_message_new_ref_unref (void)
 	j_message_unref(message);
 }
 
-static
-void
-test_message_header (void)
+static void
+test_message_header(void)
 {
 	g_autoptr(JMessage) message = NULL;
 
@@ -59,9 +57,8 @@ test_message_header (void)
 	g_assert_cmpuint(j_message_get_count(message), ==, 3);
 }
 
-static
-void
-test_message_append (void)
+static void
+test_message_append(void)
 {
 	JMessage* message;
 	gboolean ret;
@@ -100,9 +97,8 @@ test_message_append (void)
 	j_message_unref(message);
 }
 
-static
-void
-test_message_write_read (void)
+static void
+test_message_write_read(void)
 {
 	g_autoptr(JMessage) message_recv = NULL;
 	g_autoptr(JMessage) message_send = NULL;
@@ -138,8 +134,7 @@ test_message_write_read (void)
 		G_MEMORY_INPUT_STREAM(input),
 		g_memory_output_stream_get_data(G_MEMORY_OUTPUT_STREAM(output)),
 		g_memory_output_stream_get_data_size(G_MEMORY_OUTPUT_STREAM(output)),
-		NULL
-	);
+		NULL);
 
 	ret = j_message_read(message_recv, input);
 	g_assert(ret);
@@ -155,7 +150,7 @@ test_message_write_read (void)
 }
 
 void
-test_message (void)
+test_message(void)
 {
 	g_test_add_func("/message/new_ref_unref", test_message_new_ref_unref);
 	g_test_add_func("/message/header", test_message_header);

@@ -35,7 +35,7 @@
 #include <H5PLextern.h>
 
 static void
-write_dataset (hid_t file)
+write_dataset(hid_t file)
 {
 	hid_t attribute;
 	hid_t dataset;
@@ -81,7 +81,7 @@ write_dataset (hid_t file)
 }
 
 static void
-read_dataset (hid_t file)
+read_dataset(hid_t file)
 {
 	hid_t attribute;
 	hid_t dataset;
@@ -132,14 +132,14 @@ read_dataset (hid_t file)
 }
 
 static void
-test_hdf_read_write (void)
+test_hdf_read_write(void)
 {
 	hid_t acc_tpl;
 	hid_t julea_vol_id;
 
 	hid_t file;
 
-	const H5VL_class_t *h5vl_julea;
+	const H5VL_class_t* h5vl_julea;
 	hid_t native_vol_id;
 
 	native_vol_id = H5VLget_connector_id("native");
@@ -173,7 +173,7 @@ test_hdf_read_write (void)
 #endif
 
 void
-test_hdf (void)
+test_hdf(void)
 {
 #ifdef HAVE_HDF5
 	g_test_add_func("/hdf5/read_write", test_hdf_read_write);

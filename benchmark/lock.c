@@ -28,9 +28,8 @@
 
 #include "benchmark.h"
 
-static
-void
-_benchmark_lock (BenchmarkResult* result, gboolean acquire, gboolean add)
+static void
+_benchmark_lock(BenchmarkResult* result, gboolean acquire, gboolean add)
 {
 	guint const n = 3000;
 
@@ -92,29 +91,26 @@ _benchmark_lock (BenchmarkResult* result, gboolean acquire, gboolean add)
 	result->operations = n;
 }
 
-static
-void
-benchmark_lock_acquire (BenchmarkResult* result)
+static void
+benchmark_lock_acquire(BenchmarkResult* result)
 {
 	_benchmark_lock(result, TRUE, FALSE);
 }
 
-static
-void
-benchmark_lock_release (BenchmarkResult* result)
+static void
+benchmark_lock_release(BenchmarkResult* result)
 {
 	_benchmark_lock(result, FALSE, FALSE);
 }
 
-static
-void
-benchmark_lock_add (BenchmarkResult* result)
+static void
+benchmark_lock_add(BenchmarkResult* result)
 {
 	_benchmark_lock(result, TRUE, TRUE);
 }
 
 void
-benchmark_lock (void)
+benchmark_lock(void)
 {
 	j_benchmark_run("/lock/acquire", benchmark_lock_acquire);
 	j_benchmark_run("/lock/release", benchmark_lock_release);

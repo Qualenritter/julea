@@ -27,9 +27,8 @@
 
 #include "benchmark.h"
 
-static
-void
-_benchmark_item_create (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_item_create(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = (use_batch) ? 100000 : 1000;
 
@@ -78,23 +77,20 @@ _benchmark_item_create (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static
-void
-benchmark_item_create (BenchmarkResult* result)
+static void
+benchmark_item_create(BenchmarkResult* result)
 {
 	_benchmark_item_create(result, FALSE);
 }
 
-static
-void
-benchmark_item_create_batch (BenchmarkResult* result)
+static void
+benchmark_item_create_batch(BenchmarkResult* result)
 {
 	_benchmark_item_create(result, TRUE);
 }
 
-static
-void
-_benchmark_item_delete (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_item_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 10000;
 
@@ -155,23 +151,20 @@ _benchmark_item_delete (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static
-void
-benchmark_item_delete (BenchmarkResult* result)
+static void
+benchmark_item_delete(BenchmarkResult* result)
 {
 	_benchmark_item_delete(result, FALSE);
 }
 
-static
-void
-benchmark_item_delete_batch (BenchmarkResult* result)
+static void
+benchmark_item_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_item_delete(result, TRUE);
 }
 
-static
-void
-benchmark_item_delete_batch_without_get (BenchmarkResult* result)
+static void
+benchmark_item_delete_batch_without_get(BenchmarkResult* result)
 {
 	guint const n = 10000;
 
@@ -214,9 +207,8 @@ benchmark_item_delete_batch_without_get (BenchmarkResult* result)
 	result->operations = n;
 }
 
-static
-void
-_benchmark_item_get_status (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_item_get_status(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = (use_batch) ? 1000 : 1000;
 
@@ -266,23 +258,20 @@ _benchmark_item_get_status (BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static
-void
-benchmark_item_get_status (BenchmarkResult* result)
+static void
+benchmark_item_get_status(BenchmarkResult* result)
 {
 	_benchmark_item_get_status(result, FALSE);
 }
 
-static
-void
-benchmark_item_get_status_batch (BenchmarkResult* result)
+static void
+benchmark_item_get_status_batch(BenchmarkResult* result)
 {
 	_benchmark_item_get_status(result, TRUE);
 }
 
-static
-void
-_benchmark_item_read (BenchmarkResult* result, gboolean use_batch, guint block_size)
+static void
+_benchmark_item_read(BenchmarkResult* result, gboolean use_batch, guint block_size)
 {
 	guint const n = (use_batch) ? 25000 : 25000;
 
@@ -342,23 +331,20 @@ _benchmark_item_read (BenchmarkResult* result, gboolean use_batch, guint block_s
 	result->bytes = n * block_size;
 }
 
-static
-void
-benchmark_item_read (BenchmarkResult* result)
+static void
+benchmark_item_read(BenchmarkResult* result)
 {
 	_benchmark_item_read(result, FALSE, 4 * 1024);
 }
 
-static
-void
-benchmark_item_read_batch (BenchmarkResult* result)
+static void
+benchmark_item_read_batch(BenchmarkResult* result)
 {
 	_benchmark_item_read(result, TRUE, 4 * 1024);
 }
 
-static
-void
-_benchmark_item_write (BenchmarkResult* result, gboolean use_batch, guint block_size)
+static void
+_benchmark_item_write(BenchmarkResult* result, gboolean use_batch, guint block_size)
 {
 	guint const n = (use_batch) ? 25000 : 25000;
 
@@ -411,23 +397,20 @@ _benchmark_item_write (BenchmarkResult* result, gboolean use_batch, guint block_
 	result->bytes = n * block_size;
 }
 
-static
-void
-benchmark_item_write (BenchmarkResult* result)
+static void
+benchmark_item_write(BenchmarkResult* result)
 {
 	_benchmark_item_write(result, FALSE, 4 * 1024);
 }
 
-static
-void
-benchmark_item_write_batch (BenchmarkResult* result)
+static void
+benchmark_item_write_batch(BenchmarkResult* result)
 {
 	_benchmark_item_write(result, TRUE, 4 * 1024);
 }
 
-static
-void
-_benchmark_item_unordered_create_delete (BenchmarkResult* result, gboolean use_batch)
+static void
+_benchmark_item_unordered_create_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 5000;
 
@@ -474,22 +457,20 @@ _benchmark_item_unordered_create_delete (BenchmarkResult* result, gboolean use_b
 	result->operations = n * 2;
 }
 
-static
-void
-benchmark_item_unordered_create_delete (BenchmarkResult* result)
+static void
+benchmark_item_unordered_create_delete(BenchmarkResult* result)
 {
 	_benchmark_item_unordered_create_delete(result, FALSE);
 }
 
-static
-void
-benchmark_item_unordered_create_delete_batch (BenchmarkResult* result)
+static void
+benchmark_item_unordered_create_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_item_unordered_create_delete(result, TRUE);
 }
 
 void
-benchmark_item (void)
+benchmark_item(void)
 {
 	j_benchmark_run("/item/item/create", benchmark_item_create);
 	j_benchmark_run("/item/item/create-batch", benchmark_item_create_batch);

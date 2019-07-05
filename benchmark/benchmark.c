@@ -39,25 +39,25 @@ static JSemantics* j_benchmark_semantics = NULL;
 static GTimer* j_benchmark_timer = NULL;
 
 JSemantics*
-j_benchmark_get_semantics (void)
+j_benchmark_get_semantics(void)
 {
 	return j_semantics_ref(j_benchmark_semantics);
 }
 
 void
-j_benchmark_timer_start (void)
+j_benchmark_timer_start(void)
 {
 	g_timer_start(j_benchmark_timer);
 }
 
 gdouble
-j_benchmark_timer_elapsed (void)
+j_benchmark_timer_elapsed(void)
 {
 	return g_timer_elapsed(j_benchmark_timer, NULL);
 }
 
 void
-j_benchmark_run (gchar const* name, BenchmarkFunc benchmark_func)
+j_benchmark_run(gchar const* name, BenchmarkFunc benchmark_func)
 {
 	BenchmarkResult result;
 	GTimer* func_timer;
@@ -146,7 +146,7 @@ j_benchmark_run (gchar const* name, BenchmarkFunc benchmark_func)
 }
 
 int
-main (int argc, char** argv)
+main(int argc, char** argv)
 {
 	GError* error = NULL;
 	GOptionContext* context;
@@ -191,6 +191,8 @@ main (int argc, char** argv)
 		g_print("name%selapsed%soperations%sbytes%stotal_elapsed\n", opt_machine_separator, opt_machine_separator, opt_machine_separator, opt_machine_separator);
 	}
 
+	benchmark_smd();
+	/*
 	// Core
 	benchmark_background_operation();
 	benchmark_cache();
@@ -219,6 +221,6 @@ main (int argc, char** argv)
 	g_free(opt_path);
 	g_free(opt_semantics);
 	g_free(opt_template);
-
+*/
 	return 0;
 }
