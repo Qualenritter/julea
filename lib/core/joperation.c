@@ -41,7 +41,7 @@
  * \return A new operation. Should be freed with j_operation_free().
  **/
 JOperation*
-j_operation_new (void)
+j_operation_new(void)
 {
 	JOperation* operation;
 
@@ -66,7 +66,7 @@ j_operation_new (void)
  **/
 /* FIXME */
 void
-j_operation_free (JOperation* operation)
+j_operation_free(JOperation* operation)
 {
 	if (operation->free_func != NULL)
 	{

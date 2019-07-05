@@ -64,7 +64,7 @@ struct JListIterator
  * \return A new list iterator.
  **/
 JListIterator*
-j_list_iterator_new (JList* list)
+j_list_iterator_new(JList* list)
 {
 	JListIterator* iterator;
 
@@ -87,7 +87,7 @@ j_list_iterator_new (JList* list)
  * \param iterator A list iterator.
  **/
 void
-j_list_iterator_free (JListIterator* iterator)
+j_list_iterator_free(JListIterator* iterator)
 {
 	g_return_if_fail(iterator != NULL);
 
@@ -107,7 +107,7 @@ j_list_iterator_free (JListIterator* iterator)
  * \return TRUE on success, FALSE if the end of the list is reached.
  **/
 gboolean
-j_list_iterator_next (JListIterator* iterator)
+j_list_iterator_next(JListIterator* iterator)
 {
 	g_return_val_if_fail(iterator != NULL, FALSE);
 
@@ -134,7 +134,7 @@ j_list_iterator_next (JListIterator* iterator)
  * \return A list element.
  **/
 gpointer
-j_list_iterator_get (JListIterator* iterator)
+j_list_iterator_get(JListIterator* iterator)
 {
 	g_return_val_if_fail(iterator != NULL, NULL);
 	g_return_val_if_fail(iterator->current != NULL, NULL);

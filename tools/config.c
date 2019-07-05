@@ -40,9 +40,8 @@ static gint64 opt_max_operation_size = 0;
 static gint opt_max_connections = 0;
 static gint64 opt_stripe_size = 0;
 
-static
-gchar**
-string_split (gchar const* string)
+static gchar**
+string_split(gchar const* string)
 {
 	guint i;
 	guint len;
@@ -59,9 +58,8 @@ string_split (gchar const* string)
 	return arr;
 }
 
-static
-gboolean
-read_config (gchar* path)
+static gboolean
+read_config(gchar* path)
 {
 	gboolean ret = TRUE;
 	g_autoptr(GFile) file = NULL;
@@ -85,9 +83,8 @@ end:
 	return ret;
 }
 
-static
-gboolean
-write_config (gchar* path)
+static gboolean
+write_config(gchar* path)
 {
 	g_autoptr(GKeyFile) key_file = NULL;
 	gboolean ret = TRUE;
@@ -132,7 +129,7 @@ write_config (gchar* path)
 }
 
 gint
-main (gint argc, gchar** argv)
+main(gint argc, gchar** argv)
 {
 	GError* error = NULL;
 	g_autoptr(GOptionContext) context = NULL;
@@ -172,14 +169,27 @@ main (gint argc, gchar** argv)
 		return 1;
 	}
 
-	if ((opt_user && opt_system)
-	    || (opt_read && (opt_servers_object != NULL || opt_servers_kv != NULL || opt_object_backend != NULL || opt_object_component != NULL || opt_object_path != NULL || opt_kv_backend != NULL || opt_kv_component != NULL || opt_kv_path != NULL))
-	    || (opt_read && !opt_user && !opt_system)
-	    || (!opt_read && (opt_servers_object == NULL || opt_servers_kv == NULL || opt_object_backend == NULL || opt_object_component == NULL || opt_object_path == NULL || opt_kv_backend == NULL || opt_kv_component == NULL || opt_kv_path == NULL))
-	    || opt_max_operation_size < 0
-	    || opt_max_connections < 0
-	    || opt_stripe_size < 0
-	)
+	if ((opt_user && opt_system) //
+		|| (opt_read && (opt_servers_object != NULL //
+					|| opt_servers_kv != NULL //
+					|| opt_object_backend != NULL //
+					|| opt_object_component != NULL //
+					|| opt_object_path != NULL //
+					|| opt_kv_backend != NULL //
+					|| opt_kv_component != NULL //
+					|| opt_kv_path != NULL)) //
+		|| (opt_read && !opt_user && !opt_system) //
+		|| (!opt_read && (opt_servers_object == NULL //
+					 || opt_servers_kv == NULL //
+					 || opt_object_backend == NULL //
+					 || opt_object_component == NULL //
+					 || opt_object_path == NULL //
+					 || opt_kv_backend == NULL //
+					 || opt_kv_component == NULL //
+					 || opt_kv_path == NULL)) //
+		|| opt_max_operation_size < 0 //
+		|| opt_max_connections < 0 //
+		|| opt_stripe_size < 0)
 	{
 		g_autofree gchar* help = NULL;
 

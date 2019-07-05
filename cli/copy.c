@@ -23,7 +23,7 @@
 #include <gio/gio.h>
 
 gboolean
-j_cmd_copy (gchar const** arguments)
+j_cmd_copy(gchar const** arguments)
 {
 	gboolean ret = TRUE;
 	JObjectURI* ouri[2] = { NULL, NULL };
@@ -144,7 +144,6 @@ j_cmd_copy (gchar const** arguments)
 
 				goto end;
 			}
-
 		}
 	}
 

@@ -35,13 +35,13 @@ struct JLock;
 
 typedef struct JLock JLock;
 
-JLock* j_lock_new (gchar const*, gchar const*);
-void j_lock_free (JLock*);
+JLock* j_lock_new(gchar const*, gchar const*);
+void j_lock_free(JLock*);
 
-gboolean j_lock_acquire (JLock*);
-gboolean j_lock_release (JLock*);
+gboolean j_lock_acquire(JLock*);
+gboolean j_lock_release(JLock*);
 
-void j_lock_add (JLock*, guint64);
+void j_lock_add(JLock*, guint64);
 
 G_END_DECLS
 

@@ -67,7 +67,7 @@ struct JCache
  * \return A new cache. Should be freed with j_cache_free().
  **/
 JCache*
-j_cache_new (guint64 size)
+j_cache_new(guint64 size)
 {
 	JCache* cache;
 
@@ -101,7 +101,7 @@ j_cache_new (guint64 size)
  * \param cache A cache.
  **/
 void
-j_cache_free (JCache* cache)
+j_cache_free(JCache* cache)
 {
 	GHashTableIter iter[1];
 	gpointer key;
@@ -144,7 +144,7 @@ j_cache_free (JCache* cache)
  * \return A pointer to a segment of the cache, NULL if not enough space is available.
  **/
 gpointer
-j_cache_get (JCache* cache, guint64 length)
+j_cache_get(JCache* cache, guint64 length)
 {
 	gpointer ret = NULL;
 
@@ -173,7 +173,7 @@ end:
 }
 
 void
-j_cache_release (JCache* cache, gpointer data)
+j_cache_release(JCache* cache, gpointer data)
 {
 	gpointer size;
 

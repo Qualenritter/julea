@@ -80,9 +80,8 @@ struct JKVURI
  * \param uri  A URI.
  * \param uri_ A URI string.
  **/
-static
-gboolean
-j_kv_uri_parse (JKVURI* uri, gchar const* uri_)
+static gboolean
+j_kv_uri_parse(JKVURI* uri, gchar const* uri_)
 {
 	g_auto(GStrv) parts = NULL;
 	gchar const* illegal[2] = { "/", "/" };
@@ -93,19 +92,19 @@ j_kv_uri_parse (JKVURI* uri, gchar const* uri_)
 
 	switch (uri->scheme)
 	{
-		case J_KV_URI_SCHEME_NAMESPACE:
-			// kv://index/namespace
-			scheme_parts = 2;
-			scheme_prefix = "kv://";
-			break;
-		case J_KV_URI_SCHEME_KV:
-			// kv://index/namespace/key
-			scheme_parts = 3;
-			scheme_prefix = "kv://";
-			break;
-		default:
-			g_warn_if_reached();
-			break;
+	case J_KV_URI_SCHEME_NAMESPACE:
+		// kv://index/namespace
+		scheme_parts = 2;
+		scheme_prefix = "kv://";
+		break;
+	case J_KV_URI_SCHEME_KV:
+		// kv://index/namespace/key
+		scheme_parts = 3;
+		scheme_prefix = "kv://";
+		break;
+	default:
+		g_warn_if_reached();
+		break;
 	}
 
 	if (!g_str_has_prefix(uri_, scheme_prefix))
@@ -131,39 +130,39 @@ j_kv_uri_parse (JKVURI* uri, gchar const* uri_)
 
 	switch (uri->scheme)
 	{
-		case J_KV_URI_SCHEME_NAMESPACE:
-		case J_KV_URI_SCHEME_KV:
-			for (i = 0; i < G_N_ELEMENTS(illegal); i++)
+	case J_KV_URI_SCHEME_NAMESPACE:
+	case J_KV_URI_SCHEME_KV:
+		for (i = 0; i < G_N_ELEMENTS(illegal); i++)
+		{
+			if (strpbrk(parts[i], illegal[i]) != NULL)
 			{
-				if (strpbrk(parts[i], illegal[i]) != NULL)
-				{
-					goto error;
-				}
+				goto error;
 			}
-			break;
-		default:
-			g_warn_if_reached();
-			break;
+		}
+		break;
+	default:
+		g_warn_if_reached();
+		break;
 	}
 
 	switch (uri->scheme)
 	{
-		case J_KV_URI_SCHEME_NAMESPACE:
-		case J_KV_URI_SCHEME_KV:
-			// FIXME check for errors
-			uri->index = g_ascii_strtoull(parts[0], NULL, 10);
-			uri->namespace = g_strdup(parts[1]);
+	case J_KV_URI_SCHEME_NAMESPACE:
+	case J_KV_URI_SCHEME_KV:
+		// FIXME check for errors
+		uri->index = g_ascii_strtoull(parts[0], NULL, 10);
+		uri->namespace = g_strdup(parts[1]);
 
-			if (parts_len >= 3)
-			{
-				uri->name = g_strdup(parts[2]);
-				// FIXME index
-				uri->kv = j_kv_new_for_index(uri->index, uri->namespace, uri->name);
-			}
-			break;
-		default:
-			g_warn_if_reached();
-			break;
+		if (parts_len >= 3)
+		{
+			uri->name = g_strdup(parts[2]);
+			// FIXME index
+			uri->kv = j_kv_new_for_index(uri->index, uri->namespace, uri->name);
+		}
+		break;
+	default:
+		g_warn_if_reached();
+		break;
 	}
 
 	return TRUE;
@@ -186,7 +185,7 @@ error:
  * \return A new URI. Should be freed with j_kv_uri_free().
  **/
 JKVURI*
-j_kv_uri_new (gchar const* uri_, JKVURIScheme scheme)
+j_kv_uri_new(gchar const* uri_, JKVURIScheme scheme)
 {
 	JKVURI* uri;
 
@@ -222,7 +221,7 @@ j_kv_uri_new (gchar const* uri_, JKVURIScheme scheme)
  * \param uri A URI.
  **/
 void
-j_kv_uri_free (JKVURI* uri)
+j_kv_uri_free(JKVURI* uri)
 {
 	g_return_if_fail(uri != NULL);
 
@@ -253,7 +252,7 @@ j_kv_uri_free (JKVURI* uri)
  * \return The index.
  **/
 guint32
-j_kv_uri_get_index (JKVURI* uri)
+j_kv_uri_get_index(JKVURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, 0);
 
@@ -276,7 +275,7 @@ j_kv_uri_get_index (JKVURI* uri)
  * \return The namespace.
  **/
 gchar const*
-j_kv_uri_get_namespace (JKVURI* uri)
+j_kv_uri_get_namespace(JKVURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 
@@ -299,7 +298,7 @@ j_kv_uri_get_namespace (JKVURI* uri)
  * \return The name.
  **/
 gchar const*
-j_kv_uri_get_name (JKVURI* uri)
+j_kv_uri_get_name(JKVURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 
@@ -322,7 +321,7 @@ j_kv_uri_get_name (JKVURI* uri)
  * \return The kv.
  **/
 JKV*
-j_kv_uri_get_kv (JKVURI* uri)
+j_kv_uri_get_kv(JKVURI* uri)
 {
 	g_return_val_if_fail(uri != NULL, NULL);
 

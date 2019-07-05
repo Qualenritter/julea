@@ -35,7 +35,7 @@
 #include <H5PLextern.h>
 
 static void
-write_dataset (hid_t file, gchar const* name)
+write_dataset(hid_t file, gchar const* name)
 {
 	hid_t attribute;
 	hid_t dataset;
@@ -83,7 +83,7 @@ write_dataset (hid_t file, gchar const* name)
 }
 
 static void
-read_dataset (hid_t file, gchar const* name)
+read_dataset(hid_t file, gchar const* name)
 {
 	hid_t attribute;
 	hid_t dataset;
@@ -130,14 +130,14 @@ read_dataset (hid_t file, gchar const* name)
 }
 
 static void
-benchmark_hdf_write (BenchmarkResult *result)
+benchmark_hdf_write(BenchmarkResult* result)
 {
 	hid_t acc_tpl;
 	hid_t julea_vol_id;
 
 	hid_t file;
 
-	const H5VL_class_t *h5vl_julea;
+	const H5VL_class_t* h5vl_julea;
 	hid_t native_vol_id;
 
 	gdouble elapsed;
@@ -184,14 +184,14 @@ benchmark_hdf_write (BenchmarkResult *result)
 }
 
 static void
-benchmark_hdf_read (BenchmarkResult *result)
+benchmark_hdf_read(BenchmarkResult* result)
 {
 	hid_t acc_tpl;
 	hid_t julea_vol_id;
 
 	hid_t file;
 
-	const H5VL_class_t *h5vl_julea;
+	const H5VL_class_t* h5vl_julea;
 	hid_t native_vol_id;
 
 	gdouble elapsed;
@@ -252,7 +252,7 @@ benchmark_hdf_read (BenchmarkResult *result)
 #endif
 
 void
-benchmark_hdf (void)
+benchmark_hdf(void)
 {
 	// FIXME repeated runs exhibit strange behavior, objects are distributed differently etc.
 #ifdef HAVE_HDF5

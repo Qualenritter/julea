@@ -23,7 +23,7 @@
 #include <item/jitem-internal.h>
 
 gboolean
-j_cmd_status (gchar const** arguments)
+j_cmd_status(gchar const** arguments)
 {
 	gboolean ret = TRUE;
 	g_autoptr(JBatch) batch = NULL;
@@ -152,7 +152,6 @@ j_cmd_status (gchar const** arguments)
 		}
 		else if (j_uri_get_collection(uri) != NULL)
 		{
-
 		}
 		else
 		{

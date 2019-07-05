@@ -51,7 +51,7 @@ struct JCredentials
 };
 
 JCredentials*
-j_credentials_new (void)
+j_credentials_new(void)
 {
 	JCredentials* credentials;
 
@@ -68,7 +68,7 @@ j_credentials_new (void)
 }
 
 JCredentials*
-j_credentials_ref (JCredentials* credentials)
+j_credentials_ref(JCredentials* credentials)
 {
 	g_return_val_if_fail(credentials != NULL, NULL);
 
@@ -82,7 +82,7 @@ j_credentials_ref (JCredentials* credentials)
 }
 
 void
-j_credentials_unref (JCredentials* credentials)
+j_credentials_unref(JCredentials* credentials)
 {
 	g_return_if_fail(credentials != NULL);
 
@@ -97,7 +97,7 @@ j_credentials_unref (JCredentials* credentials)
 }
 
 guint32
-j_credentials_get_user (JCredentials* credentials)
+j_credentials_get_user(JCredentials* credentials)
 {
 	g_return_val_if_fail(credentials != NULL, 0);
 
@@ -108,7 +108,7 @@ j_credentials_get_user (JCredentials* credentials)
 }
 
 guint32
-j_credentials_get_group (JCredentials* credentials)
+j_credentials_get_group(JCredentials* credentials)
 {
 	g_return_val_if_fail(credentials != NULL, 0);
 
@@ -133,7 +133,7 @@ j_credentials_get_group (JCredentials* credentials)
  * \return A new BSON object. Should be freed with g_slice_free().
  **/
 bson_t*
-j_credentials_serialize (JCredentials* credentials)
+j_credentials_serialize(JCredentials* credentials)
 {
 	bson_t* b;
 
@@ -164,7 +164,7 @@ j_credentials_serialize (JCredentials* credentials)
  * \param b           A BSON object.
  **/
 void
-j_credentials_deserialize (JCredentials* credentials, bson_t const* b)
+j_credentials_deserialize(JCredentials* credentials, bson_t const* b)
 {
 	bson_iter_t iterator;
 

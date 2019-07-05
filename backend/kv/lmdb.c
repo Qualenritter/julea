@@ -49,9 +49,8 @@ typedef struct JLMDBIterator JLMDBIterator;
 static MDB_env* backend_env = NULL;
 static MDB_dbi backend_dbi;
 
-static
-gboolean
-backend_batch_start (gchar const* namespace, JSemanticsSafety safety, gpointer* data)
+static gboolean
+backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* data)
 {
 	JLMDBBatch* batch = NULL;
 	MDB_txn* txn;
@@ -72,9 +71,8 @@ backend_batch_start (gchar const* namespace, JSemanticsSafety safety, gpointer* 
 	return (batch != NULL);
 }
 
-static
-gboolean
-backend_batch_execute (gpointer data)
+static gboolean
+backend_batch_execute(gpointer data)
 {
 	gboolean ret = FALSE;
 
@@ -97,9 +95,8 @@ backend_batch_execute (gpointer data)
 	return ret;
 }
 
-static
-gboolean
-backend_put (gpointer data, gchar const* key, gconstpointer value, guint32 len)
+static gboolean
+backend_put(gpointer data, gchar const* key, gconstpointer value, guint32 len)
 {
 	JLMDBBatch* batch = data;
 	MDB_val m_key;
@@ -120,9 +117,8 @@ backend_put (gpointer data, gchar const* key, gconstpointer value, guint32 len)
 	return (mdb_put(batch->txn, backend_dbi, &m_key, &m_value, 0) == 0);
 }
 
-static
-gboolean
-backend_delete (gpointer data, gchar const* key)
+static gboolean
+backend_delete(gpointer data, gchar const* key)
 {
 	JLMDBBatch* batch = data;
 	MDB_val m_key;
@@ -139,9 +135,8 @@ backend_delete (gpointer data, gchar const* key)
 	return (mdb_del(batch->txn, backend_dbi, &m_key, NULL) == 0);
 }
 
-static
-gboolean
-backend_get (gpointer data, gchar const* key, gpointer* value, guint32* len)
+static gboolean
+backend_get(gpointer data, gchar const* key, gpointer* value, guint32* len)
 {
 	gboolean ret = FALSE;
 
@@ -172,9 +167,8 @@ backend_get (gpointer data, gchar const* key, gpointer* value, guint32* len)
 	return ret;
 }
 
-static
-gboolean
-backend_get_all (gchar const* namespace, gpointer* data)
+static gboolean
+backend_get_all(gchar const* namespace, gpointer* data)
 {
 	JLMDBIterator* iterator = NULL;
 
@@ -193,9 +187,8 @@ backend_get_all (gchar const* namespace, gpointer* data)
 	return (iterator != NULL);
 }
 
-static
-gboolean
-backend_get_by_prefix (gchar const* namespace, gchar const* prefix, gpointer* data)
+static gboolean
+backend_get_by_prefix(gchar const* namespace, gchar const* prefix, gpointer* data)
 {
 	JLMDBIterator* iterator = NULL;
 
@@ -215,9 +208,8 @@ backend_get_by_prefix (gchar const* namespace, gchar const* prefix, gpointer* da
 	return (iterator != NULL);
 }
 
-static
-gboolean
-backend_iterate (gpointer data, gconstpointer* value, guint32* len)
+static gboolean
+backend_iterate(gpointer data, gconstpointer* value, guint32* len)
 {
 	JLMDBIterator* iterator = data;
 	MDB_cursor_op cursor_op = MDB_NEXT;
@@ -262,9 +254,8 @@ out:
 	return FALSE;
 }
 
-static
-gboolean
-backend_init (gchar const* path)
+static gboolean
+backend_init(gchar const* path)
 {
 	MDB_txn* txn;
 
@@ -303,9 +294,8 @@ error:
 	return FALSE;
 }
 
-static
-void
-backend_fini (void)
+static void
+backend_fini(void)
 {
 	if (backend_env != NULL)
 	{
@@ -313,8 +303,7 @@ backend_fini (void)
 	}
 }
 
-static
-JBackend lmdb_backend = {
+static JBackend lmdb_backend = {
 	.type = J_BACKEND_TYPE_KV,
 	.component = J_BACKEND_COMPONENT_SERVER,
 	.kv = {
@@ -327,13 +316,13 @@ JBackend lmdb_backend = {
 		.backend_get = backend_get,
 		.backend_get_all = backend_get_all,
 		.backend_get_by_prefix = backend_get_by_prefix,
-		.backend_iterate = backend_iterate
+		.backend_iterate = backend_iterate,
 	}
 };
 
 G_MODULE_EXPORT
 JBackend*
-backend_info (void)
+backend_info(void)
 {
 	return &lmdb_backend;
 }
