@@ -389,6 +389,7 @@ def build(ctx):
 	use_julea_backend = use_julea_core + ['GMODULE']
 	use_julea_object = use_julea_core + ['lib/julea', 'lib/julea-object']
 	use_julea_kv = use_julea_core + ['lib/julea', 'lib/julea-kv']
+	use_julea_smd = use_julea_core + ['lib/julea', 'lib/julea-smd']
 	use_julea_item = use_julea_core + ['lib/julea', 'lib/julea-item']
 	use_julea_hdf = use_julea_core + ['lib/julea'] + ['lib/julea-hdf5'] if ctx.env.JULEA_HDF else []
 
@@ -404,7 +405,7 @@ def build(ctx):
 		install_path='${LIBDIR}'
 	)
 
-	clients = ['object', 'kv', 'item']
+	clients = ['object', 'kv', 'smd', 'item']
 
 	if ctx.env.JULEA_HDF:
 		clients.append('hdf5')
@@ -523,11 +524,31 @@ def build(ctx):
 			install_path='${LIBDIR}/julea/backend/kv'
 		)
 
+	smd_backends = ['null']
+	if ctx.env.JULEA_SQLITE:
+		kv_backends.append('sqlite')
+
+	for backend in smd_backends:
+		use_extra = []
+		cflags = []
+
+		if backend == 'sqlite':
+			use_extra = ['SQLITE']
+		ctx.shlib(
+			source=['backend/smd/{0}.c'.format(backend)],
+			target='backend/smd/{0}'.format(backend),
+			use=use_julea_backend + ['lib/julea'] + use_extra,
+			includes=include_julea_core,
+			cflags=cflags,
+			rpath=get_rpath(ctx),
+			install_path='${LIBDIR}/julea/backend/smd'
+		)
+
 	# Command line
 	ctx.program(
 		source=ctx.path.ant_glob('cli/*.c'),
 		target='cli/julea-cli',
-		use=use_julea_object + use_julea_kv + use_julea_item,
+		use=use_julea_object + use_julea_kv + use_julea_item + use_julea_smd,
 		includes=include_julea_core,
 		rpath=get_rpath(ctx),
 		install_path='${BINDIR}'
@@ -561,7 +582,7 @@ def build(ctx):
 		)
 
 	# pkg-config
-	for lib in ('', 'object', 'kv', 'item'):
+	for lib in ('', 'object', 'kv', 'smd', 'item'):
 		suffix = '-{0}'.format(lib) if lib else ''
 
 		ctx(

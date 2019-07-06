@@ -381,7 +381,7 @@ backend_fini(void)
 
 static JBackend posix_backend = {
 	.type = J_BACKEND_TYPE_OBJECT,
-	.component = J_BACKEND_COMPONENT_SERVER,
+	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.object = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,
@@ -393,7 +393,7 @@ static JBackend posix_backend = {
 		.backend_sync = backend_sync,
 		.backend_read = backend_read,
 		.backend_write = backend_write,
-	}
+	},
 };
 
 G_MODULE_EXPORT

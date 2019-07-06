@@ -144,7 +144,7 @@ static JBackend null_backend = {
 		.backend_get_all = backend_get_all,
 		.backend_get_by_prefix = backend_get_by_prefix,
 		.backend_iterate = backend_iterate,
-	}
+	},
 };
 
 G_MODULE_EXPORT

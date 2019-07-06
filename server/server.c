@@ -600,6 +600,38 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
+		case J_MESSAGE_SMD_SCHEMA_CREATE:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_SCHEMA_GET:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_SCHEMA_DELETE:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_INSERT:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_UPDATE:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_DELETE:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_QUERY:
+		{
+		}
+		break;
+		case J_MESSAGE_SMD_ITERATE:
+		{
+		}
+		break;
 		default:
 			g_warn_if_reached();
 			break;

@@ -56,6 +56,9 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	case J_BACKEND_TYPE_KV:
 		type_str = "kv";
 		break;
+	case J_BACKEND_TYPE_SMD:
+		type_str = "smd";
+		break;
 	default:
 		g_warn_if_reached();
 	}
@@ -106,7 +109,8 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	if (type == J_BACKEND_TYPE_OBJECT)
 	{
 		if (tmp_backend->object.backend_init == NULL //
-			|| tmp_backend->object.backend_fini == NULL / 7 || tmp_backend->object.backend_create == NULL //
+			|| tmp_backend->object.backend_fini == NULL //
+			|| tmp_backend->object.backend_create == NULL //
 			|| tmp_backend->object.backend_delete == NULL //
 			|| tmp_backend->object.backend_open == NULL //
 			|| tmp_backend->object.backend_close == NULL //
@@ -136,6 +140,16 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 		}
 	}
 
+	if (type == J_BACKEND_TYPE_SMD)
+	{
+		if (tmp_backend->smd.backend_init == NULL //
+			|| tmp_backend->smd.backend_fini == NULL //
+			|| tmp_backend->smd.backend_schema_create == NULL || tmp_backend->smd.backend_schema_get == NULL || tmp_backend->smd.backend_schema_delete == NULL || tmp_backend->smd.backend_insert == NULL || tmp_backend->smd.backend_update == NULL || tmp_backend->smd.backend_delete == NULL || tmp_backend->smd.backend_query == NULL || tmp_backend->smd.backend_iterate == NULL)
+		{
+			goto error;
+		}
+	}
+
 	*backend = tmp_backend;
 
 	return module;
@@ -156,7 +170,7 @@ j_backend_load_client(gchar const* name, gchar const* component, JBackendType ty
 {
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(component != NULL, FALSE);
-	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV || type == J_BACKEND_TYPE_SMD, FALSE);
 	g_return_val_if_fail(module != NULL, FALSE);
 	g_return_val_if_fail(backend != NULL, FALSE);
 
@@ -178,7 +192,7 @@ j_backend_load_server(gchar const* name, gchar const* component, JBackendType ty
 {
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(component != NULL, FALSE);
-	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(type == J_BACKEND_TYPE_OBJECT || type == J_BACKEND_TYPE_KV || type == J_BACKEND_TYPE_SMD, FALSE);
 	g_return_val_if_fail(module != NULL, FALSE);
 	g_return_val_if_fail(backend != NULL, FALSE);
 
@@ -523,6 +537,110 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gconstpointer* value,
 	ret = backend->kv.backend_iterate(iterator, value, value_len);
 	j_trace_leave("backend_iterate");
 
+	return ret;
+}
+gboolean
+j_backend_smd_init(JBackend* backend, gchar const* path)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(path != NULL, FALSE);
+	ret = backend->smd.backend_init(path);
+	return ret;
+}
+void
+j_backend_smd_fini(JBackend* backend)
+{
+	gboolean ret;
+	g_return_if_fail(backend != NULL);
+	backend->smd.backend_fini();
+}
+gboolean
+j_backend_smd_schema_create(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* schema)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(schema != NULL, FALSE);
+	ret = backend->smd.backend_schema_create(namespace, name, schema);
+	return ret;
+}
+gboolean
+j_backend_smd_schema_get(JBackend* backend, gchar const* namespace, gchar const* name, bson_t* schema)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(schema != NULL, FALSE);
+	ret = backend->smd.backend_schema_get(namespace, name, schema);
+	return ret;
+}
+gboolean
+j_backend_smd_schema_delete(JBackend* backend, gchar const* namespace, gchar const* name)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	ret = backend->smd.backend_schema_delete(namespace, name);
+	return ret;
+}
+gboolean
+j_backend_smd_insert(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* metadata)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(metadata != NULL, FALSE);
+	ret = backend->smd.backend_insert(namespace, name, metadata);
+	return ret;
+}
+gboolean
+j_backend_smd_update(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(selector != NULL, FALSE);
+	g_return_val_if_fail(metadata != NULL, FALSE);
+	ret = backend->smd.backend_update(namespace, name, selector, metadata);
+	return ret;
+}
+gboolean
+j_backend_smd_delete(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* selector)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(selector != NULL, FALSE);
+	ret = backend->smd.backend_delete(namespace, name, selector);
+	return ret;
+}
+gboolean
+j_backend_smd_query(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(selector != NULL, FALSE);
+	g_return_val_if_fail(iterator != NULL, FALSE);
+	ret = backend->smd.backend_query(namespace, name, selector, iterator);
+	return ret;
+}
+gboolean
+j_backend_smd_iterate(JBackend* backend, gpointer iterator, bson_t* metadata)
+{
+	gboolean ret;
+	g_return_val_if_fail(backend != NULL, FALSE);
+	g_return_val_if_fail(iterator != NULL, FALSE);
+	g_return_val_if_fail(metadata != NULL, FALSE);
+	ret = backend->smd.backend_iterate(iterator, metadata);
 	return ret;
 }
 

@@ -39,7 +39,8 @@ G_BEGIN_DECLS
 enum JBackendType
 {
 	J_BACKEND_TYPE_OBJECT,
-	J_BACKEND_TYPE_KV
+	J_BACKEND_TYPE_KV,
+	J_BACKEND_TYPE_SMD,
 };
 
 typedef enum JBackendType JBackendType;
@@ -93,6 +94,51 @@ struct JBackend
 			gboolean (*backend_get_by_prefix)(gchar const*, gchar const*, gpointer*);
 			gboolean (*backend_iterate)(gpointer, gconstpointer*, guint32*);
 		} kv;
+
+		struct
+		{
+			gboolean (*backend_init)(gchar const*);
+			void (*backend_fini)(void);
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			// schema = BSON-kodiertes Schema
+			gboolean (*backend_schema_create)(gchar const* namespace, gchar const* name, bson_t const* schema);
+
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			// schema = BSON-kodiertes Schema (out)
+			gboolean (*backend_schema_get)(gchar const* namespace, gchar const* name, bson_t* schema);
+
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			gboolean (*backend_schema_delete)(gchar const* namespace, gchar const* name);
+
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			// metadata = BSON-kodierte Metadaten (kann ein Array enthalten? ansonsten brauchen wir Batches [siehe KV])
+			gboolean (*backend_insert)(gchar const* namespace, gchar const* name, bson_t const* metadata);
+
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			// selector = BSON-kodierter Query
+			// metadata = BSON-kodierte Metadaten
+			gboolean (*backend_update)(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
+
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			// selector = BSON-kodierter Query
+			gboolean (*backend_delete)(gchar const* namespace, gchar const* name, bson_t const* selector);
+
+			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
+			// name = eigentlicher Schema-Name (z.B. "files")
+			// selector = BSON-kodierter Query (kann leer sein, dann werden alle Einträge zurückgegeben)
+			// iterator = ist Backend-spezifisch, wird an backend_iterate übergeben
+			gboolean (*backend_query)(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
+
+			// iterator = ist Backend-spezifisch, kommt von backend_query
+			// metadata = BSON-kodierte Metadaten (einzelne Einträge)
+			gboolean (*backend_iterate)(gpointer iterator, bson_t* metadata);
+		} smd;
 	};
 };
 
@@ -132,6 +178,16 @@ gboolean j_backend_kv_get_all(JBackend*, gchar const*, gpointer*);
 gboolean j_backend_kv_get_by_prefix(JBackend*, gchar const*, gchar const*, gpointer*);
 gboolean j_backend_kv_iterate(JBackend*, gpointer, gconstpointer*, guint32*);
 
+gboolean j_backend_smd_init(JBackend*, gchar const*);
+void j_backend_smd_fini(JBackend*);
+gboolean j_backend_smd_schema_create(JBackend*, gchar const* namespace, gchar const* name, bson_t const* schema);
+gboolean j_backend_smd_schema_get(JBackend*, gchar const* namespace, gchar const* name, bson_t* schema);
+gboolean j_backend_smd_schema_delete(JBackend*, gchar const* namespace, gchar const* name);
+gboolean j_backend_smd_insert(JBackend*, gchar const* namespace, gchar const* name, bson_t const* metadata);
+gboolean j_backend_smd_update(JBackend*, gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
+gboolean j_backend_smd_delete(JBackend*, gchar const* namespace, gchar const* name, bson_t const* selector);
+gboolean j_backend_smd_query(JBackend*, gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
+gboolean j_backend_smd_iterate(JBackend*, gpointer iterator, bson_t* metadata);
 G_END_DECLS
 
 #endif
