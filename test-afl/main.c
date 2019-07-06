@@ -25,11 +25,12 @@
 #include <julea-internal.h>
 
 //configure here->
-#define ERROR_MSG_UNKNOWN_EVENT "unknown event"
-#define ERROR_MSG_SCHEMA_OPEN_FAILED "after successfully creating a schema, it must be ready for successfull reopening"
-#define ERROR_MSG_SCHEMA_OPEN_NOT_EXISTENT "open not existent schema must not be successfull"
-#define ERROR_MSG_SCHEMA_OPEN_DOES_NOT_MATCH "opened schema does not match stored schema"
-#define ERROR_MSG_SCHEMA_CREATE_FAILED "createing schema must fail if it existed before, and it must succeed if it did not exist before"
+#define ERROR_MSG_UNKNOWN_EVENT "ERROR_MSG_UNKNOWN_EVENT"
+#define ERROR_MSG_SCHEMA_OPEN_FAILED "ERROR_MSG_SCHEMA_OPEN_FAILED"
+#define ERROR_MSG_SCHEMA_OPEN_NOT_EXISTENT "ERROR_MSG_SCHEMA_OPEN_NOT_EXISTENT"
+#define ERROR_MSG_SCHEMA_OPEN_DOES_NOT_MATCH "ERROR_MSG_SCHEMA_OPEN_DOES_NOT_MATCH"
+#define ERROR_MSG_SCHEMA_CREATE_FAILED "ERROR_MSG_SCHEMA_CREATE_FAILED"
+#define ERROR_MSG_SCHEMA_CREATE_DUPLICATE "ERROR_MSG_SCHEMA_CREATE_DUPLICATE"
 #define AFL_NAMESPACE_FORMAT "namespace_%d"
 #define AFL_NAME_FORMAT "name_%d"
 #define AFL_VARNAME_FORMAT "varname_%d"
@@ -133,20 +134,32 @@ static void
 event_schema_create(void)
 {
 	gboolean ret;
+	gboolean ret_expected;
 	bson_t* bson;
 	guint i;
 	random_values.schema_create.variable_count = (random_values.schema_create.variable_count + 1) % AFL_LIMIT_SCHEMA_VARIABLES;
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
 		random_values.schema_create.variable_types[i] = random_values.schema_create.variable_types[i] % _J_SMD_TYPE_COUNT;
 	bson = bson_new();
+	ret_expected = TRUE;
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
 	{
 		sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
+		if (random_values.schema_create.variable_types[i] == J_SMD_TYPE_INVALID)
+			ret_expected = FALSE;
 		bson_append_int32(bson, varname_strbuf, -1, random_values.schema_create.variable_types[i]);
 	}
 	ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
-	if (ret == namespace_name_exist[random_values.namespace][random_values.name])
-		MYABORT(ERROR_MSG_SCHEMA_CREATE_FAILED);
+	if (namespace_name_exist[random_values.namespace][random_values.name])
+	{
+		if (ret)
+			MYABORT(ERROR_MSG_SCHEMA_CREATE_DUPLICATE);
+	}
+	else
+	{
+		if (ret != ret_expected)
+			MYABORT(ERROR_MSG_SCHEMA_CREATE_FAILED);
+	}
 	if (namespace_name_exist[random_values.namespace][random_values.name])
 		bson_destroy(bson);
 	else
