@@ -32,7 +32,9 @@ enum JSMDType
 	J_SMD_TYPE_UINT64,
 	J_SMD_TYPE_FLOAT64,
 	J_SMD_TYPE_STRING,
+	_J_SMD_TYPE_COUNT
 };
+typedef enum JSMDType JSMDType;
 enum JSMDOperator
 {
 	J_SMD_OPERATOR_LT = 0, //<
@@ -41,7 +43,9 @@ enum JSMDOperator
 	J_SMD_OPERATOR_GE, //>=
 	J_SMD_OPERATOR_EQ, //=
 	J_SMD_OPERATOR_NE, //!=
+	_J_SMD_OPERATOR_COUNT,
 };
+typedef enum JSMDOperator JSMDOperator;
 struct JSMDIterator
 {
 	GArray* arr;
