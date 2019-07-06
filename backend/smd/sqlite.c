@@ -298,6 +298,13 @@ freeJSqlCacheSQLQuery(void* ptr)
 	j_sql_finalize(p->stmt);
 	g_free(p);
 }
+void
+freeJSMDIterator(gpointer ptr)
+{
+	JSMDIterator* iter = ptr;
+	g_array_free(iter->arr, TRUE);
+	g_free(iter);
+}
 static JSqlCacheSQLPrepared*
 getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 {
@@ -714,7 +721,11 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	bson_t* schema = NULL;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
-	GHashTable* iteratorOut = iterator;
+	JSMDIterator* iteratorOut;
+	*iterator = NULL;
+	iteratorOut = g_new(JSMDIterator, 1);
+	iter->index = 0;
+	iter->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
 	g_string_append_printf(sql, "SELECT DISTINCT id FROM %s_%s", namespace, name);
 	if (bson_count_keys(selector))
 	{
@@ -751,27 +762,27 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	}
 	j_sql_loop(prepared->stmt, ret)
 	{
-		g_hash_table_add(iteratorOut, GINT_TO_POINTER(sqlite3_column_int64(prepared->stmt, 0)));
+		g_array_append_val(iteratorOut->arr, (guint64)sqlite3_column_int64(prepared->stmt, 0));
 	}
 	j_sql_reset(prepared->stmt);
 	g_string_free(sql, TRUE);
 	bson_destroy(schema);
+	*iterator = iteratorOut;
 	return TRUE;
 error:
 	g_string_free(sql, TRUE);
 	bson_destroy(schema);
+	freeJSMDIterator(iteratorOut);
 	return FALSE;
 }
 static gboolean
 backend_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
 {
-	GHashTable* hashtable;
-	GHashTableIter iterator;
-	gpointer key, value;
+	JSMDIterator iterator;
 	bson_iter_t iter;
 	guint index;
 	gint ret;
-	guint i;
+	guint i, j;
 	bson_t* schema = NULL;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	prepared = getCachePrepared(namespace, name, "update");
@@ -809,18 +820,16 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		prepared->initialized = TRUE;
 	}
 	j_sql_transaction_begin();
-	hashtable = g_hash_table_new(g_direct_hash, NULL);
-	ret = !backend_query(namespace, name, selector, hashtable);
+	ret = !backend_query(namespace, name, selector, iterator);
 	j_goto_error(ret);
-	g_hash_table_iter_init(&iterator, hashtable);
-	while (g_hash_table_iter_next(&iterator, &key, &value))
+	for (j = 0; j < iterator->arr->len; j++)
 	{
 		for (i = 0; i < prepared->variables_count; i++)
 			j_sql_bind_null(prepared->stmt, i + 1);
 		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, "id"));
 		ret=!index);
 		j_goto_error(ret);
-		j_sql_bind_int64(prepared->stmt, index, GPOINTER_TO_INT(key));
+		j_sql_bind_int64(prepared->stmt, index, g_array_index(iterator->arr, guint64, j));
 		if (bson_iter_init(&iter, metadata))
 		{
 			while (bson_iter_next(&iter))
@@ -853,23 +862,23 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	}
 	bson_destroy(schema);
+	freeJSMDIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:
 	bson_destroy(schema);
+	freeJSMDIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
 }
 static gboolean
 backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector)
 {
-	GHashTable* hashtable;
-	GHashTableIter iterator;
-	gpointer key, value;
+	JSMDIterator iterator;
 	bson_iter_t iter;
 	guint index;
-	guint i;
+	guint i, j;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	prepared = getCachePrepared(namespace, name, "delete");
 	ret = !prepared;
@@ -887,29 +896,31 @@ backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector
 		prepared->initialized = TRUE;
 	}
 	j_sql_transaction_begin();
-	hashtable = g_hash_table_new(g_direct_hash, NULL);
-	ret = !backend_query(namespace, name, selector, hashtable);
+	ret = !backend_query(namespace, name, selector, iterator);
 	j_goto_error(ret);
-	g_hash_table_iter_init(&iterator, hashtable);
-	while (g_hash_table_iter_next(&iterator, &key, &value))
+	for (j = 0; j < iterator->arr->len; j++)
 	{
-		j_sql_bind_int64(prepared->stmt, 1, GPOINTER_TO_INT(key));
+		j_sql_bind_int64(prepared->stmt, 1, g_array_index(iterator->arr, guint64, j));
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	}
+	freeJSMDIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:
+	freeJSMDIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
 }
 static gboolean
-backend_iterate(gpointer iterator, bson_t* metadata)
+backend_iterate(gpointer _iterator, bson_t* metadata)
 {
+	JSMDIterator iterator = _iterator;
 	gpointer key, value;
 	bson_iter_t iter;
 	const char* name;
 	guint i;
+	guint64 index;
 	JSMDType type;
 	gint ret;
 	bson_t* schema = NULL;
@@ -949,8 +960,12 @@ backend_iterate(gpointer iterator, bson_t* metadata)
 		prepared->initialized = TRUE;
 	}
 	j_sql_transaction_begin();
-	j_sql_bind_int64(prepared->stmt, 1, (guint64)iterator);
-	ret = !bson_append_int64(metadata, "id", -1, (guint64)iterator);
+	index = g_array_index(itertator->arr, guint64, itertator->index);
+	if (index >= itertator->arr->len)
+		goto error;
+	itertator->index++;
+	j_sql_bind_int64(prepared->stmt, 1, index);
+	ret = !bson_append_int64(metadata, "id", -1, index);
 	j_goto_error(ret);
 	j_sql_step(prepared->stmt, ret)
 	{

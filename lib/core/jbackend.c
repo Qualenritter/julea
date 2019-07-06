@@ -551,7 +551,6 @@ j_backend_smd_init(JBackend* backend, gchar const* path)
 void
 j_backend_smd_fini(JBackend* backend)
 {
-	gboolean ret;
 	g_return_if_fail(backend != NULL);
 	backend->smd.backend_fini();
 }

@@ -34,42 +34,106 @@
 #include <julea-internal.h>
 
 gboolean
-smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
+j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_schema_create(smd_backend, namespace, name, schema);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
+j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_schema_get(smd_backend, namespace, name, schema);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_schema_delete(gchar const* namespace, gchar const* name)
+j_smd_schema_delete(gchar const* namespace, gchar const* name)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_schema_delete(smd_backend, namespace, name);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata)
+j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_insert(smd_backend, namespace, name, metadata);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
+j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_update(smd_backend, namespace, name, selector, metadata);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector)
+j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_delete(smd_backend, namespace, name, selector);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
+j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_query(smd_backend, namespace, name, selector, iterator);
+	}
+	else
+		abort();
 	return TRUE;
 }
 gboolean
-smd_iterate(gpointer iterator, bson_t* metadata)
+j_smd_iterate(gpointer iterator, bson_t* metadata)
 {
+	JBackend* smd_backend;
+	smd_backend = j_smd_backend();
+	if (smd_backend != NULL)
+	{
+		return j_backend_smd_iterate(smd_backend, iterator, metadata);
+	}
+	else
+		abort();
 	return TRUE;
 }

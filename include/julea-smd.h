@@ -19,9 +19,13 @@
 #ifndef JULEA_SMD_H
 #define JULEA_SMD_H
 
+#include <glib.h>
+#include <bson.h>
+
 enum JSMDType
 {
-	J_SMD_TYPE_SINT32 = 0,
+	J_SMD_TYPE_INVALID = 0,
+	J_SMD_TYPE_SINT32,
 	J_SMD_TYPE_UINT32,
 	J_SMD_TYPE_FLOAT32,
 	J_SMD_TYPE_SINT64,
@@ -38,14 +42,23 @@ enum JSMDOperator
 	J_SMD_OPERATOR_EQ, //=
 	J_SMD_OPERATOR_NE, //!=
 };
+struct JSMDIterator
+{
+	GArray* arr;
+	int index;
+};
+typedef struct JSMDIterator JSMDIterator;
 
-gboolean smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema);
-gboolean smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema);
-gboolean smd_schema_delete(gchar const* namespace, gchar const* name);
-gboolean smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata);
-gboolean smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
-gboolean smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector);
-gboolean smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
-gboolean smd_iterate(gpointer iterator, bson_t* metadata);
+/*
+ * returns TRUE if and only if namespace_name did not exist before, and it is now successfully initialized with the given scheme
+ */
+gboolean j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema);
+gboolean j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema);
+gboolean j_smd_schema_delete(gchar const* namespace, gchar const* name);
+gboolean j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata);
+gboolean j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
+gboolean j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector);
+gboolean j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
+gboolean j_smd_iterate(gpointer iterator, bson_t* metadata);
 
 #endif
