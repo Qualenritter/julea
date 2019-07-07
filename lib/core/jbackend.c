@@ -616,7 +616,7 @@ j_backend_smd_delete(JBackend* backend, gchar const* namespace, gchar const* nam
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(selector != NULL, FALSE);
+	/*selector == null is allowed*/
 	ret = backend->smd.backend_delete(namespace, name, selector);
 	return ret;
 }
@@ -627,8 +627,8 @@ j_backend_smd_query(JBackend* backend, gchar const* namespace, gchar const* name
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(selector != NULL, FALSE);
 	g_return_val_if_fail(iterator != NULL, FALSE);
+	/*selector == null is allowed*/
 	ret = backend->smd.backend_query(namespace, name, selector, iterator);
 	return ret;
 }
