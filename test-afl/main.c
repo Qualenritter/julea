@@ -669,7 +669,7 @@ main(int argc, char* argv[])
 	}
 	for (i = 0; i < AFL_LIMIT_SCHEMA_STRING_VALUES; i++)
 	{
-		sprintf(namespace_varvalues_string_const[i], AFL_STRING_CONST_FORMAT, i);
+		sprintf(&namespace_varvalues_string_const[i][0], AFL_STRING_CONST_FORMAT, i);
 	}
 	for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
 	{

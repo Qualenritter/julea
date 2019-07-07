@@ -557,7 +557,6 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	bson_iter_t iter;
 	bson_t* schema = NULL;
 	gboolean schema_initialized = FALSE;
-	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
 	prepared = getCachePrepared(namespace, name, "insert");
@@ -587,10 +586,11 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 					j_goto_error(TRUE);
 			}
 		}
-		g_string_append(prepared->sql, ") VALUES ( ?");
+		g_string_append(prepared->sql, ") VALUES ( ?1");
 		for (i = 1; i < prepared->variables_count; i++)
-			g_string_append_printf(prepared->sql, ", ?%d", i);
+			g_string_append_printf(prepared->sql, ", ?%d", i + 1);
 		g_string_append(prepared->sql, " )");
+		J_DEBUG("%s %d", prepared->sql->str, prepared->variables_count);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
