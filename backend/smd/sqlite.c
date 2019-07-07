@@ -93,7 +93,7 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 	do                 \
 	{                  \
 		(void)val; \
-		while (0)
+	} while (0)
 #define j_sql_check(ret, flag) \
 	do                     \
 	{                      \
@@ -272,41 +272,56 @@ static void
 freeJSqlCacheNamespaces(void* ptr)
 {
 	JSqlCacheNamespaces* p = ptr;
-	g_hash_table_destroy(p->namespaces);
-	g_free(p);
+	if (ptr)
+	{
+		g_hash_table_destroy(p->namespaces);
+		g_free(p);
+	}
 }
 static void
 freeJSqlCacheNames(void* ptr)
 {
 	JSqlCacheNames* p = ptr;
-	g_hash_table_destroy(p->names);
-	g_free(p);
+	if (ptr)
+	{
+		g_hash_table_destroy(p->names);
+		g_free(p);
+	}
 }
 static void
 freeJSqlCacheSQLQueries(void* ptr)
 {
 	JSqlCacheSQLQueries* p = ptr;
-	g_hash_table_destroy(p->queries);
-	g_free(p);
+	if (ptr)
+	{
+		g_hash_table_destroy(p->queries);
+		g_free(p);
+	}
 }
 static void
 freeJSqlCacheSQLPrepared(void* ptr)
 {
 	JSqlCacheSQLPrepared* p = ptr;
-	g_hash_table_destroy(p->variables_index);
-	g_hash_table_destroy(p->variables_type);
-	g_string_free(p->sql, TRUE);
-	j_sql_finalize(p->stmt);
-	g_free(p);
+	if (ptr)
+	{
+		g_hash_table_destroy(p->variables_index);
+		g_hash_table_destroy(p->variables_type);
+		g_string_free(p->sql, TRUE);
+		j_sql_finalize(p->stmt);
+		g_free(p);
+	}
 }
 static void
 freeJSMDIterator(gpointer ptr)
 {
 	JSMDIterator* iter = ptr;
-	g_free(iter->namespace);
-	g_free(iter->name);
-	g_array_free(iter->arr, TRUE);
-	g_free(iter);
+	if (ptr)
+	{
+		g_free(iter->namespace);
+		g_free(iter->name);
+		g_array_free(iter->arr, TRUE);
+		g_free(iter);
+	}
 }
 static JSqlCacheSQLPrepared*
 getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
@@ -399,15 +414,25 @@ static void
 backend_fini(void)
 {
 	gint ret;
+	J_DEBUG("%d", 0);
 	freeJSqlCacheNamespaces(cacheNamespaces);
+	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_schema_structure_create);
+	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_schema_structure_get);
+	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_schema_structure_delete);
+	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_transaction_abort);
+	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_transaction_begin);
+	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_transaction_commit);
+	J_DEBUG("%d", 0);
 	ret = sqlite3_close(backend_db);
+	J_DEBUG("%d", 0);
 	j_sql_check(ret, SQLITE_OK);
+	J_DEBUG("%d", 0);
 }
 static gboolean
 backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
@@ -834,7 +859,7 @@ static gboolean
 backend_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
 {
 	bson_type_t type;
-	JSMDIterator* iterator;
+	JSMDIterator* iterator = NULL;
 	bson_iter_t iter;
 	guint index;
 	gint ret;
@@ -950,7 +975,7 @@ constraint:
 static gboolean
 backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector)
 {
-	JSMDIterator* iterator;
+	JSMDIterator* iterator = NULL;
 	guint j;
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;

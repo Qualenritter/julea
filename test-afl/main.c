@@ -581,21 +581,35 @@ main(int argc, char* argv[])
 	if (argc > 1)
 	{
 		char filename[50 + strlen(argv[1])];
+		J_DEBUG("%d", 0);
 		mkdir(argv[1], S_IRUSR | S_IRGRP | S_IROTH);
+		J_DEBUG("%d", 0);
 		sprintf(filename, "%s/start-files", argv[1]);
+		J_DEBUG("%d", 0);
 		mkdir(filename, S_IRUSR | S_IRGRP | S_IROTH);
+		J_DEBUG("%d", 0);
 		memset(&random_values, 0, sizeof(random_values));
+		J_DEBUG("%d", 0);
 		for (i = 0; i < _AFL_EVENT_EVENT_COUNT; i++)
 		{
+			J_DEBUG("%d", 0);
 			sprintf(filename, "%s/start-files/%d.bin", argv[1], i);
+			J_DEBUG("%d", 0);
 			file = fopen(filename, "wb");
+			J_DEBUG("%d", 0);
 			event = i;
+			J_DEBUG("%d", 0);
 			fwrite(&event, sizeof(event), 1, file);
+			J_DEBUG("%d", 0);
 			fwrite(&random_values, sizeof(random_values), 1, file);
+			J_DEBUG("%d", 0);
 			fclose(file);
+			J_DEBUG("%d", 0);
 		}
-		return 0;
+		J_DEBUG("%d", 0);
+		goto fini;
 	}
+	J_DEBUG("%d", 0);
 	for (i = 0; i < AFL_LIMIT_SCHEMA_STRING_VALUES; i++)
 	{
 		sprintf(namespace_varvalues_string_const[i], AFL_STRING_CONST_FORMAT, i);
@@ -629,19 +643,23 @@ main(int argc, char* argv[])
 		switch (event)
 		{
 		case AFL_EVENT_SMD_SCHEMA_CREATE:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_CREATE%d", 0);
 			event_schema_get();
 			event_schema_create();
 			event_schema_get();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_GET:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_GET%d", 0);
 			event_schema_get();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_DELETE:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_DELETE%d", 0);
 			event_schema_get();
 			event_schema_delete();
 			event_schema_get();
 			break;
 		case AFL_EVENT_SMD_INSERT:
+			J_DEBUG("AFL_EVENT_SMD_INSERT%d", 0);
 			random_values.values.existent = 1; //override random
 			event_query_all();
 			event_delete();
@@ -650,17 +668,20 @@ main(int argc, char* argv[])
 			event_query_all();
 			break;
 		case AFL_EVENT_SMD_UPDATE:
+			J_DEBUG("AFL_EVENT_SMD_UPDATE%d", 0);
 			event_query_all();
 			event_update();
 			event_query_all();
 			break;
 		case AFL_EVENT_SMD_DELETE:
+			J_DEBUG("AFL_EVENT_SMD_DELETE%d", 0);
 			event_query_all();
 			event_delete();
 			event_query_all();
 			break;
 		case AFL_EVENT_SMD_QUERY:
 		case AFL_EVENT_SMD_ITERATE:
+			J_DEBUG("AFL_EVENT_SMD_QUERY%d", 0);
 			event_query_all();
 			event_query_single();
 			break;
@@ -679,6 +700,9 @@ cleanup:
 			namespace_bson[i][j] = NULL;
 		}
 	}
+fini:
+	J_DEBUG("%d", 0);
 	j_fini();
+	J_DEBUG("%d", 0);
 	return 0;
 }

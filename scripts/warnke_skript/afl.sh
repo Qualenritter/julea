@@ -23,8 +23,8 @@ function julea_compile(){
 			name="${name}-asan"
 		fi
 		./waf configure ${flags} --out "build-${name}" --prefix="prefix-${name}" --libdir="prefix-${name}" --bindir="prefix-${name}" --destdir="prefix-${name}" --hdf=${hdf}
-		./waf.sh build
-		./waf.sh install
+		./waf.sh build -j12
+		./waf.sh install -j12
 		rc=$?; if [[ $rc != 0 ]]; then echo "compile build-${name} failed";exit $rc; fi
 		lcov --zerocounters -d "build-${name}"
 		mkdir -p afl/cov
@@ -140,10 +140,18 @@ c=$(ls -la ./afl/start-files/ | wc -l)
 if (( $c < 10 )); then
     i=0
     (
+		servers="$(hostname):${port}"
+		component="client"
+		index=$i
 		name="afl-clang-fast-gcov-debug"
+		./build-${name}/tools/julea-config --user \
+			--object-servers="${servers}" --object-backend=posix --object-component="${component}" --object-path="/mnt2/julea/object${index}" \
+			--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="/mnt2/julea/kv${index}" \
+			--smd-servers="${servers}"    --smd-backend=sqlite   --smd-component="${component}"    --smd-path=":memory:"
+                eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
 		export LD_LIBRARY_PATH=prefix-${name}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
-		./build-${name}/test-afl/julea-test-afl ./afl/start-files/
+		./build-${name}/test-afl/julea-test-afl ./afl
 	)
 fi
 
