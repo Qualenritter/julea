@@ -140,7 +140,7 @@ c=$(ls -la ./afl/start-files/ | wc -l)
 if (( $c < 10 )); then
     i=0
     (
-		name="afl-gcc-gcov-debug"
+		name="afl-clang-fast-gcov-debug"
 		export LD_LIBRARY_PATH=prefix-${name}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
 		./build-${name}/test-afl/julea-test-afl ./afl/start-files/
@@ -151,55 +151,55 @@ i=10; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -M" "0" > "
 sleep 0.5s
 i=11; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=12; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=13; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
+#i=12; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=13; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
 i=14; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=15; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=16; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
+#i=15; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=16; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
 i=17; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=18; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -M" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=19; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=20; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
+#i=18; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -M" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=19; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=20; julea_run "afl-gcc" "--gcov" "asan" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
 i=21; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=22; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=23; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=24; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
+#i=22; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=23; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=24; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
 i=25; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=26; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=27; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=28; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
+#i=26; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=27; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=28; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
 i=29; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=30; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=31; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=32; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
+#i=30; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=31; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=32; julea_run "afl-clang-fast" "--gcov" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
 i=33; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -M" "0" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=34; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=35; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
-sleep 0.5s
-i=36; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
+#i=34; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "1" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=35; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "2" > "log/run$i.out" 2>"log/run$i.err" &
+#sleep 0.5s
+#i=36; julea_run "afl-clang-fast" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
 
 echo "done"
 wait

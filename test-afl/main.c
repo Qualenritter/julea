@@ -575,6 +575,7 @@ event_schema_create(void)
 int
 main(int argc, char* argv[])
 {
+	FILE* file;
 	JSMDAflEvent event;
 	guint i, j, k;
 	if (argc > 1)

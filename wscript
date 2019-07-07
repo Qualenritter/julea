@@ -454,7 +454,7 @@ def build(ctx):
 	# AFL-Tests
 	ctx.program(
 		source=ctx.path.ant_glob('test-afl/**/*.c'),
-		target='test/julea-test-afl',
+		target='test-afl/julea-test-afl',
 		use=use_julea_object + use_julea_item + use_julea_hdf + use_julea_smd,
 		includes=include_julea_core + ['test-afl'],
 		rpath=get_rpath(ctx),
@@ -546,7 +546,7 @@ def build(ctx):
 
 	smd_backends = ['null']
 	if ctx.env.JULEA_SQLITE:
-		kv_backends.append('sqlite')
+		smd_backends.append('sqlite')
 
 	for backend in smd_backends:
 		use_extra = []

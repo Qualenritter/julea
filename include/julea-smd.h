@@ -48,6 +48,8 @@ enum JSMDOperator
 typedef enum JSMDOperator JSMDOperator;
 struct JSMDIterator
 {
+	char* namespace;
+	char* name;
 	GArray* arr;
 	int index;
 };
