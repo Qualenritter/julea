@@ -472,7 +472,7 @@ event_schema_get(void)
 	gboolean ret;
 	bson_t* bson;
 	guint i;
-	bson = bson_new();
+	bson = g_new0(bson_t, 1);
 	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, bson);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -481,7 +481,8 @@ event_schema_get(void)
 			for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 			{
 				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
-				if (!bson_iter_init(&iter, namespace_bson[random_values.namespace][random_values.name]))
+				J_DEBUG("varname_strbuf %s %d", varname_strbuf, random_values.schema_create.variable_count);
+				if (!bson_iter_init(&iter, bson))
 					MYABORT();
 				if (i < namespace_varcount[random_values.namespace][random_values.name])
 				{
@@ -507,8 +508,9 @@ event_schema_get(void)
 		if (ret)
 			MYABORT();
 	}
-	if (bson)
+	if (ret && bson)
 		bson_destroy(bson);
+	g_free(bson);
 }
 static void
 event_schema_delete(void)
@@ -548,7 +550,7 @@ event_schema_create(void)
 		random_values.schema_create.variable_types[i] = random_values.schema_create.variable_types[i] % _J_SMD_TYPE_COUNT;
 	bson = bson_new();
 	ret_expected = random_values.schema_create.variable_count > 0;
-	J_DEBUG("ret_expected %d", ret_expected);
+	J_DEBUG("ret_expected %d %d", ret_expected, random_values.schema_create.variable_count);
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
 	{
 		sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
@@ -557,9 +559,11 @@ event_schema_create(void)
 			ret_expected = FALSE; //all specified types must be valid
 			J_DEBUG("ret_expected %d", ret_expected);
 		}
+		J_DEBUG("varname_strbuf %s", varname_strbuf);
 		bson_append_int32(bson, varname_strbuf, -1, random_values.schema_create.variable_types[i]);
 		if (i == 0 && random_values.schema_create.duplicate_variables)
 		{
+			J_DEBUG("varname_strbuf %s", varname_strbuf);
 			bson_append_int32(bson, varname_strbuf, -1, random_values.schema_create.variable_types[i]);
 			ret_expected = FALSE; //duplicate variable names not allowed
 			J_DEBUG("ret_expected %d", ret_expected);

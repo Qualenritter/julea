@@ -484,7 +484,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	}
 	g_string_append(sql, " )");
 	j_goto_error(!counter);
-	json = bson_array_as_json(schema, NULL);
+	json = bson_as_json(schema, NULL);
 	j_sql_bind_text(stmt_schema_structure_create, 1, namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 3, json, -1);
@@ -513,12 +513,17 @@ backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
 	j_sql_bind_text(stmt_schema_structure_get, 2, name, -1);
 	j_sql_step(stmt_schema_structure_get, retsql)
 	{
-		json = (const char*)sqlite3_column_text(stmt_schema_structure_get, 1);
+		json = (const char*)sqlite3_column_text(stmt_schema_structure_get, 0);
+		j_goto_error(json == NULL);
+		j_goto_error(!strlen(json));
 		bson_init_from_json(schema, json, -1, NULL);
 		ret = TRUE;
 	}
 	j_sql_reset(stmt_schema_structure_get);
 	return ret;
+error:
+	j_sql_reset(stmt_schema_structure_get);
+	return FALSE;
 }
 static gboolean
 backend_schema_delete(gchar const* namespace, gchar const* name)
@@ -1047,7 +1052,6 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 					j_goto_error(TRUE);
 			}
 		}
-		prepared->variables_count++;
 		g_string_append_printf(prepared->sql, "FROM %s_%s WHERE id = ?1", iterator->namespace, iterator->name);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
@@ -1061,45 +1065,46 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	j_goto_error(ret);
 	j_sql_step(prepared->stmt, ret)
 	{
-		i = 0;
-		name = g_hash_table_lookup(prepared->variables_index, GINT_TO_POINTER(i));
-		type = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_type, name));
-		switch (type)
+		for (i = 0; i < prepared->variables_count; i++)
 		{
-		case J_SMD_TYPE_SINT32:
-			ret = !bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_UINT32:
-			ret = !bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_FLOAT32:
-			ret = !bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_SINT64:
-			ret = !bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_UINT64:
-			ret = !bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_FLOAT64:
-			ret = !bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_STRING:
-			ret = !bson_append_utf8(metadata, name, -1, (const char*)sqlite3_column_text(prepared->stmt, i), -1);
-			j_goto_error(ret);
-			break;
-		case J_SMD_TYPE_INVALID:
-		case _J_SMD_TYPE_COUNT:
-		default:
-			j_goto_error(TRUE);
+			name = g_hash_table_lookup(prepared->variables_index, GINT_TO_POINTER(i));
+			type = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_type, name));
+			switch (type)
+			{
+			case J_SMD_TYPE_SINT32:
+				ret = !bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_UINT32:
+				ret = !bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_FLOAT32:
+				ret = !bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_SINT64:
+				ret = !bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_UINT64:
+				ret = !bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_FLOAT64:
+				ret = !bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_STRING:
+				ret = !bson_append_utf8(metadata, name, -1, (const char*)sqlite3_column_text(prepared->stmt, i), -1);
+				j_goto_error(ret);
+				break;
+			case J_SMD_TYPE_INVALID:
+			case _J_SMD_TYPE_COUNT:
+			default:
+				j_goto_error(TRUE);
+			}
 		}
-		i++;
 	}
 	j_sql_reset(prepared->stmt);
 	if (schema)
