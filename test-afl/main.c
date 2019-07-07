@@ -548,16 +548,21 @@ event_schema_create(void)
 		random_values.schema_create.variable_types[i] = random_values.schema_create.variable_types[i] % _J_SMD_TYPE_COUNT;
 	bson = bson_new();
 	ret_expected = random_values.schema_create.variable_count > 0;
+	J_DEBUG("ret_expected %d", ret_expected);
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
 	{
 		sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
 		if (random_values.schema_create.variable_types[i] == J_SMD_TYPE_INVALID)
+		{
 			ret_expected = FALSE; //all specified types must be valid
+			J_DEBUG("ret_expected %d", ret_expected);
+		}
 		bson_append_int32(bson, varname_strbuf, -1, random_values.schema_create.variable_types[i]);
 		if (i == 0 && random_values.schema_create.duplicate_variables)
 		{
 			bson_append_int32(bson, varname_strbuf, -1, random_values.schema_create.variable_types[i]);
 			ret_expected = FALSE; //duplicate variable names not allowed
+			J_DEBUG("ret_expected %d", ret_expected);
 		}
 	}
 	ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
@@ -565,24 +570,26 @@ event_schema_create(void)
 	{
 		if (ret)
 			MYABORT();
-	}
-	else
-	{
-		if (ret != ret_expected)
-			MYABORT();
-	}
-	if (namespace_exist[random_values.namespace][random_values.name])
-	{
 		if (bson)
 			bson_destroy(bson);
 	}
 	else
 	{
-		namespace_exist[random_values.namespace][random_values.name] = TRUE;
-		namespace_bson[random_values.namespace][random_values.name] = bson;
-		namespace_varcount[random_values.namespace][random_values.name] = random_values.schema_create.variable_count;
-		for (i = 0; i < random_values.schema_create.variable_count; i++)
-			namespace_vartypes[random_values.namespace][random_values.name][i] = random_values.schema_create.variable_types[i];
+		if (ret != ret_expected)
+			MYABORT();
+		if (ret)
+		{
+			namespace_exist[random_values.namespace][random_values.name] = TRUE;
+			namespace_bson[random_values.namespace][random_values.name] = bson;
+			namespace_varcount[random_values.namespace][random_values.name] = random_values.schema_create.variable_count;
+			for (i = 0; i < random_values.schema_create.variable_count; i++)
+				namespace_vartypes[random_values.namespace][random_values.name][i] = random_values.schema_create.variable_types[i];
+		}
+		else
+		{
+			if (bson)
+				bson_destroy(bson);
+		}
 	}
 }
 int

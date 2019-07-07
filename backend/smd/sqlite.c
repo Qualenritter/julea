@@ -223,14 +223,14 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 		{                                                                           \
 			J_CRITICAL("sql_error a %d %s", _ret_, sqlite3_errmsg(backend_db)); \
 			j_sql_finalize(_stmt_);                                             \
-			goto error;                                                         \
+			j_goto_error(TRUE);                                                 \
 		}                                                                           \
 		_ret_ = sqlite3_step(_stmt_);                                               \
 		if (_ret_ != SQLITE_DONE)                                                   \
 		{                                                                           \
 			J_CRITICAL("sql_error b %d %s", _ret_, sqlite3_errmsg(backend_db)); \
 			j_sql_finalize(_stmt_);                                             \
-			goto error;                                                         \
+			j_goto_error(TRUE);                                                 \
 		}                                                                           \
 		j_sql_finalize(_stmt_);                                                     \
 	} while (0)
@@ -243,14 +243,14 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 		{                                                                           \
 			J_CRITICAL("sql_error a %d %s", _ret_, sqlite3_errmsg(backend_db)); \
 			j_sql_finalize(_stmt_);                                             \
-			goto error;                                                         \
+			j_goto_error(TRUE);                                                 \
 		}                                                                           \
 		_ret_ = sqlite3_step(_stmt_);                                               \
 		if (_ret_ != SQLITE_OK)                                                     \
 		{                                                                           \
 			J_CRITICAL("sql_error b %d %s", _ret_, sqlite3_errmsg(backend_db)); \
 			j_sql_finalize(_stmt_);                                             \
-			goto error;                                                         \
+			j_goto_error(TRUE);                                                 \
 		}                                                                           \
 		j_sql_finalize(_stmt_);                                                     \
 	} while (0)
@@ -384,7 +384,7 @@ backend_init(gchar const* path)
 		if (ret != SQLITE_OK)
 		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-			goto error;
+			j_goto_error(TRUE);
 		}
 	}
 	else
@@ -394,7 +394,7 @@ backend_init(gchar const* path)
 		if (ret != SQLITE_OK)
 		{
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
-			goto error;
+			j_goto_error(TRUE);
 		}
 	}
 	j_sql_exec_done_or_error("PRAGMA foreign_keys = ON");
@@ -435,6 +435,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 {
 	bson_iter_t iter;
 	JSMDType type;
+	guint counter = 0;
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
@@ -443,6 +444,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	{
 		while (bson_iter_next(&iter))
 		{
+			counter++;
 			g_string_append_printf(sql, ", %s", bson_iter_key(&iter));
 			if (BSON_ITER_HOLDS_INT32(&iter))
 			{
@@ -481,6 +483,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 		}
 	}
 	g_string_append(sql, " )");
+	j_goto_error(!counter);
 	json = bson_array_as_json(schema, NULL);
 	j_sql_bind_text(stmt_schema_structure_create, 1, namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
@@ -724,18 +727,18 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 		{
 			if (g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
 			{
-				ret = !bson_iter_recurse(iter, &iterchild);
-				j_goto_error(ret);
-				ret = !bind_selector_query(&iterchild, prepared, !and_query, variables_count);
-				j_goto_error(ret);
+				ret = bson_iter_recurse(iter, &iterchild);
+				j_goto_error(!ret);
+				ret = bind_selector_query(&iterchild, prepared, !and_query, variables_count);
+				j_goto_error(!ret);
 			}
 			else
 			{
 				variables_count++;
-				if (!bson_iter_recurse(iter, &iterchild))
-					goto error;
-				if (!bson_iter_find(&iterchild, "value"))
-					goto error;
+				ret = bson_iter_recurse(iter, &iterchild);
+				j_goto_error(!ret);
+				ret = bson_iter_find(&iterchild, "value");
+				j_goto_error(!ret);
 				type = bson_iter_type(iter);
 				switch (type)
 				{
@@ -1051,8 +1054,7 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	}
 	j_sql_transaction_begin();
 	index = g_array_index(iterator->arr, guint64, iterator->index);
-	if (index >= iterator->arr->len)
-		goto error;
+	j_goto_error(index >= iterator->arr->len);
 	iterator->index++;
 	j_sql_bind_int64(prepared->stmt, 1, index);
 	ret = !bson_append_int64(metadata, "id", -1, index);
