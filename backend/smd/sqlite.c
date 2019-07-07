@@ -62,15 +62,10 @@ static sqlite3_stmt* stmt_transaction_begin = NULL;
 static sqlite3_stmt* stmt_transaction_commit = NULL;
 
 #ifdef JULEA_DEBUG
-#define j_goto_error(val)           \
-	do                          \
-	{                           \
-		if (val)            \
-			goto error; \
-	} while (0)
 #define j_sql_check(ret, flag)                                                          \
 	do                                                                              \
 	{                                                                               \
+		J_DEBUG("%d %d", ret, flag);                                            \
 		if (ret != flag)                                                        \
 		{                                                                       \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
@@ -89,11 +84,6 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 			goto constraint;                                                \
 	} while (0)
 #else
-#define j_goto_error(val)  \
-	do                 \
-	{                  \
-		(void)val; \
-	} while (0)
 #define j_sql_check(ret, flag) \
 	do                     \
 	{                      \
@@ -107,6 +97,15 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 			goto constraint;      \
 	} while (0)
 #endif
+#define j_goto_error(val)                            \
+	do                                           \
+	{                                            \
+		if (val)                             \
+		{                                    \
+			J_DEBUG("goto error %d", 0); \
+			goto error;                  \
+		}                                    \
+	} while (0)
 #define j_sql_reset(stmt)                         \
 	do                                        \
 	{                                         \
@@ -374,6 +373,7 @@ backend_init(gchar const* path)
 {
 	guint ret;
 	g_autofree gchar* dirname = NULL;
+	J_DEBUG("init");
 	g_return_val_if_fail(path != NULL, FALSE);
 	if (strncmp(":memory:", path, 7))
 	{
@@ -383,7 +383,7 @@ backend_init(gchar const* path)
 		ret = sqlite3_open(path, &backend_db);
 		if (ret != SQLITE_OK)
 		{
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			J_DEBUG("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 			j_goto_error(TRUE);
 		}
 	}
@@ -393,7 +393,7 @@ backend_init(gchar const* path)
 		ret = sqlite3_open(":memory:", &backend_db);
 		if (ret != SQLITE_OK)
 		{
-			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			J_DEBUG("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 			j_goto_error(TRUE);
 		}
 	}
@@ -439,7 +439,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
-	g_string_append_printf(sql, "CREATE TABLE %s_%s ( id INT PRIMARY KEY", namespace, name);
+	g_string_append_printf(sql, "CREATE TABLE %s_%s ( id INTEGER PRIMARY KEY", namespace, name);
 	if (bson_iter_init(&iter, schema))
 	{
 		while (bson_iter_next(&iter))
@@ -489,6 +489,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 3, json, -1);
 	j_sql_step_and_reset_check_done_constraint(stmt_schema_structure_create);
+	J_DEBUG("%s", sql->str);
 	j_sql_exec_done_or_error(sql->str);
 	//TODO _index parse and create
 	//TODO _unique parse and create
@@ -540,6 +541,7 @@ backend_schema_delete(gchar const* namespace, gchar const* name)
 	j_sql_bind_text(stmt_schema_structure_delete, 1, namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_delete, 2, name, -1);
 	j_sql_step_and_reset_check_done(stmt_schema_structure_delete);
+	J_DEBUG("%s", sql->str);
 	j_sql_exec_done_or_error(sql->str);
 	j_sql_transaction_commit();
 	g_string_free(sql, TRUE);
@@ -606,18 +608,23 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 			switch (type)
 			{
 			case BSON_TYPE_DOUBLE:
+				J_DEBUG("bind %d %f", index, bson_iter_double(&iter));
 				j_sql_bind_double(prepared->stmt, index, bson_iter_double(&iter));
 				break;
 			case BSON_TYPE_UTF8:
+				J_DEBUG("bind %d %s", index, bson_iter_utf8(&iter, NULL));
 				j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(&iter, NULL), -1);
 				break;
 			case BSON_TYPE_INT32:
+				J_DEBUG("bind %d %d", index, bson_iter_int32(&iter));
 				j_sql_bind_int(prepared->stmt, index, bson_iter_int32(&iter));
 				break;
 			case BSON_TYPE_INT64:
+				J_DEBUG("bind %d %d", index, bson_iter_int64(&iter));
 				j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(&iter));
 				break;
 			case BSON_TYPE_NULL:
+				J_DEBUG("bind %d NULL", index);
 				j_sql_bind_null(prepared->stmt, index);
 				break;
 			case BSON_TYPE_EOD:
@@ -678,7 +685,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 	{
 		if (BSON_ITER_HOLDS_DOCUMENT(iter))
 		{
-			if (g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
+			if (!g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
 			{
 				ret = bson_iter_recurse(iter, &iterchild);
 				j_goto_error(!ret);
@@ -687,7 +694,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 			}
 			else
 			{
-				variables_count++;
+				(*variables_count)++;
 				if (!first)
 				{
 					first = FALSE;
@@ -723,7 +730,8 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 				default:
 					j_goto_error(TRUE);
 				}
-				g_string_append(sql, " ?");
+				J_DEBUG("%d", *variables_count);
+				g_string_append_printf(sql, " ?%d", *variables_count);
 			}
 		}
 		else
@@ -745,7 +753,7 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 	{
 		if (BSON_ITER_HOLDS_DOCUMENT(iter))
 		{
-			if (g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
+			if (!g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
 			{
 				ret = bson_iter_recurse(iter, &iterchild);
 				j_goto_error(!ret);
@@ -754,12 +762,13 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 			}
 			else
 			{
-				variables_count++;
+				(*variables_count)++;
 				ret = bson_iter_recurse(iter, &iterchild);
 				j_goto_error(!ret);
 				ret = bson_iter_find(&iterchild, "value");
 				j_goto_error(!ret);
-				type = bson_iter_type(iter);
+				type = bson_iter_type(&iterchild);
+				J_DEBUG("%d", *variables_count);
 				switch (type)
 				{
 				case BSON_TYPE_DOUBLE:
@@ -846,6 +855,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
+		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
@@ -854,6 +864,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count = 0;
+			J_DEBUG("%s", prepared->sql->str);
 			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count);
 			j_goto_error(!ret);
 		}
@@ -863,6 +874,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		count++;
 		tmp = (guint64)sqlite3_column_int64(prepared->stmt, 0);
 		g_array_append_val(iteratorOut->arr, tmp);
+		J_DEBUG("index = %d", tmp);
 	}
 	j_sql_reset(prepared->stmt);
 	j_goto_error(!count);
@@ -876,6 +888,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	*iterator = iteratorOut;
 	return TRUE;
 error:
+	J_DEBUG("%d", 0);
 	g_string_free(sql, TRUE);
 	if (schema)
 	{
@@ -928,6 +941,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		prepared->variables_count++;
 		g_string_append_printf(prepared->sql, " WHERE id = ?%d", prepared->variables_count);
 		g_hash_table_insert(prepared->variables_index, g_strdup("id"), GINT_TO_POINTER(prepared->variables_count));
+		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
@@ -1029,6 +1043,7 @@ backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 1;
 		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE id = ?1", namespace, name);
+		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
@@ -1088,19 +1103,21 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 					j_goto_error(TRUE);
 			}
 		}
-		g_string_append_printf(prepared->sql, "FROM %s_%s WHERE id = ?1", iterator->namespace, iterator->name);
+		g_string_append_printf(prepared->sql, " FROM %s_%s WHERE id = ?1", iterator->namespace, iterator->name);
+		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
 	j_sql_transaction_begin();
+	j_goto_error(iterator->index >= iterator->arr->len);
 	index = g_array_index(iterator->arr, guint64, iterator->index);
-	j_goto_error(index >= iterator->arr->len);
+	J_DEBUG("index = %d", index);
 	iterator->index++;
-	j_sql_bind_int64(prepared->stmt, 1, index);
-	ret = bson_append_int64(metadata, "id", -1, index);
-	j_goto_error(!ret);
+	j_sql_bind_int(prepared->stmt, 1, index);
 	j_sql_step(prepared->stmt, ret)
 	{
+		ret = bson_append_int64(metadata, "id", -1, index);
+		j_goto_error(!ret);
 		for (i = 0; i < prepared->variables_count; i++)
 		{
 			name = g_hash_table_lookup(prepared->variables_index, GINT_TO_POINTER(i));

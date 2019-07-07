@@ -11,7 +11,7 @@ i=300
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
   --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/kv${i}" \
-  --smd-backend=sqlite --smd-component=client --smd-path=":memory:")
+  --smd-backend=sqlite --smd-component=client --smd-path="/mnt2/julea/smd${i}")
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 
@@ -51,7 +51,7 @@ exit
   --smd-servers="$(hostname)" \
   --object-backend=posix --object-component=server --object-path="/mnt2/julea/object${i}" \
   --kv-backend=sqlite --kv-component=server --kv-path="/mnt2/julea/kv${i}" \
-  --smd-backend=sqlite --smd-component=server --smd-path=":memory:")
+  --smd-backend=sqlite --smd-component=server --smd-path="/mnt2/julea/smd${i}")
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 for g in gcc-gcov-debug-asan clang-gcov-debug clang gcc-gcov

@@ -86,7 +86,7 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 #define MYABORT()                       \
 	do                              \
 	{                               \
-		J_DEBUG("error %d", 0); \
+		J_DEBUG("abort %d", 0); \
 		abort();                \
 	} while (0)
 

@@ -51,7 +51,7 @@ struct JSMDIterator
 	char* namespace;
 	char* name;
 	GArray* arr;
-	int index;
+	guint index;
 };
 typedef struct JSMDIterator JSMDIterator;
 
