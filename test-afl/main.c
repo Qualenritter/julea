@@ -594,35 +594,21 @@ main(int argc, char* argv[])
 	if (argc > 1)
 	{
 		char filename[50 + strlen(argv[1])];
-		J_DEBUG("%d", 0);
 		mkdir(argv[1], S_IRUSR | S_IRGRP | S_IROTH);
-		J_DEBUG("%d", 0);
 		sprintf(filename, "%s/start-files", argv[1]);
-		J_DEBUG("%d", 0);
 		mkdir(filename, S_IRUSR | S_IRGRP | S_IROTH);
-		J_DEBUG("%d", 0);
 		memset(&random_values, 0, sizeof(random_values));
-		J_DEBUG("%d", 0);
 		for (i = 0; i < _AFL_EVENT_EVENT_COUNT; i++)
 		{
-			J_DEBUG("%d", 0);
 			sprintf(filename, "%s/start-files/%d.bin", argv[1], i);
-			J_DEBUG("%d", 0);
 			file = fopen(filename, "wb");
-			J_DEBUG("%d", 0);
 			event = i;
-			J_DEBUG("%d", 0);
 			fwrite(&event, sizeof(event), 1, file);
-			J_DEBUG("%d", 0);
 			fwrite(&random_values, sizeof(random_values), 1, file);
-			J_DEBUG("%d", 0);
 			fclose(file);
-			J_DEBUG("%d", 0);
 		}
-		J_DEBUG("%d", 0);
 		goto fini;
 	}
-	J_DEBUG("%d", 0);
 	for (i = 0; i < AFL_LIMIT_SCHEMA_STRING_VALUES; i++)
 	{
 		sprintf(namespace_varvalues_string_const[i], AFL_STRING_CONST_FORMAT, i);
@@ -715,8 +701,6 @@ cleanup:
 		}
 	}
 fini:
-	J_DEBUG("%d", 0);
 	j_fini();
-	J_DEBUG("%d", 0);
 	return 0;
 }

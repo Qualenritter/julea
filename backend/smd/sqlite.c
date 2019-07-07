@@ -274,7 +274,8 @@ freeJSqlCacheNamespaces(void* ptr)
 	JSqlCacheNamespaces* p = ptr;
 	if (ptr)
 	{
-		g_hash_table_destroy(p->namespaces);
+		if (p->namespaces)
+			g_hash_table_destroy(p->namespaces);
 		g_free(p);
 	}
 }
@@ -284,7 +285,8 @@ freeJSqlCacheNames(void* ptr)
 	JSqlCacheNames* p = ptr;
 	if (ptr)
 	{
-		g_hash_table_destroy(p->names);
+		if (p->names)
+			g_hash_table_destroy(p->names);
 		g_free(p);
 	}
 }
@@ -294,7 +296,8 @@ freeJSqlCacheSQLQueries(void* ptr)
 	JSqlCacheSQLQueries* p = ptr;
 	if (ptr)
 	{
-		g_hash_table_destroy(p->queries);
+		if (p->queries)
+			g_hash_table_destroy(p->queries);
 		g_free(p);
 	}
 }
@@ -304,10 +307,14 @@ freeJSqlCacheSQLPrepared(void* ptr)
 	JSqlCacheSQLPrepared* p = ptr;
 	if (ptr)
 	{
-		g_hash_table_destroy(p->variables_index);
-		g_hash_table_destroy(p->variables_type);
-		g_string_free(p->sql, TRUE);
-		j_sql_finalize(p->stmt);
+		if (p->variables_index)
+			g_hash_table_destroy(p->variables_index);
+		if (p->variables_type)
+			g_hash_table_destroy(p->variables_type);
+		if (p->sql)
+			g_string_free(p->sql, TRUE);
+		if (p->stmt)
+			j_sql_finalize(p->stmt);
 		g_free(p);
 	}
 }
@@ -332,13 +339,13 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 	JSqlCacheSQLPrepared* cachePrepared = NULL;
 	if (!cacheNamespaces)
 	{
-		cacheNamespaces = g_new(JSqlCacheNamespaces, 1);
+		cacheNamespaces = g_new0(JSqlCacheNamespaces, 1);
 		cacheNamespaces->namespaces = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheNames);
 	}
 	cacheNames = g_hash_table_lookup(cacheNamespaces->namespaces, namespace);
 	if (!cacheNames)
 	{
-		cacheNames = g_new(JSqlCacheNames, 1);
+		cacheNames = g_new0(JSqlCacheNames, 1);
 		cacheNames->names = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheSQLQueries);
 		ret = !g_hash_table_insert(cacheNamespaces->namespaces, g_strdup(namespace), cacheNames);
 		j_goto_error(ret);
@@ -346,7 +353,7 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 	cacheQueries = g_hash_table_lookup(cacheNames->names, name);
 	if (!cacheQueries)
 	{
-		cacheQueries = g_new(JSqlCacheSQLQueries, 1);
+		cacheQueries = g_new0(JSqlCacheSQLQueries, 1);
 		cacheQueries->queries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheSQLPrepared);
 		ret = !g_hash_table_insert(cacheNames->names, g_strdup(name), cacheQueries);
 		j_goto_error(ret);
@@ -354,8 +361,7 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 	cachePrepared = g_hash_table_lookup(cacheQueries->queries, query);
 	if (!cachePrepared)
 	{
-		cachePrepared = g_new(JSqlCacheSQLPrepared, 1);
-		cachePrepared->initialized = FALSE;
+		cachePrepared = g_new0(JSqlCacheSQLPrepared, 1);
 		ret = !g_hash_table_insert(cacheQueries->queries, g_strdup(query), cachePrepared);
 		j_goto_error(ret);
 	}
@@ -414,25 +420,15 @@ static void
 backend_fini(void)
 {
 	gint ret;
-	J_DEBUG("%d", 0);
 	freeJSqlCacheNamespaces(cacheNamespaces);
-	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_schema_structure_create);
-	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_schema_structure_get);
-	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_schema_structure_delete);
-	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_transaction_abort);
-	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_transaction_begin);
-	J_DEBUG("%d", 0);
 	j_sql_finalize(stmt_transaction_commit);
-	J_DEBUG("%d", 0);
 	ret = sqlite3_close(backend_db);
-	J_DEBUG("%d", 0);
 	j_sql_check(ret, SQLITE_OK);
-	J_DEBUG("%d", 0);
 }
 static gboolean
 backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
@@ -510,22 +506,15 @@ backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
 	gint retsql;
 	guint ret = FALSE;
 	const char* json = NULL;
-	j_sql_transaction_begin();
 	j_sql_bind_text(stmt_schema_structure_get, 1, namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_get, 2, name, -1);
-	J_DEBUG("%d", ret);
 	j_sql_step(stmt_schema_structure_get, retsql)
 	{
-		J_DEBUG("%d", 0);
 		json = (const char*)sqlite3_column_text(stmt_schema_structure_get, 1);
-		J_DEBUG("%s", json);
 		bson_init_from_json(schema, json, -1, NULL);
 		ret = TRUE;
 	}
-	J_DEBUG("%d", ret);
 	j_sql_reset(stmt_schema_structure_get);
-	J_DEBUG("%d", ret);
-	j_sql_transaction_commit();
 	return ret;
 }
 static gboolean
@@ -565,7 +554,6 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-		prepared->variables_type = NULL;
 		g_string_append_printf(prepared->sql, "INSERT INTO %s_%s (", namespace, name);
 		if (bson_iter_init(&iter, schema))
 		{
@@ -814,7 +802,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
 	g_string_append_printf(sql, "SELECT DISTINCT id FROM %s_%s", namespace, name);
-	if (bson_count_keys(selector))
+	if (selector && bson_count_keys(selector))
 	{
 		g_string_append(sql, " WHERE ");
 		if (bson_iter_init(&iter, selector))
@@ -833,12 +821,10 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		j_goto_error(ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
-		prepared->variables_index = NULL;
-		prepared->variables_type = NULL;
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	if (bson_count_keys(selector))
+	if (selector && bson_count_keys(selector))
 	{
 		if (bson_iter_init(&iter, selector))
 		{
@@ -886,7 +872,6 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-		prepared->variables_type = NULL;
 		g_string_append_printf(prepared->sql, "UPDATE %s_%s SET ", namespace, name);
 		if (bson_iter_init(&iter, schema))
 		{
@@ -991,21 +976,19 @@ backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector
 	guint j;
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
+	j_sql_transaction_begin();
+	ret = backend_query(namespace, name, selector, (gpointer*)&iterator);
+	j_goto_error(!ret);
 	prepared = getCachePrepared(namespace, name, "delete");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 1;
-		prepared->variables_index = NULL;
-		prepared->variables_type = NULL;
 		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE id = ?1", namespace, name);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	j_sql_transaction_begin();
-	ret = !backend_query(namespace, name, selector, (gpointer*)&iterator);
-	j_goto_error(ret);
 	for (j = 0; j < iterator->arr->len; j++)
 	{
 		j_sql_bind_int64(prepared->stmt, 1, g_array_index(iterator->arr, guint64, j));
