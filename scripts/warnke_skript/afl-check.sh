@@ -22,7 +22,7 @@ echo "using binary : $g"
 mkdir b/${g}
 for f in ${files}
 do
-
+rm -rf /mnt2/julea/*
 	(
 		export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
