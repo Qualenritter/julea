@@ -55,6 +55,16 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 #define G_APPROX_VALUE(a, b, epsilon) (((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon))
 #endif
 
+#define J_DEBUG_BSON(bson)                               \
+	do                                               \
+	{                                                \
+		char* json = NULL;                       \
+		if (bson)                                \
+			json = bson_as_json(bson, NULL); \
+		J_DEBUG("json = %s", json);              \
+		bson_free((void*)json);                  \
+	} while (0)
+
 #define MY_READ(var)                                                              \
 	do                                                                        \
 	{                                                                         \
@@ -136,6 +146,7 @@ build_selector_single(guint varname, guint value)
 	gboolean ret_expected = TRUE;
 	bson_t bson_child;
 	selector = bson_new();
+	J_DEBUG("afl_build_selector_single%d", 0);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, varname);
 	bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 	if (!bson_append_int32(&bson_child, "operator", -1, J_SMD_OPERATOR_EQ))
@@ -185,6 +196,7 @@ build_selector_single(guint varname, guint value)
 			MYABORT();
 	}
 	bson_append_document_end(selector, &bson_child);
+	J_DEBUG_BSON(selector);
 	return ret_expected;
 }
 static gboolean
@@ -192,6 +204,7 @@ build_metadata(void)
 {
 	gboolean ret_expected = TRUE;
 	guint i;
+	J_DEBUG("afl_build_metadata%d", 0);
 	metadata = bson_new();
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -265,6 +278,7 @@ build_metadata(void)
 		bson_append_int32(metadata, varname_strbuf, -1, 1); //not existent namespace & not existent varname
 		ret_expected = FALSE;
 	}
+	J_DEBUG_BSON(metadata);
 	return ret_expected;
 }
 static void
@@ -276,23 +290,31 @@ event_query_single(void)
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	gpointer iterator;
+	J_DEBUG("afl_event_query_single%d", 0);
+	J_DEBUG("ret_expected %d", ret_expected);
 	random_values.values.existent = random_values.values.existent % 2;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
+		ret_expected = ret_expected && namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index];
+		J_DEBUG("ret_expected %d", ret_expected);
 		if (random_values.values.existent)
 		{
 			ret_expected = ret_expected && build_selector_single(0, random_values.values.value_index);
+			J_DEBUG("ret_expected %d", ret_expected);
 		}
 		else
 		{
 			ret_expected = ret_expected && build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES);
+			J_DEBUG("ret_expected %d", ret_expected);
 			ret_expected = FALSE;
+			J_DEBUG("ret_expected %d", ret_expected);
 		}
 	}
 	else
 	{
 		ret_expected = FALSE;
+		J_DEBUG("ret_expected %d", ret_expected);
 	}
 	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
 	if (ret != ret_expected)
@@ -308,6 +330,7 @@ event_query_single(void)
 		ret = j_smd_iterate(iterator, bson);
 		if (!ret)
 			MYABORT();
+		J_DEBUG_BSON(bson);
 		if (!bson_iter_init(&iter, bson))
 			MYABORT();
 		if (!bson_iter_find(&iter, "id"))
@@ -382,6 +405,7 @@ static void
 event_query_all(void)
 {
 	guint i;
+	J_DEBUG("afl_event_all%d", 0);
 	//TODO query all at once
 	for (i = 0; i < AFL_LIMIT_SCHEMA_VALUES; i++)
 	{
@@ -397,6 +421,7 @@ event_delete(void)
 {
 	gboolean ret;
 	gboolean ret_expected = TRUE;
+	J_DEBUG("afl_event_delete%d", 0);
 	random_values.values.existent = random_values.values.existent % 2;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -432,6 +457,7 @@ event_insert(void)
 {
 	gboolean ret;
 	gboolean ret_expected = TRUE;
+	J_DEBUG("afl_event_insert%d", 0);
 	ret_expected = ret_expected && build_metadata(); //inserting valid metadata should succeed
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata);
 	if (ret != ret_expected)
@@ -448,6 +474,7 @@ event_update(void)
 	//TODO update multile rows together
 	gboolean ret;
 	gboolean ret_expected = TRUE;
+	J_DEBUG("afl_event_update%d", 0);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
@@ -487,12 +514,14 @@ event_schema_get(void)
 	gboolean ret;
 	bson_t* bson;
 	guint i;
+	J_DEBUG("afl_event_schema_get%d", 0);
 	bson = g_new0(bson_t, 1);
 	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, bson);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		if (ret)
 		{
+			J_DEBUG_BSON(bson);
 			for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 			{
 				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
@@ -532,6 +561,7 @@ event_schema_delete(void)
 {
 	gboolean ret;
 	bson_t* bson;
+	J_DEBUG("afl_event_schema_delete%d", 0);
 	bson = bson_new();
 	ret = j_smd_schema_delete(namespace_strbuf, name_strbuf);
 	if (namespace_exist[random_values.namespace][random_values.name])
@@ -559,6 +589,7 @@ event_schema_create(void)
 	gboolean ret_expected;
 	bson_t* bson;
 	guint i;
+	J_DEBUG("afl_event_schema_create%d", 0);
 	random_values.schema_create.duplicate_variables = random_values.schema_create.duplicate_variables % 2;
 	random_values.schema_create.variable_count = random_values.schema_create.variable_count % AFL_LIMIT_SCHEMA_VARIABLES;
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
@@ -584,6 +615,7 @@ event_schema_create(void)
 			J_DEBUG("ret_expected %d", ret_expected);
 		}
 	}
+	J_DEBUG_BSON(bson);
 	ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{

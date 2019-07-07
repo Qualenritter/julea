@@ -572,7 +572,7 @@ j_backend_smd_schema_get(JBackend* backend, gchar const* namespace, gchar const*
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(schema != NULL, FALSE);
+	/*schema == null is allowed*/
 	ret = backend->smd.backend_schema_get(namespace, name, schema);
 	return ret;
 }

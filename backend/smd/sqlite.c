@@ -347,23 +347,23 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 	{
 		cacheNames = g_new0(JSqlCacheNames, 1);
 		cacheNames->names = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheSQLQueries);
-		ret = !g_hash_table_insert(cacheNamespaces->namespaces, g_strdup(namespace), cacheNames);
-		j_goto_error(ret);
+		ret = g_hash_table_insert(cacheNamespaces->namespaces, g_strdup(namespace), cacheNames);
+		j_goto_error(!ret);
 	}
 	cacheQueries = g_hash_table_lookup(cacheNames->names, name);
 	if (!cacheQueries)
 	{
 		cacheQueries = g_new0(JSqlCacheSQLQueries, 1);
 		cacheQueries->queries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheSQLPrepared);
-		ret = !g_hash_table_insert(cacheNames->names, g_strdup(name), cacheQueries);
-		j_goto_error(ret);
+		ret = g_hash_table_insert(cacheNames->names, g_strdup(name), cacheQueries);
+		j_goto_error(!ret);
 	}
 	cachePrepared = g_hash_table_lookup(cacheQueries->queries, query);
 	if (!cachePrepared)
 	{
 		cachePrepared = g_new0(JSqlCacheSQLPrepared, 1);
-		ret = !g_hash_table_insert(cacheQueries->queries, g_strdup(query), cachePrepared);
-		j_goto_error(ret);
+		ret = g_hash_table_insert(cacheQueries->queries, g_strdup(query), cachePrepared);
+		j_goto_error(!ret);
 	}
 	return cachePrepared;
 error:
@@ -513,10 +513,13 @@ backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
 	j_sql_bind_text(stmt_schema_structure_get, 2, name, -1);
 	j_sql_step(stmt_schema_structure_get, retsql)
 	{
-		json = (const char*)sqlite3_column_text(stmt_schema_structure_get, 0);
-		j_goto_error(json == NULL);
-		j_goto_error(!strlen(json));
-		bson_init_from_json(schema, json, -1, NULL);
+		if (schema)
+		{
+			json = (const char*)sqlite3_column_text(stmt_schema_structure_get, 0);
+			j_goto_error(json == NULL);
+			j_goto_error(!strlen(json));
+			bson_init_from_json(schema, json, -1, NULL);
+		}
 		ret = TRUE;
 	}
 	j_sql_reset(stmt_schema_structure_get);
@@ -529,8 +532,11 @@ static gboolean
 backend_schema_delete(gchar const* namespace, gchar const* name)
 {
 	GString* sql = g_string_new(NULL);
-	g_string_append_printf(sql, "DROP TABLE %s_%s", namespace, name);
+	gint ret;
 	j_sql_transaction_begin();
+	ret = backend_schema_get(namespace, name, NULL);
+	j_goto_error(!ret);
+	g_string_append_printf(sql, "DROP TABLE %s_%s", namespace, name);
 	j_sql_bind_text(stmt_schema_structure_delete, 1, namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_delete, 2, name, -1);
 	j_sql_step_and_reset_check_done(stmt_schema_structure_delete);
@@ -550,6 +556,7 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	guint i, index;
 	bson_iter_t iter;
 	bson_t* schema = NULL;
+	gboolean schema_initialized = FALSE;
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
@@ -557,8 +564,9 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = !backend_schema_get(namespace, name, schema);
-		j_goto_error(ret);
+		schema = g_new0(bson_t, 1);
+		schema_initialized = backend_schema_get(namespace, name, schema);
+		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -594,8 +602,7 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 		{
 			type = bson_iter_type(&iter);
 			index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
-			ret = !index;
-			j_goto_error(ret);
+			j_goto_error(!index);
 			switch (type)
 			{
 			case BSON_TYPE_DOUBLE:
@@ -639,13 +646,21 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 		j_goto_error(TRUE);
 	j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	j_sql_transaction_abort();
 	return FALSE;
 }
@@ -665,10 +680,10 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 		{
 			if (g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
 			{
-				ret = !bson_iter_recurse(iter, &iterchild);
-				j_goto_error(ret);
-				ret = !build_selector_query(&iterchild, sql, !and_query, variables_count);
-				j_goto_error(ret);
+				ret = bson_iter_recurse(iter, &iterchild);
+				j_goto_error(!ret);
+				ret = build_selector_query(&iterchild, sql, !and_query, variables_count);
+				j_goto_error(!ret);
 			}
 			else
 			{
@@ -678,10 +693,10 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 					first = FALSE;
 					g_string_append(sql, query_op[and_query ? 0 : 1]);
 				}
-				ret = !bson_iter_recurse(iter, &iterchild);
-				j_goto_error(ret);
-				ret = !bson_iter_find(&iterchild, "operator");
-				j_goto_error(ret);
+				ret = bson_iter_recurse(iter, &iterchild);
+				j_goto_error(!ret);
+				ret = bson_iter_find(&iterchild, "operator");
+				j_goto_error(!ret);
 				op = bson_iter_int32(&iterchild);
 				g_string_append_printf(sql, "%s ", bson_iter_key(iter));
 				switch (op)
@@ -797,9 +812,11 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 {
 	guint tmp;
 	gint ret;
+	guint count = 0;
 	bson_iter_t iter;
 	guint variables_count;
 	bson_t* schema = NULL;
+	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
 	JSMDIterator* iteratorOut;
@@ -816,17 +833,17 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count = 0;
-			ret = !build_selector_query(&iter, sql, TRUE, &variables_count);
-			j_goto_error(ret);
+			ret = build_selector_query(&iter, sql, TRUE, &variables_count);
+			j_goto_error(!ret);
 		}
 	}
 	prepared = getCachePrepared(namespace, name, sql->str);
-	ret = !prepared;
-	j_goto_error(ret);
+	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = !backend_schema_get(namespace, name, schema);
-		j_goto_error(ret);
+		schema = g_new0(bson_t, 1);
+		schema_initialized = backend_schema_get(namespace, name, schema);
+		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
@@ -837,25 +854,35 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count = 0;
-			ret = !bind_selector_query(&iter, prepared, TRUE, &variables_count);
-			j_goto_error(ret);
+			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count);
+			j_goto_error(!ret);
 		}
 	}
 	j_sql_loop(prepared->stmt, ret)
 	{
+		count++;
 		tmp = (guint64)sqlite3_column_int64(prepared->stmt, 0);
 		g_array_append_val(iteratorOut->arr, tmp);
 	}
 	j_sql_reset(prepared->stmt);
+	j_goto_error(!count);
 	g_string_free(sql, TRUE);
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	*iterator = iteratorOut;
 	return TRUE;
 error:
 	g_string_free(sql, TRUE);
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	freeJSMDIterator(iteratorOut);
 	return FALSE;
 }
@@ -869,14 +896,15 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 	gint ret;
 	guint i, j;
 	bson_t* schema = NULL;
+	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	prepared = getCachePrepared(namespace, name, "update");
-	ret = !prepared;
-	j_goto_error(ret);
+	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = !backend_schema_get(namespace, name, schema);
-		j_goto_error(ret);
+		schema = g_new0(bson_t, 1);
+		schema_initialized = backend_schema_get(namespace, name, schema);
+		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -904,8 +932,8 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		prepared->initialized = TRUE;
 	}
 	j_sql_transaction_begin();
-	ret = !backend_query(namespace, name, selector, (gpointer*)&iterator);
-	j_goto_error(ret);
+	ret = backend_query(namespace, name, selector, (gpointer*)&iterator);
+	j_goto_error(!ret);
 	for (j = 0; j < iterator->arr->len; j++)
 	{
 		for (i = 0; i < prepared->variables_count; i++)
@@ -919,8 +947,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 			{
 				type = bson_iter_type(&iter);
 				index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
-				ret = !index;
-				j_goto_error(ret);
+				j_goto_error(!index);
 				switch (type)
 				{
 				case BSON_TYPE_DOUBLE:
@@ -965,14 +992,22 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	}
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	freeJSMDIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	freeJSMDIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
@@ -1022,14 +1057,15 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	JSMDType type;
 	gint ret;
 	bson_t* schema = NULL;
+	gboolean schema_initialized;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	prepared = getCachePrepared(iterator->namespace, iterator->name, "select");
-	ret = !prepared;
-	j_goto_error(ret);
+	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = !backend_schema_get(iterator->namespace, iterator->name, schema);
-		j_goto_error(ret);
+		schema = g_new0(bson_t, 1);
+		schema_initialized = backend_schema_get(iterator->namespace, iterator->name, schema);
+		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_direct_hash, NULL, NULL, g_free);
@@ -1061,8 +1097,8 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	j_goto_error(index >= iterator->arr->len);
 	iterator->index++;
 	j_sql_bind_int64(prepared->stmt, 1, index);
-	ret = !bson_append_int64(metadata, "id", -1, index);
-	j_goto_error(ret);
+	ret = bson_append_int64(metadata, "id", -1, index);
+	j_goto_error(!ret);
 	j_sql_step(prepared->stmt, ret)
 	{
 		for (i = 0; i < prepared->variables_count; i++)
@@ -1072,32 +1108,32 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 			switch (type)
 			{
 			case J_SMD_TYPE_SINT32:
-				ret = !bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-				j_goto_error(ret);
+				ret = bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_UINT32:
-				ret = !bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-				j_goto_error(ret);
+				ret = bson_append_int32(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_FLOAT32:
-				ret = !bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
-				j_goto_error(ret);
+				ret = bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_SINT64:
-				ret = !bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-				j_goto_error(ret);
+				ret = bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_UINT64:
-				ret = !bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
-				j_goto_error(ret);
+				ret = bson_append_int64(metadata, name, -1, sqlite3_column_int64(prepared->stmt, i));
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_FLOAT64:
-				ret = !bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
-				j_goto_error(ret);
+				ret = bson_append_double(metadata, name, -1, sqlite3_column_double(prepared->stmt, i));
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_STRING:
-				ret = !bson_append_utf8(metadata, name, -1, (const char*)sqlite3_column_text(prepared->stmt, i), -1);
-				j_goto_error(ret);
+				ret = bson_append_utf8(metadata, name, -1, (const char*)sqlite3_column_text(prepared->stmt, i), -1);
+				j_goto_error(!ret);
 				break;
 			case J_SMD_TYPE_INVALID:
 			case _J_SMD_TYPE_COUNT:
@@ -1108,12 +1144,20 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	}
 	j_sql_reset(prepared->stmt);
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 	if (schema)
-		bson_destroy(schema);
+	{
+		if (schema_initialized)
+			bson_destroy(schema);
+		g_free(schema);
+	}
 	j_sql_transaction_abort();
 	return FALSE;
 }
