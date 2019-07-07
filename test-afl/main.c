@@ -297,7 +297,8 @@ event_query_single(void)
 	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
 	if (ret != ret_expected)
 		MYABORT();
-	bson_destroy(selector);
+	if (selector)
+		bson_destroy(selector);
 	if (ret)
 	{
 		bson = bson_new();
@@ -363,10 +364,12 @@ event_query_single(void)
 					MYABORT();
 			}
 		}
-		bson_destroy(bson);
+		if (bson)
+			bson_destroy(bson);
 		bson = bson_new();
 		ret = j_smd_iterate(iterator, bson);
-		bson_destroy(bson);
+		if (bson)
+			bson_destroy(bson);
 		if (ret)
 			MYABORT();
 		selector = NULL;
@@ -414,7 +417,8 @@ event_delete(void)
 	ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
 	if (ret != ret_expected)
 		MYABORT();
-	bson_destroy(selector);
+	if (selector)
+		bson_destroy(selector);
 	selector = NULL;
 }
 static void
@@ -426,7 +430,8 @@ event_insert(void)
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata);
 	if (ret != ret_expected)
 		MYABORT();
-	bson_destroy(metadata);
+	if (metadata)
+		bson_destroy(metadata);
 }
 static void
 event_update(void)
@@ -455,8 +460,10 @@ event_update(void)
 	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
 	if (ret != ret_expected)
 		MYABORT();
-	bson_destroy(selector);
-	bson_destroy(metadata);
+	if (selector)
+		bson_destroy(selector);
+	if (metadata)
+		bson_destroy(metadata);
 }
 static void
 event_schema_get(void)
@@ -500,7 +507,8 @@ event_schema_get(void)
 		if (ret)
 			MYABORT();
 	}
-	bson_destroy(bson);
+	if (bson)
+		bson_destroy(bson);
 }
 static void
 event_schema_delete(void)
@@ -513,7 +521,8 @@ event_schema_delete(void)
 	{
 		if (!ret)
 			MYABORT();
-		bson_destroy(namespace_bson[random_values.namespace][random_values.name]);
+		if (namespace_bson[random_values.namespace][random_values.name])
+			bson_destroy(namespace_bson[random_values.namespace][random_values.name]);
 		namespace_bson[random_values.namespace][random_values.name] = NULL;
 		namespace_exist[random_values.namespace][random_values.name] = FALSE;
 	}
@@ -522,7 +531,8 @@ event_schema_delete(void)
 		if (ret)
 			MYABORT();
 	}
-	bson_destroy(bson);
+	if (bson)
+		bson_destroy(bson);
 }
 static void
 event_schema_create(void)
@@ -562,7 +572,10 @@ event_schema_create(void)
 			MYABORT();
 	}
 	if (namespace_exist[random_values.namespace][random_values.name])
-		bson_destroy(bson);
+	{
+		if (bson)
+			bson_destroy(bson);
+	}
 	else
 	{
 		namespace_exist[random_values.namespace][random_values.name] = TRUE;
@@ -643,23 +656,23 @@ main(int argc, char* argv[])
 		switch (event)
 		{
 		case AFL_EVENT_SMD_SCHEMA_CREATE:
-			J_DEBUG("AFL_EVENT_SMD_SCHEMA_CREATE%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_CREATE %s %s", namespace_strbuf, name_strbuf);
 			event_schema_get();
 			event_schema_create();
 			event_schema_get();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_GET:
-			J_DEBUG("AFL_EVENT_SMD_SCHEMA_GET%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_GET %s %s", namespace_strbuf, name_strbuf);
 			event_schema_get();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_DELETE:
-			J_DEBUG("AFL_EVENT_SMD_SCHEMA_DELETE%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_DELETE %s %s", namespace_strbuf, name_strbuf);
 			event_schema_get();
 			event_schema_delete();
 			event_schema_get();
 			break;
 		case AFL_EVENT_SMD_INSERT:
-			J_DEBUG("AFL_EVENT_SMD_INSERT%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_INSERT %s %s", namespace_strbuf, name_strbuf);
 			random_values.values.existent = 1; //override random
 			event_query_all();
 			event_delete();
@@ -668,20 +681,20 @@ main(int argc, char* argv[])
 			event_query_all();
 			break;
 		case AFL_EVENT_SMD_UPDATE:
-			J_DEBUG("AFL_EVENT_SMD_UPDATE%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_UPDATE %s %s", namespace_strbuf, name_strbuf);
 			event_query_all();
 			event_update();
 			event_query_all();
 			break;
 		case AFL_EVENT_SMD_DELETE:
-			J_DEBUG("AFL_EVENT_SMD_DELETE%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_DELETE %s %s", namespace_strbuf, name_strbuf);
 			event_query_all();
 			event_delete();
 			event_query_all();
 			break;
 		case AFL_EVENT_SMD_QUERY:
 		case AFL_EVENT_SMD_ITERATE:
-			J_DEBUG("AFL_EVENT_SMD_QUERY%d", 0);
+			J_DEBUG("AFL_EVENT_SMD_QUERY %s %s", namespace_strbuf, name_strbuf);
 			event_query_all();
 			event_query_single();
 			break;
@@ -696,7 +709,8 @@ cleanup:
 	{
 		for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 		{
-			bson_destroy(namespace_bson[i][j]);
+			if (namespace_bson[i][j])
+				bson_destroy(namespace_bson[i][j]);
 			namespace_bson[i][j] = NULL;
 		}
 	}

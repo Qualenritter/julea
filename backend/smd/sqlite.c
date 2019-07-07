@@ -507,18 +507,24 @@ constraint:
 static gboolean
 backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
 {
+	gint retsql;
 	guint ret = FALSE;
 	const char* json = NULL;
 	j_sql_transaction_begin();
 	j_sql_bind_text(stmt_schema_structure_get, 1, namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_get, 2, name, -1);
-	j_sql_step(stmt_schema_structure_get, ret)
+	J_DEBUG("%d", ret);
+	j_sql_step(stmt_schema_structure_get, retsql)
 	{
+		J_DEBUG("%d", 0);
 		json = (const char*)sqlite3_column_text(stmt_schema_structure_get, 1);
+		J_DEBUG("%s", json);
 		bson_init_from_json(schema, json, -1, NULL);
 		ret = TRUE;
 	}
+	J_DEBUG("%d", ret);
 	j_sql_reset(stmt_schema_structure_get);
+	J_DEBUG("%d", ret);
 	j_sql_transaction_commit();
 	return ret;
 }
@@ -636,12 +642,14 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	else
 		j_goto_error(TRUE);
 	j_sql_step_and_reset_check_done_constraint(prepared->stmt);
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	j_sql_transaction_abort();
 	return FALSE;
 }
@@ -846,12 +854,14 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	}
 	j_sql_reset(prepared->stmt);
 	g_string_free(sql, TRUE);
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	*iterator = iteratorOut;
 	return TRUE;
 error:
 	g_string_free(sql, TRUE);
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	freeJSMDIterator(iteratorOut);
 	return FALSE;
 }
@@ -961,13 +971,15 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 			j_goto_error(TRUE);
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	}
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	freeJSMDIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	freeJSMDIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
@@ -1105,11 +1117,13 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 		i++;
 	}
 	j_sql_reset(prepared->stmt);
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	j_sql_transaction_commit();
 	return TRUE;
 error:
-	bson_destroy(schema);
+	if (schema)
+		bson_destroy(schema);
 	j_sql_transaction_abort();
 	return FALSE;
 }
