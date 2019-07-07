@@ -232,7 +232,6 @@ build_metadata(void)
 			namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i] = random_values.values.values[i].d;
 			namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i] = random_values.values.values[i].s % AFL_LIMIT_SCHEMA_STRING_VALUES;
 		}
-		namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = random_values.values.value_count;
 		for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 		{
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
@@ -303,7 +302,7 @@ event_query_single(void)
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	gpointer iterator = 0;
-	J_DEBUG("afl_event_query_single%d", 0);
+	J_DEBUG("afl_event_query_single %d", random_values.values.value_index);
 	J_DEBUG("ret_expected %d", ret_expected);
 	random_values.values.existent = random_values.values.existent % 2;
 	if (namespace_exist[random_values.namespace][random_values.name])
@@ -368,7 +367,7 @@ event_query_single(void)
 						MYABORT();
 					break;
 				case J_SMD_TYPE_FLOAT32:
-					if (G_APPROX_VALUE((gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001f))
+					if (!G_APPROX_VALUE((gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001f))
 						MYABORT();
 					break;
 				case J_SMD_TYPE_SINT64:
@@ -380,7 +379,7 @@ event_query_single(void)
 						MYABORT();
 					break;
 				case J_SMD_TYPE_FLOAT64:
-					if (G_APPROX_VALUE((gdouble)bson_iter_double(&iter), (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 001))
+					if (!G_APPROX_VALUE((gdouble)bson_iter_double(&iter), (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 001))
 						MYABORT();
 					break;
 				case J_SMD_TYPE_STRING:
@@ -479,6 +478,10 @@ event_insert(void)
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata);
 	if (ret != ret_expected)
 		MYABORT();
+	if (ret)
+	{
+		namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = random_values.values.value_count;
+	}
 	if (metadata)
 	{
 		bson_destroy(metadata);
@@ -515,8 +518,9 @@ event_update(void)
 	{
 		ret_expected = FALSE; //operation on not existent namespace must fail
 		J_DEBUG("ret_expected %d", ret_expected);
+		selector = bson_new();
 	}
-	ret_expected = ret_expected && build_metadata(); //metadata contains valid data ?
+	ret_expected = build_metadata() && ret_expected; //metadata contains valid data ?
 	J_DEBUG("ret_expected %d", ret_expected);
 	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
 	if (ret != ret_expected)

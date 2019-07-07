@@ -911,6 +911,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 	bson_t* schema = NULL;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
+	j_sql_transaction_begin();
 	prepared = getCachePrepared(namespace, name, "update");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
@@ -945,7 +946,6 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	j_sql_transaction_begin();
 	ret = backend_query(namespace, name, selector, (gpointer*)&iterator);
 	j_goto_error(!ret);
 	for (j = 0; j < iterator->arr->len; j++)
