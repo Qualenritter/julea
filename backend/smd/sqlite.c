@@ -65,7 +65,6 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 #define j_sql_check(ret, flag)                                                          \
 	do                                                                              \
 	{                                                                               \
-		J_DEBUG("%d %d", ret, flag);                                            \
 		if (ret != flag)                                                        \
 		{                                                                       \
 			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db)); \
@@ -153,36 +152,42 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 	do                                                 \
 	{                                                  \
 		gint _ret_ = sqlite3_bind_null(stmt, idx); \
+		J_DEBUG("bind_null %d", idx);              \
 		j_sql_check(_ret_, SQLITE_OK);             \
 	} while (0)
 #define j_sql_bind_int64(stmt, idx, val)                         \
 	do                                                       \
 	{                                                        \
 		gint _ret_ = sqlite3_bind_int64(stmt, idx, val); \
+		J_DEBUG("bind_int64 %d %lld", idx, val);         \
 		j_sql_check(_ret_, SQLITE_OK);                   \
 	} while (0)
 #define j_sql_bind_int(stmt, idx, val)                         \
 	do                                                     \
 	{                                                      \
 		gint _ret_ = sqlite3_bind_int(stmt, idx, val); \
+		J_DEBUG("bind_int %d %d", idx, val);           \
 		j_sql_check(_ret_, SQLITE_OK);                 \
 	} while (0)
 #define j_sql_bind_blob(stmt, idx, val, val_len)                               \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_blob(stmt, idx, val, val_len, NULL); \
+		J_DEBUG("bind_blob %d %p", idx, val);                          \
 		j_sql_check(_ret_, SQLITE_OK);                                 \
 	} while (0)
 #define j_sql_bind_double(stmt, idx, val)                         \
 	do                                                        \
 	{                                                         \
 		gint _ret_ = sqlite3_bind_double(stmt, idx, val); \
+		J_DEBUG("bind_double %d %f", idx, val);           \
 		j_sql_check(_ret_, SQLITE_OK);                    \
 	} while (0)
 #define j_sql_bind_text(stmt, idx, val, val_len)                               \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_text(stmt, idx, val, val_len, NULL); \
+		J_DEBUG("bind_text %d %s", idx, val);                          \
 		j_sql_check(_ret_, SQLITE_OK);                                 \
 	} while (0)
 #define j_sql_prepare(sql, stmt)                                                                             \
@@ -373,7 +378,6 @@ backend_init(gchar const* path)
 {
 	guint ret;
 	g_autofree gchar* dirname = NULL;
-	J_DEBUG("init");
 	g_return_val_if_fail(path != NULL, FALSE);
 	if (strncmp(":memory:", path, 7))
 	{
@@ -439,7 +443,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
-	g_string_append_printf(sql, "CREATE TABLE %s_%s ( id INTEGER PRIMARY KEY", namespace, name);
+	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", namespace, name);
 	if (bson_iter_init(&iter, schema))
 	{
 		while (bson_iter_next(&iter))
@@ -608,23 +612,18 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 			switch (type)
 			{
 			case BSON_TYPE_DOUBLE:
-				J_DEBUG("bind %d %f", index, bson_iter_double(&iter));
 				j_sql_bind_double(prepared->stmt, index, bson_iter_double(&iter));
 				break;
 			case BSON_TYPE_UTF8:
-				J_DEBUG("bind %d %s", index, bson_iter_utf8(&iter, NULL));
 				j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(&iter, NULL), -1);
 				break;
 			case BSON_TYPE_INT32:
-				J_DEBUG("bind %d %d", index, bson_iter_int32(&iter));
 				j_sql_bind_int(prepared->stmt, index, bson_iter_int32(&iter));
 				break;
 			case BSON_TYPE_INT64:
-				J_DEBUG("bind %d %d", index, bson_iter_int64(&iter));
 				j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(&iter));
 				break;
 			case BSON_TYPE_NULL:
-				J_DEBUG("bind %d NULL", index);
 				j_sql_bind_null(prepared->stmt, index);
 				break;
 			case BSON_TYPE_EOD:
@@ -819,7 +818,7 @@ error:
 static gboolean
 backend_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
 {
-	guint tmp;
+	guint64 tmp;
 	gint ret;
 	guint count = 0;
 	bson_iter_t iter;
@@ -829,13 +828,15 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
 	JSMDIterator* iteratorOut;
+	J_DEBUG("%d", 0);
 	*iterator = NULL;
 	iteratorOut = g_new(JSMDIterator, 1);
 	iteratorOut->namespace = g_strdup(namespace);
 	iteratorOut->name = g_strdup(name);
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
-	g_string_append_printf(sql, "SELECT DISTINCT id FROM %s_%s", namespace, name);
+	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", namespace, name);
+	J_DEBUG("%d", 0);
 	if (selector && bson_count_keys(selector))
 	{
 		g_string_append(sql, " WHERE ");
@@ -846,6 +847,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 			j_goto_error(!ret);
 		}
 	}
+	J_DEBUG("%d", 0);
 	prepared = getCachePrepared(namespace, name, sql->str);
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
@@ -859,6 +861,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
+	J_DEBUG("%d", 0);
 	if (selector && bson_count_keys(selector))
 	{
 		if (bson_iter_init(&iter, selector))
@@ -869,13 +872,15 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 			j_goto_error(!ret);
 		}
 	}
+	J_DEBUG("%s", prepared->sql->str);
 	j_sql_loop(prepared->stmt, ret)
 	{
 		count++;
 		tmp = (guint64)sqlite3_column_int64(prepared->stmt, 0);
 		g_array_append_val(iteratorOut->arr, tmp);
-		J_DEBUG("index = %d", tmp);
+		J_DEBUG("index = %ld", tmp);
 	}
+	J_DEBUG("%d", 0);
 	j_sql_reset(prepared->stmt);
 	j_goto_error(!count);
 	g_string_free(sql, TRUE);
@@ -885,6 +890,7 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 			bson_destroy(schema);
 		g_free(schema);
 	}
+	J_DEBUG("%d", 0);
 	*iterator = iteratorOut;
 	return TRUE;
 error:
@@ -940,8 +946,8 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 			}
 		}
 		prepared->variables_count++;
-		g_string_append_printf(prepared->sql, " WHERE id = ?%d", prepared->variables_count);
-		g_hash_table_insert(prepared->variables_index, g_strdup("id"), GINT_TO_POINTER(prepared->variables_count));
+		g_string_append_printf(prepared->sql, " WHERE _id = ?%d", prepared->variables_count);
+		g_hash_table_insert(prepared->variables_index, g_strdup("_id"), GINT_TO_POINTER(prepared->variables_count));
 		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
@@ -952,7 +958,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 	{
 		for (i = 0; i < prepared->variables_count; i++)
 			j_sql_bind_null(prepared->stmt, i + 1);
-		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, "id"));
+		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, "_id"));
 		j_goto_error(!index);
 		j_sql_bind_int64(prepared->stmt, index, g_array_index(iterator->arr, guint64, j));
 		if (bson_iter_init(&iter, metadata))
@@ -1042,7 +1048,7 @@ backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector
 	{
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 1;
-		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE id = ?1", namespace, name);
+		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE _id = ?1", namespace, name);
 		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
@@ -1103,7 +1109,7 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 					j_goto_error(TRUE);
 			}
 		}
-		g_string_append_printf(prepared->sql, " FROM %s_%s WHERE id = ?1", iterator->namespace, iterator->name);
+		g_string_append_printf(prepared->sql, " FROM %s_%s WHERE _id = ?1", iterator->namespace, iterator->name);
 		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
@@ -1113,10 +1119,10 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	index = g_array_index(iterator->arr, guint64, iterator->index);
 	J_DEBUG("index = %d", index);
 	iterator->index++;
-	j_sql_bind_int(prepared->stmt, 1, index);
+	j_sql_bind_int64(prepared->stmt, 1, index);
 	j_sql_step(prepared->stmt, ret)
 	{
-		ret = bson_append_int64(metadata, "id", -1, index);
+		ret = bson_append_int64(metadata, "_id", -1, index);
 		j_goto_error(!ret);
 		for (i = 0; i < prepared->variables_count; i++)
 		{

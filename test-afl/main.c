@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <julea-config.h>
-
+#include <stdio.h>
+#include <math.h>
+#include <float.h>
 #include <glib.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -65,7 +67,7 @@ freeJSMDIterator(gpointer ptr)
 }
 
 #if (GLIB_MAJOR_VERSION < 2) || (GLIB_MINOR_VERSION < 58)
-#define G_APPROX_VALUE(a, b, epsilon) (((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon))
+#define G_APPROX_VALUE(a, b, epsilon) ((((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon)) || !isfinite(a) || !isfinite(b))
 #endif
 
 #define J_DEBUG_BSON(bson)                               \
@@ -138,7 +140,7 @@ static guint namespace_varcount[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAM
 static JSMDType namespace_vartypes[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SCHEMA_VARIABLES];
 //<-
 //values->
-static char namespace_varvalues_string_const[AFL_LIMIT_SCHEMA_STRING_VALUES][AFL_LIMIT_SCHEMA_NAME];
+static char namespace_varvalues_string_const[AFL_LIMIT_SCHEMA_STRING_VALUES][AFL_LIMIT_STRING_LEN];
 //
 static guint64 namespace_varvalues_int64[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SCHEMA_VALUES][AFL_LIMIT_SCHEMA_VARIABLES];
 static gdouble namespace_varvalues_double[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SCHEMA_VALUES][AFL_LIMIT_SCHEMA_VARIABLES];
@@ -308,16 +310,16 @@ event_query_single(void)
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
-		ret_expected = ret_expected && namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index];
+		ret_expected = namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] && ret_expected;
 		J_DEBUG("ret_expected %d", ret_expected);
 		if (random_values.values.existent)
 		{
-			ret_expected = ret_expected && build_selector_single(0, random_values.values.value_index);
+			ret_expected = build_selector_single(0, random_values.values.value_index) && ret_expected;
 			J_DEBUG("ret_expected %d", ret_expected);
 		}
 		else
 		{
-			ret_expected = ret_expected && build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES);
+			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected;
 			J_DEBUG("ret_expected %d", ret_expected);
 			ret_expected = FALSE;
 			J_DEBUG("ret_expected %d", ret_expected);
@@ -345,7 +347,7 @@ event_query_single(void)
 		J_DEBUG_BSON(bson);
 		if (!bson_iter_init(&iter, bson))
 			MYABORT();
-		if (!bson_iter_find(&iter, "id"))
+		if (!bson_iter_find(&iter, "_id"))
 			MYABORT();
 		for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 		{
@@ -368,7 +370,10 @@ event_query_single(void)
 					break;
 				case J_SMD_TYPE_FLOAT32:
 					if (!G_APPROX_VALUE((gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001f))
+					{
+						J_DEBUG("%f %f", (gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]);
 						MYABORT();
+					}
 					break;
 				case J_SMD_TYPE_SINT64:
 					if ((gint64)bson_iter_int64(&iter) != (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i])
@@ -444,13 +449,13 @@ event_delete(void)
 		random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
 		if (random_values.values.existent)
 		{
-			ret_expected = ret_expected && build_selector_single(0, random_values.values.value_index); //selector only contains valid columns
-			ret_expected = ret_expected && namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index]; //row exists before ?
+			ret_expected = build_selector_single(0, random_values.values.value_index) && ret_expected; //selector only contains valid columns
+			ret_expected = namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] && ret_expected; //row exists before ?
 			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = 0;
 		}
 		else
 		{
-			ret_expected = ret_expected && build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES); //row does not exist before
+			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected; //row does not exist before
 			ret_expected = FALSE;
 		}
 	}
@@ -474,7 +479,7 @@ event_insert(void)
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_insert%d", 0);
-	ret_expected = ret_expected && build_metadata(); //inserting valid metadata should succeed
+	ret_expected = build_metadata() && ret_expected; //inserting valid metadata should succeed
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata);
 	if (ret != ret_expected)
 		MYABORT();
@@ -501,14 +506,14 @@ event_update(void)
 		random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
 		if (random_values.values.existent)
 		{
-			ret_expected = ret_expected && build_selector_single(0, random_values.values.value_index); //update a (maybe) existent row
+			ret_expected = build_selector_single(0, random_values.values.value_index) && ret_expected; //update a (maybe) existent row
 			J_DEBUG("ret_expected %d", ret_expected);
-			ret_expected = ret_expected && namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index]; //row to update exists
+			ret_expected = namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] && ret_expected; //row to update exists
 			J_DEBUG("ret_expected %d", ret_expected);
 		}
 		else
 		{
-			ret_expected = ret_expected && build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES); //update a definetly not existing row
+			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected; //update a definetly not existing row
 			J_DEBUG("ret_expected %d", ret_expected);
 			ret_expected = FALSE;
 			J_DEBUG("ret_expected %d", ret_expected);
