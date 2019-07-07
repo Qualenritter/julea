@@ -47,11 +47,11 @@ function julea_run(){
 			component="server"
 			i=0
 			port=$((10000 + ${index} * 10 + $i))
-			servers="$(hostname)@${port}"
+			servers="$(hostname):${port}"
 			for (( i=1; i < ${servercount}; i++ ))
 			do
 				port=$((10000 + ${index} * 10 + $i))
-				servers="${servers},$(hostname)@${port}"
+				servers="${servers},$(hostname):${port}"
 			done
 		fi
 		name=$(echo "${compiler}-${flags}" | sed "s/ /-/g" | sed "s/--/-/g" | sed "s/--/-/g")

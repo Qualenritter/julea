@@ -14,7 +14,15 @@ html/
 *.swp
 
 # Waf
-build/
+build*/
+prefix*/
 waf-extras/*.pyc
 .lock-waf*
 .waf-*/
+
+# AFL generated files
+afl
+
+# Benchmarks temporary file
+nohup.out
+log
