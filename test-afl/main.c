@@ -195,8 +195,16 @@ build_selector_single(guint varname, guint value)
 				MYABORT();
 			break;
 		case J_SMD_TYPE_STRING:
-			if (!bson_append_utf8(&bson_child, "value", -1, namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], -1))
-				MYABORT();
+			if (value == AFL_LIMIT_SCHEMA_VALUES)
+			{
+				if (!bson_append_utf8(&bson_child, "value", -1, "not_existent_var_name", -1))
+					MYABORT();
+			}
+			else
+			{
+				if (!bson_append_utf8(&bson_child, "value", -1, namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], -1))
+					MYABORT();
+			}
 			break;
 		case J_SMD_TYPE_INVALID:
 		case _J_SMD_TYPE_COUNT:
