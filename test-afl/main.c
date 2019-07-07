@@ -298,7 +298,10 @@ event_query_single(void)
 	if (ret != ret_expected)
 		MYABORT();
 	if (selector)
+	{
 		bson_destroy(selector);
+		selector = NULL;
+	}
 	if (ret)
 	{
 		bson = bson_new();
@@ -418,7 +421,10 @@ event_delete(void)
 	if (ret != ret_expected)
 		MYABORT();
 	if (selector)
+	{
 		bson_destroy(selector);
+		selector = NULL;
+	}
 	selector = NULL;
 }
 static void
@@ -431,7 +437,10 @@ event_insert(void)
 	if (ret != ret_expected)
 		MYABORT();
 	if (metadata)
+	{
 		bson_destroy(metadata);
+		metadata = NULL;
+	}
 }
 static void
 event_update(void)
@@ -461,9 +470,15 @@ event_update(void)
 	if (ret != ret_expected)
 		MYABORT();
 	if (selector)
+	{
 		bson_destroy(selector);
+		selector = NULL;
+	}
 	if (metadata)
+	{
 		bson_destroy(metadata);
+		metadata = NULL;
+	}
 }
 static void
 event_schema_get(void)
