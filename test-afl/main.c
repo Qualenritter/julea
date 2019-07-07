@@ -51,6 +51,19 @@ enum JSMDAflEvent
 };
 typedef enum JSMDAflEvent JSMDAflEvent;
 
+static void
+freeJSMDIterator(gpointer ptr)
+{
+	JSMDIterator* iter = ptr;
+	if (ptr)
+	{
+		g_free(iter->namespace);
+		g_free(iter->name);
+		g_array_free(iter->arr, TRUE);
+		g_free(iter);
+	}
+}
+
 #if (GLIB_MAJOR_VERSION < 2) || (GLIB_MINOR_VERSION < 58)
 #define G_APPROX_VALUE(a, b, epsilon) (((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon))
 #endif
@@ -289,7 +302,7 @@ event_query_single(void)
 	guint i;
 	gboolean ret;
 	gboolean ret_expected = TRUE;
-	gpointer iterator;
+	gpointer iterator = 0;
 	J_DEBUG("afl_event_query_single%d", 0);
 	J_DEBUG("ret_expected %d", ret_expected);
 	random_values.values.existent = random_values.values.existent % 2;
@@ -399,6 +412,10 @@ event_query_single(void)
 		if (ret)
 			MYABORT();
 		selector = NULL;
+	}
+	if (iterator)
+	{
+		freeJSMDIterator(iterator);
 	}
 }
 static void
