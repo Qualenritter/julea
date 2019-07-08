@@ -155,19 +155,19 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 		J_DEBUG("bind_null %d", idx);              \
 		j_sql_check(_ret_, SQLITE_OK);             \
 	} while (0)
-#define j_sql_bind_int64(stmt, idx, val)                         \
-	do                                                       \
-	{                                                        \
-		gint _ret_ = sqlite3_bind_int64(stmt, idx, val); \
-		J_DEBUG("bind_int64 %d %lld", idx, val);         \
-		j_sql_check(_ret_, SQLITE_OK);                   \
+#define j_sql_bind_int64(stmt, idx, val)                                         \
+	do                                                                       \
+	{                                                                        \
+		gint _ret_ = sqlite3_bind_int64(stmt, idx, val);                 \
+		J_DEBUG("bind_int64 %d %lld", idx, (long long unsigned int)val); \
+		j_sql_check(_ret_, SQLITE_OK);                                   \
 	} while (0)
-#define j_sql_bind_int(stmt, idx, val)                         \
-	do                                                     \
-	{                                                      \
-		gint _ret_ = sqlite3_bind_int(stmt, idx, val); \
-		J_DEBUG("bind_int %d %d", idx, val);           \
-		j_sql_check(_ret_, SQLITE_OK);                 \
+#define j_sql_bind_int(stmt, idx, val)                             \
+	do                                                         \
+	{                                                          \
+		gint _ret_ = sqlite3_bind_int(stmt, idx, val);     \
+		J_DEBUG("bind_int %d %d", idx, (unsigned int)val); \
+		j_sql_check(_ret_, SQLITE_OK);                     \
 	} while (0)
 #define j_sql_bind_blob(stmt, idx, val, val_len)                               \
 	do                                                                     \
@@ -180,14 +180,14 @@ static sqlite3_stmt* stmt_transaction_commit = NULL;
 	do                                                        \
 	{                                                         \
 		gint _ret_ = sqlite3_bind_double(stmt, idx, val); \
-		J_DEBUG("bind_double %d %f", idx, val);           \
+		J_DEBUG("bind_double %d %f", idx, (double)val);   \
 		j_sql_check(_ret_, SQLITE_OK);                    \
 	} while (0)
 #define j_sql_bind_text(stmt, idx, val, val_len)                               \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_text(stmt, idx, val, val_len, NULL); \
-		J_DEBUG("bind_text %d %s", idx, val);                          \
+		J_DEBUG("bind_text %d %s", idx, (const char*)val);             \
 		j_sql_check(_ret_, SQLITE_OK);                                 \
 	} while (0)
 #define j_sql_prepare(sql, stmt)                                                                             \
@@ -373,6 +373,20 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 error:
 	return NULL;
 }
+static void
+deleteCachePrepared(gchar const* namespace, gchar const* name)
+{
+	gint ret;
+	JSqlCacheNames* cacheNames = NULL;
+	JSqlCacheSQLQueries* cacheQueries = NULL;
+	JSqlCacheSQLPrepared* cachePrepared = NULL;
+	if (!cacheNamespaces)
+		return;
+	cacheNames = g_hash_table_lookup(cacheNamespaces->namespaces, namespace);
+	if (!cacheNames)
+		return;
+	g_hash_table_remove(cacheNames->names, name);
+}
 static gboolean
 backend_init(gchar const* path)
 {
@@ -538,6 +552,7 @@ backend_schema_delete(gchar const* namespace, gchar const* name)
 {
 	GString* sql = g_string_new(NULL);
 	gint ret;
+	deleteCachePrepared(namespace, name);
 	j_sql_transaction_begin();
 	ret = backend_schema_get(namespace, name, NULL);
 	j_goto_error(!ret);
@@ -607,6 +622,7 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 		while (bson_iter_next(&iter))
 		{
 			type = bson_iter_type(&iter);
+			J_DEBUG("%s", bson_iter_key(&iter));
 			index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
 			j_goto_error(!index);
 			switch (type)

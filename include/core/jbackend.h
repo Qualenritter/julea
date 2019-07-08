@@ -101,7 +101,7 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
-/*!
+			/*!
 create a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to create (e.g. "files")
@@ -125,8 +125,8 @@ create a schema in the smd-backend
 	- _unique columns are only on defined variables
 */
 			gboolean (*backend_schema_create)(gchar const* namespace, gchar const* name, bson_t const* schema);
-/*!
-optains information about a schema in the smd-backend
+			/*!
+obtains information about a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to open (e.g. "files")
 @param schema [out] the schema information initially points to
@@ -146,7 +146,7 @@ optains information about a schema in the smd-backend
 	- schema == NULL
 */
 			gboolean (*backend_schema_get)(gchar const* namespace, gchar const* name, bson_t* schema);
-/*!
+			/*!
 delete a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
@@ -155,7 +155,7 @@ delete a schema in the smd-backend
 	- (namespace, name) did not exist after
 */
 			gboolean (*backend_schema_delete)(gchar const* namespace, gchar const* name);
-/*!
+			/*!
 insert data into a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
@@ -173,7 +173,7 @@ insert data into a schema in the smd-backend
 	- there are no var_names which are not existent in the schema definition
 */
 			gboolean (*backend_insert)(gchar const* namespace, gchar const* name, bson_t const* metadata);
-/*!
+			/*!
 updates data in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
@@ -218,7 +218,7 @@ selector_part_or: {
 	- there are no var_names which are not existent in the schema definition
 */
 			gboolean (*backend_update)(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
-/*!
+			/*!
 deletes data from the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
@@ -256,7 +256,7 @@ selector_part_or: {
 	- there is at least one element deleted in the smd-backend
 */
 			gboolean (*backend_delete)(gchar const* namespace, gchar const* name, bson_t const* selector);
-/*!
+			/*!
 creates an iterator for the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
@@ -296,7 +296,7 @@ selector_part_or: {
 	- the iterator contains at least one result
 */
 			gboolean (*backend_query)(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
-/*!
+			/*!
 obtains metadata from the backend
 @param iterator [inout] the iterator specifying the data to retrieve
 @param metadata [out] the requested metadata initially points to a initialized empty bson

@@ -684,6 +684,8 @@ event_schema_create(void)
 			namespace_varcount[random_values.namespace][random_values.name] = random_values.schema_create.variable_count;
 			for (i = 0; i < random_values.schema_create.variable_count; i++)
 				namespace_vartypes[random_values.namespace][random_values.name][i] = random_values.schema_create.variable_types[i];
+			for (i = 0; i < AFL_LIMIT_SCHEMA_VALUES; i++)
+				namespace_varvalues_valid[random_values.namespace][random_values.name][i] = 0;
 		}
 		else
 		{
