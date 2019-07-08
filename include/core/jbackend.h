@@ -127,7 +127,7 @@ create a schema in the smd-backend
 optains information about a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to open (e.g. "files")
-@param schema [out] the schema information
+@param schema [out] the schema information points to an NOT initialized Bson
 @verbatim
 {
 	"_id": (int64)
@@ -149,33 +149,160 @@ delete a schema in the smd-backend
 	- (namespace, name) did not exist after
 */
 			gboolean (*backend_schema_delete)(gchar const* namespace, gchar const* name);
-
-
-
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
-			// metadata = BSON-kodierte Metadaten (kann ein Array enthalten? ansonsten brauchen wir Batches [siehe KV])
+/*!
+insert data into a schema in the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to delete (e.g. "files")
+@param metadata [in] the data to insert
+@verbatim
+{
+	"var_name1": value1,
+	"var_name2": value2,
+	"var_nameN": valueN,
+}
+@endverbatim
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did exists before
+	- all unique constraints are intact
+	- there are no var_names which are not existent in the schema definition
+*/
 			gboolean (*backend_insert)(gchar const* namespace, gchar const* name, bson_t const* metadata);
-
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
-			// selector = BSON-kodierter Query
-			// metadata = BSON-kodierte Metadaten
+/*!
+updates data in the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to delete (e.g. "files")
+@param selector [in] the selector to decide which data should be updated
+@verbatim
+selector_part_and: {
+	"var_name1": {
+		"operator": op1 (int32),
+		"value": value1,
+	},
+	"var_nameN": {
+		"operator": op2 (int32),
+		"value": value2,
+	}
+	_or: bson_t(selector_part_or)
+}
+selector_part_or: {
+	"var_name1": {
+		"operator": op (int32),
+		"value": value,
+	},
+	"var_nameN": {
+		"operator": op (int32),
+		"value": value,
+	}
+	_and: bson_t(selector_part_and)
+}
+@endverbatim
+ - selector = selector_and
+@param metadata [in] the data to write. All undefined columns will be set to NULL
+@verbatim
+{
+        "var_name1": value1,
+        "var_name2": value2,
+        "var_nameN": valueN,
+}
+@endverbatim
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did exists before
+	- all unique constraints are intact
+	- the selector found at least one element
+	- there are no var_names which are not existent in the schema definition
+*/
 			gboolean (*backend_update)(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
-
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
-			// selector = BSON-kodierter Query
+/*!
+deletes data from the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to delete (e.g. "files")
+@param selector [in] the selector to decide which data should be updated
+@verbatim
+selector_part_and: {
+	"var_name1": {
+		"operator": op1 (int32),
+		"value": value1,
+	},
+	"var_nameN": {
+		"operator": op2 (int32),
+		"value": value2,
+	}
+	_or: bson_t(selector_part_or)
+}
+selector_part_or: {
+	"var_name1": {
+		"operator": op (int32),
+		"value": value,
+	},
+	"var_nameN": {
+		"operator": op (int32),
+		"value": value,
+	}
+	_and: bson_t(selector_part_and)
+}
+@endverbatim
+ - selector = selector_and
+ - selector = empty-bson
+ - selector = NULL
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did exists before
+	- there are no var_names which are not existent in the schema definition
+*/
 			gboolean (*backend_delete)(gchar const* namespace, gchar const* name, bson_t const* selector);
-
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
-			// selector = BSON-kodierter Query (kann leer sein, dann werden alle Einträge zurückgegeben)
-			// iterator = ist Backend-spezifisch, wird an backend_iterate übergeben
+/*!
+creates an iterator for the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to delete (e.g. "files")
+@param selector [in] the selector to decide which data should be updated
+@verbatim
+selector_part_and: {
+	"var_name1": {
+		"operator": op1 (int32),
+		"value": value1,
+	},
+	"var_nameN": {
+		"operator": op2 (int32),
+		"value": value2,
+	}
+	_or: bson_t(selector_part_or)
+}
+selector_part_or: {
+	"var_name1": {
+		"operator": op (int32),
+		"value": value,
+	},
+	"var_nameN": {
+		"operator": op (int32),
+		"value": value,
+	}
+	_and: bson_t(selector_part_and)
+}
+@endverbatim
+ - selector = selector_and
+ - selector = empty-bson
+ - selector = NULL
+@param iterator [out] the iterator which can be used later for backend_iterate
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did exists before
+	- there are no var_names which are not existent in the schema definition
+	- the iterator is valid
+*/
 			gboolean (*backend_query)(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
-
-			// iterator = ist Backend-spezifisch, kommt von backend_query
-			// metadata = BSON-kodierte Metadaten (einzelne Einträge)
+/*!
+obtains metadata from the backend
+@param iterator [inout] the iterator specifying the data to retrieve
+@param metadata [out] the requested metadata points to a initialized empty bson
+@verbatim
+{
+	"_id": value0,
+	"var_name1": value1,
+	"var_name2": value2,
+	"var_nameN": valueN,
+}
+@endverbatim
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did exists before
+*/
 			gboolean (*backend_iterate)(gpointer iterator, bson_t* metadata);
 		} smd;
 	};
