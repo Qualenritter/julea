@@ -1,6 +1,7 @@
 /*
  * JULEA - Flexible storage framework
  * Copyright (C) 2017-2019 Michael Kuhn
+ * Copyright (C) 2019 Benjamin Warnke
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -53,6 +54,7 @@ enum JBackendComponent
 
 typedef enum JBackendComponent JBackendComponent;
 
+//! This struct contains the required functions for the different backends
 struct JBackend
 {
 	JBackendType type;
@@ -99,19 +101,56 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
-			// schema = BSON-kodiertes Schema
+/*!
+create a schema in the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to create (e.g. "files")
+@param schema [in] the schema-structure to create
+@verbatim
+{
+	"var_name1": var_type1 (int32),
+	"var_name2": var_type2 (int32),
+	"var_nameN": var_typeN (int32),
+	"_indexes": [["var_name1", "var_name2"], ["var_name3"]],
+	"_unique": [["var_name1", "var_name2"], ["var_name3"]],
+}
+@endverbatim
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did not exist before
+	- there are variables defined in the schema
+	- all var_types in the schema are valid
+	- _indexes columns are only on defined variables
+	- _unique columns are only on defined variables
+*/
 			gboolean (*backend_schema_create)(gchar const* namespace, gchar const* name, bson_t const* schema);
-
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
-			// schema = BSON-kodiertes Schema (out)
+/*!
+optains information about a schema in the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to open (e.g. "files")
+@param schema [out] the schema information
+@verbatim
+{
+	"_id": (int64)
+	"var_name1": var_type1 (int32),
+	"var_name2": var_type2 (int32),
+	"var_nameN": var_typeN (int32),
+}
+@endverbatim
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) exists
+*/
 			gboolean (*backend_schema_get)(gchar const* namespace, gchar const* name, bson_t* schema);
-
-			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
-			// name = eigentlicher Schema-Name (z.B. "files")
+/*!
+delete a schema in the smd-backend
+@param namespace [in] different usecases (e.g. "adios", "hdf5")
+@param name [in] schema name to delete (e.g. "files")
+@return TRUE if all following statements are TRUE otherwise FALSE
+	- (namespace, name) did exists before
+	- (namespace, name) did not exist after
+*/
 			gboolean (*backend_schema_delete)(gchar const* namespace, gchar const* name);
+
+
 
 			// namespace = unterschiedliche Use Cases (z.B. "adios2", "hdf5")
 			// name = eigentlicher Schema-Name (z.B. "files")
