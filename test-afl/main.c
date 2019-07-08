@@ -233,10 +233,9 @@ build_metadata(void)
 	guint count = 0;
 	guint i;
 	J_DEBUG("afl_build_metadata%d", 0);
-	random_values.values.invalid_bson_metadata = random_values.values.invalid_bson_metadata % 3;
-	if (random_values.values.invalid_bson_metadata)
+	if (random_values.values.invalid_bson_metadata % 3)
 	{
-		switch (random_values.values.invalid_bson_metadata)
+		switch (random_values.values.invalid_bson_metadata % 3)
 		{
 		case 2: //empty metadata
 			metadata = bson_new();
@@ -335,6 +334,7 @@ event_query_single(void)
 {
 	bson_t* bson;
 	bson_t bson_child;
+	bson_t bson_child2;
 	bson_iter_t iter;
 	guint i;
 	gboolean ret;
@@ -342,10 +342,9 @@ event_query_single(void)
 	gpointer iterator = 0;
 	J_DEBUG("afl_event_query_single %d", random_values.values.value_index);
 	J_DEBUG("ret_expected %d", ret_expected);
-	random_values.values.invalid_bson_selector = random_values.values.invalid_bson_selector % 6;
-	if (random_values.values.invalid_bson_selector)
+	if (random_values.values.invalid_bson_selector % 6)
 	{
-		switch (random_values.values.invalid_bson_selector)
+		switch (random_values.values.invalid_bson_selector % 6)
 		{
 		case 5: //NULL iterator
 			build_selector_single(0, random_values.values.value_index);
@@ -357,7 +356,8 @@ event_query_single(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_code(&bson_child, "value", -1, varname_strbuf);
+			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
+			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
 			if (ret)
@@ -377,7 +377,8 @@ event_query_single(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_double(&bson_child, "operator", -1, 0);
+			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
+			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
 			if (ret)
@@ -537,19 +538,20 @@ event_delete(void)
 {
 	//TODO delete ALL at once using empty bson and NULL
 	bson_t bson_child;
+	bson_t bson_child2;
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_delete%d", 0);
-	random_values.values.invalid_bson_selector = random_values.values.invalid_bson_selector % 7;
-	if (random_values.values.invalid_bson_selector)
+	if (random_values.values.invalid_bson_selector % 7)
 	{
-		switch (random_values.values.invalid_bson_selector)
+		switch (random_values.values.invalid_bson_selector % 7)
 		{
 		case 4: //invalid bson - value of not allowed bson type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_code(&bson_child, "value", -1, varname_strbuf);
+			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
+			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
 			if (ret)
@@ -569,7 +571,8 @@ event_delete(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_double(&bson_child, "operator", -1, 0);
+			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
+			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
 			if (ret)
@@ -650,20 +653,21 @@ event_update(void)
 	//TODO update multile rows together
 	//TODO selector useing AND/OR query elements
 	bson_t bson_child;
+	bson_t bson_child2;
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_update%d", 0);
-	random_values.values.invalid_bson_selector = random_values.values.invalid_bson_selector % 7;
-	if (random_values.values.invalid_bson_selector)
+	if (random_values.values.invalid_bson_selector % 7)
 	{
 		build_metadata();
-		switch (random_values.values.invalid_bson_selector)
+		switch (random_values.values.invalid_bson_selector % 7)
 		{
 		case 6: //invalid bson - value of not allowed bson type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_code(&bson_child, "value", -1, varname_strbuf);
+			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
+			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
 			if (ret)
@@ -683,7 +687,8 @@ event_update(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_double(&bson_child, "operator", -1, 0);
+			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
+			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
 			if (ret)
@@ -778,8 +783,7 @@ event_schema_get(void)
 	bson_t* bson;
 	guint i;
 	J_DEBUG("afl_event_schema_get%d", 0);
-	random_values.schema_create.invalid_bson_schema = random_values.schema_create.invalid_bson_schema % 2;
-	if (random_values.schema_create.invalid_bson_schema)
+	if (random_values.schema_create.invalid_bson_schema % 2)
 	{
 		ret = j_smd_schema_get(namespace_strbuf, name_strbuf, NULL);
 		if (ret != namespace_exist[random_values.namespace][random_values.name])
@@ -854,15 +858,15 @@ event_schema_delete(void)
 static void
 event_schema_create(void)
 {
+	bson_t bson_child;
 	gboolean ret;
 	gboolean ret_expected;
 	bson_t* bson;
 	guint i;
 	J_DEBUG("afl_event_schema_create%d", 0);
-	random_values.schema_create.invalid_bson_schema = random_values.schema_create.invalid_bson_schema % 5;
-	if (random_values.schema_create.invalid_bson_schema)
+	if (random_values.schema_create.invalid_bson_schema % 5)
 	{
-		switch (random_values.schema_create.invalid_bson_schema)
+		switch (random_values.schema_create.invalid_bson_schema % 5)
 		{
 		case 4: //variable type not specified in enum
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
@@ -876,7 +880,8 @@ event_schema_create(void)
 		case 3: //wrong bson variable types
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson = bson_new();
-			bson_append_double(bson, varname_strbuf, -1, 0.0);
+			bson_append_document_begin(bson, varname_strbuf, -1, &bson_child);
+			bson_append_document_end(bson, &bson_child);
 			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
 			if (ret)
 				MYABORT();

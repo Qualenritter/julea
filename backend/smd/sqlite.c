@@ -724,33 +724,40 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 				j_goto_error(!ret);
 				ret = bson_iter_find(&iterchild, "operator");
 				j_goto_error(!ret);
-				op = bson_iter_int32(&iterchild);
-				g_string_append_printf(sql, "%s ", bson_iter_key(iter));
-				switch (op)
+				if (BSON_ITER_HOLDS_INT32(&iterchild))
 				{
-				case J_SMD_OPERATOR_LT:
-					g_string_append(sql, "<");
-					break;
-				case J_SMD_OPERATOR_LE:
-					g_string_append(sql, "<=");
-					break;
-				case J_SMD_OPERATOR_GT:
-					g_string_append(sql, ">");
-					break;
-				case J_SMD_OPERATOR_GE:
-					g_string_append(sql, ">=");
-					break;
-				case J_SMD_OPERATOR_EQ:
-					g_string_append(sql, "=");
-					break;
-				case J_SMD_OPERATOR_NE:
-					g_string_append(sql, "!=");
-					break;
-				case _J_SMD_OPERATOR_COUNT:
-				default:
+					op = bson_iter_int32(&iterchild);
+					g_string_append_printf(sql, "%s ", bson_iter_key(iter));
+					switch (op)
+					{
+					case J_SMD_OPERATOR_LT:
+						g_string_append(sql, "<");
+						break;
+					case J_SMD_OPERATOR_LE:
+						g_string_append(sql, "<=");
+						break;
+					case J_SMD_OPERATOR_GT:
+						g_string_append(sql, ">");
+						break;
+					case J_SMD_OPERATOR_GE:
+						g_string_append(sql, ">=");
+						break;
+					case J_SMD_OPERATOR_EQ:
+						g_string_append(sql, "=");
+						break;
+					case J_SMD_OPERATOR_NE:
+						g_string_append(sql, "!=");
+						break;
+					case _J_SMD_OPERATOR_COUNT:
+					default:
+						j_goto_error(TRUE);
+					}
+					g_string_append_printf(sql, " ?%d", *variables_count);
+				}
+				else
+				{
 					j_goto_error(TRUE);
 				}
-				g_string_append_printf(sql, " ?%d", *variables_count);
 			}
 		}
 		else
