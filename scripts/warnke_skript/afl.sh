@@ -208,5 +208,17 @@ sleep 0.5s
 #sleep 0.5s
 #i=36; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -S" "3" > "log/run$i.out" 2>"log/run$i.err" &
 
+
+
+i=34; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=35; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=36; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=37; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -S" "0" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+
+
 echo "done"
 wait
