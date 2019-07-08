@@ -287,7 +287,7 @@ build_metadata(void)
 				}
 				else
 				{ //TODO test other types for theinvalid extra column - should fail on the column name anyway
-					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i + AFL_LIMIT_SCHEMA_VARIABLES);
+					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, AFL_LIMIT_SCHEMA_VARIABLES);
 					bson_append_int32(metadata, varname_strbuf, -1, 1); //not existent varname
 					ret_expected = FALSE;
 				}
@@ -538,6 +538,13 @@ event_update(void)
 	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
 	if (ret != ret_expected)
 		MYABORT();
+	if (namespace_exist[random_values.namespace][random_values.name])
+	{
+		if (ret)
+			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = random_values.values.value_count;
+		else if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
+			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = 1;
+	}
 	if (selector)
 	{
 		bson_destroy(selector);

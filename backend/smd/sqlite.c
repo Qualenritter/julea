@@ -967,6 +967,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 			{
 				type = bson_iter_type(&iter);
 				index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
+				J_DEBUG("%s", bson_iter_key(&iter));
 				j_goto_error(!index);
 				switch (type)
 				{
