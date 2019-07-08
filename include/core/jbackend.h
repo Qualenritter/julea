@@ -119,6 +119,8 @@ create a schema in the smd-backend
 	- (namespace, name) did not exist before
 	- there are variables defined in the schema
 	- all var_types in the schema are valid
+	- there is no variable name used multiple times
+	- there is no variable called "_id"
 	- _indexes columns are only on defined variables
 	- _unique columns are only on defined variables
 */
@@ -127,7 +129,9 @@ create a schema in the smd-backend
 optains information about a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to open (e.g. "files")
-@param schema [out] the schema information points to an NOT initialized Bson
+@param schema [out] the schema information initially points to
+ - an NOT initialized Bson
+ - NULL
 @verbatim
 {
 	"_id": (int64)
@@ -138,6 +142,8 @@ optains information about a schema in the smd-backend
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) exists
+	- schema != NULL and contains the requested data
+	- schema == NULL
 */
 			gboolean (*backend_schema_get)(gchar const* namespace, gchar const* name, bson_t* schema);
 /*!
@@ -247,6 +253,7 @@ selector_part_or: {
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
 	- there are no var_names which are not existent in the schema definition
+	- there is at least one element deleted in the smd-backend
 */
 			gboolean (*backend_delete)(gchar const* namespace, gchar const* name, bson_t const* selector);
 /*!
@@ -286,12 +293,13 @@ selector_part_or: {
 	- (namespace, name) did exists before
 	- there are no var_names which are not existent in the schema definition
 	- the iterator is valid
+	- the iterator contains at least one result
 */
 			gboolean (*backend_query)(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
 /*!
 obtains metadata from the backend
 @param iterator [inout] the iterator specifying the data to retrieve
-@param metadata [out] the requested metadata points to a initialized empty bson
+@param metadata [out] the requested metadata initially points to a initialized empty bson
 @verbatim
 {
 	"_id": value0,
@@ -302,6 +310,8 @@ obtains metadata from the backend
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
+	- metadata is valid
+	- iterator found an element
 */
 			gboolean (*backend_iterate)(gpointer iterator, bson_t* metadata);
 		} smd;
