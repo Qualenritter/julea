@@ -376,10 +376,7 @@ error:
 static void
 deleteCachePrepared(gchar const* namespace, gchar const* name)
 {
-	gint ret;
 	JSqlCacheNames* cacheNames = NULL;
-	JSqlCacheSQLQueries* cacheQueries = NULL;
-	JSqlCacheSQLPrepared* cachePrepared = NULL;
 	if (!cacheNamespaces)
 		return;
 	cacheNames = g_hash_table_lookup(cacheNamespaces->namespaces, namespace);
@@ -575,11 +572,13 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 {
 	bson_type_t type;
 	guint i, index;
+	guint count;
 	bson_iter_t iter;
 	bson_t* schema = NULL;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
+	j_goto_error(!metadata);
 	prepared = getCachePrepared(namespace, name, "insert");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
@@ -617,6 +616,7 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	}
 	for (i = 0; i < prepared->variables_count; i++)
 		j_sql_bind_null(prepared->stmt, i + 1);
+	count = 0;
 	if (bson_iter_init(&iter, metadata))
 	{
 		while (bson_iter_next(&iter))
@@ -628,15 +628,19 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 			switch (type)
 			{
 			case BSON_TYPE_DOUBLE:
+				count++;
 				j_sql_bind_double(prepared->stmt, index, bson_iter_double(&iter));
 				break;
 			case BSON_TYPE_UTF8:
+				count++;
 				j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(&iter, NULL), -1);
 				break;
 			case BSON_TYPE_INT32:
+				count++;
 				j_sql_bind_int(prepared->stmt, index, bson_iter_int32(&iter));
 				break;
 			case BSON_TYPE_INT64:
+				count++;
 				j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(&iter));
 				break;
 			case BSON_TYPE_NULL:
@@ -666,6 +670,7 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	}
 	else
 		j_goto_error(TRUE);
+	j_goto_error(!count);
 	j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	if (schema)
 	{
@@ -837,8 +842,6 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	guint count = 0;
 	bson_iter_t iter;
 	guint variables_count;
-	bson_t* schema = NULL;
-	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
 	JSMDIterator* iteratorOut;
@@ -863,9 +866,8 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(namespace, name, schema);
-		j_goto_error(!schema_initialized);
+		ret = backend_schema_get(namespace, name, NULL);
+		j_goto_error(!ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
 		J_DEBUG("%s", prepared->sql->str);
@@ -892,28 +894,17 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	j_sql_reset(prepared->stmt);
 	j_goto_error(!count);
 	g_string_free(sql, TRUE);
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
 	*iterator = iteratorOut;
 	return TRUE;
 error:
 	g_string_free(sql, TRUE);
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
 	freeJSMDIterator(iteratorOut);
 	return FALSE;
 }
 static gboolean
 backend_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
 {
+	guint count;
 	bson_type_t type;
 	JSMDIterator* iterator = NULL;
 	bson_iter_t iter;
@@ -924,6 +915,9 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
+	j_goto_error(!selector);
+	j_goto_error(!bson_count_keys(selector));
+	j_goto_error(!metadata);
 	prepared = getCachePrepared(namespace, name, "update");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
@@ -962,6 +956,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 	j_goto_error(!ret);
 	for (j = 0; j < iterator->arr->len; j++)
 	{
+		count = 0;
 		for (i = 0; i < prepared->variables_count; i++)
 			j_sql_bind_null(prepared->stmt, i + 1);
 		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, "_id"));
@@ -978,15 +973,19 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 				switch (type)
 				{
 				case BSON_TYPE_DOUBLE:
+					count++;
 					j_sql_bind_double(prepared->stmt, index, bson_iter_double(&iter));
 					break;
 				case BSON_TYPE_UTF8:
+					count++;
 					j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(&iter, NULL), -1);
 					break;
 				case BSON_TYPE_INT32:
+					count++;
 					j_sql_bind_int(prepared->stmt, index, bson_iter_int32(&iter));
 					break;
 				case BSON_TYPE_INT64:
+					count++;
 					j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(&iter));
 					break;
 				case BSON_TYPE_NULL:
@@ -1017,6 +1016,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		else
 			j_goto_error(TRUE);
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
+		j_goto_error(!count);
 	}
 	if (schema)
 	{
@@ -1124,7 +1124,7 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 	j_sql_transaction_begin();
 	j_goto_error(iterator->index >= iterator->arr->len);
 	index = g_array_index(iterator->arr, guint64, iterator->index);
-	J_DEBUG("index = %d", index);
+	J_DEBUG("index = %ld", index);
 	iterator->index++;
 	j_sql_bind_int64(prepared->stmt, 1, index);
 	j_sql_step(prepared->stmt, ret)

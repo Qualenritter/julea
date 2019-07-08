@@ -55,9 +55,6 @@ struct JSMDIterator
 };
 typedef struct JSMDIterator JSMDIterator;
 
-/*
- * returns TRUE if and only if namespace_name did not exist before, and it is now successfully initialized with the given scheme
- */
 gboolean j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema);
 gboolean j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema);
 gboolean j_smd_schema_delete(gchar const* namespace, gchar const* name);

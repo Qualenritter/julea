@@ -116,6 +116,7 @@ struct JSMDAflRandomValues
 			guint variable_count; //variables to create in schema
 			JSMDType variable_types[AFL_LIMIT_SCHEMA_VARIABLES]; //the given types in this schema
 			guint duplicate_variables; //mod 2 -> Yes/No
+			guint invalid_bson_schema;
 		} schema_create;
 		struct
 		{
@@ -128,6 +129,8 @@ struct JSMDAflRandomValues
 			guint value_count; //insert <real number of vaiables in schema> + ((mod 3) - 1)
 			guint value_index; //"primary key" first column
 			guint existent; //mod 2 -> Yes/No
+			guint invalid_bson_selector;
+			guint invalid_bson_metadata;
 		} values;
 	};
 };
@@ -225,9 +228,26 @@ build_selector_single(guint varname, guint value)
 static gboolean
 build_metadata(void)
 {
+	//TODO check writing with incompatible data-types in schema and metadata
 	gboolean ret_expected = TRUE;
+	guint count = 0;
 	guint i;
 	J_DEBUG("afl_build_metadata%d", 0);
+	random_values.values.invalid_bson_metadata = random_values.values.invalid_bson_metadata % 3;
+	if (random_values.values.invalid_bson_metadata)
+	{
+		switch (random_values.values.invalid_bson_metadata)
+		{
+		case 2: //empty metadata
+			metadata = bson_new();
+			return FALSE;
+		case 1: //NULL metadata
+			metadata = NULL;
+			return FALSE;
+		case 0:
+		default:;
+		}
+	}
 	metadata = bson_new();
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -252,30 +272,37 @@ build_metadata(void)
 					switch (namespace_vartypes[random_values.namespace][random_values.name][i])
 					{
 					case J_SMD_TYPE_SINT32:
+						count++;
 						if (!bson_append_int32(metadata, varname_strbuf, -1, (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_UINT32:
+						count++;
 						if (!bson_append_int32(metadata, varname_strbuf, -1, (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_FLOAT32:
+						count++;
 						if (!bson_append_double(metadata, varname_strbuf, -1, (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_SINT64:
+						count++;
 						if (!bson_append_int64(metadata, varname_strbuf, -1, (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_UINT64:
+						count++;
 						if (!bson_append_int64(metadata, varname_strbuf, -1, (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_FLOAT64:
+						count++;
 						if (!bson_append_double(metadata, varname_strbuf, -1, (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_STRING:
+						count++;
 						if (!bson_append_utf8(metadata, varname_strbuf, -1, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], -1))
 							MYABORT();
 						break;
@@ -286,7 +313,7 @@ build_metadata(void)
 					}
 				}
 				else
-				{ //TODO test other types for theinvalid extra column - should fail on the column name anyway
+				{ //TODO test other types for the invalid extra column - should fail on the column name anyway
 					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, AFL_LIMIT_SCHEMA_VARIABLES);
 					bson_append_int32(metadata, varname_strbuf, -1, 1); //not existent varname
 					ret_expected = FALSE;
@@ -301,12 +328,13 @@ build_metadata(void)
 		ret_expected = FALSE;
 	}
 	J_DEBUG_BSON(metadata);
-	return ret_expected;
+	return ret_expected && count;
 }
 static void
 event_query_single(void)
 {
 	bson_t* bson;
+	bson_t bson_child;
 	bson_iter_t iter;
 	guint i;
 	gboolean ret;
@@ -314,6 +342,65 @@ event_query_single(void)
 	gpointer iterator = 0;
 	J_DEBUG("afl_event_query_single %d", random_values.values.value_index);
 	J_DEBUG("ret_expected %d", ret_expected);
+	random_values.values.invalid_bson_selector = random_values.values.invalid_bson_selector % 6;
+	if (random_values.values.invalid_bson_selector)
+	{
+		switch (random_values.values.invalid_bson_selector)
+		{
+		case 5: //NULL iterator
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, NULL);
+			if (ret)
+				MYABORT();
+			break;
+		case 4: //invalid bson - value of not allowed bson type
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_code(&bson_child, "value", -1, varname_strbuf);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
+			if (ret)
+				MYABORT();
+			break;
+		case 3: //invalid bson - operator undefined enum
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_int32(&bson_child, "operator", -1, _J_SMD_OPERATOR_COUNT + 1);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
+			if (ret)
+				MYABORT();
+			break;
+		case 2: //invalid bson - operator of invalid type
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_double(&bson_child, "operator", -1, 0);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
+			if (ret)
+				MYABORT();
+			break;
+		case 1: //invalid bson - key of type something else than a document
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_int32(selector, varname_strbuf, -1, 0);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator);
+			if (ret)
+				MYABORT();
+			break;
+		case 0:
+		default:;
+		}
+		if (selector)
+		{
+			bson_destroy(selector);
+			selector = NULL;
+		}
+	}
+
 	random_values.values.existent = random_values.values.existent % 2;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -448,9 +535,63 @@ event_query_all(void)
 static void
 event_delete(void)
 {
+	//TODO delete ALL at once using empty bson and NULL
+	bson_t bson_child;
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_delete%d", 0);
+	random_values.values.invalid_bson_selector = random_values.values.invalid_bson_selector % 7;
+	if (random_values.values.invalid_bson_selector)
+	{
+		switch (random_values.values.invalid_bson_selector)
+		{
+		case 4: //invalid bson - value of not allowed bson type
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_code(&bson_child, "value", -1, varname_strbuf);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
+			if (ret)
+				MYABORT();
+			break;
+		case 3: //invalid bson - operator undefined enum
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_int32(&bson_child, "operator", -1, _J_SMD_OPERATOR_COUNT + 1);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
+			if (ret)
+				MYABORT();
+			break;
+		case 2: //invalid bson - operator of invalid type
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_double(&bson_child, "operator", -1, 0);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
+			if (ret)
+				MYABORT();
+			break;
+		case 1: //invalid bson - key of type something else than a document
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_int32(selector, varname_strbuf, -1, 0);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector);
+			if (ret)
+				MYABORT();
+			break;
+		case 0:
+		default:;
+		}
+		if (selector)
+		{
+			bson_destroy(selector);
+			selector = NULL;
+		}
+	}
 	random_values.values.existent = random_values.values.existent % 2;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -487,7 +628,9 @@ event_insert(void)
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_insert%d", 0);
+	J_DEBUG("ret_expected %d", ret_expected);
 	ret_expected = build_metadata() && ret_expected; //inserting valid metadata should succeed
+	J_DEBUG("ret_expected %d", ret_expected);
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata);
 	if (ret != ret_expected)
 		MYABORT();
@@ -505,9 +648,80 @@ static void
 event_update(void)
 {
 	//TODO update multile rows together
+	//TODO selector useing AND/OR query elements
+	bson_t bson_child;
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_update%d", 0);
+	random_values.values.invalid_bson_selector = random_values.values.invalid_bson_selector % 7;
+	if (random_values.values.invalid_bson_selector)
+	{
+		build_metadata();
+		switch (random_values.values.invalid_bson_selector)
+		{
+		case 6: //invalid bson - value of not allowed bson type
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_code(&bson_child, "value", -1, varname_strbuf);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
+			if (ret)
+				MYABORT();
+			break;
+		case 5: //invalid bson - operator undefined enum
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_int32(&bson_child, "operator", -1, _J_SMD_OPERATOR_COUNT + 1);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
+			if (ret)
+				MYABORT();
+			break;
+		case 4: //invalid bson - operator of invalid type
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
+			bson_append_double(&bson_child, "operator", -1, 0);
+			bson_append_document_end(selector, &bson_child);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
+			if (ret)
+				MYABORT();
+			break;
+		case 3: //invalid bson - key of type something else than a document
+			selector = bson_new();
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson_append_int32(selector, varname_strbuf, -1, 0);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
+			if (ret)
+				MYABORT();
+			break;
+		case 2: //empty bson
+			selector = bson_new();
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata);
+			if (ret)
+				MYABORT();
+			break;
+		case 1: //NULL selector
+			ret = j_smd_update(namespace_strbuf, name_strbuf, NULL, metadata);
+			if (ret)
+				MYABORT();
+			break;
+		case 0:
+		default:;
+		}
+		if (selector)
+		{
+			bson_destroy(selector);
+			selector = NULL;
+		}
+		if (metadata)
+		{
+			bson_destroy(metadata);
+			metadata = NULL;
+		}
+	}
 	J_DEBUG("ret_expected %d", ret_expected);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -564,6 +778,13 @@ event_schema_get(void)
 	bson_t* bson;
 	guint i;
 	J_DEBUG("afl_event_schema_get%d", 0);
+	random_values.schema_create.invalid_bson_schema = random_values.schema_create.invalid_bson_schema % 2;
+	if (random_values.schema_create.invalid_bson_schema)
+	{
+		ret = j_smd_schema_get(namespace_strbuf, name_strbuf, NULL);
+		if (ret != namespace_exist[random_values.namespace][random_values.name])
+			MYABORT();
+	}
 	bson = g_new0(bson_t, 1);
 	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, bson);
 	if (namespace_exist[random_values.namespace][random_values.name])
@@ -633,12 +854,51 @@ event_schema_delete(void)
 static void
 event_schema_create(void)
 {
-	//TODO duplicated column names should fail
 	gboolean ret;
 	gboolean ret_expected;
 	bson_t* bson;
 	guint i;
 	J_DEBUG("afl_event_schema_create%d", 0);
+	random_values.schema_create.invalid_bson_schema = random_values.schema_create.invalid_bson_schema % 5;
+	if (random_values.schema_create.invalid_bson_schema)
+	{
+		switch (random_values.schema_create.invalid_bson_schema)
+		{
+		case 4: //variable type not specified in enum
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson = bson_new();
+			bson_append_int32(bson, varname_strbuf, -1, _J_SMD_TYPE_COUNT + 1);
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
+			if (ret)
+				MYABORT();
+			bson_destroy(bson);
+			break;
+		case 3: //wrong bson variable types
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson = bson_new();
+			bson_append_double(bson, varname_strbuf, -1, 0.0);
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
+			if (ret)
+				MYABORT();
+			bson_destroy(bson);
+			break;
+		case 2: //empty bson
+			bson = bson_new();
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson);
+			if (ret)
+				MYABORT();
+			bson_destroy(bson);
+			break;
+		case 1: //NULL
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, NULL);
+			if (ret)
+				MYABORT();
+			break;
+		case 0:
+		default:
+			MYABORT();
+		}
+	}
 	random_values.schema_create.duplicate_variables = random_values.schema_create.duplicate_variables % 2;
 	random_values.schema_create.variable_count = random_values.schema_create.variable_count % AFL_LIMIT_SCHEMA_VARIABLES;
 	for (i = 0; i < random_values.schema_create.variable_count; i++)

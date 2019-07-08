@@ -215,6 +215,8 @@ selector_part_or: {
 	- (namespace, name) did exists before
 	- all unique constraints are intact
 	- the selector found at least one element
+	- the selector is not NULL
+	- the selector is not the empty bson
 	- there are no var_names which are not existent in the schema definition
 */
 			gboolean (*backend_update)(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
