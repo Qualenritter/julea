@@ -387,7 +387,7 @@ backend_init(gchar const* path)
 		ret = sqlite3_open(path, &backend_db);
 		if (ret != SQLITE_OK)
 		{
-			J_DEBUG("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 			j_goto_error(TRUE);
 		}
 	}
@@ -397,7 +397,7 @@ backend_init(gchar const* path)
 		ret = sqlite3_open(":memory:", &backend_db);
 		if (ret != SQLITE_OK)
 		{
-			J_DEBUG("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
+			J_CRITICAL("sql_error %d %s", ret, sqlite3_errmsg(backend_db));
 			j_goto_error(TRUE);
 		}
 	}
@@ -729,7 +729,6 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 				default:
 					j_goto_error(TRUE);
 				}
-				J_DEBUG("%d", *variables_count);
 				g_string_append_printf(sql, " ?%d", *variables_count);
 			}
 		}
@@ -767,7 +766,6 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 				ret = bson_iter_find(&iterchild, "value");
 				j_goto_error(!ret);
 				type = bson_iter_type(&iterchild);
-				J_DEBUG("%d", *variables_count);
 				switch (type)
 				{
 				case BSON_TYPE_DOUBLE:
@@ -828,7 +826,6 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
 	JSMDIterator* iteratorOut;
-	J_DEBUG("%d", 0);
 	*iterator = NULL;
 	iteratorOut = g_new(JSMDIterator, 1);
 	iteratorOut->namespace = g_strdup(namespace);
@@ -836,7 +833,6 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
 	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", namespace, name);
-	J_DEBUG("%d", 0);
 	if (selector && bson_count_keys(selector))
 	{
 		g_string_append(sql, " WHERE ");
@@ -847,7 +843,6 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 			j_goto_error(!ret);
 		}
 	}
-	J_DEBUG("%d", 0);
 	prepared = getCachePrepared(namespace, name, sql->str);
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
@@ -861,13 +856,11 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	J_DEBUG("%d", 0);
 	if (selector && bson_count_keys(selector))
 	{
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count = 0;
-			J_DEBUG("%s", prepared->sql->str);
 			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count);
 			j_goto_error(!ret);
 		}
@@ -880,7 +873,6 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 		g_array_append_val(iteratorOut->arr, tmp);
 		J_DEBUG("index = %ld", tmp);
 	}
-	J_DEBUG("%d", 0);
 	j_sql_reset(prepared->stmt);
 	j_goto_error(!count);
 	g_string_free(sql, TRUE);
@@ -890,11 +882,9 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 			bson_destroy(schema);
 		g_free(schema);
 	}
-	J_DEBUG("%d", 0);
 	*iterator = iteratorOut;
 	return TRUE;
 error:
-	J_DEBUG("%d", 0);
 	g_string_free(sql, TRUE);
 	if (schema)
 	{
@@ -936,7 +926,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 				if (BSON_ITER_HOLDS_INT32(&iter))
 				{
 					if (prepared->variables_count)
-						g_string_append(prepared->sql, " AND ");
+						g_string_append(prepared->sql, ", ");
 					prepared->variables_count++;
 					g_string_append_printf(prepared->sql, "%s = ?%d", bson_iter_key(&iter), prepared->variables_count);
 					g_hash_table_insert(prepared->variables_index, g_strdup(bson_iter_key(&iter)), GINT_TO_POINTER(prepared->variables_count));
