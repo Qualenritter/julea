@@ -105,9 +105,10 @@ struct JBackend
 create a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to create (e.g. "files")
-@param schema [in] the schema-structure to create
+@param schema [in] the schema-structure to create. points to
+ - an initialized bson containing "structure"
 @verbatim
-{
+structure{
 	"var_name1": var_type1 (int32),
 	"var_name2": var_type2 (int32),
 	"var_nameN": var_typeN (int32),
@@ -130,7 +131,7 @@ obtains information about a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to open (e.g. "files")
 @param schema [out] the schema information initially points to
- - an NOT initialized Bson
+ - an allocated, but NOT initialized Bson
  - NULL
 @verbatim
 {
@@ -159,25 +160,37 @@ delete a schema in the smd-backend
 insert data into a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
-@param metadata [in] the data to insert
+@param metadata [in] the data to insert. points to
+ - an initialized bson_t containing "data"
+ - an initialized bson_t containing "arr_data"
 @verbatim
-{
+data{
 	"var_name1": value1,
 	"var_name2": value2,
 	"var_nameN": valueN,
+}
+arr_data{
+	"_arr" : [
+		"0": bson_t(data),
+		"1": bson_t(data),
+		"N": bson_t(data),
+	]
 }
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
 	- all unique constraints are intact
 	- there are no var_names which are not existent in the schema definition
+	- metadata is not NULL
+	- metadata is not an empty bson
 */
 			gboolean (*backend_insert)(gchar const* namespace, gchar const* name, bson_t const* metadata);
 			/*!
 updates data in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
-@param selector [in] the selector to decide which data should be updated
+@param selector [in] the selector to decide which data should be updated. points to
+ - an initialized bson containing "selector_part_and"
 @verbatim
 selector_part_and: {
 	"var_name1": {
@@ -202,7 +215,6 @@ selector_part_or: {
 	_and: bson_t(selector_part_and)
 }
 @endverbatim
- - selector = selector_and
 @param metadata [in] the data to write. All undefined columns will be set to NULL
 @verbatim
 {
@@ -224,7 +236,10 @@ selector_part_or: {
 deletes data from the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
-@param selector [in] the selector to decide which data should be updated
+@param selector [in] the selector to decide which data should be updated. points to
+ - an initialized bson containing "selector_part_and"
+ - an empty bson
+ - NULL
 @verbatim
 selector_part_and: {
 	"var_name1": {
@@ -249,9 +264,6 @@ selector_part_or: {
 	_and: bson_t(selector_part_and)
 }
 @endverbatim
- - selector = selector_and
- - selector = empty-bson
- - selector = NULL
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
 	- there are no var_names which are not existent in the schema definition
@@ -262,7 +274,10 @@ selector_part_or: {
 creates an iterator for the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
 @param name [in] schema name to delete (e.g. "files")
-@param selector [in] the selector to decide which data should be updated
+@param selector [in] the selector to decide which data should be updated. points to
+ - an initialized bson containing "selector_part_and"
+ - an empty bson
+ - NULL
 @verbatim
 selector_part_and: {
 	"var_name1": {
@@ -287,9 +302,6 @@ selector_part_or: {
 	_and: bson_t(selector_part_and)
 }
 @endverbatim
- - selector = selector_and
- - selector = empty-bson
- - selector = NULL
 @param iterator [out] the iterator which can be used later for backend_iterate
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
@@ -300,8 +312,11 @@ selector_part_or: {
 			gboolean (*backend_query)(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
 			/*!
 obtains metadata from the backend
+backend_iterate should be called until the returned value is NULL due to no more elements found - this allowes the backend to free potentially 
+allocated caches.
 @param iterator [inout] the iterator specifying the data to retrieve
-@param metadata [out] the requested metadata initially points to a initialized empty bson
+@param metadata [out] the requested metadata initially points to
+ - an initialized empty bson
 @verbatim
 {
 	"_id": value0,
@@ -312,8 +327,10 @@ obtains metadata from the backend
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
-	- metadata is valid
-	- iterator found an element
+	- metadata was not NULL
+	- iterator pointed to an existing element
+	- metadata contains requested element fround by iterator
+	- iterator is updated to point to next element (if next element exists)
 */
 			gboolean (*backend_iterate)(gpointer iterator, bson_t* metadata);
 		} smd;

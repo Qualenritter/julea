@@ -567,6 +567,65 @@ error:
 	g_string_free(sql, TRUE);
 	return false;
 }
+static gboolean insert_helper(JSqlCacheSQLPrepared* prepared,bson_iter_t *iter){
+guint count=0;guint i;
+guint index;
+for (i = 0; i < prepared->variables_count; i++)
+                j_sql_bind_null(prepared->stmt, i + 1);
+while (bson_iter_next(iter))
+                {
+                        type = bson_iter_type(iter);
+                        J_DEBUG("%s", bson_iter_key(iter));
+                        index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(iter)));
+                        j_goto_error(!index);
+                        switch (type)
+                        {
+                        case BSON_TYPE_DOUBLE:
+                                count++;
+                                j_sql_bind_double(prepared->stmt, index, bson_iter_double(iter));
+                                break;
+                        case BSON_TYPE_UTF8:
+                                count++;
+                                j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(iter, NULL), -1);
+                                break;
+                        case BSON_TYPE_INT32:
+                                count++;
+                                j_sql_bind_int(prepared->stmt, index, bson_iter_int32(iter));
+                                break;
+                        case BSON_TYPE_INT64:
+                                count++;
+                                j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(iter));
+                                break;
+                        case BSON_TYPE_NULL:
+                                j_sql_bind_null(prepared->stmt, index);
+                                break;
+                        case BSON_TYPE_EOD:
+                        case BSON_TYPE_DOCUMENT:
+                        case BSON_TYPE_ARRAY:
+                        case BSON_TYPE_BINARY:
+                        case BSON_TYPE_UNDEFINED:
+                        case BSON_TYPE_OID:
+                        case BSON_TYPE_BOOL:
+                        case BSON_TYPE_DATE_TIME:
+                        case BSON_TYPE_REGEX:
+                        case BSON_TYPE_DBPOINTER:
+                        case BSON_TYPE_CODE:
+                        case BSON_TYPE_SYMBOL:
+                        case BSON_TYPE_CODEWSCOPE:
+                        case BSON_TYPE_TIMESTAMP:
+                        case BSON_TYPE_DECIMAL128:
+                        case BSON_TYPE_MAXKEY:
+                        case BSON_TYPE_MINKEY:
+                        default:
+                                j_goto_error(TRUE);
+                        }
+                }
+j_goto_error(!count);
+        j_sql_step_and_reset_check_done_constraint(prepared->stmt);
+return TRUE;
+error:
+return FALSE;
+}
 static gboolean
 backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata)
 {
@@ -574,11 +633,13 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	guint i, index;
 	guint count;
 	bson_iter_t iter;
+	bson_iter_t iter_child;
 	bson_t* schema = NULL;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
 	j_goto_error(!metadata);
+	j_goto_error(!bson_count_keys(metadata));
 	prepared = getCachePrepared(namespace, name, "insert");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
@@ -614,64 +675,15 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	for (i = 0; i < prepared->variables_count; i++)
-		j_sql_bind_null(prepared->stmt, i + 1);
-	count = 0;
-	if (bson_iter_init(&iter, metadata))
-	{
-		while (bson_iter_next(&iter))
-		{
-			type = bson_iter_type(&iter);
-			J_DEBUG("%s", bson_iter_key(&iter));
-			index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
-			j_goto_error(!index);
-			switch (type)
-			{
-			case BSON_TYPE_DOUBLE:
-				count++;
-				j_sql_bind_double(prepared->stmt, index, bson_iter_double(&iter));
-				break;
-			case BSON_TYPE_UTF8:
-				count++;
-				j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(&iter, NULL), -1);
-				break;
-			case BSON_TYPE_INT32:
-				count++;
-				j_sql_bind_int(prepared->stmt, index, bson_iter_int32(&iter));
-				break;
-			case BSON_TYPE_INT64:
-				count++;
-				j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(&iter));
-				break;
-			case BSON_TYPE_NULL:
-				j_sql_bind_null(prepared->stmt, index);
-				break;
-			case BSON_TYPE_EOD:
-			case BSON_TYPE_DOCUMENT:
-			case BSON_TYPE_ARRAY:
-			case BSON_TYPE_BINARY:
-			case BSON_TYPE_UNDEFINED:
-			case BSON_TYPE_OID:
-			case BSON_TYPE_BOOL:
-			case BSON_TYPE_DATE_TIME:
-			case BSON_TYPE_REGEX:
-			case BSON_TYPE_DBPOINTER:
-			case BSON_TYPE_CODE:
-			case BSON_TYPE_SYMBOL:
-			case BSON_TYPE_CODEWSCOPE:
-			case BSON_TYPE_TIMESTAMP:
-			case BSON_TYPE_DECIMAL128:
-			case BSON_TYPE_MAXKEY:
-			case BSON_TYPE_MINKEY:
-			default:
-				j_goto_error(TRUE);
-			}
-		}
+	ret=bson_iter_init(&iter, metadata);
+	j_goto_error(!ret);
+	if(bson_count_keys(metadata)==1 && bson_iter_find(&iter, "_arr")&&BSON_ITER_HOLDS_ARRAY(&iter)&& bson_iter_recurse(&iter, 
+&iterchild)){
+		//TODO iterate over the array and call insert_helper
+	}else{bson_iter_init(&iter, metadata);
+		ret = insert_helper(prepared,&iter;)
+		j_goto_error(!ret);
 	}
-	else
-		j_goto_error(TRUE);
-	j_goto_error(!count);
-	j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	if (schema)
 	{
 		if (schema_initialized)
