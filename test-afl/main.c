@@ -681,6 +681,16 @@ event_insert(void)
 		if (random_values.values.multiple_values_insert)
 			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index + 1] = random_values.values.value_count;
 	}
+	else
+	{
+		if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
+			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = 1;
+		if (random_values.values.multiple_values_insert)
+		{
+			if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index + 1])
+				namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index + 1] = 1;
+		}
+	}
 	if (metadata)
 	{
 		bson_destroy(metadata);
@@ -1090,7 +1100,10 @@ main(int argc, char* argv[])
 				event_delete();
 			}
 			else
+			{
+				random_values.values.value_index = tmp;
 				event_delete();
+			}
 			event_query_all();
 			random_values.values.value_index = tmp;
 			event_insert();
