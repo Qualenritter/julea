@@ -449,8 +449,14 @@ static gboolean
 backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
 {
 	bson_iter_t iter;
+	bson_iter_t iter_child;
+	bson_iter_t iter_child2;
 	JSMDType type;
+	gboolean first;
+	guint i;
+	gint ret;
 	guint counter = 0;
+	gboolean found_index = FALSE;
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
@@ -459,44 +465,53 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	{
 		while (bson_iter_next(&iter))
 		{
-			counter++;
-			g_string_append_printf(sql, ", %s", bson_iter_key(&iter));
-			if (BSON_ITER_HOLDS_INT32(&iter))
+			if (!g_strcmp0(bson_iter_key(&iter), "_index"))
 			{
-				type = bson_iter_int32(&iter);
-				switch (type)
-				{
-				case J_SMD_TYPE_SINT32:
-					g_string_append(sql, " INTEGER");
-					break;
-				case J_SMD_TYPE_UINT32:
-					g_string_append(sql, " INTEGER");
-					break;
-				case J_SMD_TYPE_FLOAT32:
-					g_string_append(sql, " REAL");
-					break;
-				case J_SMD_TYPE_SINT64:
-					g_string_append(sql, " INTEGER");
-					break;
-				case J_SMD_TYPE_UINT64:
-					g_string_append(sql, " UNSIGNED BIGINT");
-					break;
-				case J_SMD_TYPE_FLOAT64:
-					g_string_append(sql, " REAL");
-					break;
-				case J_SMD_TYPE_STRING:
-					g_string_append(sql, " TEXT");
-					break;
-				case J_SMD_TYPE_INVALID:
-				case _J_SMD_TYPE_COUNT:
-				default:
-					j_goto_error(TRUE);
-				}
+				found_index = TRUE;
 			}
 			else
-				j_goto_error(TRUE);
+			{
+				counter++;
+				g_string_append_printf(sql, ", %s", bson_iter_key(&iter));
+				if (BSON_ITER_HOLDS_INT32(&iter))
+				{
+					type = bson_iter_int32(&iter);
+					switch (type)
+					{
+					case J_SMD_TYPE_SINT32:
+						g_string_append(sql, " INTEGER");
+						break;
+					case J_SMD_TYPE_UINT32:
+						g_string_append(sql, " INTEGER");
+						break;
+					case J_SMD_TYPE_FLOAT32:
+						g_string_append(sql, " REAL");
+						break;
+					case J_SMD_TYPE_SINT64:
+						g_string_append(sql, " INTEGER");
+						break;
+					case J_SMD_TYPE_UINT64:
+						g_string_append(sql, " UNSIGNED BIGINT");
+						break;
+					case J_SMD_TYPE_FLOAT64:
+						g_string_append(sql, " REAL");
+						break;
+					case J_SMD_TYPE_STRING:
+						g_string_append(sql, " TEXT");
+						break;
+					case J_SMD_TYPE_INVALID:
+					case _J_SMD_TYPE_COUNT:
+					default:
+						j_goto_error(TRUE);
+					}
+				}
+				else
+					j_goto_error(TRUE);
+			}
 		}
 	}
+	else
+		j_goto_error(TRUE);
 	g_string_append(sql, " )");
 	j_goto_error(!counter);
 	json = bson_as_json(schema, NULL);
@@ -506,11 +521,50 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	j_sql_step_and_reset_check_done_constraint(stmt_schema_structure_create);
 	J_DEBUG("%s", sql->str);
 	j_sql_exec_done_or_error(sql->str);
-	//TODO _index parse and create
-	//TODO _unique parse and create
-	j_sql_transaction_commit();
 	bson_free(json);
 	g_string_free(sql, TRUE);
+	if (found_index)
+	{
+		i = 0;
+		if (bson_iter_init(&iter, schema))
+		{
+			ret = bson_iter_find(&iter, "_arr");
+			j_goto_error(!ret);
+			ret = BSON_ITER_HOLDS_ARRAY(&iter);
+			j_goto_error(!ret);
+			ret = bson_iter_recurse(&iter, &iter_child);
+			j_goto_error(!ret);
+			while (bson_iter_next(&iter_child))
+			{
+				sql = g_string_new(NULL);
+				first = TRUE;
+				g_string_append_printf(sql, "CREATE INDEX %s_%s_%d ON %s_%s ( ", namespace, name, i, namespace, name);
+				ret = BSON_ITER_HOLDS_ARRAY(&iter_child);
+				j_goto_error(!ret);
+				ret = bson_iter_recurse(&iter_child, &iter_child2);
+				j_goto_error(!ret);
+				while (bson_iter_next(&iter_child2))
+				{
+					if (first)
+					{
+						first = FALSE;
+					}
+					else
+					{
+						g_string_append(sql, ", ");
+					}
+					g_string_append_printf(sql, "%s", bson_iter_utf8(&iter_child2, NULL));
+				}
+				g_string_append(sql, " )");
+				j_sql_exec_done_or_error(sql->str);
+				g_string_free(sql, TRUE);
+				i++;
+			}
+		}
+		else
+			j_goto_error(TRUE);
+	}
+	j_sql_transaction_commit();
 	return TRUE;
 error:
 constraint:

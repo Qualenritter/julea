@@ -113,7 +113,6 @@ structure{
 	"var_name2": var_type2 (int32),
 	"var_nameN": var_typeN (int32),
 	"_indexes": [["var_name1", "var_name2"], ["var_name3"]],
-	"_unique": [["var_name1", "var_name2"], ["var_name3"]],
 }
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
@@ -123,7 +122,6 @@ structure{
 	- there is no variable name used multiple times
 	- there is no variable called "_id"
 	- _indexes columns are only on defined variables
-	- _unique columns are only on defined variables
 */
 			gboolean (*backend_schema_create)(gchar const* namespace, gchar const* name, bson_t const* schema);
 			/*!
@@ -179,7 +177,6 @@ arr_data{
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
-	- all unique constraints are intact
 	- there are no var_names which are not existent in the schema definition
 	- metadata is not NULL
 	- metadata is not an empty bson
@@ -225,7 +222,6 @@ selector_part_or: {
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
 	- (namespace, name) did exists before
-	- all unique constraints are intact
 	- the selector found at least one element
 	- the selector is not NULL
 	- the selector is not the empty bson
