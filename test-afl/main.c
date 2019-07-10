@@ -154,8 +154,8 @@ static JSMDAflRandomValues random_values;
 static char namespace_strbuf[AFL_LIMIT_STRING_LEN];
 static char name_strbuf[AFL_LIMIT_STRING_LEN];
 static char varname_strbuf[AFL_LIMIT_STRING_LEN];
-bson_t* selector;
-bson_t* metadata;
+static bson_t* selector;
+static bson_t* metadata;
 //<-
 static gboolean
 build_selector_single(guint varname, guint value)
@@ -502,10 +502,7 @@ event_query_single(void)
 					break;
 				case J_SMD_TYPE_FLOAT32:
 					if (!G_APPROX_VALUE((gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001f))
-					{
-						J_DEBUG("%f %f", (gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]);
 						MYABORT();
-					}
 					break;
 				case J_SMD_TYPE_SINT64:
 					if ((gint64)bson_iter_int64(&iter) != (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i])
@@ -550,9 +547,7 @@ event_query_single(void)
 		selector = NULL;
 	}
 	if (iterator)
-	{
 		freeJSMDIterator(iterator);
-	}
 }
 static void
 event_query_all(void)
@@ -1052,6 +1047,7 @@ main(int argc, char* argv[])
 	}
 #ifdef __AFL_HAVE_MANUAL_CONTROL
 	//https://github.com/mirrorer/afl/tree/master/llvm_mode
+	// this does not work with threads or network connections
 	//        __AFL_INIT();
 	//      while (__AFL_LOOP(1000))
 #endif
@@ -1142,6 +1138,6 @@ cleanup:
 		}
 	}
 fini:
-	j_fini();
+	j_fini();//memory leaks count as error -> free everything possible
 	return 0;
 }
