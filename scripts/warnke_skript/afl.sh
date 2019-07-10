@@ -82,7 +82,7 @@ function julea_run(){
 		export AFL_NO_AFFINITY=1
 		export AFL_SKIP_CRASHES=1
 		export JULEA_CONFIG=~/.config/julea/julea${index}
-		export GCOV_PREFIX=afl/cov/fuzzer${index}
+		export GCOV_PREFIX=./afl/cov/fuzzer${index}
 		mkdir -p ./afl/cov/fuzzer${index}/src/julea/
 		cp -r build-${name} ./afl/cov/fuzzer${index}/src/julea/
 		for (( i=0; i < ${servercount}; i++ ))
@@ -99,7 +99,7 @@ function julea_run(){
 					--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="/mnt2/julea/kv${index}-$i" \
 					--smd-servers="${servers}"    --smd-backend=sqlite   --smd-component="${component}"    --smd-path=":memory:"
 				eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}-$i"
-				export GCOV_PREFIX=afl/cov/server${index}-$i
+				export GCOV_PREFIX=./afl/cov/server${index}-$i
 				export JULEA_CONFIG=~/.config/julea/julea${index}-$i
 				echo ./build-${name}/server/julea-server --port=$((10000 + ${index} * 10 + $i))
 				     ./build-${name}/server/julea-server --port=$((10000 + ${index} * 10 + $i)) &

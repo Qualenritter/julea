@@ -79,7 +79,6 @@ freeJSMDIterator(gpointer ptr)
 		J_DEBUG("json = %s", json);              \
 		bson_free((void*)json);                  \
 	} while (0)
-
 #define MY_READ(var)                                                              \
 	do                                                                        \
 	{                                                                         \
@@ -104,7 +103,6 @@ freeJSMDIterator(gpointer ptr)
 		J_DEBUG("abort %d", 0); \
 		abort();                \
 	} while (0)
-
 struct JSMDAflRandomValues
 {
 	guint namespace;
