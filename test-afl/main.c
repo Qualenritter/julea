@@ -902,6 +902,7 @@ event_schema_delete(void)
 static void
 event_schema_create(void)
 {
+	//TODO test create index
 	bson_t bson_child;
 	gboolean ret;
 	gboolean ret_expected;
@@ -1138,6 +1139,6 @@ cleanup:
 		}
 	}
 fini:
-	j_fini();//memory leaks count as error -> free everything possible
+	j_fini(); //memory leaks count as error -> free everything possible
 	return 0;
 }
