@@ -53,19 +53,6 @@ enum JSMDAflEvent
 };
 typedef enum JSMDAflEvent JSMDAflEvent;
 
-static void
-freeJSMDIterator(gpointer ptr)
-{
-	JSMDIterator* iter = ptr;
-	if (ptr)
-	{
-		g_free(iter->namespace);
-		g_free(iter->name);
-		g_array_free(iter->arr, TRUE);
-		g_free(iter);
-	}
-}
-
 #if (GLIB_MAJOR_VERSION < 2) || (GLIB_MINOR_VERSION < 58)
 #define G_APPROX_VALUE(a, b, epsilon) ((((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon)) || !isfinite(a) || !isfinite(b))
 #endif
@@ -545,16 +532,14 @@ event_query_single(void)
 		}
 		if (bson)
 			bson_destroy(bson);
-		bson = bson_new();
-		ret = j_smd_iterate(iterator, bson);
-		if (bson)
-			bson_destroy(bson);
-		if (ret)
-			MYABORT();
 		selector = NULL;
 	}
-	if (iterator)
-		freeJSMDIterator(iterator);
+	bson = bson_new();
+	ret = j_smd_iterate(iterator, bson);
+	if (bson)
+		bson_destroy(bson);
+	if (ret)
+		MYABORT();
 }
 static void
 event_query_all(void)

@@ -42,6 +42,7 @@ typedef struct J_smd_iterator_helper J_smd_iterator_helper;
 static gboolean
 j_backend_smd_func_call(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data, JMessageType type)
 {
+	bson_t* bson;
 	switch (type)
 	{
 	case J_MESSAGE_SMD_SCHEMA_CREATE:
@@ -342,7 +343,7 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	opsmd_in.ptr = selector;
 	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
 	g_array_append_val(data->in, opsmd_in);
-	opsmd_out.ptr = helper;
+	opsmd_out.ptr = helper->bson;
 	opsmd_out.type = J_SMD_PARAM_TYPE_BSON;
 	g_array_append_val(data->out, opsmd_out);
 	op = j_operation_new();
