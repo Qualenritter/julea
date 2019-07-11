@@ -469,7 +469,7 @@ event_query_single(void)
 	}
 	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
 	ret = j_batch_execute(batch) && ret;
-	if (!ret)
+	if (!ret && ret_expected)
 		MYABORT();
 	if (selector)
 	{
