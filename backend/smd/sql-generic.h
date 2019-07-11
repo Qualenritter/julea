@@ -478,7 +478,7 @@ backend_schema_delete(gpointer _batch, gchar const* name)
 	gint ret;
 	deleteCachePrepared(batch->namespace, name);
 	j_sql_transaction_begin();
-	ret = backend_schema_get(batch->namespace, name, NULL);
+	ret = backend_schema_get(batch, name, NULL);
 	j_goto_error(!ret);
 	g_string_append_printf(sql, "DROP TABLE %s_%s", batch->namespace, name);
 	j_sql_bind_text(stmt_schema_structure_delete, 1, batch->namespace, -1);
@@ -578,7 +578,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 	if (!prepared->initialized)
 	{
 		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(batch->namespace, name, schema);
+		schema_initialized = backend_schema_get(batch, name, schema);
 		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
@@ -828,7 +828,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = backend_schema_get(batch->namespace, name, NULL);
+		ret = backend_schema_get(batch, name, NULL);
 		j_goto_error(!ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
@@ -886,7 +886,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	if (!prepared->initialized)
 	{
 		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(batch->namespace, name, schema);
+		schema_initialized = backend_schema_get(batch, name, schema);
 		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
@@ -915,7 +915,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	ret = backend_query(batch->namespace, name, selector, (gpointer*)&iterator);
+	ret = backend_query(batch, name, selector, (gpointer*)&iterator);
 	j_goto_error(!ret);
 	for (j = 0; j < iterator->arr->len; j++)
 	{
@@ -1011,7 +1011,7 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
-	ret = backend_query(batch->namespace, name, selector, (gpointer*)&iterator);
+	ret = backend_query(batch, name, selector, (gpointer*)&iterator);
 	j_goto_error(!ret);
 	prepared = getCachePrepared(batch->namespace, name, "delete");
 	j_goto_error(!prepared);

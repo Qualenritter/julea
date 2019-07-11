@@ -47,11 +47,7 @@ j_backend_smd_func_call(JBackend* backend, gpointer batch, JBackend_smd_operatio
 	case J_MESSAGE_SMD_SCHEMA_CREATE:
 		return j_backend_smd_schema_create(backend, batch, data);
 	case J_MESSAGE_SMD_SCHEMA_GET:
-	{
-		gboolean ret = j_backend_smd_schema_get(backend, batch, data);
-		J_DEBUG("ret %d", ret);
-		return ret;
-	}
+		return j_backend_smd_schema_get(backend, batch, data);
 	case J_MESSAGE_SMD_SCHEMA_DELETE:
 		return j_backend_smd_schema_delete(backend, batch, data);
 	case J_MESSAGE_SMD_INSERT:
