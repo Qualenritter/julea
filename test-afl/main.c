@@ -357,7 +357,7 @@ static void
 event_query_single(void)
 {
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	bson_t* bson;
+	bson_t bson;
 	bson_t bson_child;
 	bson_t bson_child2;
 	bson_iter_t iter;
@@ -389,6 +389,9 @@ event_query_single(void)
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
+			ret = j_smd_iterate(iterator, &bson);
+			if (ret)
+				MYABORT();
 			break;
 		case 3: //invalid bson - operator undefined enum
 			selector = bson_new();
@@ -398,6 +401,9 @@ event_query_single(void)
 			bson_append_document_end(selector, &bson_child);
 			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
 			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			ret = j_smd_iterate(iterator, &bson);
 			if (ret)
 				MYABORT();
 			break;
@@ -412,6 +418,9 @@ event_query_single(void)
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
+			ret = j_smd_iterate(iterator, &bson);
+			if (ret)
+				MYABORT();
 			break;
 		case 1: //invalid bson - key of type something else than a document
 			selector = bson_new();
@@ -419,6 +428,9 @@ event_query_single(void)
 			bson_append_int32(selector, varname_strbuf, -1, 0);
 			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
 			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			ret = j_smd_iterate(iterator, &bson);
 			if (ret)
 				MYABORT();
 			break;
@@ -466,19 +478,17 @@ event_query_single(void)
 	}
 	if (ret_expected)
 	{
-		bson = bson_new();
-		ret = j_smd_iterate(iterator, bson);
+		ret = j_smd_iterate(iterator, &bson);
 		if (!ret)
 			MYABORT();
-		J_DEBUG_BSON(bson);
-		if (!bson_iter_init(&iter, bson))
+		if (!bson_iter_init(&iter, &bson))
 			MYABORT();
 		if (!bson_iter_find(&iter, "_id"))
 			MYABORT();
 		for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 		{
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
-			if (!bson_iter_init(&iter, bson))
+			if (!bson_iter_init(&iter, &bson))
 				MYABORT();
 			if (i < namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
 			{
@@ -530,17 +540,9 @@ event_query_single(void)
 					MYABORT();
 			}
 		}
-		if (bson)
-			bson_destroy(bson);
 		selector = NULL;
 	}
-	bson = bson_new();
-	ret = j_smd_iterate(iterator, bson);
-	if (bson)
-	{
-		J_DEBUG_BSON(bson);
-		bson_destroy(bson);
-	}
+	ret = j_smd_iterate(iterator, &bson);
 	if (ret)
 		MYABORT();
 }

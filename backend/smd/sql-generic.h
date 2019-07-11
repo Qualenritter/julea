@@ -1111,6 +1111,13 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
+	else
+	{
+		g_hash_table_destroy(variables_index);
+		variables_index = NULL;
+		g_hash_table_destroy(variables_type);
+		variables_type = NULL;
+	}
 	if (selector && bson_count_keys(selector))
 	{
 		if (bson_iter_init(&iter, selector))
@@ -1138,6 +1145,10 @@ error:
 			bson_destroy(schema);
 		g_free(schema);
 	}
+	if (variables_index)
+		g_hash_table_destroy(variables_index);
+	if (variables_type)
+		g_hash_table_destroy(variables_type);
 	return FALSE;
 }
 static gboolean
