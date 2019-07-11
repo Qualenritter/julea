@@ -197,6 +197,7 @@ freeJSqlCacheSQLPrepared(void* ptr)
 			j_sql_finalize(p->stmt);
 		g_free(p);
 	}
+error:;
 }
 static void
 freeJSMDIterator(gpointer ptr)
@@ -291,6 +292,7 @@ fini_sql(void)
 	j_sql_finalize(stmt_transaction_abort);
 	j_sql_finalize(stmt_transaction_begin);
 	j_sql_finalize(stmt_transaction_commit);
+error:;
 }
 static gboolean
 backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
