@@ -329,6 +329,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
+	j_goto_error(!schema);
 	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", batch->namespace, name);
 	if (bson_iter_init(&iter, schema))
 	{
@@ -1086,7 +1087,11 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 		prepared->initialized = TRUE;
 	}
 	j_sql_transaction_begin();
-	j_goto_error(iterator->index >= iterator->arr->len);
+	if (iterator->index >= iterator->arr->len)
+	{
+		freeJSMDIterator(iterator);
+		j_goto_error(TRUE);
+	}
 	index = g_array_index(iterator->arr, guint64, iterator->index);
 	J_DEBUG("index = %ld", index);
 	iterator->index++;

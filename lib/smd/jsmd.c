@@ -327,6 +327,8 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	JBackend_smd_operation_in opsmd_in;
 	JBackend_smd_operation_out opsmd_out;
 	JBackend_smd_operation_data* data;
+	if (!iterator)
+		return FALSE;
 	helper = g_slice_new(J_smd_iterator_helper);
 	helper->initialized = FALSE;
 	helper->bson = bson_new();
