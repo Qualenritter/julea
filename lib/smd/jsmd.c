@@ -367,15 +367,23 @@ j_smd_iterate(gpointer iterator, bson_t* metadata)
 		bson_iter_init(&helper->iter, helper->bson);
 		helper->initialized = TRUE;
 	}
+	J_DEBUG("%d", 0);
 	if (!bson_iter_next(&helper->iter))
 		goto error;
+	J_DEBUG("%d", 0);
 	if (!BSON_ITER_HOLDS_DOCUMENT(&helper->iter))
 		goto error;
+	J_DEBUG("%d", 0);
 	bson_iter_document(&helper->iter, &length, &data);
+	J_DEBUG("%d", 0);
 	bson_init_static(metadata, data, length);
+	J_DEBUG("true%d", 0);
 	return TRUE;
 error:
+	J_DEBUG("%d", 0);
 	bson_destroy(helper->bson);
+	J_DEBUG("%d", 0);
 	g_slice_free(J_smd_iterator_helper, helper);
+	J_DEBUG("false%d", 0);
 	return FALSE;
 }

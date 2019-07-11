@@ -306,7 +306,6 @@ selector_part_or: {
 	- (namespace, name) did exists before
 	- there are no var_names which are not existent in the schema definition
 	- the iterator is valid
-	- the iterator contains at least one result
 */
 			gboolean (*backend_query)(gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator);
 			/*!

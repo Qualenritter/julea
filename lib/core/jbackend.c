@@ -684,7 +684,7 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 	char str_buf[16];
 	const char* key;
 	bson_t* bson = g_array_index(data->out, JBackend_smd_operation_out, 0).ptr;
-	bson_t tmp;
+	bson_t* tmp;
 	ret = backend->smd.backend_query( //
 		batch, //
 		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
@@ -696,10 +696,12 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 	do
 	{
 		bson_uint32_to_string(i, &key, str_buf, sizeof(str_buf));
-		bson_append_document_begin(bson, key, -1, &tmp);
-		ret = backend->smd.backend_iterate(iter, &tmp);
-		bson_append_document_end(bson, &tmp);
+		tmp = bson_new();
+		ret = backend->smd.backend_iterate(iter, tmp);
 		i++;
+		if (ret)
+			bson_append_document(bson, key, -1, tmp);
+		bson_destroy(tmp);
 	} while (ret);
 	return TRUE;
 }

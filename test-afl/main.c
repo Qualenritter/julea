@@ -457,14 +457,14 @@ event_query_single(void)
 	}
 	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
 	ret = j_batch_execute(batch) && ret;
-	if (ret != ret_expected)
+	if (!ret)
 		MYABORT();
 	if (selector)
 	{
 		bson_destroy(selector);
 		selector = NULL;
 	}
-	if (ret)
+	if (ret_expected)
 	{
 		bson = bson_new();
 		ret = j_smd_iterate(iterator, bson);
@@ -537,7 +537,10 @@ event_query_single(void)
 	bson = bson_new();
 	ret = j_smd_iterate(iterator, bson);
 	if (bson)
+	{
+		J_DEBUG_BSON(bson);
 		bson_destroy(bson);
+	}
 	if (ret)
 		MYABORT();
 }

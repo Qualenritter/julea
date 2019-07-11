@@ -47,14 +47,6 @@ enum JSMDOperator
 	_J_SMD_OPERATOR_COUNT,
 };
 typedef enum JSMDOperator JSMDOperator;
-struct JSMDIterator
-{
-	char* namespace;
-	char* name;
-	GArray* arr;
-	guint index;
-};
-typedef struct JSMDIterator JSMDIterator;
 
 gboolean j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch);
 gboolean j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch);
