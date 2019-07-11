@@ -34,57 +34,71 @@ static void
 backend_fini(void)
 {}
 static gboolean
-backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
+backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch)
 {
+	(void)_batch;
+	(void)safety;
 	(void)namespace;
+	return TRUE;
+}
+static gboolean
+backend_batch_execute(gpointer batch)
+{
+	(void)batch;
+	return TRUE;
+}
+static gboolean
+backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
+{
+	(void)_batch;
 	(void)name;
 	(void)schema;
 	return TRUE;
 }
 static gboolean
-backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
+backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema)
 {
-	(void)namespace;
+	(void)_batch;
 	(void)name;
 	(void)schema;
 	return TRUE;
 }
 static gboolean
-backend_schema_delete(gchar const* namespace, gchar const* name)
+backend_schema_delete(gpointer _batch, gchar const* name)
 {
-	(void)namespace;
+	(void)_batch;
 	(void)name;
 	return TRUE;
 }
 static gboolean
-backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata)
+backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 {
-	(void)namespace;
+	(void)_batch;
 	(void)name;
 	(void)metadata;
 	return TRUE;
 }
 static gboolean
-backend_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
+backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata)
 {
-	(void)namespace;
+	(void)_batch;
 	(void)name;
 	(void)selector;
 	(void)metadata;
 	return TRUE;
 }
 static gboolean
-backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector)
+backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
 {
-	(void)namespace;
+	(void)_batch;
 	(void)name;
 	(void)selector;
 	return TRUE;
 }
 static gboolean
-backend_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
+backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator)
 {
-	(void)namespace;
+	(void)_batch;
 	(void)name;
 	(void)selector;
 	(void)iterator;
@@ -111,6 +125,8 @@ static JBackend null_backend = {
 		.backend_delete = backend_delete,
 		.backend_query = backend_query,
 		.backend_iterate = backend_iterate,
+		.backend_batch_start = backend_batch_start,
+		.backend_batch_execute = backend_batch_execute,
 	},
 };
 

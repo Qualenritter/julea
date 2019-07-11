@@ -129,6 +129,25 @@ struct JSqlCacheSQLPrepared
 	gboolean initialized;
 };
 typedef struct JSqlCacheSQLPrepared JSqlCacheSQLPrepared;
+struct JSqlBatch
+{
+	gchar* namespace;
+};
+typedef struct JSqlBatch JSqlBatch;
+static gboolean
+backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch)
+{
+	JSqlBatch* batch = *_batch = g_slice_new(JSqlBatch);
+	batch->namespace = namespace;
+	(void)safety;
+	return TRUE;
+}
+static gboolean
+backend_batch_execute(gpointer batch)
+{
+	g_slice_free(JSqlBatch, batch);
+	return TRUE;
+}
 static JSqlCacheNamespaces* cacheNamespaces = NULL;
 static j_sql_statement_type stmt_schema_structure_create = NULL;
 static j_sql_statement_type stmt_schema_structure_get = NULL;
@@ -295,8 +314,9 @@ fini_sql(void)
 error:;
 }
 static gboolean
-backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema)
+backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 {
+	JSqlBatch* batch = _batch;
 	bson_iter_t iter;
 	bson_iter_t iter_child;
 	bson_iter_t iter_child2;
@@ -309,7 +329,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
-	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", namespace, name);
+	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", batch->namespace, name);
 	if (bson_iter_init(&iter, schema))
 	{
 		while (bson_iter_next(&iter))
@@ -364,7 +384,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 	g_string_append(sql, " )");
 	j_goto_error(!counter);
 	json = bson_as_json(schema, NULL);
-	j_sql_bind_text(stmt_schema_structure_create, 1, namespace, -1);
+	j_sql_bind_text(stmt_schema_structure_create, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 3, json, -1);
 	j_sql_step_and_reset_check_done_constraint(stmt_schema_structure_create);
@@ -387,7 +407,7 @@ backend_schema_create(gchar const* namespace, gchar const* name, bson_t const* s
 			{
 				sql = g_string_new(NULL);
 				first = TRUE;
-				g_string_append_printf(sql, "CREATE INDEX %s_%s_%d ON %s_%s ( ", namespace, name, i, namespace, name);
+				g_string_append_printf(sql, "CREATE INDEX %s_%s_%d ON %s_%s ( ", batch->namespace, name, i, batch->namespace, name);
 				ret = BSON_ITER_HOLDS_ARRAY(&iter_child);
 				j_goto_error(!ret);
 				ret = bson_iter_recurse(&iter_child, &iter_child2);
@@ -423,12 +443,13 @@ constraint:
 	return FALSE;
 }
 static gboolean
-backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
+backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema)
 {
+	JSqlBatch* batch = _batch;
 	gint retsql;
 	guint ret = FALSE;
 	const char* json = NULL;
-	j_sql_bind_text(stmt_schema_structure_get, 1, namespace, -1);
+	j_sql_bind_text(stmt_schema_structure_get, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_get, 2, name, -1);
 	j_sql_step(stmt_schema_structure_get, retsql)
 	{
@@ -442,22 +463,25 @@ backend_schema_get(gchar const* namespace, gchar const* name, bson_t* schema)
 		ret = TRUE;
 	}
 	j_sql_reset(stmt_schema_structure_get);
+	J_DEBUG("ret %d", ret);
 	return ret;
 error:
 	j_sql_reset(stmt_schema_structure_get);
+	J_DEBUG("ret %d", FALSE);
 	return FALSE;
 }
 static gboolean
-backend_schema_delete(gchar const* namespace, gchar const* name)
+backend_schema_delete(gpointer _batch, gchar const* name)
 {
+	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
 	gint ret;
-	deleteCachePrepared(namespace, name);
+	deleteCachePrepared(batch->namespace, name);
 	j_sql_transaction_begin();
-	ret = backend_schema_get(namespace, name, NULL);
+	ret = backend_schema_get(batch->namespace, name, NULL);
 	j_goto_error(!ret);
-	g_string_append_printf(sql, "DROP TABLE %s_%s", namespace, name);
-	j_sql_bind_text(stmt_schema_structure_delete, 1, namespace, -1);
+	g_string_append_printf(sql, "DROP TABLE %s_%s", batch->namespace, name);
+	j_sql_bind_text(stmt_schema_structure_delete, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_delete, 2, name, -1);
 	j_sql_step_and_reset_check_done(stmt_schema_structure_delete);
 	J_DEBUG("%s", sql->str);
@@ -535,8 +559,9 @@ error:
 	return FALSE;
 }
 static gboolean
-backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata)
+backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 {
+	JSqlBatch* batch = _batch;
 	guint i;
 	guint ret;
 	bson_iter_t iter;
@@ -548,17 +573,17 @@ backend_insert(gchar const* namespace, gchar const* name, bson_t const* metadata
 	j_sql_transaction_begin();
 	j_goto_error(!metadata);
 	j_goto_error(!bson_count_keys(metadata));
-	prepared = getCachePrepared(namespace, name, "insert");
+	prepared = getCachePrepared(batch->namespace, name, "insert");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
 		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(namespace, name, schema);
+		schema_initialized = backend_schema_get(batch->namespace, name, schema);
 		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-		g_string_append_printf(prepared->sql, "INSERT INTO %s_%s (", namespace, name);
+		g_string_append_printf(prepared->sql, "INSERT INTO %s_%s (", batch->namespace, name);
 		if (bson_iter_init(&iter, schema))
 		{
 			while (bson_iter_next(&iter))
@@ -771,8 +796,9 @@ error:
 	return FALSE;
 }
 static gboolean
-backend_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
+backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator)
 {
+	JSqlBatch* batch = _batch;
 	guint64 tmp;
 	gint ret;
 	guint count = 0;
@@ -783,11 +809,11 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 	JSMDIterator* iteratorOut;
 	*iterator = NULL;
 	iteratorOut = g_new(JSMDIterator, 1);
-	iteratorOut->namespace = g_strdup(namespace);
+	iteratorOut->namespace = g_strdup(batch->namespace);
 	iteratorOut->name = g_strdup(name);
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
-	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", namespace, name);
+	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", batch->namespace, name);
 	if (selector && bson_count_keys(selector))
 	{
 		g_string_append(sql, " WHERE ");
@@ -798,11 +824,11 @@ backend_query(gchar const* namespace, gchar const* name, bson_t const* selector,
 			j_goto_error(!ret);
 		}
 	}
-	prepared = getCachePrepared(namespace, name, sql->str);
+	prepared = getCachePrepared(batch->namespace, name, sql->str);
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = backend_schema_get(namespace, name, NULL);
+		ret = backend_schema_get(batch->namespace, name, NULL);
 		j_goto_error(!ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
@@ -838,8 +864,9 @@ error:
 	return FALSE;
 }
 static gboolean
-backend_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
+backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata)
 {
+	JSqlBatch* batch = _batch;
 	guint count;
 	bson_type_t type;
 	JSMDIterator* iterator = NULL;
@@ -854,17 +881,17 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 	j_goto_error(!selector);
 	j_goto_error(!bson_count_keys(selector));
 	j_goto_error(!metadata);
-	prepared = getCachePrepared(namespace, name, "update");
+	prepared = getCachePrepared(batch->namespace, name, "update");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
 		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(namespace, name, schema);
+		schema_initialized = backend_schema_get(batch->namespace, name, schema);
 		j_goto_error(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-		g_string_append_printf(prepared->sql, "UPDATE %s_%s SET ", namespace, name);
+		g_string_append_printf(prepared->sql, "UPDATE %s_%s SET ", batch->namespace, name);
 		if (bson_iter_init(&iter, schema))
 		{
 			while (bson_iter_next(&iter))
@@ -888,7 +915,7 @@ backend_update(gchar const* namespace, gchar const* name, bson_t const* selector
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	ret = backend_query(namespace, name, selector, (gpointer*)&iterator);
+	ret = backend_query(batch->namespace, name, selector, (gpointer*)&iterator);
 	j_goto_error(!ret);
 	for (j = 0; j < iterator->arr->len; j++)
 	{
@@ -976,22 +1003,23 @@ constraint:
 	return FALSE;
 }
 static gboolean
-backend_delete(gchar const* namespace, gchar const* name, bson_t const* selector)
+backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
 {
+	JSqlBatch* batch = _batch;
 	JSMDIterator* iterator = NULL;
 	guint j;
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
-	ret = backend_query(namespace, name, selector, (gpointer*)&iterator);
+	ret = backend_query(batch->namespace, name, selector, (gpointer*)&iterator);
 	j_goto_error(!ret);
-	prepared = getCachePrepared(namespace, name, "delete");
+	prepared = getCachePrepared(batch->namespace, name, "delete");
 	j_goto_error(!prepared);
 	if (!prepared->initialized)
 	{
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 1;
-		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE _id = ?1", namespace, name);
+		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE _id = ?1", batch->namespace, name);
 		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;

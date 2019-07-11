@@ -34,6 +34,7 @@
 #include <bson.h>
 
 #include <core/jsemantics.h>
+#include <core/jmessage.h>
 
 G_BEGIN_DECLS
 
@@ -101,6 +102,8 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
+			gboolean (*backend_batch_start)(gchar const* namespace, JSemanticsSafety safety, gpointer* batch); //TODO check not null on module load
+			gboolean (*backend_batch_execute)(gpointer batch); //TODO check not null on module load
 			/*!
 create a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -123,7 +126,7 @@ structure{
 	- there is no variable called "_id"
 	- _indexes columns are only on defined variables
 */
-			gboolean (*backend_schema_create)(gchar const* namespace, gchar const* name, bson_t const* schema);
+			gboolean (*backend_schema_create)(gpointer batch, gchar const* name, bson_t const* schema);
 			/*!
 obtains information about a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -144,7 +147,7 @@ obtains information about a schema in the smd-backend
 	- schema != NULL and contains the requested data
 	- schema == NULL
 */
-			gboolean (*backend_schema_get)(gchar const* namespace, gchar const* name, bson_t* schema);
+			gboolean (*backend_schema_get)(gpointer batch, gchar const* name, bson_t* schema);
 			/*!
 delete a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -153,7 +156,7 @@ delete a schema in the smd-backend
 	- (namespace, name) did exists before
 	- (namespace, name) did not exist after
 */
-			gboolean (*backend_schema_delete)(gchar const* namespace, gchar const* name);
+			gboolean (*backend_schema_delete)(gpointer batch, gchar const* name);
 			/*!
 insert data into a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -181,7 +184,7 @@ arr_data{
 	- metadata is not NULL
 	- metadata is not an empty bson
 */
-			gboolean (*backend_insert)(gchar const* namespace, gchar const* name, bson_t const* metadata);
+			gboolean (*backend_insert)(gpointer batch, gchar const* name, bson_t const* metadata);
 			/*!
 updates data in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -227,7 +230,7 @@ selector_part_or: {
 	- the selector is not the empty bson
 	- there are no var_names which are not existent in the schema definition
 */
-			gboolean (*backend_update)(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
+			gboolean (*backend_update)(gpointer batch, gchar const* name, bson_t const* selector, bson_t const* metadata);
 			/*!
 deletes data from the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -265,7 +268,7 @@ selector_part_or: {
 	- there are no var_names which are not existent in the schema definition
 	- there is at least one element deleted in the smd-backend
 */
-			gboolean (*backend_delete)(gchar const* namespace, gchar const* name, bson_t const* selector);
+			gboolean (*backend_delete)(gpointer batch, gchar const* name, bson_t const* selector);
 			/*!
 creates an iterator for the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -305,14 +308,14 @@ selector_part_or: {
 	- the iterator is valid
 	- the iterator contains at least one result
 */
-			gboolean (*backend_query)(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
+			gboolean (*backend_query)(gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator);
 			/*!
 obtains metadata from the backend
 backend_iterate should be called until the returned value is NULL due to no more elements found - this allowes the backend to free potentially 
 allocated caches.
 @param iterator [inout] the iterator specifying the data to retrieve
 @param metadata [out] the requested metadata initially points to
- - an initialized empty bson
+ - an initialized bson - ready to write a document
 @verbatim
 {
 	"_id": value0,
@@ -332,8 +335,38 @@ allocated caches.
 		} smd;
 	};
 };
-
 typedef struct JBackend JBackend;
+
+enum JBackend_smd_parameter_type
+{
+	J_SMD_PARAM_TYPE_STR = 0,
+	J_SMD_PARAM_TYPE_BLOB,
+	J_SMD_PARAM_TYPE_BSON,
+	_J_SMD_PARAM_TYPE_COUNT,
+};
+typedef enum JBackend_smd_parameter_type JBackend_smd_parameter_type;
+struct JBackend_smd_operation_data
+{
+	GArray* in; //into network message
+	GArray* out; //retrieve from network message
+};
+typedef struct JBackend_smd_operation_data JBackend_smd_operation_data;
+struct JBackend_smd_operation_in
+{
+	gconstpointer ptr;
+	gint len;
+	JBackend_smd_parameter_type type;
+};
+typedef struct JBackend_smd_operation_in JBackend_smd_operation_in;
+struct JBackend_smd_operation_out
+{
+	gpointer ptr;
+	gint len;
+	JBackend_smd_parameter_type type;
+};
+typedef struct JBackend_smd_operation_out JBackend_smd_operation_out;
+gboolean j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation_data* data);
 
 JBackend* backend_info(void);
 
@@ -371,14 +404,13 @@ gboolean j_backend_kv_iterate(JBackend*, gpointer, gconstpointer*, guint32*);
 
 gboolean j_backend_smd_init(JBackend*, gchar const*);
 void j_backend_smd_fini(JBackend*);
-gboolean j_backend_smd_schema_create(JBackend*, gchar const* namespace, gchar const* name, bson_t const* schema);
-gboolean j_backend_smd_schema_get(JBackend*, gchar const* namespace, gchar const* name, bson_t* schema);
-gboolean j_backend_smd_schema_delete(JBackend*, gchar const* namespace, gchar const* name);
-gboolean j_backend_smd_insert(JBackend*, gchar const* namespace, gchar const* name, bson_t const* metadata);
-gboolean j_backend_smd_update(JBackend*, gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata);
-gboolean j_backend_smd_delete(JBackend*, gchar const* namespace, gchar const* name, bson_t const* selector);
-gboolean j_backend_smd_query(JBackend*, gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator);
-gboolean j_backend_smd_iterate(JBackend*, gpointer iterator, bson_t* metadata);
+gboolean j_backend_smd_schema_create(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_schema_get(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_schema_delete(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_insert(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_update(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_delete(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+gboolean j_backend_smd_get_all(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
 G_END_DECLS
 
 #endif

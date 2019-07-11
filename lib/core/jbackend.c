@@ -540,6 +540,79 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gconstpointer* value,
 	return ret;
 }
 gboolean
+j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation_data* data)
+{
+	JBackend_smd_operation_in* element_in;
+	guint i;
+	guint len = 0;
+	for (i = 0; i < data->in->len; i++)
+	{
+		len += 4;
+		element_in = &g_array_index(data->in, JBackend_smd_operation_in, i);
+		switch (element_in->type)
+		{
+		case J_SMD_PARAM_TYPE_STR:
+			if (element_in->ptr)
+			{
+				element_in->len = strlen(element_in->ptr) + 1;
+				len += element_in->len;
+			}
+			break;
+		case J_SMD_PARAM_TYPE_BLOB:
+			len += element_in->len;
+			break;
+		case J_SMD_PARAM_TYPE_BSON:
+			//TODO
+		case _J_SMD_PARAM_TYPE_COUNT:
+		default:
+			abort();
+		}
+	}
+	j_message_add_operation(message, len);
+	for (i = 0; i < data->in->len; i++)
+	{
+		element_in = &g_array_index(data->in, JBackend_smd_operation_in, i);
+		j_message_append_4(message, &element_in->len);
+		if (element_in->ptr && element_in->len)
+			j_message_append_n(message, element_in->ptr, element_in->len);
+	}
+	return TRUE;
+}
+gboolean
+j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation_data* data)
+{
+	JBackend_smd_operation_out* element_out;
+	guint i;
+	guint len;
+	bson_t tmp;
+	gboolean ret = TRUE;
+	for (i = 0; i < data->out->len; i++)
+	{
+		len = j_message_get_4(message);
+		element_out = &g_array_index(data->out, JBackend_smd_operation_out, i);
+		switch (element_out->type)
+		{
+		case J_SMD_PARAM_TYPE_STR:
+			if (len)
+				memcpy(element_out->ptr, j_message_get_n(message, len), len);
+			else
+				*((char*)element_out->ptr) = 0;
+			break;
+		case J_SMD_PARAM_TYPE_BLOB:
+			memcpy(element_out->ptr, j_message_get_n(message, len), len);
+			break;
+		case J_SMD_PARAM_TYPE_BSON:
+			ret = bson_init_static(&tmp, j_message_get_n(message, len), len) && ret;
+			bson_copy_to(&tmp, element_out->ptr); //TODO free tmp bson neccessary?
+			break;
+		case _J_SMD_PARAM_TYPE_COUNT:
+		default:
+			abort();
+		}
+	}
+	return ret;
+}
+gboolean
 j_backend_smd_init(JBackend* backend, gchar const* path)
 {
 	gboolean ret;
@@ -555,92 +628,80 @@ j_backend_smd_fini(JBackend* backend)
 	backend->smd.backend_fini();
 }
 gboolean
-j_backend_smd_schema_create(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* schema)
+j_backend_smd_schema_create(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(schema != NULL, FALSE);
-	ret = backend->smd.backend_schema_create(namespace, name, schema);
-	return ret;
+	return backend->smd.backend_schema_create( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
+		g_array_index(data->in, JBackend_smd_operation_in, 2).ptr);
 }
 gboolean
-j_backend_smd_schema_get(JBackend* backend, gchar const* namespace, gchar const* name, bson_t* schema)
+j_backend_smd_schema_get(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	/*schema == null is allowed*/
-	ret = backend->smd.backend_schema_get(namespace, name, schema);
-	return ret;
+	return backend->smd.backend_schema_get( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
+		g_array_index(data->out, JBackend_smd_operation_out, 0).ptr);
 }
 gboolean
-j_backend_smd_schema_delete(JBackend* backend, gchar const* namespace, gchar const* name)
+j_backend_smd_schema_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	ret = backend->smd.backend_schema_delete(namespace, name);
-	return ret;
+	return backend->smd.backend_schema_delete( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr);
 }
 gboolean
-j_backend_smd_insert(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* metadata)
+j_backend_smd_insert(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(metadata != NULL, FALSE);
-	ret = backend->smd.backend_insert(namespace, name, metadata);
-	return ret;
+	return backend->smd.backend_insert( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
+		g_array_index(data->in, JBackend_smd_operation_in, 2).ptr);
 }
 gboolean
-j_backend_smd_update(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata)
+j_backend_smd_update(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(selector != NULL, FALSE);
-	g_return_val_if_fail(metadata != NULL, FALSE);
-	ret = backend->smd.backend_update(namespace, name, selector, metadata);
-	return ret;
+	return backend->smd.backend_update( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
+		g_array_index(data->in, JBackend_smd_operation_in, 2).ptr, //
+		g_array_index(data->in, JBackend_smd_operation_in, 3).ptr);
 }
 gboolean
-j_backend_smd_delete(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* selector)
+j_backend_smd_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	/*selector == null is allowed*/
-	ret = backend->smd.backend_delete(namespace, name, selector);
-	return ret;
+	return backend->smd.backend_delete( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
+		g_array_index(data->in, JBackend_smd_operation_in, 2).ptr);
 }
 gboolean
-j_backend_smd_query(JBackend* backend, gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator)
+j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(iterator != NULL, FALSE);
-	/*selector == null is allowed*/
-	ret = backend->smd.backend_query(namespace, name, selector, iterator);
-	return ret;
-}
-gboolean
-j_backend_smd_iterate(JBackend* backend, gpointer iterator, bson_t* metadata)
-{
-	gboolean ret;
-	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(iterator != NULL, FALSE);
-	g_return_val_if_fail(metadata != NULL, FALSE);
-	ret = backend->smd.backend_iterate(iterator, metadata);
-	return ret;
+	gpointer iter;
+	guint i;
+	char str_buf[16];
+	const char* key;
+	bson_t* bson = g_array_index(data->out, JBackend_smd_operation_out, 0).ptr;
+	bson_t tmp;
+	ret = backend->smd.backend_query( //
+		batch, //
+		g_array_index(data->in, JBackend_smd_operation_in, 1).ptr, //
+		g_array_index(data->in, JBackend_smd_operation_in, 2).ptr, //
+		&iter);
+	if (!ret)
+		return FALSE;
+	i = 0;
+	do
+	{
+		bson_uint32_to_string(i, &key, str_buf, sizeof(str_buf));
+		bson_append_document_begin(bson, key, -1, &tmp);
+		ret = backend->smd.backend_iterate(iter, &tmp);
+		bson_append_document_end(bson, &tmp);
+		i++;
+	} while (ret);
+	return TRUE;
 }
 
 /**

@@ -245,6 +245,8 @@ static JBackend sqlite_backend = {
 		.backend_delete = backend_delete,
 		.backend_query = backend_query,
 		.backend_iterate = backend_iterate,
+		.backend_batch_start = backend_batch_start,
+		.backend_batch_execute = backend_batch_execute,
 	},
 };
 G_MODULE_EXPORT

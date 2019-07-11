@@ -630,11 +630,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		{
 		}
 		break;
-		case J_MESSAGE_SMD_QUERY:
-		{
-		}
-		break;
-		case J_MESSAGE_SMD_ITERATE:
+		case J_MESSAGE_SMD_GET_ALL:
 		{
 		}
 		break;
