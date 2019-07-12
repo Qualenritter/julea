@@ -163,19 +163,11 @@ insert data into a schema in the smd-backend
 @param name [in] schema name to delete (e.g. "files")
 @param metadata [in] the data to insert. points to
  - an initialized bson_t containing "data"
- - an initialized bson_t containing "arr_data"
 @verbatim
 data{
 	"var_name1": value1,
 	"var_name2": value2,
 	"var_nameN": valueN,
-}
-arr_data{
-	"_arr" : [
-		"0": bson_t(data),
-		"1": bson_t(data),
-		"N": bson_t(data),
-	]
 }
 @endverbatim
 @return TRUE if all following statements are TRUE otherwise FALSE
