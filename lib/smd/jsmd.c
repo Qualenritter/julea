@@ -66,7 +66,7 @@ static gboolean
 j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
 	gpointer batch = NULL;
-	JBackend_smd_operation_data* data;
+	JBackend_smd_operation_data* data = NULL;
 	gboolean ret = TRUE;
 	GSocketConnection* smd_connection;
 	JBackend* smd_backend = j_smd_backend();
@@ -86,15 +86,15 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 				ret = smd_backend->smd.backend_batch_start( //
 					      data->in_param[0].ptr, //
 					      j_semantics_get(semantics, J_SEMANTICS_SAFETY), //
-					      &batch) &&
+					      &batch, data->out_param[data->out_param_count - 1].ptr) &&
 					ret;
 			ret = j_backend_smd_func_call(smd_backend, batch, data, type) && ret;
 		}
 		else
 			ret = j_backend_smd_message_from_data(message, data->in_param, data->in_param_count) && ret;
 	}
-	if (smd_backend != NULL)
-		ret = smd_backend->smd.backend_batch_execute(batch) && ret;
+	if (smd_backend != NULL && data != NULL)
+		ret = smd_backend->smd.backend_batch_execute(batch, data->out_param[data->out_param_count - 1].ptr) && ret;
 	else
 	{
 		smd_connection = j_connection_pool_pop_smd(0);
@@ -125,7 +125,7 @@ j_smd_schema_create_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_SCHEMA_CREATE);
 }
 gboolean
-j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch)
+j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error)
 {
 	JOperation* op;
 	JBackend_smd_operation_data* data;
@@ -134,6 +134,7 @@ j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* sch
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = schema;
+	data->out_param[0].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -148,7 +149,7 @@ j_smd_schema_get_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_SCHEMA_GET);
 }
 gboolean
-j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch)
+j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error)
 {
 	JOperation* op;
 	JBackend_smd_operation_data* data;
@@ -157,6 +158,7 @@ j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBat
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->out_param[0].ptr_const = schema;
+	data->out_param[1].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -171,7 +173,7 @@ j_smd_schema_delete_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_SCHEMA_DELETE);
 }
 gboolean
-j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch)
+j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error)
 {
 	JOperation* op;
 	JBackend_smd_operation_data* data;
@@ -179,6 +181,7 @@ j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch)
 	memcpy(data, &j_smd_schema_delete_params, sizeof(JBackend_smd_operation_data));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
+	data->out_param[0].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -193,7 +196,7 @@ j_smd_insert_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_INSERT);
 }
 gboolean
-j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch)
+j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error)
 {
 	JOperation* op;
 	JBackend_smd_operation_data* data;
@@ -202,6 +205,7 @@ j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, 
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = metadata;
+	data->out_param[0].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -216,7 +220,7 @@ j_smd_update_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_UPDATE);
 }
 gboolean
-j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch)
+j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error)
 {
 	JOperation* op;
 	JBackend_smd_operation_data* data;
@@ -226,6 +230,7 @@ j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, 
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
 	data->in_param[3].ptr_const = metadata;
+	data->out_param[0].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -240,7 +245,7 @@ j_smd_delete_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_DELETE);
 }
 gboolean
-j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch)
+j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error)
 {
 	JOperation* op;
 	JBackend_smd_operation_data* data;
@@ -249,6 +254,7 @@ j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, 
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
+	data->out_param[0].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -263,7 +269,7 @@ j_smd_get_all_exec(JList* operations, JSemantics* semantics)
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_GET_ALL);
 }
 gboolean
-j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch)
+j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error)
 {
 	J_smd_iterator_helper* helper;
 	JOperation* op;
@@ -279,6 +285,7 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
 	data->out_param[0].ptr_const = &helper->bson;
+	data->out_param[1].ptr_const = error;
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -288,11 +295,12 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	return TRUE;
 }
 gboolean
-j_smd_iterate(gpointer iterator, bson_t* metadata)
+j_smd_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
 	const uint8_t* data;
 	uint32_t length;
 	J_smd_iterator_helper* helper = iterator;
+	(void)error;
 	if (!helper->initialized)
 	{
 		bson_iter_init(&helper->iter, &helper->bson);

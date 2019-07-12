@@ -152,14 +152,21 @@ static j_sql_statement_type stmt_transaction_commit = NULL;
 #define j_sql_transaction_begin() j_sql_step_and_reset_check_done(stmt_transaction_begin)
 #define j_sql_transaction_commit() j_sql_step_and_reset_check_done(stmt_transaction_commit)
 #define j_sql_transaction_abort() j_sql_step_and_reset_check_done(stmt_transaction_abort)
-#define j_goto_error(val)                            \
-	do                                           \
-	{                                            \
-		if (val)                             \
-		{                                    \
-			J_DEBUG("goto error %d", 0); \
-			goto error;                  \
-		}                                    \
+#define j_goto_error_subcommand(val) \
+	do                           \
+	{                            \
+		if (val)             \
+			goto _error; \
+	} while (0)
+#define j_goto_error(val, err_code, err_format_str, ...)                                                  \
+	do                                                                                                \
+	{                                                                                                 \
+		if (val)                                                                                  \
+		{                                                                                         \
+			J_DEBUG(err_format_str, ##__VA_ARGS__);                                           \
+			g_set_error(error, JULEA_BACKEND_ERROR, err_code, err_format_str, ##__VA_ARGS__); \
+			goto _error;                                                                      \
+		}                                                                                         \
 	} while (0)
 static void
 freeJSMDIterator(gpointer ptr)
@@ -222,10 +229,9 @@ freeJSqlCacheSQLPrepared(void* ptr)
 			j_sql_finalize(p->stmt);
 		g_free(p);
 	}
-error:;
 }
 static JSqlCacheSQLPrepared*
-getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
+getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query, GError** error)
 {
 	gint ret;
 	JSqlCacheNames* cacheNames = NULL;
@@ -242,7 +248,7 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 		cacheNames = g_new0(JSqlCacheNames, 1);
 		cacheNames->names = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheSQLQueries);
 		ret = g_hash_table_insert(cacheNamespaces->namespaces, g_strdup(namespace), cacheNames);
-		j_goto_error(!ret);
+		j_goto_error(!ret, JULEA_BACKEND_ERROR_FAILED, "g_hash_table_insert failed %d", ret);
 	}
 	cacheQueries = g_hash_table_lookup(cacheNames->names, name);
 	if (!cacheQueries)
@@ -250,17 +256,17 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query)
 		cacheQueries = g_new0(JSqlCacheSQLQueries, 1);
 		cacheQueries->queries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheSQLPrepared);
 		ret = g_hash_table_insert(cacheNames->names, g_strdup(name), cacheQueries);
-		j_goto_error(!ret);
+		j_goto_error(!ret, JULEA_BACKEND_ERROR_FAILED, "g_hash_table_insert failed %d", ret);
 	}
 	cachePrepared = g_hash_table_lookup(cacheQueries->queries, query);
 	if (!cachePrepared)
 	{
 		cachePrepared = g_new0(JSqlCacheSQLPrepared, 1);
 		ret = g_hash_table_insert(cacheQueries->queries, g_strdup(query), cachePrepared);
-		j_goto_error(!ret);
+		j_goto_error(!ret, JULEA_BACKEND_ERROR_FAILED, "g_hash_table_insert failed %d", ret);
 	}
 	return cachePrepared;
-error:
+_error:
 	return NULL;
 }
 static void
@@ -277,6 +283,7 @@ deleteCachePrepared(gchar const* namespace, gchar const* name)
 static gboolean
 init_sql(void)
 {
+	GError** error = NULL;
 	j_sql_exec_or_error(
 		"CREATE TABLE IF NOT EXISTS schema_structure ("
 		"namespace TEXT,"
@@ -292,7 +299,7 @@ init_sql(void)
 	j_sql_prepare("COMMIT", &stmt_transaction_commit);
 	j_sql_prepare("ROLLBACK", &stmt_transaction_abort);
 	return TRUE;
-error:
+_error:
 	return FALSE;
 }
 static void
@@ -305,29 +312,29 @@ fini_sql(void)
 	j_sql_finalize(stmt_transaction_abort);
 	j_sql_finalize(stmt_transaction_begin);
 	j_sql_finalize(stmt_transaction_commit);
-error:;
 }
 static gboolean
-backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch)
+backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch, GError** error)
 {
 	JSqlBatch* batch = *_batch = g_slice_new(JSqlBatch);
-	j_goto_error(!namespace);
+	j_goto_error(!namespace, JULEA_BACKEND_ERROR_NAMESPACE_NULL, "namespace not set %s", namespace);
 	batch->namespace = namespace;
 	(void)safety;
 	return TRUE;
-error:
+_error:
 	g_slice_free(JSqlBatch, batch);
 	*_batch = NULL;
 	return FALSE;
 }
 static gboolean
-backend_batch_execute(gpointer batch)
+backend_batch_execute(gpointer batch, GError** error)
 {
+	(void)error;
 	g_slice_free(JSqlBatch, batch);
 	return TRUE;
 }
 static gboolean
-backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
+backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	bson_iter_t iter;
@@ -342,9 +349,9 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 	char* json = NULL;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
-	j_goto_error(!name);
-	j_goto_error(!batch);
-	j_goto_error(!schema);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
+	j_goto_error(!schema, JULEA_BACKEND_ERROR_SCHEMA_NULL, "schema not set %p", (const void*)schema);
 	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", batch->namespace, name);
 	if (bson_iter_init(&iter, schema))
 	{
@@ -387,18 +394,18 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 					case J_SMD_TYPE_INVALID:
 					case _J_SMD_TYPE_COUNT:
 					default:
-						j_goto_error(TRUE);
+						j_goto_error(TRUE, JULEA_BACKEND_ERROR_TYPE_INVALID, "invalid smd type %d", type);
 					}
 				}
 				else
-					j_goto_error(TRUE);
+					j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "invalid bson type %d", bson_iter_type(&iter));
 			}
 		}
 	}
 	else
-		j_goto_error(TRUE);
+		j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	g_string_append(sql, " )");
-	j_goto_error(!counter);
+	j_goto_error(!counter, JULEA_BACKEND_ERROR_SCHEMA_EMPTY, "schema must contain at least one element %d", 0);
 	json = bson_as_json(schema, NULL);
 	j_sql_bind_text(stmt_schema_structure_create, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
@@ -414,20 +421,20 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 		if (bson_iter_init(&iter, schema))
 		{
 			ret = bson_iter_find(&iter, "_index");
-			j_goto_error(!ret);
+			j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND, "bson is missing key '%s'", "_index");
 			ret = BSON_ITER_HOLDS_ARRAY(&iter);
-			j_goto_error(!ret);
+			j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "_index must be of type '%s'", "[]");
 			ret = bson_iter_recurse(&iter, &iter_child);
-			j_goto_error(!ret);
+			j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_recurse failed %d", ret);
 			while (bson_iter_next(&iter_child))
 			{
 				sql = g_string_new(NULL);
 				first = TRUE;
 				g_string_append_printf(sql, "CREATE INDEX %s_%s_%d ON %s_%s ( ", batch->namespace, name, i, batch->namespace, name);
 				ret = BSON_ITER_HOLDS_ARRAY(&iter_child);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "_index must be of type '%s'", "[[]]");
 				ret = bson_iter_recurse(&iter_child, &iter_child2);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_recurse failed %d", ret);
 				while (bson_iter_next(&iter_child2))
 				{
 					if (first)
@@ -447,11 +454,11 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 			}
 		}
 		else
-			j_goto_error(TRUE);
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	}
 	j_sql_transaction_commit();
 	return TRUE;
-error:
+_error:
 constraint:
 	j_sql_transaction_abort();
 	bson_free(json);
@@ -459,14 +466,14 @@ constraint:
 	return FALSE;
 }
 static gboolean
-backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema)
+backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	gint retsql;
 	guint ret = FALSE;
 	const char* json = NULL;
-	j_goto_error(!name);
-	j_goto_error(!batch);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
 	j_sql_bind_text(stmt_schema_structure_get, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_get, 2, name, -1);
 	j_sql_step(stmt_schema_structure_get, retsql)
@@ -474,8 +481,8 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema)
 		if (schema)
 		{
 			json = j_sql_column_text(stmt_schema_structure_get, 0);
-			j_goto_error(json == NULL);
-			j_goto_error(!strlen(json));
+			j_goto_error(json == NULL, JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "schema not found %p", NULL);
+			j_goto_error(!strlen(json), JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "schema not found %s", json);
 			bson_init_from_json(schema, json, -1, NULL);
 		}
 		ret = TRUE;
@@ -483,23 +490,23 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema)
 	j_sql_reset(stmt_schema_structure_get);
 	J_DEBUG("ret %d", ret);
 	return ret;
-error:
+_error:
 	j_sql_reset(stmt_schema_structure_get);
 	J_DEBUG("ret %d", FALSE);
 	return FALSE;
 }
 static gboolean
-backend_schema_delete(gpointer _batch, gchar const* name)
+backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
 	gint ret;
 	j_sql_transaction_begin();
-	j_goto_error(!name);
-	j_goto_error(!batch);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
 	deleteCachePrepared(batch->namespace, name);
-	ret = backend_schema_get(batch, name, NULL);
-	j_goto_error(!ret);
+	ret = backend_schema_get(batch, name, NULL, error);
+	j_goto_error_subcommand(!ret);
 	g_string_append_printf(sql, "DROP TABLE %s_%s", batch->namespace, name);
 	j_sql_bind_text(stmt_schema_structure_delete, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_delete, 2, name, -1);
@@ -509,13 +516,13 @@ backend_schema_delete(gpointer _batch, gchar const* name)
 	j_sql_transaction_commit();
 	g_string_free(sql, TRUE);
 	return TRUE;
-error:
+_error:
 	j_sql_transaction_abort();
 	g_string_free(sql, TRUE);
 	return false;
 }
 static gboolean
-insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter)
+insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 {
 	bson_type_t type;
 	guint i;
@@ -527,7 +534,7 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter)
 	{
 		type = bson_iter_type(iter);
 		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(iter)));
-		j_goto_error(!index);
+		j_goto_error(!index, JULEA_BACKEND_ERROR_VARIABLE_NOT_FOUND, "variable '%s' not defined in schema", bson_iter_key(iter));
 		switch (type)
 		{
 		case BSON_TYPE_DOUBLE:
@@ -567,18 +574,18 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter)
 		case BSON_TYPE_MAXKEY:
 		case BSON_TYPE_MINKEY:
 		default:
-			j_goto_error(TRUE);
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", type);
 		}
 	}
-	j_goto_error(!count);
+	j_goto_error(!count, JULEA_BACKEND_ERROR_NO_VARIABLE_SET, "no variable set from insert %d", count);
 	j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	return TRUE;
 constraint:
-error:
+_error:
 	return FALSE;
 }
 static gboolean
-backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
+backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	guint i;
@@ -588,17 +595,17 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
-	j_goto_error(!metadata);
-	j_goto_error(!name);
-	j_goto_error(!batch);
-	j_goto_error(!bson_count_keys(metadata));
-	prepared = getCachePrepared(batch->namespace, name, "insert");
-	j_goto_error(!prepared);
+	j_goto_error(!metadata, JULEA_BACKEND_ERROR_METADATA_NULL, "metadata not set %p", (const void*)metadata);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
+	j_goto_error(!bson_count_keys(metadata), JULEA_BACKEND_ERROR_METADATA_EMPTY, "metadata is set to an empty bson %p", (const void*)metadata);
+	prepared = getCachePrepared(batch->namespace, name, "insert", error);
+	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
 		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(batch, name, schema);
-		j_goto_error(!schema_initialized);
+		schema_initialized = backend_schema_get(batch, name, schema, error);
+		j_goto_error_subcommand(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -616,9 +623,11 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 					g_hash_table_insert(prepared->variables_index, g_strdup(bson_iter_key(&iter)), GINT_TO_POINTER(prepared->variables_count));
 				}
 				else
-					j_goto_error(TRUE);
+					j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&iter));
 			}
 		}
+		else
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 		g_string_append(prepared->sql, ") VALUES ( ?1");
 		for (i = 1; i < prepared->variables_count; i++)
 			g_string_append_printf(prepared->sql, ", ?%d", i + 1);
@@ -628,9 +637,9 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 		prepared->initialized = TRUE;
 	}
 	ret = bson_iter_init(&iter, metadata);
-	j_goto_error(!ret);
-	ret = insert_helper(prepared, &iter);
-	j_goto_error(!ret);
+	j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", ret);
+	ret = insert_helper(prepared, &iter, error);
+	j_goto_error_subcommand(!ret);
 	if (schema)
 	{
 		if (schema_initialized)
@@ -639,7 +648,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 	}
 	j_sql_transaction_commit();
 	return TRUE;
-error:
+_error:
 	if (schema)
 	{
 		if (schema_initialized)
@@ -650,7 +659,7 @@ error:
 	return FALSE;
 }
 static gboolean
-build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint* variables_count)
+build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint* variables_count, GError** error)
 {
 	const char* query_op[] = { " AND ", " OR " };
 	const char* query_subop[] = { "_or", "_and" };
@@ -666,9 +675,9 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 			if (!g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
 			{
 				ret = bson_iter_recurse(iter, &iterchild);
-				j_goto_error(!ret);
-				ret = build_selector_query(&iterchild, sql, !and_query, variables_count);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_recurse failed %d", ret);
+				ret = build_selector_query(&iterchild, sql, !and_query, variables_count, error);
+				j_goto_error_subcommand(!ret);
 			}
 			else
 			{
@@ -679,9 +688,9 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 					g_string_append(sql, query_op[and_query ? 0 : 1]);
 				}
 				ret = bson_iter_recurse(iter, &iterchild);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_recurse failed %d", ret);
 				ret = bson_iter_find(&iterchild, "operator");
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND, "bson is missing key '%s'", "operator");
 				if (BSON_ITER_HOLDS_INT32(&iterchild))
 				{
 					op = bson_iter_int32(&iterchild);
@@ -708,26 +717,24 @@ build_selector_query(bson_iter_t* iter, GString* sql, gboolean and_query, guint*
 						break;
 					case _J_SMD_OPERATOR_COUNT:
 					default:
-						j_goto_error(TRUE);
+						j_goto_error(TRUE, JULEA_BACKEND_ERROR_COMPARATOR_INVALID, "invalid smd comparator %d", op);
 					}
 					g_string_append_printf(sql, " ?%d", *variables_count);
 				}
 				else
-				{
-					j_goto_error(TRUE);
-				}
+					j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&iterchild));
 			}
 		}
 		else
-			j_goto_error(TRUE);
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(iter));
 	}
 	g_string_append(sql, " )");
 	return TRUE;
-error:
+_error:
 	return FALSE;
 }
 static gboolean
-bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean and_query, guint* variables_count)
+bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean and_query, guint* variables_count, GError** error)
 {
 	const char* query_subop[] = { "_or", "_and" };
 	bson_iter_t iterchild;
@@ -740,17 +747,17 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 			if (!g_strcmp0(bson_iter_key(iter), query_subop[and_query ? 0 : 1]))
 			{
 				ret = bson_iter_recurse(iter, &iterchild);
-				j_goto_error(!ret);
-				ret = bind_selector_query(&iterchild, prepared, !and_query, variables_count);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_recurse failed %d", ret);
+				ret = bind_selector_query(&iterchild, prepared, !and_query, variables_count, error);
+				j_goto_error_subcommand(!ret);
 			}
 			else
 			{
 				(*variables_count)++;
 				ret = bson_iter_recurse(iter, &iterchild);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_recurse failed %d", ret);
 				ret = bson_iter_find(&iterchild, "value");
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND, "bson is missing key '%s'", "value");
 				type = bson_iter_type(&iterchild);
 				switch (type)
 				{
@@ -787,19 +794,19 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 				case BSON_TYPE_MAXKEY:
 				case BSON_TYPE_MINKEY:
 				default:
-					j_goto_error(TRUE);
+					j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", type);
 				}
 			}
 		}
 		else
-			j_goto_error(TRUE);
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&iterchild));
 	}
 	return TRUE;
-error:
+_error:
 	return FALSE;
 }
 static gboolean
-_backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator)
+_backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	guint64 tmp;
@@ -823,16 +830,18 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count = 0;
-			ret = build_selector_query(&iter, sql, TRUE, &variables_count);
-			j_goto_error(!ret);
+			ret = build_selector_query(&iter, sql, TRUE, &variables_count, error);
+			j_goto_error_subcommand(!ret);
 		}
+		else
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	}
-	prepared = getCachePrepared(batch->namespace, name, sql->str);
-	j_goto_error(!prepared);
+	prepared = getCachePrepared(batch->namespace, name, sql->str, error);
+	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = backend_schema_get(batch, name, NULL);
-		j_goto_error(!ret);
+		ret = backend_schema_get(batch, name, NULL, error);
+		j_goto_error_subcommand(!ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
 		J_DEBUG("%s", prepared->sql->str);
@@ -844,9 +853,11 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count = 0;
-			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count);
-			j_goto_error(!ret);
+			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count, error);
+			j_goto_error_subcommand(!ret);
 		}
+		else
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	}
 	J_DEBUG("%s", prepared->sql->str);
 	j_sql_loop(prepared->stmt, ret)
@@ -857,17 +868,17 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		J_DEBUG("index = %ld", tmp);
 	}
 	j_sql_reset(prepared->stmt);
-	j_goto_error(!count);
+	j_goto_error(!count, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no %d more elements to iterate", count);
 	g_string_free(sql, TRUE);
 	*iterator = iteratorOut;
 	return TRUE;
-error:
+_error:
 	g_string_free(sql, TRUE);
 	freeJSMDIterator(iteratorOut);
 	return FALSE;
 }
 static gboolean
-backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata)
+backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	guint count;
@@ -881,18 +892,18 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
-	j_goto_error(!name);
-	j_goto_error(!batch);
-	j_goto_error(!selector);
-	j_goto_error(!bson_count_keys(selector));
-	j_goto_error(!metadata);
-	prepared = getCachePrepared(batch->namespace, name, "update");
-	j_goto_error(!prepared);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
+	j_goto_error(!selector, JULEA_BACKEND_ERROR_SELECTOR_NULL, "selector not set %p", (const void*)selector);
+	j_goto_error(!bson_count_keys(selector), JULEA_BACKEND_ERROR_SELECTOR_EMPTY, "selector is empty bson %p", (const void*)selector);
+	j_goto_error(!metadata, JULEA_BACKEND_ERROR_METADATA_NULL, "metadata not set %p", (const void*)metadata);
+	prepared = getCachePrepared(batch->namespace, name, "update", error);
+	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
 		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(batch, name, schema);
-		j_goto_error(!schema_initialized);
+		schema_initialized = backend_schema_get(batch, name, schema, error);
+		j_goto_error_subcommand(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -910,9 +921,11 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 					g_hash_table_insert(prepared->variables_index, g_strdup(bson_iter_key(&iter)), GINT_TO_POINTER(prepared->variables_count));
 				}
 				else
-					j_goto_error(TRUE);
+					j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&iter));
 			}
 		}
+		else
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 		prepared->variables_count++;
 		g_string_append_printf(prepared->sql, " WHERE _id = ?%d", prepared->variables_count);
 		g_hash_table_insert(prepared->variables_index, g_strdup("_id"), GINT_TO_POINTER(prepared->variables_count));
@@ -920,15 +933,15 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	ret = _backend_query(batch, name, selector, (gpointer*)&iterator);
-	j_goto_error(!ret);
+	ret = _backend_query(batch, name, selector, (gpointer*)&iterator, error);
+	j_goto_error_subcommand(!ret);
 	for (j = 0; j < iterator->arr->len; j++)
 	{
 		count = 0;
 		for (i = 0; i < prepared->variables_count; i++)
 			j_sql_bind_null(prepared->stmt, i + 1);
 		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, "_id"));
-		j_goto_error(!index);
+		j_goto_error(!index, JULEA_BACKEND_ERROR_VARIABLE_NOT_FOUND, "variable '%s' not defined in schema", "_id");
 		j_sql_bind_int64(prepared->stmt, index, g_array_index(iterator->arr, guint64, j));
 		if (bson_iter_init(&iter, metadata))
 		{
@@ -936,8 +949,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 			{
 				type = bson_iter_type(&iter);
 				index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
-				J_DEBUG("%s", bson_iter_key(&iter));
-				j_goto_error(!index);
+				j_goto_error(!index, JULEA_BACKEND_ERROR_VARIABLE_NOT_FOUND, "variable '%s' not defined in schema", bson_iter_key(&iter));
 				switch (type)
 				{
 				case BSON_TYPE_DOUBLE:
@@ -977,14 +989,14 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 				case BSON_TYPE_MAXKEY:
 				case BSON_TYPE_MINKEY:
 				default:
-					j_goto_error(TRUE);
+					j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", type);
 				}
 			}
 		}
 		else
-			j_goto_error(TRUE);
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", ret);
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
-		j_goto_error(!count);
+		j_goto_error(!count, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no %d more elements to iterate", count);
 	}
 	if (schema)
 	{
@@ -995,7 +1007,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	freeJSMDIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
-error:
+_error:
 constraint:
 	if (schema)
 	{
@@ -1008,7 +1020,7 @@ constraint:
 	return FALSE;
 }
 static gboolean
-backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
+backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GError** error)
 {
 	JSqlBatch* batch = _batch;
 	JSMDIterator* iterator = NULL;
@@ -1016,12 +1028,12 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
-	j_goto_error(!name);
-	j_goto_error(!batch);
-	ret = _backend_query(batch, name, selector, (gpointer*)&iterator);
-	j_goto_error(!ret);
-	prepared = getCachePrepared(batch->namespace, name, "delete");
-	j_goto_error(!prepared);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
+	ret = _backend_query(batch, name, selector, (gpointer*)&iterator, error);
+	j_goto_error_subcommand(!ret);
+	prepared = getCachePrepared(batch->namespace, name, "delete", error);
+	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
 		prepared->sql = g_string_new(NULL);
@@ -1039,14 +1051,14 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
 	freeJSMDIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
-error:
+_error:
 constraint:
 	freeJSMDIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
 }
 static gboolean
-backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator)
+backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	bson_t* schema = NULL;
 	gboolean schema_initialized = FALSE;
@@ -1059,15 +1071,15 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	GHashTable* variables_index = NULL;
 	GHashTable* variables_type = NULL;
 	GString* sql = g_string_new(NULL);
-	j_goto_error(!name);
-	j_goto_error(!batch);
+	j_goto_error(!name, JULEA_BACKEND_ERROR_NAME_NULL, "name not set %s", name);
+	j_goto_error(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "batch not set %p", (const void*)batch);
 	variables_index = g_hash_table_new_full(g_direct_hash, NULL, NULL, g_free);
 	variables_type = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 	g_string_append(sql, "SELECT ");
 	variables_count = 0;
 	schema = g_new0(bson_t, 1);
-	schema_initialized = backend_schema_get(batch, name, schema);
-	j_goto_error(!schema_initialized);
+	schema_initialized = backend_schema_get(batch, name, schema, error);
+	j_goto_error_subcommand(!schema_initialized);
 	if (bson_iter_init(&iter, schema))
 	{
 		g_string_append(sql, "_id");
@@ -1084,9 +1096,11 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 				variables_count++;
 			}
 			else
-				j_goto_error(TRUE);
+				j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&iter));
 		}
 	}
+	else
+		j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	g_string_append_printf(sql, " FROM %s_%s", batch->namespace, name);
 	if (selector && bson_count_keys(selector))
 	{
@@ -1094,16 +1108,18 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count2 = 0;
-			ret = build_selector_query(&iter, sql, TRUE, &variables_count2);
-			j_goto_error(!ret);
+			ret = build_selector_query(&iter, sql, TRUE, &variables_count2, error);
+			j_goto_error_subcommand(!ret);
 		}
+		else
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	}
-	prepared = getCachePrepared(batch->namespace, name, sql->str);
-	j_goto_error(!prepared);
+	prepared = getCachePrepared(batch->namespace, name, sql->str, error);
+	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
-		ret = backend_schema_get(batch, name, NULL);
-		j_goto_error(!ret);
+		ret = backend_schema_get(batch, name, NULL, error);
+		j_goto_error_subcommand(!ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_index = variables_index;
 		prepared->variables_type = variables_type;
@@ -1123,9 +1139,11 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		if (bson_iter_init(&iter, selector))
 		{
 			variables_count2 = 0;
-			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count2);
-			j_goto_error(!ret);
+			ret = bind_selector_query(&iter, prepared, TRUE, &variables_count2, error);
+			j_goto_error_subcommand(!ret);
 		}
+		else
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", ret);
 	}
 	J_DEBUG("%s", prepared->sql->str);
 	*iterator = prepared;
@@ -1137,7 +1155,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		g_free(schema);
 	}
 	return TRUE;
-error:
+_error:
 	g_string_free(sql, TRUE);
 	if (schema)
 	{
@@ -1152,7 +1170,7 @@ error:
 	return FALSE;
 }
 static gboolean
-backend_iterate(gpointer _iterator, bson_t* metadata)
+backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 {
 	const char* name;
 	guint i;
@@ -1171,42 +1189,42 @@ backend_iterate(gpointer _iterator, bson_t* metadata)
 			{
 			case J_SMD_TYPE_SINT32:
 				ret = bson_append_int32(metadata, name, -1, j_sql_column_sint32(prepared->stmt, i));
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "SINT32");
 				break;
 			case J_SMD_TYPE_UINT32:
 				ret = bson_append_int32(metadata, name, -1, j_sql_column_uint32(prepared->stmt, i));
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "UINT32");
 				break;
 			case J_SMD_TYPE_FLOAT32:
 				ret = bson_append_double(metadata, name, -1, j_sql_column_float32(prepared->stmt, i));
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "FLOAT32");
 				break;
 			case J_SMD_TYPE_SINT64:
 				ret = bson_append_int64(metadata, name, -1, j_sql_column_sint64(prepared->stmt, i));
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "SINT64");
 				break;
 			case J_SMD_TYPE_UINT64:
 				ret = bson_append_int64(metadata, name, -1, j_sql_column_uint64(prepared->stmt, i));
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "UINT64");
 				break;
 			case J_SMD_TYPE_FLOAT64:
 				ret = bson_append_double(metadata, name, -1, j_sql_column_float64(prepared->stmt, i));
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "FLOAT64");
 				break;
 			case J_SMD_TYPE_STRING:
 				ret = bson_append_utf8(metadata, name, -1, j_sql_column_text(prepared->stmt, i), -1);
-				j_goto_error(!ret);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "String");
 				break;
 			case J_SMD_TYPE_INVALID:
 			case _J_SMD_TYPE_COUNT:
 			default:
-				j_goto_error(TRUE);
+				j_goto_error(TRUE, JULEA_BACKEND_ERROR_TYPE_INVALID, "invalid smd type %d", type);
 			}
 		}
 	}
-	j_goto_error(!found);
+	j_goto_error(!found, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no %d more elements to iterate", found);
 	return TRUE;
-error:
+_error:
 	j_sql_reset(prepared->stmt);
 	return FALSE;
 }

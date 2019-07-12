@@ -48,13 +48,13 @@ enum JSMDOperator
 };
 typedef enum JSMDOperator JSMDOperator;
 
-gboolean j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch);
-gboolean j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch);
-gboolean j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch);
-gboolean j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch);
-gboolean j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch);
-gboolean j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch);
-gboolean j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch);
-gboolean j_smd_iterate(gpointer iterator, bson_t* metadata);
+gboolean j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error);
+gboolean j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error);
+gboolean j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error);
+gboolean j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error);
+gboolean j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error);
+gboolean j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error);
+gboolean j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error);
+gboolean j_smd_iterate(gpointer iterator, bson_t* metadata, GError** error);
 
 #endif

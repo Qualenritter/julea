@@ -22,6 +22,7 @@
 #include <julea.h>
 #include <julea-internal.h>
 #include <julea-smd.h>
+#include <core/jbackend.h>
 /*
 * this file defines makros such that the generic-sql.h implementation can call the sqlite specific functions without knowing, that it is actually sqlite
 */
@@ -152,25 +153,25 @@ static sqlite3* backend_db = NULL;
 	if ((ret = sqlite3_step(stmt)) != SQLITE_ROW)     \
 		j_sql_check_constraint(ret, SQLITE_DONE); \
 	else
-#define j_sql_exec_or_error(sql, flag)                                                      \
-	do                                                                                  \
-	{                                                                                   \
-		j_sql_statement_type _stmt_;                                                \
-		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, 0, &_stmt_, NULL);     \
-		if (_ret_ != SQLITE_OK)                                                     \
-		{                                                                           \
-			J_CRITICAL("sql_error a %d %s", _ret_, sqlite3_errmsg(backend_db)); \
-			j_sql_finalize(_stmt_);                                             \
-			j_goto_error(TRUE);                                                 \
-		}                                                                           \
-		_ret_ = sqlite3_step(_stmt_);                                               \
-		if (_ret_ != SQLITE_DONE)                                                   \
-		{                                                                           \
-			J_CRITICAL("sql_error b %d %s", _ret_, sqlite3_errmsg(backend_db)); \
-			j_sql_finalize(_stmt_);                                             \
-			j_goto_error(TRUE);                                                 \
-		}                                                                           \
-		j_sql_finalize(_stmt_);                                                     \
+#define j_sql_exec_or_error(sql, flag)                                                                                            \
+	do                                                                                                                        \
+	{                                                                                                                         \
+		j_sql_statement_type _stmt_;                                                                                      \
+		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, 0, &_stmt_, NULL);                                           \
+		if (_ret_ != SQLITE_OK)                                                                                           \
+		{                                                                                                                 \
+			j_sql_finalize(_stmt_);                                                                                   \
+			J_CRITICAL("sql_error a %d %s", _ret_, sqlite3_errmsg(backend_db));                                       \
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_SQL_FAILED, "sql_error %d %s", _ret_, sqlite3_errmsg(backend_db)); \
+		}                                                                                                                 \
+		_ret_ = sqlite3_step(_stmt_);                                                                                     \
+		if (_ret_ != SQLITE_DONE)                                                                                         \
+		{                                                                                                                 \
+			j_sql_finalize(_stmt_);                                                                                   \
+			J_CRITICAL("sql_error b %d %s", _ret_, sqlite3_errmsg(backend_db));                                       \
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_SQL_FAILED, "sql_error %d %s", _ret_, sqlite3_errmsg(backend_db)); \
+		}                                                                                                                 \
+		j_sql_finalize(_stmt_);                                                                                           \
 	} while (0)
 #define j_sql_exec_and_get_number(sql, number)                     \
 	do                                                         \
@@ -197,6 +198,7 @@ static sqlite3* backend_db = NULL;
 static gboolean
 backend_init(gchar const* path)
 {
+	GError** error = NULL;
 	guint ret;
 	g_autofree gchar* dirname = NULL;
 	g_return_val_if_fail(path != NULL, FALSE);
@@ -216,9 +218,9 @@ backend_init(gchar const* path)
 	}
 	j_sql_exec_or_error("PRAGMA foreign_keys = ON", SQLITE_DONE);
 	ret = init_sql();
-	j_goto_error(!ret);
+	j_goto_error_subcommand(!ret);
 	return (backend_db != NULL);
-error:
+_error:
 	sqlite3_close(backend_db);
 	return FALSE;
 }
@@ -229,7 +231,6 @@ backend_fini(void)
 	fini_sql();
 	ret = sqlite3_close(backend_db);
 	j_sql_check(ret, SQLITE_OK);
-error:;
 }
 static JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_SMD,

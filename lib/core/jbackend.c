@@ -539,6 +539,11 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gconstpointer* value,
 
 	return ret;
 }
+GQuark
+julea_backend_error_quark(void)
+{
+	return g_quark_from_static_string("julea-backend-error-quark");
+}
 gboolean
 j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data, guint arrlen)
 {
@@ -570,6 +575,7 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 				len += element->len;
 			}
 			break;
+		case J_SMD_PARAM_TYPE_ERROR: //TODO
 		case _J_SMD_PARAM_TYPE_COUNT:
 		default:
 			abort();
@@ -608,6 +614,7 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 			ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
 			bson_copy_to(&element->bson, element->ptr);
 			break;
+		case J_SMD_PARAM_TYPE_ERROR: //TODO
 		case _J_SMD_PARAM_TYPE_COUNT:
 		default:
 			abort();
@@ -643,6 +650,7 @@ j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* 
 			element->ptr = &element->bson;
 			ret = bson_init_static(element->ptr, j_message_get_n(message, len), len) && ret;
 			break;
+		case J_SMD_PARAM_TYPE_ERROR: //TODO
 		case _J_SMD_PARAM_TYPE_COUNT:
 		default:
 			abort();
@@ -667,11 +675,14 @@ j_backend_smd_fini(JBackend* backend)
 }
 const JBackend_smd_operation_data j_smd_schema_create_params = {
 	.in_param_count = 3,
-	.out_param_count = 0,
+	.out_param_count = 1,
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
 gboolean
@@ -680,17 +691,18 @@ j_backend_smd_schema_create(JBackend* backend, gpointer batch, JBackend_smd_oper
 	return backend->smd.backend_schema_create( //
 		batch, //
 		data->in_param[1].ptr,
-		data->in_param[2].ptr);
+		data->in_param[2].ptr, data->out_param[0].ptr);
 }
 const JBackend_smd_operation_data j_smd_schema_get_params = {
 	.in_param_count = 2,
-	.out_param_count = 1,
+	.out_param_count = 2,
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
 	},
 	.out_param = {
 		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
 gboolean
@@ -699,14 +711,17 @@ j_backend_smd_schema_get(JBackend* backend, gpointer batch, JBackend_smd_operati
 	return backend->smd.backend_schema_get( //
 		batch, //
 		data->in_param[1].ptr, //
-		data->out_param[0].ptr);
+		data->out_param[0].ptr, data->out_param[1].ptr);
 }
 const JBackend_smd_operation_data j_smd_schema_delete_params = {
 	.in_param_count = 2,
-	.out_param_count = 0,
+	.out_param_count = 1,
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
 gboolean
@@ -714,15 +729,18 @@ j_backend_smd_schema_delete(JBackend* backend, gpointer batch, JBackend_smd_oper
 {
 	return backend->smd.backend_schema_delete( //
 		batch, //
-		data->in_param[1].ptr);
+		data->in_param[1].ptr, data->out_param[0].ptr);
 }
 const JBackend_smd_operation_data j_smd_insert_params = {
 	.in_param_count = 3,
-	.out_param_count = 0,
+	.out_param_count = 1,
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
 gboolean
@@ -731,16 +749,19 @@ j_backend_smd_insert(JBackend* backend, gpointer batch, JBackend_smd_operation_d
 	return backend->smd.backend_insert( //
 		batch, //
 		data->in_param[1].ptr, //
-		data->in_param[2].ptr);
+		data->in_param[2].ptr, data->out_param[0].ptr);
 }
 const JBackend_smd_operation_data j_smd_update_params = {
 	.in_param_count = 4,
-	.out_param_count = 0,
+	.out_param_count = 1,
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_BSON },
 		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
 gboolean
@@ -750,26 +771,9 @@ j_backend_smd_update(JBackend* backend, gpointer batch, JBackend_smd_operation_d
 		batch, //
 		data->in_param[1].ptr, //
 		data->in_param[2].ptr, //
-		data->in_param[3].ptr);
+		data->in_param[3].ptr, data->out_param[0].ptr);
 }
 const JBackend_smd_operation_data j_smd_delete_params = {
-	.in_param_count = 3,
-	.out_param_count = 0,
-	.in_param = {
-		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
-	},
-};
-gboolean
-j_backend_smd_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
-{
-	return backend->smd.backend_delete( //
-		batch, //
-		data->in_param[1].ptr, //
-		data->in_param[2].ptr);
-}
-const JBackend_smd_operation_data j_smd_get_all_params = {
 	.in_param_count = 3,
 	.out_param_count = 1,
 	.in_param = {
@@ -778,7 +782,28 @@ const JBackend_smd_operation_data j_smd_get_all_params = {
 		{ .type = J_SMD_PARAM_TYPE_BSON },
 	},
 	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
+	},
+};
+gboolean
+j_backend_smd_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
+{
+	return backend->smd.backend_delete( //
+		batch, //
+		data->in_param[1].ptr, //
+		data->in_param[2].ptr, data->out_param[0].ptr);
+}
+const JBackend_smd_operation_data j_smd_get_all_params = {
+	.in_param_count = 3,
+	.out_param_count = 2,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
 gboolean
@@ -796,7 +821,7 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 		batch, //
 		data->in_param[1].ptr, //
 		data->in_param[2].ptr, //
-		&iter);
+		&iter, data->out_param[0].ptr);
 	if (!ret)
 		return FALSE;
 	i = 0;
@@ -804,12 +829,12 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 	{
 		bson_uint32_to_string(i, &key, str_buf, sizeof(str_buf));
 		tmp = bson_new();
-		ret = backend->smd.backend_iterate(iter, tmp);
+		ret = backend->smd.backend_iterate(iter, tmp, data->out_param[0].ptr);
 		i++;
 		if (ret)
 			bson_append_document(bson, key, -1, tmp);
 		bson_destroy(tmp);
-	} while (ret);
+	} while (ret); //TODO handle the no more elements error here
 	return TRUE;
 }
 

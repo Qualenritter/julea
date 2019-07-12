@@ -34,53 +34,60 @@ static void
 backend_fini(void)
 {}
 static gboolean
-backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch)
+backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)safety;
 	(void)namespace;
 	return TRUE;
 }
 static gboolean
-backend_batch_execute(gpointer batch)
+backend_batch_execute(gpointer batch, GError** error)
 {
+	(void)error;
 	(void)batch;
 	return TRUE;
 }
 static gboolean
-backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
+backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	(void)schema;
 	return TRUE;
 }
 static gboolean
-backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema)
+backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	(void)schema;
 	return TRUE;
 }
 static gboolean
-backend_schema_delete(gpointer _batch, gchar const* name)
+backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	return TRUE;
 }
 static gboolean
-backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
+backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	(void)metadata;
 	return TRUE;
 }
 static gboolean
-backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata)
+backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	(void)selector;
@@ -88,16 +95,18 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	return TRUE;
 }
 static gboolean
-backend_delete(gpointer _batch, gchar const* name, bson_t const* selector)
+backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	(void)selector;
 	return TRUE;
 }
 static gboolean
-backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator)
+backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
+	(void)error;
 	(void)_batch;
 	(void)name;
 	(void)selector;
@@ -105,8 +114,9 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	return TRUE;
 }
 static gboolean
-backend_iterate(gpointer iterator, bson_t* metadata)
+backend_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
+	(void)error;
 	(void)iterator;
 	(void)metadata;
 	return TRUE;

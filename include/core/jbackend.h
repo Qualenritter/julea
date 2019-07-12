@@ -102,8 +102,8 @@ struct JBackend
 		{
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
-			gboolean (*backend_batch_start)(gchar const* namespace, JSemanticsSafety safety, gpointer* batch); //TODO check not null on module load
-			gboolean (*backend_batch_execute)(gpointer batch); //TODO check not null on module load
+			gboolean (*backend_batch_start)(gchar const* namespace, JSemanticsSafety safety, gpointer* batch, GError** error); //TODO check not null on module load
+			gboolean (*backend_batch_execute)(gpointer batch, GError** error); //TODO check not null on module load
 			/*!
 create a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -126,7 +126,7 @@ structure{
 	- there is no variable called "_id"
 	- _indexes columns are only on defined variables
 */
-			gboolean (*backend_schema_create)(gpointer batch, gchar const* name, bson_t const* schema);
+			gboolean (*backend_schema_create)(gpointer batch, gchar const* name, bson_t const* schema, GError** error);
 			/*!
 obtains information about a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -147,7 +147,7 @@ obtains information about a schema in the smd-backend
 	- schema != NULL and contains the requested data
 	- schema == NULL
 */
-			gboolean (*backend_schema_get)(gpointer batch, gchar const* name, bson_t* schema);
+			gboolean (*backend_schema_get)(gpointer batch, gchar const* name, bson_t* schema, GError** error);
 			/*!
 delete a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -156,7 +156,7 @@ delete a schema in the smd-backend
 	- (namespace, name) did exists before
 	- (namespace, name) did not exist after
 */
-			gboolean (*backend_schema_delete)(gpointer batch, gchar const* name);
+			gboolean (*backend_schema_delete)(gpointer batch, gchar const* name, GError** error);
 			/*!
 insert data into a schema in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -176,7 +176,7 @@ data{
 	- metadata is not NULL
 	- metadata is not an empty bson
 */
-			gboolean (*backend_insert)(gpointer batch, gchar const* name, bson_t const* metadata);
+			gboolean (*backend_insert)(gpointer batch, gchar const* name, bson_t const* metadata, GError** error);
 			/*!
 updates data in the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -222,7 +222,7 @@ selector_part_or: {
 	- the selector is not the empty bson
 	- there are no var_names which are not existent in the schema definition
 */
-			gboolean (*backend_update)(gpointer batch, gchar const* name, bson_t const* selector, bson_t const* metadata);
+			gboolean (*backend_update)(gpointer batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error);
 			/*!
 deletes data from the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -260,7 +260,7 @@ selector_part_or: {
 	- there are no var_names which are not existent in the schema definition
 	- there is at least one element deleted in the smd-backend
 */
-			gboolean (*backend_delete)(gpointer batch, gchar const* name, bson_t const* selector);
+			gboolean (*backend_delete)(gpointer batch, gchar const* name, bson_t const* selector, GError** error);
 			/*!
 creates an iterator for the smd-backend
 @param namespace [in] different usecases (e.g. "adios", "hdf5")
@@ -299,7 +299,7 @@ selector_part_or: {
 	- there are no var_names which are not existent in the schema definition
 	- the iterator is valid
 */
-			gboolean (*backend_query)(gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator);
+			gboolean (*backend_query)(gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error);
 			/*!
 obtains metadata from the backend
 backend_iterate should be called until the returned value is NULL due to no more elements found - this allowes the backend to free potentially 
@@ -322,17 +322,18 @@ allocated caches.
 	- metadata contains requested element fround by iterator
 	- iterator is updated to point to next element (if next element exists)
 */
-			gboolean (*backend_iterate)(gpointer iterator, bson_t* metadata);
+			gboolean (*backend_iterate)(gpointer iterator, bson_t* metadata, GError** error);
 		} smd;
 	};
 };
 typedef struct JBackend JBackend;
-
+/* following functions could be generalized to be used with all backends -->> */
 enum JBackend_smd_parameter_type
 {
 	J_SMD_PARAM_TYPE_STR = 0,
 	J_SMD_PARAM_TYPE_BLOB,
 	J_SMD_PARAM_TYPE_BSON,
+	J_SMD_PARAM_TYPE_ERROR,
 	_J_SMD_PARAM_TYPE_COUNT,
 };
 typedef enum JBackend_smd_parameter_type JBackend_smd_parameter_type;
@@ -353,18 +354,21 @@ struct JBackend_smd_operation_data
 	guint in_param_count;
 	guint out_param_count;
 	JBackend_smd_operation in_param[20]; //into function
+	//the last out parameter must be of type 'J_SMD_PARAM_TYPE_ERROR'
 	JBackend_smd_operation out_param[20]; //retrieve from function
 };
 typedef struct JBackend_smd_operation_data JBackend_smd_operation_data;
 gboolean j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data, guint len);
 gboolean j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, guint len);
 gboolean j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* data, guint len);
+/* previous functions could be generalized to be used with all backends <<-- */
 
 JBackend* backend_info(void);
 
 gboolean j_backend_load_client(gchar const*, gchar const*, JBackendType, GModule**, JBackend**);
 gboolean j_backend_load_server(gchar const*, gchar const*, JBackendType, GModule**, JBackend**);
 
+//object backend ->
 gboolean j_backend_object_init(JBackend*, gchar const*);
 void j_backend_object_fini(JBackend*);
 
@@ -380,6 +384,7 @@ gboolean j_backend_object_sync(JBackend*, gpointer);
 gboolean j_backend_object_read(JBackend*, gpointer, gpointer, guint64, guint64, guint64*);
 gboolean j_backend_object_write(JBackend*, gpointer, gconstpointer, guint64, guint64, guint64*);
 
+//kv backend ->
 gboolean j_backend_kv_init(JBackend*, gchar const*);
 void j_backend_kv_fini(JBackend*);
 
@@ -393,6 +398,35 @@ gboolean j_backend_kv_get(JBackend*, gpointer, gchar const*, gpointer*, guint32*
 gboolean j_backend_kv_get_all(JBackend*, gchar const*, gpointer*);
 gboolean j_backend_kv_get_by_prefix(JBackend*, gchar const*, gchar const*, gpointer*);
 gboolean j_backend_kv_iterate(JBackend*, gpointer, gconstpointer*, guint32*);
+
+//smd backend ->
+enum JuleaBackendError
+{
+	JULEA_BACKEND_ERROR_FAILED = 0,
+	JULEA_BACKEND_ERROR_NAMESPACE_NULL,
+	JULEA_BACKEND_ERROR_NAME_NULL,
+	JULEA_BACKEND_ERROR_BATCH_NULL,
+	JULEA_BACKEND_ERROR_SELECTOR_NULL,
+	JULEA_BACKEND_ERROR_SELECTOR_EMPTY,
+	JULEA_BACKEND_ERROR_METADATA_NULL,
+	JULEA_BACKEND_ERROR_METADATA_EMPTY,
+	JULEA_BACKEND_ERROR_SCHEMA_NULL,
+	JULEA_BACKEND_ERROR_SCHEMA_EMPTY,
+	JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND,
+	JULEA_BACKEND_ERROR_VARIABLE_NOT_FOUND,
+	JULEA_BACKEND_ERROR_NO_VARIABLE_SET,
+	JULEA_BACKEND_ERROR_TYPE_INVALID,
+	JULEA_BACKEND_ERROR_COMPARATOR_INVALID,
+	JULEA_BACKEND_ERROR_BSON_FAILED,
+	JULEA_BACKEND_ERROR_BSON_APPEND_FAILED,
+	JULEA_BACKEND_ERROR_BSON_INVALID_TYPE,
+	JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND,
+	JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS,
+	JULEA_BACKEND_ERROR_SQL_FAILED,
+	_JULEA_BACKEND_ERROR_COUNT
+};
+#define JULEA_BACKEND_ERROR julea_backend_error_quark()
+GQuark julea_backend_error_quark(void);
 
 gboolean j_backend_smd_init(JBackend*, gchar const*);
 void j_backend_smd_fini(JBackend*);

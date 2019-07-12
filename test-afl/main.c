@@ -334,27 +334,27 @@ event_query_single(void)
 		{
 		case 7: //NULL name
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_query(namespace_strbuf, NULL, selector, &iterator, batch);
+			ret = j_smd_query(namespace_strbuf, NULL, selector, &iterator, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
-			ret = j_smd_iterate(iterator, &bson);
+			ret = j_smd_iterate(iterator, &bson, NULL);
 			if (ret)
 				MYABORT();
 			break;
 		case 6: //NULL namespace
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_query(NULL, name_strbuf, selector, &iterator, batch);
+			ret = j_smd_query(NULL, name_strbuf, selector, &iterator, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
-			ret = j_smd_iterate(iterator, &bson);
+			ret = j_smd_iterate(iterator, &bson, NULL);
 			if (ret)
 				MYABORT();
 			break;
 		case 5: //NULL iterator
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, NULL, batch);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, NULL, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -366,11 +366,11 @@ event_query_single(void)
 			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
-			ret = j_smd_iterate(iterator, &bson);
+			ret = j_smd_iterate(iterator, &bson, NULL);
 			if (ret)
 				MYABORT();
 			break;
@@ -380,11 +380,11 @@ event_query_single(void)
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_int32(&bson_child, "operator", -1, _J_SMD_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
-			ret = j_smd_iterate(iterator, &bson);
+			ret = j_smd_iterate(iterator, &bson, NULL);
 			if (ret)
 				MYABORT();
 			break;
@@ -395,11 +395,11 @@ event_query_single(void)
 			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
-			ret = j_smd_iterate(iterator, &bson);
+			ret = j_smd_iterate(iterator, &bson, NULL);
 			if (ret)
 				MYABORT();
 			break;
@@ -407,11 +407,11 @@ event_query_single(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_int32(selector, varname_strbuf, -1, 0);
-			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
+			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
-			ret = j_smd_iterate(iterator, &bson);
+			ret = j_smd_iterate(iterator, &bson, NULL);
 			if (ret)
 				MYABORT();
 			break;
@@ -448,7 +448,7 @@ event_query_single(void)
 		ret_expected = FALSE;
 		J_DEBUG("ret_expected %d", ret_expected);
 	}
-	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch);
+	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (!ret && ret_expected)
 		MYABORT();
@@ -459,7 +459,7 @@ event_query_single(void)
 	}
 	if (ret_expected)
 	{
-		ret = j_smd_iterate(iterator, &bson);
+		ret = j_smd_iterate(iterator, &bson, NULL);
 		if (!ret)
 			MYABORT();
 		if (!bson_iter_init(&iter, &bson))
@@ -524,7 +524,7 @@ event_query_single(void)
 		bson_destroy(&bson);
 		selector = NULL;
 	}
-	ret = j_smd_iterate(iterator, &bson);
+	ret = j_smd_iterate(iterator, &bson, NULL);
 	if (ret)
 		MYABORT();
 }
@@ -560,14 +560,14 @@ event_delete(void)
 		{
 		case 6: //NULL name
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_delete(namespace_strbuf, NULL, selector, batch);
+			ret = j_smd_delete(namespace_strbuf, NULL, selector, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 5: //NULL namespace
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_delete(NULL, name_strbuf, selector, batch);
+			ret = j_smd_delete(NULL, name_strbuf, selector, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -579,7 +579,7 @@ event_delete(void)
 			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -590,7 +590,7 @@ event_delete(void)
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_int32(&bson_child, "operator", -1, _J_SMD_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -602,7 +602,7 @@ event_delete(void)
 			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -611,7 +611,7 @@ event_delete(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_int32(selector, varname_strbuf, -1, 0);
-			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch);
+			ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -645,7 +645,7 @@ event_delete(void)
 	{
 		ret_expected = FALSE;
 	}
-	ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch);
+	ret = j_smd_delete(namespace_strbuf, name_strbuf, selector, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (ret != ret_expected)
 		MYABORT();
@@ -671,13 +671,13 @@ event_insert(void)
 		switch (random_values.values.invalid_bson_selector % 3)
 		{
 		case 2: //NULL name
-			ret = j_smd_insert(namespace_strbuf, NULL, metadata, batch);
+			ret = j_smd_insert(namespace_strbuf, NULL, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 1: //NULL namespace
-			ret = j_smd_insert(NULL, name_strbuf, metadata, batch);
+			ret = j_smd_insert(NULL, name_strbuf, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -686,7 +686,7 @@ event_insert(void)
 		default:;
 		}
 	}
-	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata, batch);
+	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (ret != ret_expected)
 		MYABORT();
@@ -723,14 +723,14 @@ event_update(void)
 		{
 		case 8: //NULL name
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_update(namespace_strbuf, NULL, selector, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, NULL, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 7: //NULL namespace
 			build_selector_single(0, random_values.values.value_index);
-			ret = j_smd_update(NULL, name_strbuf, selector, metadata, batch);
+			ret = j_smd_update(NULL, name_strbuf, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -742,7 +742,7 @@ event_update(void)
 			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -753,7 +753,7 @@ event_update(void)
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_int32(&bson_child, "operator", -1, _J_SMD_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -765,7 +765,7 @@ event_update(void)
 			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
-			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -774,20 +774,20 @@ event_update(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_int32(selector, varname_strbuf, -1, 0);
-			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 2: //empty bson
 			selector = bson_new();
-			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 1: //NULL selector
-			ret = j_smd_update(namespace_strbuf, name_strbuf, NULL, metadata, batch);
+			ret = j_smd_update(namespace_strbuf, name_strbuf, NULL, metadata, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -833,7 +833,7 @@ event_update(void)
 	}
 	ret_expected = build_metadata() && ret_expected; //metadata contains valid data ?
 	J_DEBUG("ret_expected %d", ret_expected);
-	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
+	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (ret != ret_expected)
 		MYABORT();
@@ -869,19 +869,19 @@ event_schema_get(void)
 		switch (random_values.schema_create.invalid_bson_schema % 4)
 		{
 		case 3: //NULL name
-			ret = j_smd_schema_get(namespace_strbuf, NULL, &bson, batch);
+			ret = j_smd_schema_get(namespace_strbuf, NULL, &bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 2: //NULL namespace
-			ret = j_smd_schema_get(NULL, name_strbuf, &bson, batch);
+			ret = j_smd_schema_get(NULL, name_strbuf, &bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 1: //empty schema
-			ret = j_smd_schema_get(namespace_strbuf, name_strbuf, NULL, batch);
+			ret = j_smd_schema_get(namespace_strbuf, name_strbuf, NULL, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret != namespace_exist[random_values.namespace][random_values.name])
 				MYABORT();
@@ -890,7 +890,7 @@ event_schema_get(void)
 		default:;
 		}
 	}
-	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, &bson, batch);
+	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, &bson, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -942,13 +942,13 @@ event_schema_delete(void)
 		switch (random_values.schema_create.invalid_bson_schema % 3)
 		{
 		case 2: //NULL name
-			ret = j_smd_schema_delete(namespace_strbuf, NULL, batch);
+			ret = j_smd_schema_delete(namespace_strbuf, NULL, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			break;
 		case 1: //NULL namespace
-			ret = j_smd_schema_delete(NULL, name_strbuf, batch);
+			ret = j_smd_schema_delete(NULL, name_strbuf, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -957,8 +957,7 @@ event_schema_delete(void)
 		default:;
 		}
 	}
-
-	ret = j_smd_schema_delete(namespace_strbuf, name_strbuf, batch);
+	ret = j_smd_schema_delete(namespace_strbuf, name_strbuf, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -994,7 +993,7 @@ event_schema_create(void)
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson = bson_new();
 			bson_append_int32(bson, varname_strbuf, -1, J_SMD_TYPE_UINT32);
-			ret = j_smd_schema_create(namespace_strbuf, NULL, bson, batch);
+			ret = j_smd_schema_create(namespace_strbuf, NULL, bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -1004,7 +1003,7 @@ event_schema_create(void)
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson = bson_new();
 			bson_append_int32(bson, varname_strbuf, -1, J_SMD_TYPE_UINT32);
-			ret = j_smd_schema_create(NULL, name_strbuf, bson, batch);
+			ret = j_smd_schema_create(NULL, name_strbuf, bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -1014,7 +1013,7 @@ event_schema_create(void)
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson = bson_new();
 			bson_append_int32(bson, varname_strbuf, -1, _J_SMD_TYPE_COUNT + 1);
-			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch);
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -1025,7 +1024,7 @@ event_schema_create(void)
 			bson = bson_new();
 			bson_append_document_begin(bson, varname_strbuf, -1, &bson_child);
 			bson_append_document_end(bson, &bson_child);
-			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch);
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -1033,14 +1032,14 @@ event_schema_create(void)
 			break;
 		case 2: //empty bson
 			bson = bson_new();
-			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch);
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
 			bson_destroy(bson);
 			break;
 		case 1: //NULL
-			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, NULL, batch);
+			ret = j_smd_schema_create(namespace_strbuf, name_strbuf, NULL, batch, NULL);
 			ret = j_batch_execute(batch) && ret;
 			if (ret)
 				MYABORT();
@@ -1076,7 +1075,7 @@ event_schema_create(void)
 		}
 	}
 	J_DEBUG_BSON(bson);
-	ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch);
+	ret = j_smd_schema_create(namespace_strbuf, name_strbuf, bson, batch, NULL);
 	ret = j_batch_execute(batch) && ret;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
