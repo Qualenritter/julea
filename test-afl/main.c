@@ -73,7 +73,7 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 			J_DEBUG("not expected %d != %d", ret, ret_expected);     \
 			MYABORT();                                               \
 		}                                                                \
-		if (ret == (error == NULL))                                      \
+		if (ret != (error == NULL))                                      \
 		{                                                                \
 			J_DEBUG("not initialized %d != %d", ret, error == NULL); \
 			MYABORT();                                               \
@@ -89,7 +89,10 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 	do                                                                       \
 	{                                                                        \
 		if (ret != (error == NULL))                                      \
+		{                                                                \
+			J_DEBUG("not initialized %d != %d", ret, error == NULL); \
 			MYABORT();                                               \
+		}                                                                \
 		if (error)                                                       \
 		{                                                                \
 			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \

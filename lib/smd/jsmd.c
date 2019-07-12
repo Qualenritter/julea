@@ -307,9 +307,15 @@ j_smd_iterate(gpointer iterator, bson_t* metadata, GError** error)
 		helper->initialized = TRUE;
 	}
 	if (!bson_iter_next(&helper->iter))
+	{
+		g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no %d more elements to iterate", 0);
 		goto error;
+	}
 	if (!BSON_ITER_HOLDS_DOCUMENT(&helper->iter))
+	{
+		g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&helper->iter));
 		goto error;
+	}
 	bson_iter_document(&helper->iter, &length, &data);
 	bson_init_static(metadata, data, length);
 	return TRUE;

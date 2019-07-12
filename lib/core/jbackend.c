@@ -821,7 +821,8 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 		batch, //
 		data->in_param[1].ptr, //
 		data->in_param[2].ptr, //
-		&iter, data->out_param[0].ptr);
+		&iter, //
+		data->out_param[1].ptr);
 	if (!ret)
 		return FALSE;
 	i = 0;
@@ -829,7 +830,7 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 	{
 		bson_uint32_to_string(i, &key, str_buf, sizeof(str_buf));
 		tmp = bson_new();
-		ret = backend->smd.backend_iterate(iter, tmp, data->out_param[0].ptr);
+		ret = backend->smd.backend_iterate(iter, tmp, data->out_param[1].ptr);
 		i++;
 		if (ret)
 			bson_append_document(bson, key, -1, tmp);
