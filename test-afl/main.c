@@ -68,6 +68,10 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 #define J_DEBUG_ERROR(ret, ret_expected, error)                                  \
 	do                                                                       \
 	{                                                                        \
+		if (error)                                                       \
+		{                                                                \
+			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
+		}                                                                \
 		if (ret != ret_expected)                                         \
 		{                                                                \
 			J_DEBUG("not expected %d != %d", ret, ret_expected);     \
@@ -80,7 +84,6 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 		}                                                                \
 		if (error)                                                       \
 		{                                                                \
-			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
 			g_error_free(error);                                     \
 			error = NULL;                                            \
 		}                                                                \
@@ -88,6 +91,10 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 #define J_DEBUG_ERROR_NO_EXPECT(ret, error)                                      \
 	do                                                                       \
 	{                                                                        \
+		if (error)                                                       \
+		{                                                                \
+			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
+		}                                                                \
 		if (ret != (error == NULL))                                      \
 		{                                                                \
 			J_DEBUG("not initialized %d != %d", ret, error == NULL); \
@@ -95,7 +102,6 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 		}                                                                \
 		if (error)                                                       \
 		{                                                                \
-			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
 			g_error_free(error);                                     \
 			error = NULL;                                            \
 		}                                                                \

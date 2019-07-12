@@ -809,6 +809,7 @@ const JBackend_smd_operation_data j_smd_get_all_params = {
 gboolean
 j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
+	GError** error;
 	gboolean ret;
 	gpointer iter;
 	guint i;
@@ -836,6 +837,12 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 			bson_append_document(bson, key, -1, tmp);
 		bson_destroy(tmp);
 	} while (ret); //TODO handle the no more elements error here
+	error = data->out_param[1].ptr;
+	if (error && (*error)->code == JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+	{
+		g_error_free(*error);
+		*error = NULL;
+	}
 	return TRUE;
 }
 

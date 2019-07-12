@@ -275,7 +275,10 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	JOperation* op;
 	JBackend_smd_operation_data* data;
 	if (!iterator)
+	{
+		g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_ITERATOR_NULL, "iterator must not be set to %p", iterator);
 		return FALSE;
+	}
 	helper = g_slice_new(J_smd_iterator_helper);
 	helper->initialized = FALSE;
 	*iterator = helper;
