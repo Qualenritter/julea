@@ -540,15 +540,15 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gconstpointer* value,
 	return ret;
 }
 gboolean
-j_backend_smd_message_from_data(JMessage* message, GArray* arr)
+j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data, guint arrlen)
 {
 	JBackend_smd_operation* element;
 	guint i;
 	guint len = 0;
-	for (i = 0; i < arr->len; i++)
+	for (i = 0; i < arrlen; i++)
 	{
 		len += 4;
-		element = &g_array_index(arr, JBackend_smd_operation, i);
+		element = &data[i];
 		switch (element->type)
 		{
 		case J_SMD_PARAM_TYPE_STR:
@@ -576,9 +576,9 @@ j_backend_smd_message_from_data(JMessage* message, GArray* arr)
 		}
 	}
 	j_message_add_operation(message, len);
-	for (i = 0; i < arr->len; i++)
+	for (i = 0; i < arrlen; i++)
 	{
-		element = &g_array_index(arr, JBackend_smd_operation, i);
+		element = &data[i];
 		j_message_append_4(message, &element->len);
 		if (element->ptr && element->len)
 			j_message_append_n(message, element->ptr, element->len);
@@ -587,16 +587,16 @@ j_backend_smd_message_from_data(JMessage* message, GArray* arr)
 }
 /*this function is called only if backend is active client side*/
 gboolean
-j_backend_smd_message_to_data(JMessage* message, GArray* arr)
+j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, guint arrlen)
 {
 	JBackend_smd_operation* element;
 	guint i;
 	guint len;
 	gboolean ret = TRUE;
-	for (i = 0; i < arr->len; i++)
+	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
-		element = &g_array_index(arr, JBackend_smd_operation, i);
+		element = &data[i];
 		switch (element->type)
 		{
 		case J_SMD_PARAM_TYPE_STR:
@@ -617,16 +617,16 @@ j_backend_smd_message_to_data(JMessage* message, GArray* arr)
 }
 /*this function is called server side. This assumes 'message' is valid as long as the returned array is used*/
 gboolean
-j_backend_smd_message_to_data_static(JMessage* message, GArray* arr)
+j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* data, guint arrlen)
 {
 	JBackend_smd_operation* element;
 	guint i;
 	guint len;
 	gboolean ret = TRUE;
-	for (i = 0; i < arr->len; i++)
+	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
-		element = &g_array_index(arr, JBackend_smd_operation, i);
+		element = &data[i];
 		switch (element->type)
 		{
 		case J_SMD_PARAM_TYPE_BLOB:
@@ -665,54 +665,122 @@ j_backend_smd_fini(JBackend* backend)
 	g_return_if_fail(backend != NULL);
 	backend->smd.backend_fini();
 }
+const JBackend_smd_operation_data j_smd_schema_create_params = {
+	.in_param_count = 3,
+	.out_param_count = 0,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+};
 gboolean
 j_backend_smd_schema_create(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	return backend->smd.backend_schema_create( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr, //
-		g_array_index(data->in, JBackend_smd_operation, 2).ptr);
+		data->in_param[1].ptr,
+		data->in_param[2].ptr);
 }
+const JBackend_smd_operation_data j_smd_schema_get_params = {
+	.in_param_count = 2,
+	.out_param_count = 1,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+};
 gboolean
 j_backend_smd_schema_get(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	return backend->smd.backend_schema_get( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr, //
-		g_array_index(data->out, JBackend_smd_operation, 0).ptr);
+		data->in_param[1].ptr, //
+		data->out_param[0].ptr);
 }
+const JBackend_smd_operation_data j_smd_schema_delete_params = {
+	.in_param_count = 2,
+	.out_param_count = 0,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+	},
+};
 gboolean
 j_backend_smd_schema_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	return backend->smd.backend_schema_delete( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr);
+		data->in_param[1].ptr);
 }
+const JBackend_smd_operation_data j_smd_insert_params = {
+	.in_param_count = 3,
+	.out_param_count = 0,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+};
 gboolean
 j_backend_smd_insert(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	return backend->smd.backend_insert( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr, //
-		g_array_index(data->in, JBackend_smd_operation, 2).ptr);
+		data->in_param[1].ptr, //
+		data->in_param[2].ptr);
 }
+const JBackend_smd_operation_data j_smd_update_params = {
+	.in_param_count = 4,
+	.out_param_count = 0,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+};
 gboolean
 j_backend_smd_update(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	return backend->smd.backend_update( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr, //
-		g_array_index(data->in, JBackend_smd_operation, 2).ptr, //
-		g_array_index(data->in, JBackend_smd_operation, 3).ptr);
+		data->in_param[1].ptr, //
+		data->in_param[2].ptr, //
+		data->in_param[3].ptr);
 }
+const JBackend_smd_operation_data j_smd_delete_params = {
+	.in_param_count = 3,
+	.out_param_count = 0,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+};
 gboolean
 j_backend_smd_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
 	return backend->smd.backend_delete( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr, //
-		g_array_index(data->in, JBackend_smd_operation, 2).ptr);
+		data->in_param[1].ptr, //
+		data->in_param[2].ptr);
 }
+const JBackend_smd_operation_data j_smd_getall_params = {
+	.in_param_count = 3,
+	.out_param_count = 1,
+	.in_param = {
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_STR },
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+	.out_param = {
+		{ .type = J_SMD_PARAM_TYPE_BSON },
+	},
+};
 gboolean
 j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
@@ -721,13 +789,13 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 	guint i;
 	char str_buf[16];
 	const char* key;
-	bson_t* bson = g_array_index(data->out, JBackend_smd_operation, 0).ptr;
+	bson_t* bson = data->out_param[0].ptr;
 	bson_t* tmp;
 	bson_init(bson);
 	ret = backend->smd.backend_query( //
 		batch, //
-		g_array_index(data->in, JBackend_smd_operation, 1).ptr, //
-		g_array_index(data->in, JBackend_smd_operation, 2).ptr, //
+		data->in_param[1].ptr, //
+		data->in_param[2].ptr, //
 		&iter);
 	if (!ret)
 		return FALSE;

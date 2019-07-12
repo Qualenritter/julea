@@ -336,27 +336,29 @@ enum JBackend_smd_parameter_type
 	_J_SMD_PARAM_TYPE_COUNT,
 };
 typedef enum JBackend_smd_parameter_type JBackend_smd_parameter_type;
-struct JBackend_smd_operation_data
-{
-	GArray* in; //into network message
-	GArray* out; //retrieve from network message
-};
-typedef struct JBackend_smd_operation_data JBackend_smd_operation_data;
 struct JBackend_smd_operation
 {
+	bson_t bson; //only for temporary static storage
 	union
 	{
 		gconstpointer ptr_const;
 		gpointer ptr;
 	};
-	bson_t bson; //only for temporary static storage
-	gint len;
+	gint len; //of ptr data
 	JBackend_smd_parameter_type type;
 };
 typedef struct JBackend_smd_operation JBackend_smd_operation;
-gboolean j_backend_smd_message_from_data(JMessage* message, GArray* arr);
-gboolean j_backend_smd_message_to_data(JMessage* message, GArray* arr);
-gboolean j_backend_smd_message_to_data_static(JMessage* message, GArray* arr);
+struct JBackend_smd_operation_data
+{
+	guint in_param_count;
+	guint out_param_count;
+	JBackend_smd_operation in_param[20]; //into function
+	JBackend_smd_operation out_param[20]; //retrieve from function
+};
+typedef struct JBackend_smd_operation_data JBackend_smd_operation_data;
+gboolean j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data, guint len);
+gboolean j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, guint len);
+gboolean j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* data, guint len);
 
 JBackend* backend_info(void);
 
@@ -394,12 +396,19 @@ gboolean j_backend_kv_iterate(JBackend*, gpointer, gconstpointer*, guint32*);
 
 gboolean j_backend_smd_init(JBackend*, gchar const*);
 void j_backend_smd_fini(JBackend*);
+extern const JBackend_smd_operation_data j_smd_schema_create_params;
 gboolean j_backend_smd_schema_create(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+extern const JBackend_smd_operation_data j_smd_schema_get_params;
 gboolean j_backend_smd_schema_get(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+extern const JBackend_smd_operation_data j_smd_schema_delete_params;
 gboolean j_backend_smd_schema_delete(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+extern const JBackend_smd_operation_data j_smd_insert_params;
 gboolean j_backend_smd_insert(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+extern const JBackend_smd_operation_data j_smd_update_params;
 gboolean j_backend_smd_update(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+extern const JBackend_smd_operation_data j_smd_delete_params;
 gboolean j_backend_smd_delete(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
+extern const JBackend_smd_operation_data j_smd_getall_params;
 gboolean j_backend_smd_get_all(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
 G_END_DECLS
 

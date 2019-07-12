@@ -573,8 +573,6 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 	guint i;
 	guint ret;
 	bson_iter_t iter;
-	bson_iter_t iter_child;
-	bson_iter_t iter_child2;
 	bson_t* schema = NULL;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
