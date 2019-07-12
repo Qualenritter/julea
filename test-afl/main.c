@@ -328,10 +328,30 @@ event_query_single(void)
 	gpointer iterator = 0;
 	J_DEBUG("afl_event_query_single %d", random_values.values.value_index);
 	J_DEBUG("ret_expected %d", ret_expected);
-	if (random_values.values.invalid_bson_selector % 6)
+	if (random_values.values.invalid_bson_selector % 8)
 	{
-		switch (random_values.values.invalid_bson_selector % 6)
+		switch (random_values.values.invalid_bson_selector % 8)
 		{
+		case 7: //NULL name
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_query(namespace_strbuf, NULL, selector, &iterator, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			ret = j_smd_iterate(iterator, &bson);
+			if (ret)
+				MYABORT();
+			break;
+		case 6: //NULL namespace
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_query(NULL, name_strbuf, selector, &iterator, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			ret = j_smd_iterate(iterator, &bson);
+			if (ret)
+				MYABORT();
+			break;
 		case 5: //NULL iterator
 			build_selector_single(0, random_values.values.value_index);
 			ret = j_smd_query(namespace_strbuf, name_strbuf, selector, NULL, batch);
@@ -538,6 +558,20 @@ event_delete(void)
 	{
 		switch (random_values.values.invalid_bson_selector % 7)
 		{
+		case 6: //NULL name
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_delete(namespace_strbuf, NULL, selector, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 5: //NULL namespace
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_delete(NULL, name_strbuf, selector, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
 		case 4: //invalid bson - value of not allowed bson type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
@@ -632,6 +666,26 @@ event_insert(void)
 	J_DEBUG("ret_expected %d", ret_expected);
 	ret_expected = build_metadata() && ret_expected; //inserting valid metadata should succeed
 	J_DEBUG("ret_expected %d", ret_expected);
+	if (random_values.values.invalid_bson_selector % 3)
+	{
+		switch (random_values.values.invalid_bson_selector % 3)
+		{
+		case 2: //NULL name
+			ret = j_smd_insert(namespace_strbuf, NULL, metadata, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 1: //NULL namespace
+			ret = j_smd_insert(NULL, name_strbuf, metadata, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 0:
+		default:;
+		}
+	}
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata, batch);
 	ret = j_batch_execute(batch) && ret;
 	if (ret != ret_expected)
@@ -662,11 +716,25 @@ event_update(void)
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_update%d", 0);
-	if (random_values.values.invalid_bson_selector % 7)
+	if (random_values.values.invalid_bson_selector % 9)
 	{
 		build_metadata();
-		switch (random_values.values.invalid_bson_selector % 7)
+		switch (random_values.values.invalid_bson_selector % 9)
 		{
+		case 8: //NULL name
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_update(namespace_strbuf, NULL, selector, metadata, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 7: //NULL namespace
+			build_selector_single(0, random_values.values.value_index);
+			ret = j_smd_update(NULL, name_strbuf, selector, metadata, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
 		case 6: //invalid bson - value of not allowed bson type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
@@ -793,29 +861,47 @@ event_schema_get(void)
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bson_iter_t iter;
 	gboolean ret;
-	bson_t* bson;
+	bson_t bson;
 	guint i;
 	J_DEBUG("afl_event_schema_get%d", 0);
-	if (random_values.schema_create.invalid_bson_schema % 2)
+	if (random_values.schema_create.invalid_bson_schema % 4)
 	{
-		ret = j_smd_schema_get(namespace_strbuf, name_strbuf, NULL, batch);
-		ret = j_batch_execute(batch) && ret;
-		if (ret != namespace_exist[random_values.namespace][random_values.name])
-			MYABORT();
+		switch (random_values.schema_create.invalid_bson_schema % 4)
+		{
+		case 3: //NULL name
+			ret = j_smd_schema_get(namespace_strbuf, NULL, &bson, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 2: //NULL namespace
+			ret = j_smd_schema_get(NULL, name_strbuf, &bson, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 1: //empty schema
+			ret = j_smd_schema_get(namespace_strbuf, name_strbuf, NULL, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret != namespace_exist[random_values.namespace][random_values.name])
+				MYABORT();
+			break;
+		case 0:
+		default:;
+		}
 	}
-	bson = g_new0(bson_t, 1);
-	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, bson, batch);
+	ret = j_smd_schema_get(namespace_strbuf, name_strbuf, &bson, batch);
 	ret = j_batch_execute(batch) && ret;
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		if (ret)
 		{
-			J_DEBUG_BSON(bson);
+			J_DEBUG_BSON(&bson);
 			for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 			{
 				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
 				J_DEBUG("varname_strbuf %s %d", varname_strbuf, random_values.schema_create.variable_count);
-				if (!bson_iter_init(&iter, bson))
+				if (!bson_iter_init(&iter, &bson))
 					MYABORT();
 				if (i < namespace_varcount[random_values.namespace][random_values.name])
 				{
@@ -842,18 +928,36 @@ event_schema_get(void)
 		if (ret)
 			MYABORT();
 	}
-	if (ret && bson)
-		bson_destroy(bson);
-	g_free(bson);
+	if (ret)
+		bson_destroy(&bson);
 }
 static void
 event_schema_delete(void)
 {
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	gboolean ret;
-	bson_t* bson;
 	J_DEBUG("afl_event_schema_delete%d", 0);
-	bson = bson_new();
+	if (random_values.schema_create.invalid_bson_schema % 3)
+	{
+		switch (random_values.schema_create.invalid_bson_schema % 3)
+		{
+		case 2: //NULL name
+			ret = j_smd_schema_delete(namespace_strbuf, NULL, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 1: //NULL namespace
+			ret = j_smd_schema_delete(NULL, name_strbuf, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			break;
+		case 0:
+		default:;
+		}
+	}
+
 	ret = j_smd_schema_delete(namespace_strbuf, name_strbuf, batch);
 	ret = j_batch_execute(batch) && ret;
 	if (namespace_exist[random_values.namespace][random_values.name])
@@ -870,8 +974,6 @@ event_schema_delete(void)
 		if (ret)
 			MYABORT();
 	}
-	if (bson)
-		bson_destroy(bson);
 }
 static void
 event_schema_create(void)
@@ -884,10 +986,30 @@ event_schema_create(void)
 	bson_t* bson;
 	guint i;
 	J_DEBUG("afl_event_schema_create%d", 0);
-	if (random_values.schema_create.invalid_bson_schema % 5)
+	if (random_values.schema_create.invalid_bson_schema % 7)
 	{
-		switch (random_values.schema_create.invalid_bson_schema % 5)
+		switch (random_values.schema_create.invalid_bson_schema % 7)
 		{
+		case 6: //NULL name
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson = bson_new();
+			bson_append_int32(bson, varname_strbuf, -1, J_SMD_TYPE_UINT32);
+			ret = j_smd_schema_create(namespace_strbuf, NULL, bson, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			bson_destroy(bson);
+			break;
+		case 5: //NULL namespace
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			bson = bson_new();
+			bson_append_int32(bson, varname_strbuf, -1, J_SMD_TYPE_UINT32);
+			ret = j_smd_schema_create(NULL, name_strbuf, bson, batch);
+			ret = j_batch_execute(batch) && ret;
+			if (ret)
+				MYABORT();
+			bson_destroy(bson);
+			break;
 		case 4: //variable type not specified in enum
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson = bson_new();

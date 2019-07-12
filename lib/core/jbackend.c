@@ -769,7 +769,7 @@ j_backend_smd_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_d
 		data->in_param[1].ptr, //
 		data->in_param[2].ptr);
 }
-const JBackend_smd_operation_data j_smd_getall_params = {
+const JBackend_smd_operation_data j_smd_get_all_params = {
 	.in_param_count = 3,
 	.out_param_count = 1,
 	.in_param = {

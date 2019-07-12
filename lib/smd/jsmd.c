@@ -258,7 +258,7 @@ j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, 
 	return TRUE;
 }
 static gboolean
-j_smd_getall_exec(JList* operations, JSemantics* semantics)
+j_smd_get_all_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_smd_func_exec(operations, semantics, J_MESSAGE_SMD_GET_ALL);
 }
@@ -274,7 +274,7 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	helper->initialized = FALSE;
 	*iterator = helper;
 	data = g_slice_new(JBackend_smd_operation_data);
-	memcpy(data, &j_smd_getall_params, sizeof(JBackend_smd_operation_data));
+	memcpy(data, &j_smd_get_all_params, sizeof(JBackend_smd_operation_data));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
@@ -282,7 +282,7 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
-	op->exec_func = j_smd_getall_exec;
+	op->exec_func = j_smd_get_all_exec;
 	op->free_func = j_backend_smd_func_free;
 	j_batch_add(batch, op);
 	return TRUE;

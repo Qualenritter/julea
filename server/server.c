@@ -81,6 +81,26 @@ jd_safety_message_to_semantics(JMessageFlags flags)
 	return safety;
 }
 
+#define smd_server_message_exec(func)                                                                          \
+	do                                                                                                     \
+	{                                                                                                      \
+		g_autoptr(JMessage) reply = NULL;                                                              \
+		gpointer batch = NULL;                                                                         \
+		JBackend_smd_operation_data data;                                                              \
+		reply = j_message_new_reply(message);                                                          \
+		memcpy(&data, &j_smd_##func##_params, sizeof(JBackend_smd_operation_data));                    \
+		for (i = 0; i < operation_count; i++)                                                          \
+		{                                                                                              \
+			j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);     \
+			if (!batch)                                                                            \
+				jd_smd_backend->smd.backend_batch_start(data.in_param[0].ptr, safety, &batch); \
+			j_backend_smd_##func(jd_smd_backend, batch, &data);                                    \
+			j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);          \
+		}                                                                                              \
+		jd_smd_backend->smd.backend_batch_execute(batch);                                              \
+		j_message_send(reply, connection);                                                             \
+	} while (0)
+
 static gboolean
 jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObject* source_object, gpointer user_data)
 {
@@ -607,48 +627,26 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		}
 		break;
 		case J_MESSAGE_SMD_SCHEMA_CREATE:
-		{
-			g_autoptr(JMessage) reply = NULL;
-			gpointer batch = NULL;
-			JBackend_smd_operation_data data;
-			reply = j_message_new_reply(message);
-			memcpy(&data, &j_smd_schema_create_params, sizeof(JBackend_smd_operation_data));
-			for (i = 0; i < operation_count; i++)
-			{
-				j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);
-				if (!batch)
-					jd_smd_backend->smd.backend_batch_start(data.in_param[0].ptr, safety, &batch);
-				j_backend_smd_schema_create(jd_smd_backend, batch, &data);
-				j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);
-			}
-			jd_smd_backend->smd.backend_batch_execute(batch);
-			j_message_send(reply, connection);
-		}
-		break;
+			smd_server_message_exec(schema_create);
+			break;
 		case J_MESSAGE_SMD_SCHEMA_GET:
-		{
-		}
-		break;
+			smd_server_message_exec(schema_get);
+			break;
 		case J_MESSAGE_SMD_SCHEMA_DELETE:
-		{
-		}
-		break;
+			smd_server_message_exec(schema_delete);
+			break;
 		case J_MESSAGE_SMD_INSERT:
-		{
-		}
-		break;
+			smd_server_message_exec(insert);
+			break;
 		case J_MESSAGE_SMD_UPDATE:
-		{
-		}
-		break;
+			smd_server_message_exec(update);
+			break;
 		case J_MESSAGE_SMD_DELETE:
-		{
-		}
-		break;
+			smd_server_message_exec(delete);
+			break;
 		case J_MESSAGE_SMD_GET_ALL:
-		{
-		}
-		break;
+			smd_server_message_exec(get_all);
+			break;
 		default:
 			g_warn_if_reached();
 			break;

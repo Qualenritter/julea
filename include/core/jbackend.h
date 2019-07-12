@@ -408,7 +408,7 @@ extern const JBackend_smd_operation_data j_smd_update_params;
 gboolean j_backend_smd_update(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
 extern const JBackend_smd_operation_data j_smd_delete_params;
 gboolean j_backend_smd_delete(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
-extern const JBackend_smd_operation_data j_smd_getall_params;
+extern const JBackend_smd_operation_data j_smd_get_all_params;
 gboolean j_backend_smd_get_all(JBackend*, gpointer batch, JBackend_smd_operation_data* data);
 G_END_DECLS
 
