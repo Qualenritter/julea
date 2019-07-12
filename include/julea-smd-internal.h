@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef JULEA_SMD_H
-#define JULEA_SMD_H
+#ifndef JULEA_SMD_INTERNAL_H
+#define JULEA_SMD_INTERNAL_H
 
 #include <glib.h>
 #include <bson.h>
@@ -33,6 +33,7 @@ enum JSMDType
 	J_SMD_TYPE_UINT64,
 	J_SMD_TYPE_FLOAT64,
 	J_SMD_TYPE_STRING,
+	J_SMD_TYPE_BLOB,
 	_J_SMD_TYPE_COUNT
 };
 typedef enum JSMDType JSMDType;
@@ -48,13 +49,13 @@ enum JSMDOperator
 };
 typedef enum JSMDOperator JSMDOperator;
 
-gboolean j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error);
-gboolean j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error);
-gboolean j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error);
-gboolean j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error);
-gboolean j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error);
-gboolean j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error);
-gboolean j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error);
-gboolean j_smd_iterate(gpointer iterator, bson_t* metadata, GError** error);
+gboolean j_smd_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error);
+gboolean j_smd_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error);
+gboolean j_smd_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error);
+gboolean j_smd_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error);
+gboolean j_smd_internal_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error);
+gboolean j_smd_internal_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error);
+gboolean j_smd_internal_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error);
+gboolean j_smd_internal_iterate(gpointer iterator, bson_t* metadata, GError** error);
 
 #endif

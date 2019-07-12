@@ -21,7 +21,7 @@
 #include <gmodule.h>
 #include <julea.h>
 #include <julea-internal.h>
-#include <julea-smd.h>
+#include <julea-smd-internal.h>
 #include <core/jbackend.h>
 /*
 * this file defines makros such that the generic-sql.h implementation can call the sqlite specific functions without knowing, that it is actually sqlite
@@ -194,6 +194,8 @@ static sqlite3* backend_db = NULL;
 #define j_sql_column_text(stmt, idx) (const char*)sqlite3_column_text(stmt, idx)
 #define j_sql_column_uint32(stmt, idx) (guint32) sqlite3_column_int(stmt, idx)
 #define j_sql_column_uint64(stmt, idx) (guint64) sqlite3_column_int64(stmt, idx)
+#define j_sql_column_blob(stmt, idx) (const char*)sqlite3_column_blob(stmt, idx)
+#define j_sql_column_blob_len(stmt, idx) (guint64) sqlite3_column_bytes(stmt, idx)
 #include "sql-generic.h"
 static gboolean
 backend_init(gchar const* path)

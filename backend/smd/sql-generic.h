@@ -393,6 +393,9 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 					case J_SMD_TYPE_STRING:
 						g_string_append(sql, " TEXT");
 						break;
+					case J_SMD_TYPE_BLOB:
+						g_string_append(sql, " BLOB");
+						break;
 					case J_SMD_TYPE_INVALID:
 					case _J_SMD_TYPE_COUNT:
 					default:
@@ -525,6 +528,8 @@ _error:
 static gboolean
 insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 {
+	uint32_t binary_len;
+	const uint8_t* binary;
 	bson_type_t type;
 	guint i;
 	guint index;
@@ -557,10 +562,13 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 		case BSON_TYPE_NULL:
 			j_sql_bind_null(prepared->stmt, index);
 			break;
+		case BSON_TYPE_BINARY:
+			bson_iter_binary(iter, NULL, &binary_len, &binary);
+			j_sql_bind_blob(prepared->stmt, index, binary, binary_len);
+			break;
 		case BSON_TYPE_EOD:
 		case BSON_TYPE_DOCUMENT:
 		case BSON_TYPE_ARRAY:
-		case BSON_TYPE_BINARY:
 		case BSON_TYPE_UNDEFINED:
 		case BSON_TYPE_OID:
 		case BSON_TYPE_BOOL:
@@ -736,6 +744,8 @@ _error:
 static gboolean
 bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean and_query, guint* variables_count, GError** error)
 {
+	uint32_t binary_len;
+	const uint8_t* binary;
 	const char* query_subop[] = { "_or", "_and" };
 	bson_iter_t iterchild;
 	gint ret;
@@ -776,10 +786,13 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, gboolean 
 				case BSON_TYPE_NULL:
 					j_sql_bind_null(prepared->stmt, *variables_count);
 					break;
+				case BSON_TYPE_BINARY:
+					bson_iter_binary(&iterchild, NULL, &binary_len, &binary);
+					j_sql_bind_blob(prepared->stmt, *variables_count, binary, binary_len);
+					break;
 				case BSON_TYPE_EOD:
 				case BSON_TYPE_DOCUMENT:
 				case BSON_TYPE_ARRAY:
-				case BSON_TYPE_BINARY:
 				case BSON_TYPE_UNDEFINED:
 				case BSON_TYPE_OID:
 				case BSON_TYPE_BOOL:
@@ -880,6 +893,8 @@ _error:
 static gboolean
 backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
+	uint32_t binary_len;
+	const uint8_t* binary;
 	JSqlBatch* batch = _batch;
 	guint count;
 	bson_type_t type;
@@ -971,10 +986,13 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 				case BSON_TYPE_NULL:
 					j_sql_bind_null(prepared->stmt, index);
 					break;
+				case BSON_TYPE_BINARY:
+					bson_iter_binary(&iter, NULL, &binary_len, &binary);
+					j_sql_bind_blob(prepared->stmt, index, binary, binary_len);
+					break;
 				case BSON_TYPE_EOD:
 				case BSON_TYPE_DOCUMENT:
 				case BSON_TYPE_ARRAY:
-				case BSON_TYPE_BINARY:
 				case BSON_TYPE_UNDEFINED:
 				case BSON_TYPE_OID:
 				case BSON_TYPE_BOOL:
@@ -1211,6 +1229,13 @@ backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 				break;
 			case J_SMD_TYPE_STRING:
 				ret = bson_append_utf8(metadata, name, -1, j_sql_column_text(prepared->stmt, i), -1);
+				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "String");
+				break;
+			case J_SMD_TYPE_BLOB:
+				if (j_sql_column_blob(prepared->stmt, i) != NULL)
+					ret = bson_append_binary(metadata, name, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)j_sql_column_blob(prepared->stmt, i), j_sql_column_blob_len(prepared->stmt, i));
+				else
+					ret = bson_append_null(metadata, name, -1);
 				j_goto_error(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "failed appending to bson %s", "String");
 				break;
 			case J_SMD_TYPE_INVALID:
