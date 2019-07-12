@@ -348,7 +348,7 @@ build_metadata(void)
 						break;
 					case J_SMD_TYPE_BLOB:
 						count++;
-						if (!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])))
+						if (!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])))
 							MYABORT();
 						break;
 					case J_SMD_TYPE_INVALID:
@@ -555,8 +555,13 @@ event_query_single(void)
 						MYABORT();
 					break;
 				case J_SMD_TYPE_BLOB:
-					bson_iter_binary(&iter, NULL, &binary_len, &binary);
-					if (g_strcmp0((const char*)binary, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]))
+					if (bson_iter_type(&iter) == BSON_TYPE_BINARY)
+					{
+						bson_iter_binary(&iter, NULL, &binary_len, &binary);
+						if (g_strcmp0((const char*)binary, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]))
+							MYABORT();
+					}
+					else if (bson_iter_type(&iter) != BSON_TYPE_NULL)
 						MYABORT();
 					break;
 				case J_SMD_TYPE_INVALID:
