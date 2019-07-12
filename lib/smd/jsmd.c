@@ -84,14 +84,14 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 		{
 			if (!batch)
 				ret = smd_backend->smd.backend_batch_start( //
-					      g_array_index(data->in, JBackend_smd_operation_in, 0).ptr, //
+					      g_array_index(data->in, JBackend_smd_operation, 0).ptr, //
 					      j_semantics_get(semantics, J_SEMANTICS_SAFETY), //
 					      &batch) &&
 					ret;
 			ret = j_backend_smd_func_call(smd_backend, batch, data, type) && ret;
 		}
 		else
-			ret = j_backend_smd_message_from_data(message, data) && ret;
+			ret = j_backend_smd_message_from_data(message, data->in) && ret;
 	}
 	if (smd_backend != NULL)
 		ret = smd_backend->smd.backend_batch_execute(batch) && ret;
@@ -103,7 +103,7 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 		while (j_list_iterator_next(iter_recieve))
 		{
 			data = j_list_iterator_get(iter_recieve);
-			ret = j_backend_smd_message_to_data(reply, data) && ret;
+			ret = j_backend_smd_message_to_data(reply, data->out) && ret;
 		}
 		j_connection_pool_push_smd(0, smd_connection);
 	}
@@ -130,21 +130,20 @@ gboolean
 j_smd_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch)
 {
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = schema;
-	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->in, opsmd_in);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = schema;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->in, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -162,21 +161,20 @@ gboolean
 j_smd_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch)
 {
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_out.ptr = schema;
-	opsmd_out.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->out, opsmd_out);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = schema;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->out, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -194,18 +192,17 @@ gboolean
 j_smd_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch)
 {
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -223,21 +220,20 @@ gboolean
 j_smd_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch)
 {
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = metadata;
-	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->in, opsmd_in);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = metadata;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->in, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -255,24 +251,23 @@ gboolean
 j_smd_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch)
 {
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = selector;
-	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = metadata;
-	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->in, opsmd_in);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = selector;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = metadata;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->in, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -290,21 +285,20 @@ gboolean
 j_smd_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch)
 {
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = selector;
-	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->in, opsmd_in);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = selector;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->in, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
@@ -323,8 +317,7 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 {
 	J_smd_iterator_helper* helper;
 	JOperation* op;
-	JBackend_smd_operation_in opsmd_in;
-	JBackend_smd_operation_out opsmd_out;
+	JBackend_smd_operation opsmd;
 	JBackend_smd_operation_data* data;
 	if (!iterator)
 		return FALSE;
@@ -333,20 +326,20 @@ j_smd_query(gchar const* namespace, gchar const* name, bson_t const* selector, g
 	helper->bson = bson_new();
 	*iterator = helper;
 	data = g_slice_new(JBackend_smd_operation_data);
-	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd_in));
-	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd_out));
-	opsmd_in.ptr = namespace;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = name;
-	opsmd_in.type = J_SMD_PARAM_TYPE_STR;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_in.ptr = selector;
-	opsmd_in.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->in, opsmd_in);
-	opsmd_out.ptr = helper->bson;
-	opsmd_out.type = J_SMD_PARAM_TYPE_BSON;
-	g_array_append_val(data->out, opsmd_out);
+	data->in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	data->out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+	opsmd.ptr_const = namespace;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = name;
+	opsmd.type = J_SMD_PARAM_TYPE_STR;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = selector;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->in, opsmd);
+	opsmd.ptr_const = helper->bson;
+	opsmd.type = J_SMD_PARAM_TYPE_BSON;
+	g_array_append_val(data->out, opsmd);
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;

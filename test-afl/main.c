@@ -210,7 +210,7 @@ build_selector_single(guint varname, guint value)
 	return ret_expected;
 }
 static gboolean
-build_metadata()
+build_metadata(void)
 {
 	bson_t* bson;
 	gboolean ret_expected = TRUE;
@@ -501,6 +501,7 @@ event_query_single(void)
 					MYABORT();
 			}
 		}
+		bson_destroy(&bson);
 		selector = NULL;
 	}
 	ret = j_smd_iterate(iterator, &bson);

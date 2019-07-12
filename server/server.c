@@ -608,6 +608,31 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		break;
 		case J_MESSAGE_SMD_SCHEMA_CREATE:
 		{
+			g_autoptr(JMessage) reply = NULL;
+			gpointer batch = NULL;
+			JBackend_smd_operation opsmd;
+			JBackend_smd_operation_data data;
+			reply = j_message_new_reply(message);
+			data.in = g_array_new(FALSE, FALSE, sizeof(opsmd));
+			data.out = g_array_new(FALSE, FALSE, sizeof(opsmd));
+			opsmd.type = J_SMD_PARAM_TYPE_STR;
+			g_array_append_val(data.in, opsmd);
+			opsmd.type = J_SMD_PARAM_TYPE_STR;
+			g_array_append_val(data.in, opsmd);
+			opsmd.type = J_SMD_PARAM_TYPE_BSON;
+			g_array_append_val(data.in, opsmd);
+			for (i = 0; i < operation_count; i++)
+			{
+				j_backend_smd_message_to_data_static(message, data.in);
+				if (!batch)
+					jd_smd_backend->smd.backend_batch_start(g_array_index(data.in, JBackend_smd_operation, 0).ptr, safety, &batch);
+				j_backend_smd_schema_create(jd_smd_backend, batch, &data);
+				j_backend_smd_message_from_data(reply, data.out);
+			}
+			jd_smd_backend->smd.backend_batch_execute(batch);
+			j_message_send(reply, connection);
+			g_array_free(data.in, TRUE);
+			g_array_free(data.out, TRUE);
 		}
 		break;
 		case J_MESSAGE_SMD_SCHEMA_GET:

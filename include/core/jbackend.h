@@ -342,22 +342,21 @@ struct JBackend_smd_operation_data
 	GArray* out; //retrieve from network message
 };
 typedef struct JBackend_smd_operation_data JBackend_smd_operation_data;
-struct JBackend_smd_operation_in
+struct JBackend_smd_operation
 {
-	gconstpointer ptr;
+	union
+	{
+		gconstpointer ptr_const;
+		gpointer ptr;
+	};
+	bson_t bson; //only for temporary static storage
 	gint len;
 	JBackend_smd_parameter_type type;
 };
-typedef struct JBackend_smd_operation_in JBackend_smd_operation_in;
-struct JBackend_smd_operation_out
-{
-	gpointer ptr;
-	gint len;
-	JBackend_smd_parameter_type type;
-};
-typedef struct JBackend_smd_operation_out JBackend_smd_operation_out;
-gboolean j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation_data* data);
-gboolean j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation_data* data);
+typedef struct JBackend_smd_operation JBackend_smd_operation;
+gboolean j_backend_smd_message_from_data(JMessage* message, GArray* arr);
+gboolean j_backend_smd_message_to_data(JMessage* message, GArray* arr);
+gboolean j_backend_smd_message_to_data_static(JMessage* message, GArray* arr);
 
 JBackend* backend_info(void);
 
