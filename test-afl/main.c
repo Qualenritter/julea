@@ -69,9 +69,15 @@ typedef enum JSMDAflEvent JSMDAflEvent;
 	do                                                                       \
 	{                                                                        \
 		if (ret != ret_expected)                                         \
+		{                                                                \
+			J_DEBUG("not expected %d != %d", ret, ret_expected);     \
 			MYABORT();                                               \
-		if (ret != (error == NULL))                                      \
+		}                                                                \
+		if (ret == (error == NULL))                                      \
+		{                                                                \
+			J_DEBUG("not initialized %d != %d", ret, error == NULL); \
 			MYABORT();                                               \
+		}                                                                \
 		if (error)                                                       \
 		{                                                                \
 			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
@@ -833,7 +839,7 @@ event_update(void)
 	J_DEBUG("ret_expected %d", ret_expected);
 	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch, &error);
 	ret = j_batch_execute(batch) && ret;
-	J_DEBUG_ERROR(ret, ret_expected error);
+	J_DEBUG_ERROR(ret, ret_expected, error);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		if (ret)
