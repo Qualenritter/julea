@@ -494,10 +494,10 @@ backend_schema_delete(gpointer _batch, gchar const* name)
 	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
 	gint ret;
-	deleteCachePrepared(batch->namespace, name);
 	j_sql_transaction_begin();
 	j_goto_error(!name);
 	j_goto_error(!batch);
+	deleteCachePrepared(batch->namespace, name);
 	ret = backend_schema_get(batch, name, NULL);
 	j_goto_error(!ret);
 	g_string_append_printf(sql, "DROP TABLE %s_%s", batch->namespace, name);
