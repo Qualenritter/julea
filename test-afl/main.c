@@ -531,7 +531,6 @@ event_query_single(void)
 static void
 event_query_all(void)
 {
-	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	guint i;
 	J_DEBUG("afl_event_all%d", 0);
 	//TODO query all at once

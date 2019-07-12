@@ -229,6 +229,7 @@ freeJSqlCacheSQLPrepared(void* ptr)
 			j_sql_finalize(p->stmt);
 		g_free(p);
 	}
+_error:;
 }
 static JSqlCacheSQLPrepared*
 getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query, GError** error)
@@ -312,6 +313,7 @@ fini_sql(void)
 	j_sql_finalize(stmt_transaction_abort);
 	j_sql_finalize(stmt_transaction_begin);
 	j_sql_finalize(stmt_transaction_commit);
+_error:;
 }
 static gboolean
 backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch, GError** error)
@@ -1143,7 +1145,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 			j_goto_error_subcommand(!ret);
 		}
 		else
-			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", ret);
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_BSON_FAILED, "bson_iter_init failed %d", FALSE);
 	}
 	J_DEBUG("%s", prepared->sql->str);
 	*iterator = prepared;

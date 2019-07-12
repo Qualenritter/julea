@@ -40,11 +40,11 @@ static sqlite3* backend_db = NULL;
 		}                                                                       \
 	} while (0)
 #else
-#define j_sql_check(ret, flag)      \
-	do                          \
-	{                           \
-		if (ret != flag)    \
-			goto error; \
+#define j_sql_check(ret, flag)       \
+	do                           \
+	{                            \
+		if (ret != flag)     \
+			goto _error; \
 	} while (0)
 #endif
 #define j_sql_constraint_check(ret, flag)       \
@@ -231,6 +231,7 @@ backend_fini(void)
 	fini_sql();
 	ret = sqlite3_close(backend_db);
 	j_sql_check(ret, SQLITE_OK);
+_error:;
 }
 static JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_SMD,
