@@ -461,7 +461,6 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
-constraint:
 	j_sql_transaction_abort();
 	bson_free(json);
 	g_string_free(sql, TRUE);
@@ -582,7 +581,6 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 	j_goto_error(!count, JULEA_BACKEND_ERROR_NO_VARIABLE_SET, "no variable set from insert %d", count);
 	j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	return TRUE;
-constraint:
 _error:
 	return FALSE;
 }
@@ -1010,7 +1008,6 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
-constraint:
 	if (schema)
 	{
 		if (schema_initialized)
@@ -1054,7 +1051,6 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
-constraint:
 	freeJSMDIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;

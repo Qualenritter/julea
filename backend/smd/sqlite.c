@@ -47,13 +47,13 @@ static sqlite3* backend_db = NULL;
 			goto _error; \
 	} while (0)
 #endif
-#define j_sql_constraint_check(ret, flag)       \
-	do                                      \
-	{                                       \
-		if (ret == SQLITE_CONSTRAINT)   \
-			goto constraint;        \
-		else                            \
-			j_sql_check(ret, flag); \
+#define j_sql_constraint_check(ret, flag)                                                                                                  \
+	do                                                                                                                                 \
+	{                                                                                                                                  \
+		if (ret == SQLITE_CONSTRAINT)                                                                                              \
+			j_goto_error(TRUE, JULEA_BACKEND_ERROR_SQL_CONSTRAINT, "sql_constraint %d %s", _ret_, sqlite3_errmsg(backend_db)); \
+		else                                                                                                                       \
+			j_sql_check(ret, flag);                                                                                            \
 	} while (0)
 #define j_sql_reset(stmt)                         \
 	do                                        \

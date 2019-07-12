@@ -482,7 +482,7 @@ event_query_single(void)
 	}
 	ret = j_smd_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, &error);
 	ret = j_batch_execute(batch) && ret;
-	J_DEBUG_ERROR(ret, ret_expected, error);
+	J_DEBUG_ERROR_NO_EXPECT(ret, error);
 	if (selector)
 	{
 		bson_destroy(selector);
