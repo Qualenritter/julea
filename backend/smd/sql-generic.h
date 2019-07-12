@@ -152,17 +152,21 @@ static j_sql_statement_type stmt_transaction_commit = NULL;
 #define j_sql_transaction_begin() j_sql_step_and_reset_check_done(stmt_transaction_begin)
 #define j_sql_transaction_commit() j_sql_step_and_reset_check_done(stmt_transaction_commit)
 #define j_sql_transaction_abort() j_sql_step_and_reset_check_done(stmt_transaction_abort)
-#define j_goto_error_subcommand(val) \
-	do                           \
-	{                            \
-		if (val)             \
-			goto _error; \
+#define j_goto_error_subcommand(val)                        \
+	do                                                  \
+	{                                                   \
+		if (val)                                    \
+		{                                           \
+			J_DEBUG("j_goto_error_subcommand"); \
+			goto _error;                        \
+		}                                           \
 	} while (0)
 #define j_goto_error(val, err_code, err_format_str, ...)                                                  \
 	do                                                                                                \
 	{                                                                                                 \
 		if (val)                                                                                  \
 		{                                                                                         \
+			J_DEBUG("j_goto_error");                                                          \
 			J_DEBUG(err_format_str, ##__VA_ARGS__);                                           \
 			g_set_error(error, JULEA_BACKEND_ERROR, err_code, err_format_str, ##__VA_ARGS__); \
 			goto _error;                                                                      \
@@ -490,8 +494,8 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 		ret = TRUE;
 	}
 	j_sql_reset(stmt_schema_structure_get);
-	J_DEBUG("ret %d", ret);
-	return ret;
+	j_goto_error(!ret, JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "schema not found %s", json);
+	return TRUE;
 _error:
 	j_sql_reset(stmt_schema_structure_get);
 	J_DEBUG("ret %d", FALSE);
