@@ -406,7 +406,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema)
 		i = 0;
 		if (bson_iter_init(&iter, schema))
 		{
-			ret = bson_iter_find(&iter, "_arr");
+			ret = bson_iter_find(&iter, "_index");
 			j_goto_error(!ret);
 			ret = BSON_ITER_HOLDS_ARRAY(&iter);
 			j_goto_error(!ret);
@@ -515,7 +515,6 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter)
 	while (bson_iter_next(iter))
 	{
 		type = bson_iter_type(iter);
-		J_DEBUG("%s", bson_iter_key(iter));
 		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(iter)));
 		j_goto_error(!index);
 		switch (type)
@@ -619,24 +618,8 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata)
 	}
 	ret = bson_iter_init(&iter, metadata);
 	j_goto_error(!ret);
-	if ((bson_count_keys(metadata) == 1) && bson_iter_find(&iter, "_arr") && BSON_ITER_HOLDS_ARRAY(&iter) && bson_iter_recurse(&iter, &iter_child))
-	{
-		while (bson_iter_next(&iter_child))
-		{
-			ret = BSON_ITER_HOLDS_DOCUMENT(&iter_child);
-			j_goto_error(!ret);
-			ret = bson_iter_recurse(&iter_child, &iter_child2);
-			j_goto_error(!ret);
-			ret = insert_helper(prepared, &iter_child2);
-			j_goto_error(!ret);
-		}
-	}
-	else
-	{
-		bson_iter_init(&iter, metadata);
-		ret = insert_helper(prepared, &iter);
-		j_goto_error(!ret);
-	}
+	ret = insert_helper(prepared, &iter);
+	j_goto_error(!ret);
 	if (schema)
 	{
 		if (schema_initialized)

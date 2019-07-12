@@ -47,8 +47,7 @@ enum JSMDAflEvent
 	AFL_EVENT_SMD_INSERT,
 	AFL_EVENT_SMD_UPDATE,
 	AFL_EVENT_SMD_DELETE,
-	AFL_EVENT_SMD_QUERY,
-	AFL_EVENT_SMD_ITERATE,
+	AFL_EVENT_SMD_QUERY_ALL,
 	_AFL_EVENT_EVENT_COUNT,
 };
 typedef enum JSMDAflEvent JSMDAflEvent;
@@ -111,7 +110,6 @@ struct JSMDAflRandomValues
 				guint64 i; //random int
 				guint s; //random string INDEX (point to namespace_varvalues_string_const)
 			} values[AFL_LIMIT_SCHEMA_VARIABLES][2];
-			guint multiple_values_insert; //mod 2 -> Yes/No
 			guint value_count; //insert <real number of vaiables in schema> + ((mod 3) - 1)
 			guint value_index; //"primary key" first column
 			guint existent; //mod 2 -> Yes/No
@@ -212,17 +210,12 @@ build_selector_single(guint varname, guint value)
 	return ret_expected;
 }
 static gboolean
-build_metadata(guint allow_multiple)
+build_metadata()
 {
-	char str_buf[16];
-	const char* key;
-	bson_t bson_child;
-	bson_t bson_child2;
 	bson_t* bson;
 	gboolean ret_expected = TRUE;
 	guint count = 0;
 	guint i;
-	guint j;
 	J_DEBUG("afl_build_metadata%d", 0);
 	if (random_values.values.invalid_bson_metadata % 3)
 	{
@@ -241,108 +234,76 @@ build_metadata(guint allow_multiple)
 	metadata = bson_new();
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
-		random_values.values.multiple_values_insert = random_values.values.multiple_values_insert % 2;
-		if (random_values.values.multiple_values_insert && allow_multiple)
-			random_values.values.value_index = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES - 1);
-		else
-			random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
+		random_values.values.value_index = random_values.values.value_index % AFL_LIMIT_SCHEMA_VALUES;
 		random_values.values.value_count = namespace_varcount[random_values.namespace][random_values.name] + ((random_values.values.value_count % 3) - 1);
 		namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][0] = random_values.values.value_index;
 		namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][0] = random_values.values.value_index;
 		namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][0] = random_values.values.value_index % AFL_LIMIT_SCHEMA_STRING_VALUES;
-		if (random_values.values.multiple_values_insert && allow_multiple)
-		{
-			namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index + 1][0] = random_values.values.value_index + 1;
-			namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index + 1][0] = random_values.values.value_index + 1;
-			namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index + 1][0] = (random_values.values.value_index + 1) % AFL_LIMIT_SCHEMA_STRING_VALUES;
-		}
 		for (i = 1; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 		{
 			namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i] = random_values.values.values[i][0].i;
 			namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i] = random_values.values.values[i][0].d;
 			namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i] = random_values.values.values[i][0].s % AFL_LIMIT_SCHEMA_STRING_VALUES;
-			if (random_values.values.multiple_values_insert && allow_multiple)
-			{
-				namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index + 1][i] = random_values.values.values[i][1].i;
-				namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index + 1][i] = random_values.values.values[i][1].d;
-				namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index + 1][i] = random_values.values.values[i][1].s % AFL_LIMIT_SCHEMA_STRING_VALUES;
-			}
 		}
-		if (random_values.values.multiple_values_insert && allow_multiple)
-			bson_append_array_begin(metadata, "_arr", -1, &bson_child);
-		else
-			bson = metadata;
-		for (j = 0; j < random_values.values.multiple_values_insert + 1; j++)
+		bson = metadata;
+		for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 		{
-			if (random_values.values.multiple_values_insert && allow_multiple)
+			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
+			if (i < random_values.values.value_count)
 			{
-				bson_uint32_to_string(j, &key, str_buf, sizeof(str_buf));
-				bson_append_document_begin(&bson_child, key, -1, &bson_child2);
-				bson = &bson_child2;
-			}
-			for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
-			{
-				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
-				if (i < random_values.values.value_count)
+				if (i < namespace_varcount[random_values.namespace][random_values.name])
 				{
-					if (i < namespace_varcount[random_values.namespace][random_values.name])
+					switch (namespace_vartypes[random_values.namespace][random_values.name][i])
 					{
-						switch (namespace_vartypes[random_values.namespace][random_values.name][i])
-						{
-						case J_SMD_TYPE_SINT32:
-							count++;
-							if (!bson_append_int32(bson, varname_strbuf, -1, (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index + j][i]))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_UINT32:
-							count++;
-							if (!bson_append_int32(bson, varname_strbuf, -1, (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index + j][i]))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_FLOAT32:
-							count++;
-							if (!bson_append_double(bson, varname_strbuf, -1, (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index + j][i]))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_SINT64:
-							count++;
-							if (!bson_append_int64(bson, varname_strbuf, -1, (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index + j][i]))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_UINT64:
-							count++;
-							if (!bson_append_int64(bson, varname_strbuf, -1, (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index + j][i]))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_FLOAT64:
-							count++;
-							if (!bson_append_double(bson, varname_strbuf, -1, (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index + j][i]))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_STRING:
-							count++;
-							if (!bson_append_utf8(bson, varname_strbuf, -1, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index + j][i]], -1))
-								MYABORT();
-							break;
-						case J_SMD_TYPE_INVALID:
-						case _J_SMD_TYPE_COUNT:
-						default:
+					case J_SMD_TYPE_SINT32:
+						count++;
+						if (!bson_append_int32(bson, varname_strbuf, -1, (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
 							MYABORT();
-						}
-					}
-					else
-					{ //TODO test other types for the invalid extra column - should fail on the column name anyway
-						sprintf(varname_strbuf, AFL_VARNAME_FORMAT, AFL_LIMIT_SCHEMA_VARIABLES);
-						bson_append_int32(bson, varname_strbuf, -1, 1); //not existent varname
-						ret_expected = FALSE;
+						break;
+					case J_SMD_TYPE_UINT32:
+						count++;
+						if (!bson_append_int32(bson, varname_strbuf, -1, (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
+							MYABORT();
+						break;
+					case J_SMD_TYPE_FLOAT32:
+						count++;
+						if (!bson_append_double(bson, varname_strbuf, -1, (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]))
+							MYABORT();
+						break;
+					case J_SMD_TYPE_SINT64:
+						count++;
+						if (!bson_append_int64(bson, varname_strbuf, -1, (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
+							MYABORT();
+						break;
+					case J_SMD_TYPE_UINT64:
+						count++;
+						if (!bson_append_int64(bson, varname_strbuf, -1, (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
+							MYABORT();
+						break;
+					case J_SMD_TYPE_FLOAT64:
+						count++;
+						if (!bson_append_double(bson, varname_strbuf, -1, (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]))
+							MYABORT();
+						break;
+					case J_SMD_TYPE_STRING:
+						count++;
+						if (!bson_append_utf8(bson, varname_strbuf, -1, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], -1))
+							MYABORT();
+						break;
+					case J_SMD_TYPE_INVALID:
+					case _J_SMD_TYPE_COUNT:
+					default:
+						MYABORT();
 					}
 				}
+				else
+				{ //TODO test other types for the invalid extra column - should fail on the column name anyway
+					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, AFL_LIMIT_SCHEMA_VARIABLES);
+					bson_append_int32(bson, varname_strbuf, -1, 1); //not existent varname
+					ret_expected = FALSE;
+				}
 			}
-			if (random_values.values.multiple_values_insert && allow_multiple)
-				bson_append_document_end(&bson_child, &bson_child2);
 		}
-		if (random_values.values.multiple_values_insert && allow_multiple)
-			bson_append_array_end(metadata, &bson_child);
 	}
 	else
 	{
@@ -668,7 +629,7 @@ event_insert(void)
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_insert%d", 0);
 	J_DEBUG("ret_expected %d", ret_expected);
-	ret_expected = build_metadata(TRUE) && ret_expected; //inserting valid metadata should succeed
+	ret_expected = build_metadata() && ret_expected; //inserting valid metadata should succeed
 	J_DEBUG("ret_expected %d", ret_expected);
 	ret = j_smd_insert(namespace_strbuf, name_strbuf, metadata, batch);
 	ret = j_batch_execute(batch) && ret;
@@ -677,18 +638,11 @@ event_insert(void)
 	if (ret)
 	{
 		namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = random_values.values.value_count;
-		if (random_values.values.multiple_values_insert)
-			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index + 1] = random_values.values.value_count;
 	}
 	else
 	{
 		if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
 			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = 1;
-		if (random_values.values.multiple_values_insert)
-		{
-			if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index + 1])
-				namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index + 1] = 1;
-		}
 	}
 	if (metadata)
 	{
@@ -707,10 +661,9 @@ event_update(void)
 	gboolean ret;
 	gboolean ret_expected = TRUE;
 	J_DEBUG("afl_event_update%d", 0);
-	random_values.values.multiple_values_insert = 0;
 	if (random_values.values.invalid_bson_selector % 7)
 	{
-		build_metadata(FALSE);
+		build_metadata();
 		switch (random_values.values.invalid_bson_selector % 7)
 		{
 		case 6: //invalid bson - value of not allowed bson type
@@ -809,7 +762,7 @@ event_update(void)
 		J_DEBUG("ret_expected %d", ret_expected);
 		selector = bson_new();
 	}
-	ret_expected = build_metadata(FALSE) && ret_expected; //metadata contains valid data ?
+	ret_expected = build_metadata() && ret_expected; //metadata contains valid data ?
 	J_DEBUG("ret_expected %d", ret_expected);
 	ret = j_smd_update(namespace_strbuf, name_strbuf, selector, metadata, batch);
 	ret = j_batch_execute(batch) && ret;
@@ -1107,24 +1060,10 @@ main(int argc, char* argv[])
 		case AFL_EVENT_SMD_INSERT:
 			J_DEBUG("AFL_EVENT_SMD_INSERT %s %s", namespace_strbuf, name_strbuf);
 			random_values.values.existent = 1;
-			random_values.values.multiple_values_insert = random_values.values.multiple_values_insert % 2;
-			if (random_values.values.multiple_values_insert)
-				tmp = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES - 1);
-			else
-				tmp = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES);
+			tmp = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES);
 			event_query_all();
-			if (random_values.values.multiple_values_insert)
-			{
-				random_values.values.value_index = tmp;
-				event_delete();
-				random_values.values.value_index = tmp + 1;
-				event_delete();
-			}
-			else
-			{
-				random_values.values.value_index = tmp;
-				event_delete();
-			}
+			random_values.values.value_index = tmp;
+			event_delete();
 			event_query_all();
 			random_values.values.value_index = tmp;
 			event_insert();
@@ -1142,9 +1081,8 @@ main(int argc, char* argv[])
 			event_delete();
 			event_query_all();
 			break;
-		case AFL_EVENT_SMD_QUERY:
-		case AFL_EVENT_SMD_ITERATE:
-			J_DEBUG("AFL_EVENT_SMD_QUERY %s %s", namespace_strbuf, name_strbuf);
+		case AFL_EVENT_SMD_QUERY_ALL:
+			J_DEBUG("AFL_EVENT_SMD_QUERY_ALL %s %s", namespace_strbuf, name_strbuf);
 			event_query_all();
 			event_query_single();
 			break;

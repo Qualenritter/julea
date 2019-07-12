@@ -42,7 +42,6 @@ typedef struct J_smd_iterator_helper J_smd_iterator_helper;
 static gboolean
 j_backend_smd_func_call(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data, JMessageType type)
 {
-	bson_t* bson;
 	switch (type)
 	{
 	case J_MESSAGE_SMD_SCHEMA_CREATE:
