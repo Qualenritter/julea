@@ -53,4 +53,6 @@ gboolean j_smd_schema_create(JSMDSchema* schema, JBatch* batch, GError** error);
 gboolean j_smd_schema_get(JSMDSchema* schema, JBatch* batch, GError** error);
 gboolean j_smd_schema_delete(JSMDSchema* schema, JBatch* batch, GError** error);
 
+gboolean j_smd_schema_equals(JSMDSchema* schema1, JSMDSchema* schema2, gboolean* equal, GError** error);
+
 #endif

@@ -229,3 +229,54 @@ j_smd_schema_delete(JSMDSchema* schema, JBatch* batch, GError** error)
 _error:
 	return FALSE;
 }
+
+gboolean
+j_smd_schema_equals(JSMDSchema* schema1, JSMDSchema* schema2, gboolean* equal, GError** error)
+{
+	guint schema1_count;
+	guint schema2_count;
+	bson_iter_t iter1;
+	bson_iter_t iter2;
+	gint ret;
+	j_goto_error_frontend(!schema1, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!schema2, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	if (schema1 == schema2)
+	{
+		*equal = TRUE;
+	}
+	else
+	{
+		*equal = TRUE;
+		*equal = *equal && !g_strcmp0(schema1->namespace, schema2->namespace);
+		*equal = *equal && !g_strcmp0(schema1->name, schema2->name);
+		*equal = *equal && (schema1->bson_initialized == schema2->bson_initialized);
+		if (*equal && schema1->bson_initialized)
+		{
+			schema1_count = 0;
+			schema2_count = 0;
+			ret = bson_iter_init(&iter1, &schema1->bson);
+			j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
+			while (bson_iter_next(&iter1))
+				if (g_strcmp0(bson_iter_key(&iter1), "_index"))
+				{
+					schema1_count++;
+					ret = bson_iter_init(&iter2, &schema2->bson);
+					j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
+					ret = bson_iter_find(&iter2, bson_iter_key(&iter1));
+					*equal = *equal && ret;
+					if (!*equal)
+						break;
+					*equal = *equal && bson_iter_int32(&iter1) == bson_iter_int32(&iter2);
+				}
+			ret = bson_iter_init(&iter2, &schema2->bson);
+			j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
+			while (bson_iter_next(&iter2))
+				if (g_strcmp0(bson_iter_key(&iter2), "_index"))
+					schema2_count++;
+			*equal = *equal && schema1_count == schema2_count;
+		}
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}

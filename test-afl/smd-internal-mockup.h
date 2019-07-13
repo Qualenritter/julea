@@ -21,6 +21,7 @@ static gboolean mockup_should_fail;
 static gboolean
 j_smd_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -29,6 +30,7 @@ _error:
 static gboolean
 j_smd_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -37,6 +39,7 @@ _error:
 static gboolean
 j_smd_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -45,6 +48,7 @@ _error:
 static gboolean
 j_smd_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -53,6 +57,7 @@ _error:
 static gboolean
 j_smd_internal_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -61,6 +66,7 @@ _error:
 static gboolean
 j_smd_internal_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -69,6 +75,7 @@ _error:
 static gboolean
 j_smd_internal_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -77,6 +84,7 @@ _error:
 static gboolean
 j_smd_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
+	J_DEBUG("called mockup%d", 0);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
