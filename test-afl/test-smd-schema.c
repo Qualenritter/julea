@@ -193,7 +193,8 @@ event_schema_get_field(void)
 		break;
 	case 0:
 		ret = j_smd_schema_get_field(stored_schemas[random_values.schema_index], varname_strbuf, &type, &error);
-		if(ret!=(schema_field_types[random_values.schema_index][random_values.var_name]!=_J_SMD_TYPE_COUNT) MYABORT();
+		if (ret != (schema_field_types[random_values.schema_index][random_values.var_name] != _J_SMD_TYPE_COUNT))
+			MYABORT();
 		if (type != schema_field_types[random_values.schema_index][random_values.var_name])
 			MYABORT();
 		break;
