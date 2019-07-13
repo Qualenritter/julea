@@ -109,8 +109,8 @@ function julea_run(){
 		sleep 2s
 		echo "export JULEA_CONFIG=~/.config/julea/julea${index}"
 		for a in ./afl/start-files/*.bin; do
-			echo "cat ./afl/start-files/$a | ./build-${name}/test-afl/${programname}"
-			      cat ./afl/start-files/$a | ./build-${name}/test-afl/${programname}
+			echo "cat $a | ./build-${name}/test-afl/${programname}"
+			      cat $a | ./build-${name}/test-afl/${programname}
 		done
 		if [ "${asan}" != "asan" ]
 		then
@@ -127,11 +127,11 @@ function julea_run(){
 		afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./afl/start-files -o ./afl/out ./build-${name}/test-afl/${programname}
 	)
 }
-julea_compile "afl-gcc" "--gcov" ""  log/compile2 2>&1
-julea_compile "afl-gcc" "--gcov --debug" ""  log/compile3 2>&1
-julea_compile "afl-gcc" "" "asan"  log/compile4 2>&1
-julea_compile "afl-clang-fast" "" ""  log/compile5 2>&1
-julea_compile "afl-clang-fast" "--debug" ""  log/compile6 2>&1
+julea_compile "afl-gcc" "--gcov" "" > log/compile1 2>&1
+julea_compile "afl-gcc" "--gcov --debug" "" > log/compile2 2>&1
+julea_compile "afl-gcc" "" "asan" > log/compile3 2>&1
+julea_compile "afl-clang-fast" "" "" > log/compile4 2>&1
+julea_compile "afl-clang-fast" "--debug" "" > log/compile5 2>&1
 
 cp test-afl/bin/* ./afl/start-files/
 c=$(ls -la ./afl/start-files/ | wc -l)

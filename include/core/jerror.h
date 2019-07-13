@@ -43,33 +43,33 @@ extern const char* const JuleaFrontendErrorFormat[];
 
 #define JULEA_BACKEND_ERROR julea_backend_error_quark()
 GQuark julea_backend_error_quark(void);
-#define j_goto_error_backend(val, err_code, ...)                                                                             \
-	do                                                                                                                   \
-	{                                                                                                                    \
-		_Pragma("GCC diagnostic push");                                                                              \
-		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                   \
-		if (val)                                                                                                     \
-		{                                                                                                            \
-			J_DEBUG_ERROR(JuleaBackendErrorFormat[err_code], ##__VA_ARGS__);                                     \
-			g_set_error(error, JULEA_BACKEND_ERROR, err_code, JuleaBackendErrorFormat[err_code], ##__VA_ARGS__); \
-			goto _error;                                                                                         \
-		}                                                                                                            \
-		_Pragma("GCC diagnostic pop");                                                                               \
+#define j_goto_error_backend(val, err_code, ...)                                                                                                  \
+	do                                                                                                                                        \
+	{                                                                                                                                         \
+		_Pragma("GCC diagnostic push");                                                                                                   \
+		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                                        \
+		if (val)                                                                                                                          \
+		{                                                                                                                                 \
+			J_DEBUG_ERROR(JuleaBackendErrorFormat[err_code], ##__VA_ARGS__);                                                          \
+			g_set_error(error, JULEA_BACKEND_ERROR, err_code, JuleaBackendErrorFormat[err_code], G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+			goto _error;                                                                                                              \
+		}                                                                                                                                 \
+		_Pragma("GCC diagnostic pop");                                                                                                    \
 	} while (0)
 #define JULEA_FRONTEND_ERROR julea_frontend_error_quark()
 GQuark julea_frontend_error_quark(void);
-#define j_goto_error_frontend(val, err_code, ...)                                                                              \
-	do                                                                                                                     \
-	{                                                                                                                      \
-		_Pragma("GCC diagnostic push");                                                                                \
-		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                     \
-		if (val)                                                                                                       \
-		{                                                                                                              \
-			J_DEBUG_ERROR(JuleaFrontendErrorFormat[err_code], ##__VA_ARGS__);                                      \
-			g_set_error(error, JULEA_FRONTEND_ERROR, err_code, JuleaFrontendErrorFormat[err_code], ##__VA_ARGS__); \
-			goto _error;                                                                                           \
-		}                                                                                                              \
-		_Pragma("GCC diagnostic pop");                                                                                 \
+#define j_goto_error_frontend(val, err_code, ...)                                                                                                   \
+	do                                                                                                                                          \
+	{                                                                                                                                           \
+		_Pragma("GCC diagnostic push");                                                                                                     \
+		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                                          \
+		if (val)                                                                                                                            \
+		{                                                                                                                                   \
+			J_DEBUG_ERROR(JuleaFrontendErrorFormat[err_code], ##__VA_ARGS__);                                                           \
+			g_set_error(error, JULEA_FRONTEND_ERROR, err_code, JuleaFrontendErrorFormat[err_code], G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+			goto _error;                                                                                                                \
+		}                                                                                                                                   \
+		_Pragma("GCC diagnostic pop");                                                                                                      \
 	} while (0)
 
 #define j_goto_error_subcommand(val) \
