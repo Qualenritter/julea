@@ -22,31 +22,7 @@
 #include <glib.h>
 #include <bson.h>
 #include <julea.h>
-
-enum JSMDType
-{
-	J_SMD_TYPE_SINT32 = 0,
-	J_SMD_TYPE_UINT32,
-	J_SMD_TYPE_FLOAT32,
-	J_SMD_TYPE_SINT64,
-	J_SMD_TYPE_UINT64,
-	J_SMD_TYPE_FLOAT64,
-	J_SMD_TYPE_STRING,
-	J_SMD_TYPE_BLOB,
-	_J_SMD_TYPE_COUNT,
-};
-typedef enum JSMDType JSMDType;
-enum JSMDOperator
-{
-	J_SMD_OPERATOR_LT = 0, //<
-	J_SMD_OPERATOR_LE, //<=
-	J_SMD_OPERATOR_GT, //>
-	J_SMD_OPERATOR_GE, //>=
-	J_SMD_OPERATOR_EQ, //=
-	J_SMD_OPERATOR_NE, //!=
-	_J_SMD_OPERATOR_COUNT,
-};
-typedef enum JSMDOperator JSMDOperator;
+#include <julea-smd-type.h>
 
 gboolean j_smd_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error);
 gboolean j_smd_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error);

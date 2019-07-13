@@ -25,6 +25,7 @@
 #include <julea.h>
 #include <julea-smd-internal.h>
 #include <julea-internal.h>
+#include "afl.h"
 
 //configure here->
 #define AFL_NAMESPACE_FORMAT "namespace_%d"
@@ -52,85 +53,6 @@ enum JSMDAflEvent
 };
 typedef enum JSMDAflEvent JSMDAflEvent;
 
-#if (GLIB_MAJOR_VERSION < 2) || (GLIB_MINOR_VERSION < 58)
-#define G_APPROX_VALUE(a, b, epsilon) ((((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon)) || !isfinite(a) || !isfinite(b))
-#endif
-
-#define J_AFL_DEBUG_BSON(bson)                           \
-	do                                               \
-	{                                                \
-		char* json = NULL;                       \
-		if (bson)                                \
-			json = bson_as_json(bson, NULL); \
-		J_DEBUG("json = %s", json);              \
-		bson_free((void*)json);                  \
-	} while (0)
-#define J_AFL_DEBUG_ERROR(ret, ret_expected, error)                              \
-	do                                                                       \
-	{                                                                        \
-		if (error)                                                       \
-		{                                                                \
-			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
-		}                                                                \
-		if (ret != ret_expected)                                         \
-		{                                                                \
-			J_DEBUG("not expected %d != %d", ret, ret_expected);     \
-			MYABORT();                                               \
-		}                                                                \
-		if (ret != (error == NULL))                                      \
-		{                                                                \
-			J_DEBUG("not initialized %d != %d", ret, error == NULL); \
-			MYABORT();                                               \
-		}                                                                \
-		if (error)                                                       \
-		{                                                                \
-			g_error_free(error);                                     \
-			error = NULL;                                            \
-		}                                                                \
-	} while (0)
-#define J_AFL_DEBUG_ERROR_NO_EXPECT(ret, error)                                  \
-	do                                                                       \
-	{                                                                        \
-		if (error)                                                       \
-		{                                                                \
-			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
-		}                                                                \
-		if (ret != (error == NULL))                                      \
-		{                                                                \
-			J_DEBUG("not initialized %d != %d", ret, error == NULL); \
-			MYABORT();                                               \
-		}                                                                \
-		if (error)                                                       \
-		{                                                                \
-			g_error_free(error);                                     \
-			error = NULL;                                            \
-		}                                                                \
-	} while (0)
-
-#define MY_READ(var)                                                              \
-	do                                                                        \
-	{                                                                         \
-		if (read(STDIN_FILENO, &var, sizeof(var)) < (ssize_t)sizeof(var)) \
-			goto cleanup;                                             \
-	} while (0)
-#define MY_READ_LEN(var, len)                                    \
-	do                                                       \
-	{                                                        \
-		if (read(STDIN_FILENO, var, len) < (ssize_t)len) \
-			goto cleanup;                            \
-	} while (0)
-#define MY_READ_MAX(var, max)      \
-	do                         \
-	{                          \
-		MY_READ(var);      \
-		var = var % (max); \
-	} while (0)
-#define MYABORT()                       \
-	do                              \
-	{                               \
-		J_DEBUG("abort %d", 0); \
-		abort();                \
-	} while (0)
 struct JSMDAflRandomValues
 {
 	guint namespace;
@@ -161,7 +83,7 @@ struct JSMDAflRandomValues
 	};
 };
 typedef struct JSMDAflRandomValues JSMDAflRandomValues;
-
+/*TODO test multiple functions/batch */
 //schema->
 static gboolean namespace_exist[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME];
 static bson_t* namespace_bson[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME];
@@ -1152,7 +1074,7 @@ main(int argc, char* argv[])
 		memset(&random_values, 0, sizeof(random_values));
 		for (i = 0; i < _AFL_EVENT_EVENT_COUNT; i++)
 		{
-			sprintf(filename, "%s/start-files/%d.bin", argv[1], i);
+			sprintf(filename, "%s/start-files/test-smd-backend-%d.bin", argv[1], i);
 			file = fopen(filename, "wb");
 			event = i;
 			fwrite(&event, sizeof(event), 1, file);

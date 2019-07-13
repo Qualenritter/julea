@@ -22,6 +22,7 @@
 #include <glib.h>
 #include <bson.h>
 #include <julea.h>
+#include <julea-smd-type.h>
 
 struct JSMDSchema
 {

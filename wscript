@@ -454,8 +454,17 @@ def build(ctx):
 
 	# AFL-Tests
 	ctx.program(
-		source=ctx.path.ant_glob('test-afl/**/*.c'),
-		target='test-afl/julea-test-afl',
+		source=ctx.path.ant_glob('test-afl/test-smd-backend.c'),
+		target='test-afl/julea-test-afl-smd-backend',
+		use=use_julea_object + use_julea_item + use_julea_hdf + use_julea_smd,
+		includes=include_julea_core + ['test-afl'],
+		rpath=get_rpath(ctx),
+		install_path=None
+	)
+
+	ctx.program(
+		source=ctx.path.ant_glob('test-afl/test-smd-schema.c'),
+		target='test-afl/julea-test-afl-smd-schema',
 		use=use_julea_object + use_julea_item + use_julea_hdf + use_julea_smd,
 		includes=include_julea_core + ['test-afl'],
 		rpath=get_rpath(ctx),
