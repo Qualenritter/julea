@@ -237,7 +237,7 @@ event_schema_get_fields(void)
 			i = 0;
 			types_cur = types;
 			names_cur = names;
-			while (names_cur)
+			while (*names_cur)
 			{
 				found = FALSE;
 				for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
@@ -261,6 +261,8 @@ event_schema_get_fields(void)
 				MYABORT();
 			if (i != k)
 				MYABORT();
+			g_free(types);
+			g_free(names);
 		}
 		break;
 	default:

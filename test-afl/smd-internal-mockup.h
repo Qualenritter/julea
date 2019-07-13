@@ -17,11 +17,13 @@
  */
 
 static gboolean mockup_should_fail;
+static bson_t const* mockup_schema;
 
 static gboolean
 j_smd_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error)
 {
 	J_DEBUG("called mockup%d", 0);
+	mockup_schema = schema;
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
@@ -31,6 +33,7 @@ static gboolean
 j_smd_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error)
 {
 	J_DEBUG("called mockup%d", 0);
+	bson_copy_to(mockup_schema, schema);
 	j_goto_error_frontend(mockup_should_fail, JULEA_FRONTEND_ERROR_FAILED, "");
 	return TRUE;
 _error:
