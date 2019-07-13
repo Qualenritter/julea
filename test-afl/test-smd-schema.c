@@ -155,6 +155,10 @@ event_schema_add_field(void)
 	ret_expected = stored_schemas[random_values.schema_index] != NULL;
 	ret_expected = ret_expected && random_values.var_type < _J_SMD_TYPE_COUNT;
 	ret_expected = ret_expected && schema_field_types[random_values.schema_index][random_values.var_name] == _J_SMD_TYPE_COUNT;
+	if (stored_schemas[random_values.schema_index])
+	{
+		ret_expected = ret_expected && !stored_schemas[random_values.schema_index]->server_side;
+	}
 	if (random_values.invalid_switch % 2)
 	{
 		ret_expected = FALSE;
