@@ -1166,15 +1166,15 @@ main(int argc, char* argv[])
 			MYABORT();
 		}
 		goto loop;
-	}
-cleanup:
-	for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
-	{
-		for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
+	cleanup:
+		for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
 		{
-			if (namespace_bson[i][j])
-				bson_destroy(namespace_bson[i][j]);
-			namespace_bson[i][j] = NULL;
+			for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
+			{
+				if (namespace_bson[i][j])
+					bson_destroy(namespace_bson[i][j]);
+				namespace_bson[i][j] = NULL;
+			}
 		}
 	}
 fini:

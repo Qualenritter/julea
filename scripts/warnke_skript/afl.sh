@@ -154,21 +154,21 @@ if (( $c < 10 )); then
 	)
 fi
 
-i=10; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=10; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=11; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=11; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=12; julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=12; julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
 i=13; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
 i=14; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=15; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=15; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=16; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=16; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=17; julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=17; julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
 i=18; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s

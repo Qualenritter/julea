@@ -89,7 +89,6 @@ event_schema_new(void)
 {
 	GError* error = NULL;
 	guint i;
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	if (stored_schemas[random_values.schema_index])
 		j_smd_schema_unref(stored_schemas[random_values.schema_index]);
 	stored_schemas[random_values.schema_index] = NULL;
@@ -124,7 +123,6 @@ event_schema_ref(void)
 {
 	GError* error = NULL;
 	JSMDSchema* ptr = NULL;
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	if (stored_schemas[random_values.schema_index])
 	{
 		if (stored_schemas[random_values.schema_index]->ref_count != 1)
@@ -153,7 +151,6 @@ event_schema_add_field(void)
 	gboolean ret_expected;
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	random_values.var_type = random_values.var_type % (_J_SMD_TYPE_COUNT + 1);
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = stored_schemas[random_values.schema_index] != NULL;
 	ret_expected = ret_expected && random_values.var_type < _J_SMD_TYPE_COUNT;
@@ -177,7 +174,6 @@ event_schema_get_field(void)
 	GError* error = NULL;
 	gboolean ret_expected;
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = stored_schemas[random_values.schema_index] != NULL;
 	ret_expected = ret_expected && schema_field_types[random_values.schema_index][random_values.var_name] < _J_SMD_TYPE_COUNT;
@@ -218,7 +214,6 @@ event_schema_get_fields(void)
 	gchar const** names_cur;
 	GError* error = NULL;
 	gboolean ret_expected;
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	ret_expected = stored_schemas[random_values.schema_index] != NULL;
 	switch (random_values.invalid_switch % 3)
 	{
@@ -285,7 +280,6 @@ event_schema_create_get(void)
 	gboolean ret;
 	gboolean bool_tmp;
 	gboolean ret_expected;
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	switch (random_values.invalid_switch % 7)
 	{
 	case 6:
@@ -382,7 +376,6 @@ event_schema_delete(void)
 	gboolean ret;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	switch (random_values.invalid_switch % 4)
 	{
 	case 3:
@@ -446,43 +439,57 @@ main(int argc, char* argv[])
 	while (__AFL_LOOP(1000))
 #endif
 	{
+	loop:
 		MY_READ_MAX(event, _AFL_EVENT_EVENT_COUNT);
 		MY_READ(random_values);
+		random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 		switch (event)
 		{
 
 		case AFL_EVENT_SMD_SCHEMA_NEW:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_NEW %d", random_values.schema_index);
 			event_schema_new();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_REF:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_REW %d", random_values.schema_index);
 			event_schema_ref();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_ADD_FIELD:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_ADD_FIELD %d", random_values.schema_index);
 			event_schema_add_field();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_GET_FIELD:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_GET_FIELD %d", random_values.schema_index);
 			event_schema_get_field();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_GET_FIELDS:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_GET_FIELDS %d", random_values.schema_index);
 			event_schema_get_fields();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_ADD_INDEX:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_ADD_INDEX %d", random_values.schema_index);
 			event_schema_add_index();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_CREATE_GET:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_CREATE_GET %d", random_values.schema_index);
 			event_schema_create_get();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_DELETE:
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_DELETE %d", random_values.schema_index);
 			event_schema_delete();
 			break;
 		case _AFL_EVENT_EVENT_COUNT:
 		default:
 			MYABORT();
 		}
+		goto loop;
+	cleanup:
+		for (i = 0; i < AFL_LIMIT_SCHEMA; i++)
+		{
+			j_smd_schema_unref(stored_schemas[i]);
+			stored_schemas[i] = NULL;
+		}
 	}
-cleanup:
-	for (i = 0; i < AFL_LIMIT_SCHEMA; i++)
-		j_smd_schema_unref(stored_schemas[i]);
 fini:
 	return 0;
 }

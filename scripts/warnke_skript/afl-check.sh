@@ -20,6 +20,7 @@ for g in gcc-asan
 do
 echo "using binary : $g"
 mkdir b/${g}
+j=0
 for f in ${files}
 do
 	for programname in "julea-test-afl-smd-backend" "julea-test-afl-smd-schema"
@@ -45,6 +46,8 @@ do
 		cp $f b/${g}/
 		exit 1
 	fi
+	mv x $j-${programname}.tmp-file
+	j=$(($j + 1))
 done
 done
 done
