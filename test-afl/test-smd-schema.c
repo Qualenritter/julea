@@ -156,9 +156,7 @@ event_schema_add_field(void)
 	ret_expected = ret_expected && random_values.var_type < _J_SMD_TYPE_COUNT;
 	ret_expected = ret_expected && schema_field_types[random_values.schema_index][random_values.var_name] == _J_SMD_TYPE_COUNT;
 	if (stored_schemas[random_values.schema_index])
-	{
 		ret_expected = ret_expected && !stored_schemas[random_values.schema_index]->server_side;
-	}
 	if (random_values.invalid_switch % 2)
 	{
 		ret_expected = FALSE;
@@ -303,6 +301,8 @@ event_schema_create_get(void)
 			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
 				k++;
 		ret_expected = ret_expected && k > 0;
+		if (stored_schemas[random_values.schema_index])
+			ret_expected = ret_expected && !stored_schemas[random_values.schema_index]->server_side;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
@@ -322,6 +322,8 @@ event_schema_create_get(void)
 			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
 				k++;
 		ret_expected = ret_expected && k > 0;
+		if (stored_schemas[random_values.schema_index])
+			ret_expected = ret_expected && !stored_schemas[random_values.schema_index]->server_side;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
@@ -340,6 +342,8 @@ event_schema_create_get(void)
 			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
 				k++;
 		ret_expected = ret_expected && k > 0;
+		if (stored_schemas[random_values.schema_index])
+			ret_expected = ret_expected && !stored_schemas[random_values.schema_index]->server_side;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
@@ -369,6 +373,8 @@ event_schema_create_get(void)
 			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
 				k++;
 		ret_expected = ret_expected && k > 0;
+		if (stored_schemas[random_values.schema_index])
+			ret_expected = ret_expected && !stored_schemas[random_values.schema_index]->server_side;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
