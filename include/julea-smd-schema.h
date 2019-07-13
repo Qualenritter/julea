@@ -45,7 +45,7 @@ void j_smd_schema_unref(JSMDSchema* schema);
 
 gboolean j_smd_schema_add_field(JSMDSchema* schema, gchar const* name, JSMDType type, GError** error);
 gboolean j_smd_schema_get_field(JSMDSchema* schema, gchar const* name, JSMDType* type, GError** error);
-guint32 j_smd_schema_get_all_fields(JSMDSchema* schema, gchar const*** names, JSMDType** types, GError** error);
+guint32 j_smd_schema_get_all_fields(JSMDSchema* schema, gchar*** names, JSMDType** types, GError** error);
 
 gboolean j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error);
 

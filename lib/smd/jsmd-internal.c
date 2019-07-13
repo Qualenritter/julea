@@ -66,7 +66,6 @@ j_backend_smd_func_call(JBackend* backend, gpointer batch, JBackend_smd_operatio
 static gboolean
 j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
-	gpointer batch = NULL;
 	JBackend_smd_operation_data* data = NULL;
 	gboolean ret = TRUE;
 	GSocketConnection* smd_connection;
@@ -75,13 +74,18 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 	g_autoptr(JListIterator) iter_recieve = NULL;
 	g_autoptr(JMessage) message = NULL;
 	g_autoptr(JMessage) reply = NULL;
+#ifndef JULEA_TEST_MOCKUP
+	(void)semantics;
+	gpointer batch = NULL;
 	GError* error = NULL;
+#endif
 	if (smd_backend == NULL)
 		message = j_message_new(type, 0);
 	iter_send = j_list_iterator_new(operations);
 	while (j_list_iterator_next(iter_send))
 	{
 		data = j_list_iterator_get(iter_send);
+#ifndef JULEA_TEST_MOCKUP
 		if (smd_backend != NULL)
 		{
 			if (!batch)
@@ -98,19 +102,27 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 				ret = j_backend_smd_func_call(smd_backend, batch, data, type) && ret;
 		}
 		else
+#endif
 			ret = j_backend_smd_message_from_data(message, data->in_param, data->in_param_count) && ret;
 	}
-	if (smd_backend != NULL && data != NULL)
+#ifndef JULEA_TEST_MOCKUP
+	if (smd_backend != NULL)
 	{
-		if (!error)
-			ret = smd_backend->smd.backend_batch_execute(batch, NULL) && ret;
-		if (error)
-			g_error_free(error);
+		if (data != NULL)
+		{
+			if (!error)
+				ret = smd_backend->smd.backend_batch_execute(batch, NULL) && ret;
+			if (error)
+				g_error_free(error);
+		}
 	}
 	else
+#endif
 	{
 		smd_connection = j_connection_pool_pop_smd(0);
 		j_message_send(message, smd_connection);
+		reply = j_message_new_reply(message);
+		j_message_receive(reply, smd_connection);
 		iter_recieve = j_list_iterator_new(operations);
 		while (j_list_iterator_next(iter_recieve))
 		{

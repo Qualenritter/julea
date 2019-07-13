@@ -19,6 +19,7 @@
 /**
  * \file
  **/
+#ifndef JULEA_TEST_MOCKUP
 
 #include <julea-config.h>
 
@@ -1074,7 +1075,7 @@ j_message_force_safety(JMessage* message, gint safety)
 
 	j_trace_leave(G_STRFUNC);
 }
-
+#endif
 /**
  * @}
  **/

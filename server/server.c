@@ -30,6 +30,8 @@
 #include <julea.h>
 #include <julea-internal.h>
 
+#include "server-smd-exec.h"
+
 static JStatistics* jd_statistics;
 
 G_LOCK_DEFINE_STATIC(jd_statistics);
@@ -80,42 +82,6 @@ jd_safety_message_to_semantics(JMessageFlags flags)
 
 	return safety;
 }
-
-#define smd_server_message_exec(func)                                                                                                                        \
-	do                                                                                                                                                   \
-	{                                                                                                                                                    \
-		g_autoptr(JMessage) reply = NULL;                                                                                                            \
-		gpointer batch = NULL;                                                                                                                       \
-		JBackend_smd_operation_data data;                                                                                                            \
-		GError* error = NULL;                                                                                                                        \
-		reply = j_message_new_reply(message);                                                                                                        \
-		memcpy(&data, &j_smd_##func##_params, sizeof(JBackend_smd_operation_data));                                                                  \
-		if (operation_count)                                                                                                                         \
-		{                                                                                                                                            \
-			j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);                                                   \
-			if (data.out_param[data.out_param_count - 1].ptr && error)                                                                           \
-				*((void**)data.out_param[data.out_param_count - 1].ptr) = g_error_copy(error);                                               \
-			else                                                                                                                                 \
-				jd_smd_backend->smd.backend_batch_start(data.in_param[0].ptr, safety, &batch, data.out_param[data.out_param_count - 1].ptr); \
-			j_backend_smd_##func(jd_smd_backend, batch, &data);                                                                                  \
-		}                                                                                                                                            \
-		for (i = 1; i < operation_count; i++)                                                                                                        \
-		{                                                                                                                                            \
-			j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);                                                   \
-			if (data.out_param[data.out_param_count - 1].ptr && error)                                                                           \
-				*((void**)data.out_param[data.out_param_count - 1].ptr) = g_error_copy(error);                                               \
-			else                                                                                                                                 \
-				j_backend_smd_##func(jd_smd_backend, batch, &data);                                                                          \
-			if (i < operation_count - 1)                                                                                                         \
-				j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);                                                \
-		}                                                                                                                                            \
-		if (!error)                                                                                                                                  \
-			jd_smd_backend->smd.backend_batch_execute(batch, NULL);                                                                              \
-		j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);                                                                \
-		j_message_send(reply, connection);                                                                                                           \
-		if (error)                                                                                                                                   \
-			g_error_free(error);                                                                                                                 \
-	} while (0)
 
 static gboolean
 jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObject* source_object, gpointer user_data)

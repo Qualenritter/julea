@@ -22,7 +22,7 @@ function julea_compile(){
 			flags="${flags} --debug"
 			name="${name}-asan"
 		fi
-		./waf configure ${flags} --out "build-${name}" --prefix="prefix-${name}" --libdir="prefix-${name}" --bindir="prefix-${name}" --destdir="prefix-${name}" --hdf=${hdf}
+		./waf configure ${flags} --out build-${name} --prefix=prefix-${name} --libdir=prefix-${name} --bindir=prefix-${name} --destdir=prefix-${name} --hdf=${hdf}
 		./waf.sh build -j12
 		./waf.sh install -j12
 		rc=$?; if [[ $rc != 0 ]]; then echo "compile build-${name} failed";exit $rc; fi
@@ -130,8 +130,12 @@ function julea_run(){
 julea_compile "afl-gcc" "--gcov" "" > log/compile1 2>&1
 julea_compile "afl-gcc" "--gcov --debug" "" > log/compile2 2>&1
 julea_compile "afl-gcc" "" "asan" > log/compile3 2>&1
-julea_compile "afl-clang-fast" "" "" > log/compile4 2>&1
-julea_compile "afl-clang-fast" "--debug" "" > log/compile5 2>&1
+julea_compile "afl-gcc" "--testmockup" "" > log/compile4 2>&1
+julea_compile "afl-gcc" "--testmockup --debug" "" > log/compile5 2>&1
+julea_compile "afl-clang-fast" "" "" > log/compile6 2>&1
+julea_compile "afl-clang-fast" "--debug" "" > log/compile7 2>&1
+julea_compile "afl-clang-fast" "--testmockup" "" > log/compile8 2>&1
+julea_compile "afl-clang-fast" "--testmockup --debug" "" > log/compile9 2>&1
 
 cp test-afl/bin/* ./afl/start-files/
 c=$(ls -la ./afl/start-files/ | wc -l)
@@ -153,26 +157,34 @@ if (( $c < 10 )); then
 		./build-${name}/test-afl/julea-test-afl-smd-schema ./afl
 	)
 fi
-
-i=10; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=9;
+i=$(($i + 1)); julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=11; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=12; julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=13; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" "--testmockup" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=14; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" "--testmockup --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=15; julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=16; julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=17; julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=18; julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup --debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-backend" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
-i=19; julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" "--gcov" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "--gcov --debug" "" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "0" "julea-test-afl-smd-schema" > "log/run$i.out" 2>"log/run$i.err" &
 sleep 0.5s
 
 

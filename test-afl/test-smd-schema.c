@@ -33,7 +33,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 /*these warnings should be ignored because the mockup defines functions which are defined in the included headers of the tested file later*/
 
-#include "smd-internal-mockup.h"
+#include "mockup-smd-internal.h"
 //directly including the files under test to allow very fast ad explicit mockups
 //this test uses mockups for all backend communication
 #include "../lib/smd/jsmd-schema.c"
@@ -211,9 +211,9 @@ event_schema_get_fields(void)
 	gboolean found;
 	gboolean ret;
 	JSMDType* types;
-	gchar const** names;
+	gchar** names;
 	JSMDType* types_cur;
-	gchar const** names_cur;
+	gchar** names_cur;
 	GError* error = NULL;
 	gboolean ret_expected;
 	ret_expected = stored_schemas[random_values.schema_index] != NULL;
@@ -264,7 +264,7 @@ event_schema_get_fields(void)
 			if (i != k)
 				MYABORT();
 			g_free(types);
-			g_free(names);
+			g_strfreev(names);
 		}
 		break;
 	default:

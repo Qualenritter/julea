@@ -92,3 +92,10 @@
 		J_DEBUG("abort %d", 0); \
 		abort();                \
 	} while (0)
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "mockup-core-jmessage.h"
+#pragma GCC diagnostic pop

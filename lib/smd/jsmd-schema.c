@@ -116,7 +116,7 @@ _error:
 	return FALSE;
 }
 guint32
-j_smd_schema_get_all_fields(JSMDSchema* schema, gchar const*** names, JSMDType** types, GError** error)
+j_smd_schema_get_all_fields(JSMDSchema* schema, gchar*** names, JSMDType** types, GError** error)
 {
 	gint ret;
 	bson_iter_t iter;
@@ -129,14 +129,14 @@ j_smd_schema_get_all_fields(JSMDSchema* schema, gchar const*** names, JSMDType**
 	ret = bson_iter_init(&iter, &schema->bson);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
 	count = bson_count_keys(&schema->bson) + 1;
-	*names = g_new(gchar const*, count);
+	*names = g_new(gchar*, count);
 	*types = g_new(JSMDType, count);
 	i = 0;
 	while (bson_iter_next(&iter))
 	{
 		if (g_strcmp0(bson_iter_key(&iter), "_index"))
 		{
-			(*names)[i] = bson_iter_key(&iter);
+			(*names)[i] = g_strdup(bson_iter_key(&iter));
 			(*types)[i] = bson_iter_int32(&iter);
 			i++;
 		}
