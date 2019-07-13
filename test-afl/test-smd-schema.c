@@ -382,6 +382,7 @@ event_schema_delete(void)
 	gboolean ret;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	random_values.schema_index = random_values.schema_index % AFL_LIMIT_SCHEMA;
 	switch (random_values.invalid_switch % 4)
 	{
 	case 3:
