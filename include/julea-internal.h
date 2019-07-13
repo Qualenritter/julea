@@ -54,10 +54,16 @@ G_BEGIN_DECLS
 	{                                                                      \
 		g_debug("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
 	} while (0)
+#define J_DEBUG_ERROR(format, ...)                                   \
+	do                                                           \
+	{                                                            \
+		g_debug(format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+	} while (0)
 #else
 #define J_WARNING(format, ...)
 #define J_INFO(format, ...)
 #define J_DEBUG(format, ...)
+#define J_DEBUG_ERROR(format, ...)
 #endif
 
 /* FIXME j_sync() for benchmarks */

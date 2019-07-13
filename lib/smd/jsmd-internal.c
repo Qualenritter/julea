@@ -32,6 +32,7 @@
 
 #include <julea.h>
 #include <julea-internal.h>
+#include <core/jerror.h>
 struct J_smd_iterator_helper
 {
 	bson_t bson;
@@ -74,10 +75,10 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 	g_autoptr(JListIterator) iter_recieve = NULL;
 	g_autoptr(JMessage) message = NULL;
 	g_autoptr(JMessage) reply = NULL;
+	GError* error = NULL;
 	if (smd_backend == NULL)
 		message = j_message_new(type, 0);
 	iter_send = j_list_iterator_new(operations);
-	GError* error = NULL;
 	while (j_list_iterator_next(iter_send))
 	{
 		data = j_list_iterator_get(iter_send);
@@ -285,11 +286,7 @@ j_smd_internal_query(gchar const* namespace, gchar const* name, bson_t const* se
 	J_smd_iterator_helper* helper;
 	JOperation* op;
 	JBackend_smd_operation_data* data;
-	if (!iterator)
-	{
-		g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_ITERATOR_NULL, "iterator must not be set to %p", (void*)iterator);
-		return FALSE;
-	}
+	j_goto_error_backend(!iterator, JULEA_BACKEND_ERROR_ITERATOR_NULL, "");
 	helper = g_slice_new(J_smd_iterator_helper);
 	helper->initialized = FALSE;
 	memset(&helper->bson, 0, sizeof(bson_t));
@@ -308,10 +305,13 @@ j_smd_internal_query(gchar const* namespace, gchar const* name, bson_t const* se
 	op->free_func = j_backend_smd_func_free;
 	j_batch_add(batch, op);
 	return TRUE;
+_error:
+	return FALSE;
 }
 gboolean
 j_smd_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
+	gint ret;
 	const uint8_t* data;
 	uint32_t length;
 	J_smd_iterator_helper* helper = iterator;
@@ -321,26 +321,20 @@ j_smd_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 	{
 		if (!memcmp(&helper->bson, &zerobson, sizeof(bson_t)))
 		{
-			g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "bson seems to be invalid %d", 0);
+			g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_BSON_INVALID, "");
 			goto error2;
 		}
 		bson_iter_init(&helper->iter, &helper->bson);
 		helper->initialized = TRUE;
 	}
-	if (!bson_iter_next(&helper->iter))
-	{
-		g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no %d more elements to iterate", 0);
-		goto error;
-	}
-	if (!BSON_ITER_HOLDS_DOCUMENT(&helper->iter))
-	{
-		g_set_error(error, JULEA_BACKEND_ERROR, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, "bson invalid type %d", bson_iter_type(&helper->iter));
-		goto error;
-	}
+	ret = bson_iter_next(&helper->iter);
+	j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
+	ret = BSON_ITER_HOLDS_DOCUMENT(&helper->iter);
+	j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&helper->iter));
 	bson_iter_document(&helper->iter, &length, &data);
 	bson_init_static(metadata, data, length);
 	return TRUE;
-error:
+_error:
 	bson_destroy(&helper->bson);
 error2:
 	g_slice_free(J_smd_iterator_helper, helper);

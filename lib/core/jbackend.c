@@ -1,6 +1,7 @@
 /*
  * JULEA - Flexible storage framework
  * Copyright (C) 2017-2019 Michael Kuhn
+ * Copyright (C) 2019 Benjamin Warnke
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -538,11 +539,6 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gconstpointer* value,
 	j_trace_leave("backend_iterate");
 
 	return ret;
-}
-GQuark
-julea_backend_error_quark(void)
-{
-	return g_quark_from_static_string("julea-backend-error-quark");
 }
 gboolean
 j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data, guint arrlen)
