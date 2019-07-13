@@ -43,7 +43,9 @@ j_smd_schema_new(gchar const* namespace, gchar const* name, GError** error)
 	schema->namespace = g_strdup(namespace);
 	schema->name = g_strdup(name);
 	schema->bson_initialized = FALSE;
+	schema->bson_index_initialized = FALSE;
 	schema->ref_count = 1;
+	schema->server_side = FALSE;
 	bson_init(&schema->bson);
 	return schema;
 _error:
@@ -59,10 +61,9 @@ _error:
 	return NULL;
 }
 void
-j_smd_schema_unref(JSMDSchema* schema, GError** error)
+j_smd_schema_unref(JSMDSchema* schema)
 {
-	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
-	if (g_atomic_int_dec_and_test(&schema->ref_count))
+	if (schema && g_atomic_int_dec_and_test(&schema->ref_count))
 	{
 		g_free(schema->namespace);
 		g_free(schema->name);
@@ -70,7 +71,6 @@ j_smd_schema_unref(JSMDSchema* schema, GError** error)
 			bson_destroy(&schema->bson);
 		g_slice_free(JSMDSchema, schema);
 	}
-_error:;
 }
 gboolean
 j_smd_schema_add_field(JSMDSchema* schema, gchar const* name, JSMDType type, GError** error)
@@ -78,8 +78,9 @@ j_smd_schema_add_field(JSMDSchema* schema, gchar const* name, JSMDType type, GEr
 	gint ret;
 	bson_iter_t iter;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
-	j_goto_error_frontend(!name, JULEA_FRONTEND_ERROR_NAME_NULL, "");
+	j_goto_error_frontend(!name, JULEA_FRONTEND_ERROR_VARIABLE_NAME_NULL, "");
 	j_goto_error_frontend(type >= _J_SMD_TYPE_COUNT, JULEA_FRONTEND_ERROR_SMD_TYPE_INVALID, "");
+	j_goto_error_frontend(schema->server_side, JULEA_FRONTEND_ERROR_SMD_BSON_SERVER, "");
 	if (!schema->bson_initialized)
 	{
 		bson_init(&schema->bson);
@@ -98,7 +99,17 @@ _error:
 gboolean
 j_smd_schema_get_field(JSMDSchema* schema, gchar const* name, JSMDType* type, GError** error)
 {
+	gint ret;
+	bson_iter_t iter;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!name, JULEA_FRONTEND_ERROR_VARIABLE_NAME_NULL, "");
+	j_goto_error_frontend(!schema->bson_initialized, JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND, "");
+	j_goto_error_frontend(!g_strcmp0(name, "_index"), JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND, "");
+	ret = bson_iter_init(&iter, &schema->bson);
+	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
+	ret = bson_iter_find(&iter, name);
+	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND, "");
+	*type = bson_iter_int32(&iter);
 	return TRUE;
 _error:
 	return FALSE;
@@ -106,15 +117,68 @@ _error:
 guint32
 j_smd_schema_get_all_fields(JSMDSchema* schema, gchar const*** names, JSMDType** types, GError** error)
 {
+	gint ret;
+	bson_iter_t iter;
+	guint count;
+	guint i;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!names, JULEA_FRONTEND_ERROR_VARIABLE_NAME_NULL, "");
+	j_goto_error_frontend(!schema->bson_initialized, JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND, "");
+	ret = bson_iter_init(&iter, &schema->bson);
+	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
+	count = bson_count_keys(&schema->bson) + 1;
+	*names = g_new(gchar const*, count);
+	*types = g_new(JSMDType, count);
+	i = 0;
+	while (bson_iter_next(&iter))
+	{
+		if (g_strcmp0(bson_iter_key(&iter), "_index"))
+		{
+			(*names)[i] = g_strdup(bson_iter_key(&iter));
+			(*types)[i] = bson_iter_int32(&iter);
+			i++;
+		}
+	}
+	(*names)[i] = NULL;
+	(*types)[i] = _J_SMD_TYPE_COUNT;
 	return TRUE;
 _error:
 	return FALSE;
 }
 gboolean
-j_smd_schema_add_index(JSMDSchema* schema, gchar const* name, GError** error)
+j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error)
 {
+	guint i;
+	bson_t bson;
+	const char* key;
+	char buf[20];
+	gchar const** name;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!names, JULEA_FRONTEND_ERROR_VARIABLE_NAME_NULL, "");
+	j_goto_error_frontend(!*names, JULEA_FRONTEND_ERROR_VARIABLE_NAME_NULL, "");
+	j_goto_error_frontend(schema->server_side, JULEA_FRONTEND_ERROR_SMD_BSON_SERVER, "");
+	if (!schema->bson_index_initialized)
+	{
+		bson_init(&schema->bson_index);
+		schema->bson_index_count = 0;
+		schema->bson_index_initialized = TRUE;
+	}
+	bson_uint32_to_string(schema->bson_index_count, &key, buf, sizeof(buf));
+	bson_append_array_begin(&schema->bson_index, key, -1, &bson);
+	i = 0;
+	name = names;
+	while (name)
+	{
+		if (*name)
+		{
+			bson_uint32_to_string(i, &key, buf, sizeof(buf));
+			bson_append_utf8(&bson, key, -1, *name, -1);
+			name++;
+		}
+		i++;
+	}
+	bson_append_array_end(&schema->bson_index, &bson);
+	schema->bson_index_count++;
 	return TRUE;
 _error:
 	return FALSE;
@@ -122,7 +186,18 @@ _error:
 gboolean
 j_smd_schema_create(JSMDSchema* schema, JBatch* batch, GError** error)
 {
+	gint ret;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
+	j_goto_error_frontend(schema->server_side, JULEA_FRONTEND_ERROR_SMD_BSON_SERVER, "");
+	j_goto_error_frontend(!schema->bson_initialized, JULEA_FRONTEND_ERROR_BSON_NOT_INITIALIZED, "");
+	if (schema->bson_index_initialized)
+	{
+		bson_append_array(&schema->bson, "_index", -1, &schema->bson_index);
+	}
+	schema->server_side = TRUE;
+	ret = j_smd_internal_schema_create(schema->namespace, schema->name, &schema->bson, batch, error);
+	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
 	return FALSE;
@@ -130,7 +205,14 @@ _error:
 gboolean
 j_smd_schema_get(JSMDSchema* schema, JBatch* batch, GError** error)
 {
+	gint ret;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
+	j_goto_error_frontend(schema->server_side, JULEA_FRONTEND_ERROR_SMD_BSON_SERVER, "");
+	j_goto_error_frontend(schema->bson_initialized, JULEA_FRONTEND_ERROR_BSON_INITIALIZED, "");
+	schema->server_side = TRUE;
+	ret = j_smd_internal_schema_get(schema->namespace, schema->name, &schema->bson, batch, error);
+	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
 	return FALSE;
@@ -138,7 +220,11 @@ _error:
 gboolean
 j_smd_schema_delete(JSMDSchema* schema, JBatch* batch, GError** error)
 {
+	gint ret;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
+	ret = j_smd_internal_schema_delete(schema->namespace, schema->name, batch, error);
+	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
 	return FALSE;

@@ -25,24 +25,28 @@
 
 struct JSMDSchema
 {
-	gchar const* namespace;
-	gchar const* name;
+	gchar* namespace;
+	gchar* name;
 	gboolean bson_initialized;
 	bson_t bson;
+	gboolean bson_index_initialized;
+	bson_t bson_index;
+	guint bson_index_count;
 	gint ref_count;
+	gboolean server_side;
 };
 typedef struct JSMDSchema JSMDSchema;
 
 JSMDSchema* j_smd_schema_new(gchar const* namespace, gchar const* name, GError** error);
 
 JSMDSchema* j_smd_schema_ref(JSMDSchema* schema, GError** error);
-void j_smd_schema_unref(JSMDSchema* schema, GError** error);
+void j_smd_schema_unref(JSMDSchema* schema);
 
 gboolean j_smd_schema_add_field(JSMDSchema* schema, gchar const* name, JSMDType type, GError** error);
 gboolean j_smd_schema_get_field(JSMDSchema* schema, gchar const* name, JSMDType* type, GError** error);
 guint32 j_smd_schema_get_all_fields(JSMDSchema* schema, gchar const*** names, JSMDType** types, GError** error);
 
-gboolean j_smd_schema_add_index(JSMDSchema* schema, gchar const* name, GError** error);
+gboolean j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error);
 
 gboolean j_smd_schema_create(JSMDSchema* schema, JBatch* batch, GError** error);
 gboolean j_smd_schema_get(JSMDSchema* schema, JBatch* batch, GError** error);
