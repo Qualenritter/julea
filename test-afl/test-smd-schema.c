@@ -292,6 +292,11 @@ event_schema_create_get(void)
 	case 5:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
+		k = 0;
+		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
+				k++;
+		ret_expected = ret_expected && k > 0;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
