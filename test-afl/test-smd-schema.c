@@ -226,6 +226,11 @@ event_schema_get_fields(void)
 		ret = j_smd_schema_get_all_fields(stored_schemas[random_values.schema_index], &names, NULL, &error);
 		break;
 	case 0:
+		k = 0;
+		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
+				k++;
+		ret_expected = ret_expected && k > 0;
 		ret = j_smd_schema_get_all_fields(stored_schemas[random_values.schema_index], &names, &types, &error);
 		if (ret_expected && ret)
 		{
@@ -254,10 +259,6 @@ event_schema_get_fields(void)
 			}
 			if (*types_cur != _J_SMD_TYPE_COUNT)
 				MYABORT();
-			k = 0;
-			for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
-				if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
-					k++;
 			if (i != k)
 				MYABORT();
 		}
@@ -277,6 +278,7 @@ event_schema_create_get(void)
 	JSMDSchema* schema = NULL;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	guint j, k;
 	gboolean ret;
 	gboolean bool_tmp;
 	gboolean ret_expected;
@@ -304,6 +306,11 @@ event_schema_create_get(void)
 	case 4:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
+		k = 0;
+		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
+				k++;
+		ret_expected = ret_expected && k > 0;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
@@ -317,6 +324,11 @@ event_schema_create_get(void)
 	case 3:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
+		k = 0;
+		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
+				k++;
+		ret_expected = ret_expected && k > 0;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
@@ -341,6 +353,11 @@ event_schema_create_get(void)
 	case 0:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
+		k = 0;
+		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
+				k++;
+		ret_expected = ret_expected && k > 0;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
