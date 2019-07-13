@@ -193,10 +193,13 @@ event_schema_get_field(void)
 		break;
 	case 0:
 		ret = j_smd_schema_get_field(stored_schemas[random_values.schema_index], varname_strbuf, &type, &error);
-		if (ret != (schema_field_types[random_values.schema_index][random_values.var_name] != _J_SMD_TYPE_COUNT))
-			MYABORT();
-		if (type != schema_field_types[random_values.schema_index][random_values.var_name])
-			MYABORT();
+		if (ret_expected && ret)
+		{
+			if (ret != (schema_field_types[random_values.schema_index][random_values.var_name] != _J_SMD_TYPE_COUNT))
+				MYABORT();
+			if (type != schema_field_types[random_values.schema_index][random_values.var_name])
+				MYABORT();
+		}
 		break;
 	default:
 		MYABORT();
@@ -229,37 +232,40 @@ event_schema_get_fields(void)
 		break;
 	case 0:
 		ret = j_smd_schema_get_all_fields(stored_schemas[random_values.schema_index], &names, &types, &error);
-		i = 0;
-		types_cur = types;
-		names_cur = names;
-		while (names_cur)
+		if (ret_expected && ret)
 		{
-			found = FALSE;
-			for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+			i = 0;
+			types_cur = types;
+			names_cur = names;
+			while (names_cur)
 			{
-				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, j);
-				if (!g_strcmp0(varname_strbuf, *names_cur))
+				found = FALSE;
+				for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
 				{
-					found = TRUE;
-					break;
+					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, j);
+					if (!g_strcmp0(varname_strbuf, *names_cur))
+					{
+						found = TRUE;
+						break;
+					}
 				}
+				if (!found)
+					MYABORT();
+				if (*types_cur != schema_field_types[random_values.schema_index][j])
+					MYABORT();
+				i++;
+				types_cur++;
+				names_cur++;
 			}
-			if (!found)
+			if (*types_cur != _J_SMD_TYPE_COUNT)
 				MYABORT();
-			if (*types_cur != schema_field_types[random_values.schema_index][j])
+			k = 0;
+			for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+				if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
+					k++;
+			if (i != k)
 				MYABORT();
-			i++;
-			types_cur++;
-			names_cur++;
 		}
-		if (*types_cur != _J_SMD_TYPE_COUNT)
-			MYABORT();
-		k = 0;
-		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
-			if (schema_field_types[random_values.schema_index][j] != _J_SMD_TYPE_COUNT)
-				k++;
-		if (i != k)
-			MYABORT();
 		break;
 	default:
 		MYABORT();
