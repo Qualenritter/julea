@@ -28,3 +28,4 @@ nohup.out
 log
 b
 x
+*.tmp-file

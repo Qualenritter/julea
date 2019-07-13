@@ -285,14 +285,12 @@ event_schema_create_get(void)
 	case 6:
 		mockup_should_fail = TRUE;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 5:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
 		{
@@ -300,7 +298,6 @@ event_schema_create_get(void)
 			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
 			mockup_should_fail = TRUE;
 			ret = j_smd_schema_get(schema, batch, &error);
-			ret = j_batch_execute(batch) && ret;
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		}
 		break;
@@ -308,14 +305,12 @@ event_schema_create_get(void)
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
 		{
 			schema = j_smd_schema_new(stored_schemas[random_values.schema_index]->namespace, stored_schemas[random_values.schema_index]->name, &error);
 			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
 			ret = j_smd_schema_get(NULL, batch, &error);
-			ret = j_batch_execute(batch) && ret;
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		}
 		break;
@@ -323,7 +318,6 @@ event_schema_create_get(void)
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
 		{
@@ -342,21 +336,18 @@ event_schema_create_get(void)
 	case 1:
 		mockup_should_fail = FALSE;
 		ret = j_smd_schema_create(NULL, batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_create(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret_expected && stored_schemas[random_values.schema_index])
 		{
 			schema = j_smd_schema_new(stored_schemas[random_values.schema_index]->namespace, stored_schemas[random_values.schema_index]->name, &error);
 			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
 			ret = j_smd_schema_get(schema, batch, &error);
-			ret = j_batch_execute(batch) && ret;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			ret = j_smd_schema_equals(schema, stored_schemas[random_values.schema_index], &bool_tmp, &error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
@@ -382,14 +373,12 @@ event_schema_delete(void)
 		mockup_should_fail = TRUE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_delete(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 2:
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_delete(NULL, batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 1:
@@ -402,7 +391,6 @@ event_schema_delete(void)
 		mockup_should_fail = FALSE;
 		ret_expected = stored_schemas[random_values.schema_index] != NULL;
 		ret = j_smd_schema_delete(stored_schemas[random_values.schema_index], batch, &error);
-		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
 	default:
@@ -451,7 +439,7 @@ main(int argc, char* argv[])
 			event_schema_new();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_REF:
-			J_DEBUG("AFL_EVENT_SMD_SCHEMA_REW %d", random_values.schema_index);
+			J_DEBUG("AFL_EVENT_SMD_SCHEMA_REF %d", random_values.schema_index);
 			event_schema_ref();
 			break;
 		case AFL_EVENT_SMD_SCHEMA_ADD_FIELD:
