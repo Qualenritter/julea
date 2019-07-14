@@ -994,21 +994,18 @@ event_schema_create(void)
 			ret_expected = FALSE; //duplicate variable names not allowed
 		}
 	}
+	ret_expected = !namespace_exist[random_values.namespace][random_values.name] && ret_expected;
 	J_AFL_DEBUG_BSON(bson);
 	ret = j_smd_internal_schema_create(namespace_strbuf, name_strbuf, bson, batch, &error);
 	ret = j_batch_execute(batch) && ret;
-	J_AFL_DEBUG_ERROR_NO_EXPECT(ret, error);
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
-		if (ret)
-			MYABORT();
 		if (bson)
 			bson_destroy(bson);
 	}
 	else
 	{
-		if (ret != ret_expected)
-			MYABORT();
 		if (ret)
 		{
 			namespace_exist[random_values.namespace][random_values.name] = TRUE;

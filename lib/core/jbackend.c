@@ -556,13 +556,17 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 		switch (element->type)
 		{
 		case J_SMD_PARAM_TYPE_STR:
+			J_DEBUG("str-len '%s' ?", element->ptr);
 			if (element->ptr)
 				element->len = strlen(element->ptr) + 1;
+			else
+				element->len = 0;
+			J_DEBUG("str-len %d !", element->len);
 			break;
 		case J_SMD_PARAM_TYPE_BLOB:
 			break;
 		case J_SMD_PARAM_TYPE_BSON:
-			if (element->bson_initialized)
+			if (element->bson_initialized && element->ptr)
 				element->len = ((bson_t*)element->ptr)->len;
 			else
 				element->len = 0;
@@ -590,6 +594,7 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 	for (i = 0; i < arrlen; i++)
 	{
 		element = &data[i];
+		J_DEBUG("len_send %d", element->len);
 		j_message_append_4(message, &element->len);
 		if (element->len)
 		{
@@ -598,10 +603,13 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 			case J_SMD_PARAM_TYPE_STR:
 			case J_SMD_PARAM_TYPE_BLOB:
 				if (element->ptr)
+				{
 					j_message_append_n(message, element->ptr, element->len);
+					J_DEBUG("str-append %s", element->ptr);
+				}
 				break;
 			case J_SMD_PARAM_TYPE_BSON:
-				if (element->bson_initialized)
+				if (element->bson_initialized && element->ptr)
 				{
 					j_message_append_n(message, bson_get_data(element->ptr), element->len);
 					bson_destroy(element->ptr);
@@ -653,6 +661,7 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
+		J_DEBUG("len_rec %d", len);
 		element = &data[i];
 		element->len = len;
 		if (len)
@@ -662,6 +671,7 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 			case J_SMD_PARAM_TYPE_STR:
 			case J_SMD_PARAM_TYPE_BLOB:
 				*(gchar**)element->ptr = g_strdup(j_message_get_n(message, len));
+				J_DEBUG("str_rec %s", *(gchar**)element->ptr);
 				break;
 			case J_SMD_PARAM_TYPE_BSON:
 				ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
@@ -719,6 +729,7 @@ j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* 
 	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
+		J_DEBUG("len_rec %d", len);
 		element = &data[i];
 		element->len = len;
 		element->ptr = NULL;
@@ -729,6 +740,7 @@ j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* 
 			case J_SMD_PARAM_TYPE_BLOB:
 			case J_SMD_PARAM_TYPE_STR:
 				element->ptr = j_message_get_n(message, len);
+				J_DEBUG("str_rec %s", element->ptr);
 				break;
 			case J_SMD_PARAM_TYPE_BSON:
 				element->ptr = &element->bson;
@@ -778,7 +790,10 @@ const JBackend_smd_operation_data j_smd_schema_create_params = {
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 	},
 	.out_param = {
 		{
@@ -802,7 +817,10 @@ const JBackend_smd_operation_data j_smd_schema_get_params = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 	},
 	.out_param = {
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };
@@ -838,7 +856,10 @@ const JBackend_smd_operation_data j_smd_insert_params = {
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 	},
 	.out_param = {
 		{ .type = J_SMD_PARAM_TYPE_ERROR },
@@ -858,8 +879,14 @@ const JBackend_smd_operation_data j_smd_update_params = {
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 	},
 	.out_param = {
 		{ .type = J_SMD_PARAM_TYPE_ERROR },
@@ -880,7 +907,10 @@ const JBackend_smd_operation_data j_smd_delete_params = {
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 	},
 	.out_param = {
 		{ .type = J_SMD_PARAM_TYPE_ERROR },
@@ -900,10 +930,16 @@ const JBackend_smd_operation_data j_smd_get_all_params = {
 	.in_param = {
 		{ .type = J_SMD_PARAM_TYPE_STR },
 		{ .type = J_SMD_PARAM_TYPE_STR },
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 	},
 	.out_param = {
-		{ .type = J_SMD_PARAM_TYPE_BSON },
+		{
+			.type = J_SMD_PARAM_TYPE_BSON,
+			.bson_initialized = TRUE,
+		},
 		{ .type = J_SMD_PARAM_TYPE_ERROR },
 	},
 };

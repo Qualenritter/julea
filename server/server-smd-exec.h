@@ -38,10 +38,13 @@
 				data.out_param[data.out_param_count - 1].ptr = &data.out_param[data.out_param_count - 1].bson;      \
 			}                                                                                                           \
 		}                                                                                                                   \
+		if (operation_count)                                                                                                \
+			j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);                          \
 		jd_smd_backend->smd.backend_batch_start(data.in_param[0].ptr, safety, &batch, &error);                              \
 		for (i = 0; i < operation_count; i++)                                                                               \
 		{                                                                                                                   \
-			j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);                          \
+			if (i)                                                                                                      \
+				j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count);                  \
 			if (error)                                                                                                  \
 				data.out_param[data.out_param_count - 1].error_ptr = g_error_copy(error);                           \
 			else                                                                                                        \

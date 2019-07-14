@@ -361,8 +361,7 @@ def configure(ctx):
 			'-Wswitch-enum',
 			'-Wundef',
 			'-Wuninitialized',
-			'-Wwrite-strings',
-			'-save-temps=obj'
+			'-Wwrite-strings'
 		])
 		check_and_add_cflags(ctx, '-fno-omit-frame-pointer')
 		check_and_add_cflags(ctx, '-ggdb')
