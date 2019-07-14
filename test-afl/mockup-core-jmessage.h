@@ -117,8 +117,8 @@ j_message_new_reply(JMessage* message_input)
 		J_DEBUG("MESSAGE reply %d", 1);
 		j_message_unref(message);
 		message = _j_message_new_reply(server_reply_mockup);
-		j_message_unref(server_reply_mockup);
 		message->operation_count = server_reply_mockup->operation_count;
+		j_message_unref(server_reply_mockup);
 		return message;
 	}
 	else /*avoid infinite loop*/
@@ -143,6 +143,7 @@ j_message_unref(JMessage* message)
 	if (message && g_atomic_int_dec_and_test(&message->ref_count))
 	{
 		g_byte_array_unref(message->data);
+		g_slice_free(JMessage, message);
 	}
 }
 gboolean
