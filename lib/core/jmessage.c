@@ -19,7 +19,8 @@
 /**
  * \file
  **/
-#ifndef JULEA_TEST_MOCKUP
+
+#define JMESSAGE_COMPILATION
 
 #include <julea-config.h>
 
@@ -38,9 +39,7 @@
 #include <jtrace-internal.h>
 
 #include <julea-internal.h>
-
-/**
- * \defgroup JMessage Message
+/** \defgroup JMessage Message
  *
  * @{
  **/
@@ -1075,7 +1074,6 @@ j_message_force_safety(JMessage* message, gint safety)
 
 	j_trace_leave(G_STRFUNC);
 }
-#endif
 /**
  * @}
  **/

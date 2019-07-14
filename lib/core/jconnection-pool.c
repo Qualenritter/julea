@@ -345,38 +345,42 @@ j_connection_pool_push_kv(guint index, GSocketConnection* connection)
 GSocketConnection*
 j_connection_pool_pop_smd(guint index)
 {
-#ifndef JULEA_TEST_MOCKUP
-	GSocketConnection* connection;
+	if (!JULEA_TEST_MOCKUP)
+	{
+		GSocketConnection* connection;
 
-	g_return_val_if_fail(j_connection_pool != NULL, NULL);
-	g_return_val_if_fail(index < j_connection_pool->smd_len, NULL);
+		g_return_val_if_fail(j_connection_pool != NULL, NULL);
+		g_return_val_if_fail(index < j_connection_pool->smd_len, NULL);
 
-	j_trace_enter(G_STRFUNC, NULL);
+		j_trace_enter(G_STRFUNC, NULL);
 
-	connection = j_connection_pool_pop_internal(j_connection_pool->smd_queues[index].queue, &(j_connection_pool->smd_queues[index].count), j_configuration_get_smd_server(j_connection_pool->configuration, index));
+		connection = j_connection_pool_pop_internal(j_connection_pool->smd_queues[index].queue, &(j_connection_pool->smd_queues[index].count), j_configuration_get_smd_server(j_connection_pool->configuration, index));
 
-	j_trace_leave(G_STRFUNC);
+		j_trace_leave(G_STRFUNC);
 
-	return connection;
-#else
-	return (void*)TRUE;
-#endif
+		return connection;
+	}
+	else
+	{
+		return (void*)TRUE;
+	}
 }
 
 void
 j_connection_pool_push_smd(guint index, GSocketConnection* connection)
 {
-#ifndef JULEA_TEST_MOCKUP
-	g_return_if_fail(j_connection_pool != NULL);
-	g_return_if_fail(index < j_connection_pool->smd_len);
-	g_return_if_fail(connection != NULL);
+	if (!JULEA_TEST_MOCKUP)
+	{
+		g_return_if_fail(j_connection_pool != NULL);
+		g_return_if_fail(index < j_connection_pool->smd_len);
+		g_return_if_fail(connection != NULL);
 
-	j_trace_enter(G_STRFUNC, NULL);
+		j_trace_enter(G_STRFUNC, NULL);
 
-	j_connection_pool_push_internal(j_connection_pool->smd_queues[index].queue, connection);
+		j_connection_pool_push_internal(j_connection_pool->smd_queues[index].queue, connection);
 
-	j_trace_leave(G_STRFUNC);
-#endif
+		j_trace_leave(G_STRFUNC);
+	}
 }
 
 /**

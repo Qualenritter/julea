@@ -377,6 +377,8 @@ def configure(ctx):
 
 	if ctx.options.testmockup:
 		ctx.define('JULEA_TEST_MOCKUP', 1)
+	else:
+		ctx.define('JULEA_TEST_MOCKUP', 0)
 
 	backend_paths = []
 
