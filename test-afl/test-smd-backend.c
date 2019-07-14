@@ -797,6 +797,7 @@ event_schema_get(void)
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bson_iter_t iter;
 	gboolean ret;
+	gboolean ret_expected;
 	bson_t bson;
 	guint i;
 	if (random_values.schema_create.invalid_bson_schema % 4)
@@ -822,9 +823,10 @@ event_schema_get(void)
 		default:;
 		}
 	}
+	ret_expected = namespace_exist[random_values.namespace][random_values.name];
 	ret = j_smd_internal_schema_get(namespace_strbuf, name_strbuf, &bson, batch, &error);
 	ret = j_batch_execute(batch) && ret;
-	J_AFL_DEBUG_ERROR_NO_EXPECT(ret, error);
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		if (ret)
@@ -851,13 +853,6 @@ event_schema_get(void)
 				}
 			}
 		}
-		else
-			MYABORT();
-	}
-	else
-	{
-		if (ret)
-			MYABORT();
 	}
 	if (ret)
 		bson_destroy(&bson);

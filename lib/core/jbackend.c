@@ -570,6 +570,7 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 				element->len = ((bson_t*)element->ptr)->len;
 			else
 				element->len = 0;
+			J_DEBUG("bson-len %d %p %d!", element->len, element->ptr, element->bson_initialized);
 			break;
 		case J_SMD_PARAM_TYPE_ERROR:
 			element->len = 4;
@@ -583,6 +584,7 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 					element->len += strlen((*error)->message) + 1;
 				}
 			}
+			J_DEBUG("error-len %d !", element->len);
 			break;
 		case _J_SMD_PARAM_TYPE_COUNT:
 		default:
@@ -676,6 +678,7 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 			case J_SMD_PARAM_TYPE_BSON:
 				ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
 				bson_copy_to(&element->bson, element->ptr);
+				J_DEBUG("bson_rec %p", element->ptr);
 				break;
 			case J_SMD_PARAM_TYPE_ERROR:
 				error = (GError**)element->ptr;
@@ -685,6 +688,7 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 					{
 						if (j_message_get_4(message))
 						{
+							J_DEBUG("error_rec %p", element->ptr);
 							ret = FALSE;
 							error_code = j_message_get_4(message);
 							error_message_len = j_message_get_4(message);
@@ -698,6 +702,7 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 					{
 						if (j_message_get_4(message))
 						{
+							J_DEBUG("error_rec %p", element->ptr);
 							ret = FALSE;
 							j_message_get_4(message);
 							error_message_len = j_message_get_4(message);
@@ -731,8 +736,8 @@ j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* 
 		len = j_message_get_4(message);
 		J_DEBUG("len_rec %d", len);
 		element = &data[i];
-		element->len = len;
 		element->ptr = NULL;
+		element->len = len;
 		if (len)
 		{
 			switch (element->type)
