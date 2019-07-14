@@ -246,18 +246,13 @@ j_smd_schema_equals(JSMDSchema* schema1, JSMDSchema* schema2, gboolean* equal, G
 	if (schema1 == schema2)
 	{
 		*equal = TRUE;
-		J_DEBUG("equal %d", *equal);
 	}
 	else
 	{
 		*equal = TRUE;
-		J_DEBUG("equal %d", *equal);
 		*equal = *equal && !g_strcmp0(schema1->namespace, schema2->namespace);
-		J_DEBUG("equal %d", *equal);
 		*equal = *equal && !g_strcmp0(schema1->name, schema2->name);
-		J_DEBUG("equal %d", *equal);
 		*equal = *equal && (schema1->bson_initialized == schema2->bson_initialized);
-		J_DEBUG("equal %d", *equal);
 		if (*equal && schema1->bson_initialized)
 		{
 			schema1_count = 0;
@@ -272,11 +267,9 @@ j_smd_schema_equals(JSMDSchema* schema1, JSMDSchema* schema2, gboolean* equal, G
 					j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
 					ret = bson_iter_find(&iter2, bson_iter_key(&iter1));
 					*equal = *equal && ret;
-					J_DEBUG("equal %d", *equal);
 					if (!*equal)
 						break;
 					*equal = *equal && bson_iter_int32(&iter1) == bson_iter_int32(&iter2);
-					J_DEBUG("equal %d", *equal);
 				}
 			ret = bson_iter_init(&iter2, &schema2->bson);
 			j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
@@ -284,7 +277,6 @@ j_smd_schema_equals(JSMDSchema* schema1, JSMDSchema* schema2, gboolean* equal, G
 				if (g_strcmp0(bson_iter_key(&iter2), "_index"))
 					schema2_count++;
 			*equal = *equal && schema1_count == schema2_count;
-			J_DEBUG("equal %d", *equal);
 		}
 	}
 	return TRUE;

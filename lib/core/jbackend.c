@@ -549,24 +549,19 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 	guint len = 0;
 	guint tmp;
 	GError** error;
-	J_DEBUG("j_backend_smd_message_from_data_start_count%d", 0);
 	for (i = 0; i < arrlen; i++)
 	{
-		J_DEBUG("j_backend_smd_message_from_data_loop%d", 0);
 		len += 4;
 		element = &data[i];
-		J_DEBUG("j_backend_smd_message_from_data_type%d", element->type);
 		switch (element->type)
 		{
 		case J_SMD_PARAM_TYPE_STR:
-			J_DEBUG("j_backend_smd_message_from_data_str%s", element->ptr);
 			if (element->ptr)
 				element->len = strlen(element->ptr) + 1;
 			break;
 		case J_SMD_PARAM_TYPE_BLOB:
 			break;
 		case J_SMD_PARAM_TYPE_BSON:
-			J_DEBUG("j_backend_smd_message_from_data_bson%d", element->bson_initialized);
 			if (element->bson_initialized)
 				element->len = ((bson_t*)element->ptr)->len;
 			else
@@ -575,14 +570,11 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 		case J_SMD_PARAM_TYPE_ERROR:
 			element->len = 4;
 			error = (GError**)element->ptr;
-			J_DEBUG("j_backend_smd_message_from_data_error%d", error != NULL);
 			if (error)
 			{
-				J_DEBUG("j_backend_smd_message_from_data_*error%d", *error != NULL);
 				element->len += 4;
 				if (*error)
 				{
-					J_DEBUG("j_backend_smd_message_from_data_error_msg%s", (*error)->message);
 					element->len += 4 + 4;
 					element->len += strlen((*error)->message) + 1;
 				}
@@ -594,13 +586,11 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 		}
 		len += element->len;
 	}
-	J_DEBUG("j_backend_smd_message_from_data_start_write%d", 0);
 	j_message_add_operation(message, len);
 	for (i = 0; i < arrlen; i++)
 	{
 		element = &data[i];
 		j_message_append_4(message, &element->len);
-		J_DEBUG("j_backend_smd_message_from_data_len%d", element->len);
 		if (element->len)
 		{
 			switch (element->type)
@@ -622,11 +612,9 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 				error = (GError**)element->ptr;
 				tmp = error != NULL;
 				j_message_append_4(message, &tmp);
-				J_DEBUG("j_backend_smd_message_from_data_error%d", error != NULL);
 				if (error)
 				{
 					tmp = *error != NULL;
-					J_DEBUG("j_backend_smd_message_from_data_*error%d", *error != NULL);
 					j_message_append_4(message, &tmp);
 					if (*error)
 					{
@@ -634,7 +622,6 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 						j_message_append_4(message, &tmp);
 						tmp = strlen((*error)->message) + 1;
 						j_message_append_4(message, &tmp);
-						J_DEBUG("j_backend_smd_message_from_data_error_msg%s", (*error)->message);
 						j_message_append_n(message, (*error)->message, tmp);
 						g_error_free(*error);
 						*error = NULL;
@@ -663,14 +650,11 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 	gint error_message_len;
 	GError** error;
 	gboolean ret = TRUE;
-	J_DEBUG("j_backend_smd_message_to_data_start %d", 0);
 	for (i = 0; i < arrlen; i++)
 	{
-		J_DEBUG("j_backend_smd_message_to_data_param %d", i);
 		len = j_message_get_4(message);
 		element = &data[i];
 		element->len = len;
-		J_DEBUG("j_backend_smd_message_to_data_param_len %d", len);
 		if (len)
 		{
 			switch (element->type)
@@ -687,13 +671,10 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 				error = (GError**)element->ptr;
 				if (error)
 				{
-					J_DEBUG("j_backend_smd_message_to_data_error %d", 0);
 					if (j_message_get_4(message))
 					{
-						J_DEBUG("j_backend_smd_message_to_data_error %d", 1);
 						if (j_message_get_4(message))
 						{
-							J_DEBUG("j_backend_smd_message_to_data_error %d", 2);
 							ret = FALSE;
 							error_code = j_message_get_4(message);
 							error_message_len = j_message_get_4(message);
@@ -703,13 +684,10 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 				}
 				else
 				{
-					J_DEBUG("j_backend_smd_message_to_data_error %d", 3);
 					if (j_message_get_4(message))
 					{
-						J_DEBUG("j_backend_smd_message_to_data_error %d", 4);
 						if (j_message_get_4(message))
 						{
-							J_DEBUG("j_backend_smd_message_to_data_error %d", 5);
 							ret = FALSE;
 							j_message_get_4(message);
 							error_message_len = j_message_get_4(message);
@@ -811,7 +789,6 @@ const JBackend_smd_operation_data j_smd_schema_create_params = {
 gboolean
 j_backend_smd_schema_create(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	J_DEBUG("called smd_backend_func%d", 0);
 	return backend->smd.backend_schema_create( //
 		batch, //
 		data->in_param[1].ptr,
@@ -832,7 +809,6 @@ const JBackend_smd_operation_data j_smd_schema_get_params = {
 gboolean
 j_backend_smd_schema_get(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	J_DEBUG("called smd_backend_func%d", 0);
 	return backend->smd.backend_schema_get( //
 		batch, //
 		data->in_param[1].ptr, //
@@ -852,7 +828,6 @@ const JBackend_smd_operation_data j_smd_schema_delete_params = {
 gboolean
 j_backend_smd_schema_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	J_DEBUG("called smd_backend_func%d", 0);
 	return backend->smd.backend_schema_delete( //
 		batch, //
 		data->in_param[1].ptr, data->out_param[0].ptr);
@@ -872,7 +847,6 @@ const JBackend_smd_operation_data j_smd_insert_params = {
 gboolean
 j_backend_smd_insert(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	J_DEBUG("called smd_backend_func%d", 0);
 	return backend->smd.backend_insert( //
 		batch, //
 		data->in_param[1].ptr, //
@@ -894,7 +868,6 @@ const JBackend_smd_operation_data j_smd_update_params = {
 gboolean
 j_backend_smd_update(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	J_DEBUG("called smd_backend_func%d", 0);
 	return backend->smd.backend_update( //
 		batch, //
 		data->in_param[1].ptr, //
@@ -916,7 +889,6 @@ const JBackend_smd_operation_data j_smd_delete_params = {
 gboolean
 j_backend_smd_delete(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data)
 {
-	J_DEBUG("called smd_backend_func%d", 0);
 	return backend->smd.backend_delete( //
 		batch, //
 		data->in_param[1].ptr, //
@@ -947,7 +919,6 @@ j_backend_smd_get_all(JBackend* backend, gpointer batch, JBackend_smd_operation_
 	bson_t* bson = data->out_param[0].ptr;
 	bson_t* tmp;
 	bson_init(bson);
-	J_DEBUG("called smd_backend_func%d", 0);
 	ret = backend->smd.backend_query( //
 		batch, //
 		data->in_param[1].ptr, //

@@ -87,42 +87,36 @@ static sqlite3* backend_db = NULL;
 	do                                                 \
 	{                                                  \
 		gint _ret_ = sqlite3_bind_null(stmt, idx); \
-		J_DEBUG("bind_null %d", idx);              \
 		j_sql_check(_ret_, SQLITE_OK);             \
 	} while (0)
-#define j_sql_bind_int64(stmt, idx, val)                                         \
-	do                                                                       \
-	{                                                                        \
-		gint _ret_ = sqlite3_bind_int64(stmt, idx, val);                 \
-		J_DEBUG("bind_int64 %d %lld", idx, (long long unsigned int)val); \
-		j_sql_check(_ret_, SQLITE_OK);                                   \
+#define j_sql_bind_int64(stmt, idx, val)                         \
+	do                                                       \
+	{                                                        \
+		gint _ret_ = sqlite3_bind_int64(stmt, idx, val); \
+		j_sql_check(_ret_, SQLITE_OK);                   \
 	} while (0)
-#define j_sql_bind_int(stmt, idx, val)                             \
-	do                                                         \
-	{                                                          \
-		gint _ret_ = sqlite3_bind_int(stmt, idx, val);     \
-		J_DEBUG("bind_int %d %d", idx, (unsigned int)val); \
-		j_sql_check(_ret_, SQLITE_OK);                     \
+#define j_sql_bind_int(stmt, idx, val)                         \
+	do                                                     \
+	{                                                      \
+		gint _ret_ = sqlite3_bind_int(stmt, idx, val); \
+		j_sql_check(_ret_, SQLITE_OK);                 \
 	} while (0)
 #define j_sql_bind_blob(stmt, idx, val, val_len)                               \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_blob(stmt, idx, val, val_len, NULL); \
-		J_DEBUG("bind_blob %d %p", idx, val);                          \
 		j_sql_check(_ret_, SQLITE_OK);                                 \
 	} while (0)
 #define j_sql_bind_double(stmt, idx, val)                         \
 	do                                                        \
 	{                                                         \
 		gint _ret_ = sqlite3_bind_double(stmt, idx, val); \
-		J_DEBUG("bind_double %d %f", idx, (double)val);   \
 		j_sql_check(_ret_, SQLITE_OK);                    \
 	} while (0)
 #define j_sql_bind_text(stmt, idx, val, val_len)                               \
 	do                                                                     \
 	{                                                                      \
 		gint _ret_ = sqlite3_bind_text(stmt, idx, val, val_len, NULL); \
-		J_DEBUG("bind_text %d %s", idx, (const char*)val);             \
 		j_sql_check(_ret_, SQLITE_OK);                                 \
 	} while (0)
 #define j_sql_prepare(sql, stmt)                                                                             \
