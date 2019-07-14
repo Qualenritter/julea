@@ -130,8 +130,8 @@ function julea_run(){
 julea_compile "afl-gcc" "--gcov" "" > log/compile1 2>&1
 julea_compile "afl-gcc" "--gcov --debug" "" > log/compile2 2>&1
 julea_compile "afl-gcc" "" "asan" > log/compile3 2>&1
-julea_compile "afl-gcc" "--testmockup" "" > log/compile4 2>&1
-julea_compile "afl-gcc" "--testmockup --debug" "" > log/compile5 2>&1
+julea_compile "afl-gcc" "--gcov --testmockup" "" > log/compile4 2>&1
+julea_compile "afl-gcc" "--gcov --testmockup --debug" "" > log/compile5 2>&1
 julea_compile "afl-clang-fast" "" "" > log/compile6 2>&1
 julea_compile "afl-clang-fast" "--debug" "" > log/compile7 2>&1
 julea_compile "afl-clang-fast" "--testmockup" "" > log/compile8 2>&1

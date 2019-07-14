@@ -666,7 +666,8 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 				break;
 			case J_SMD_PARAM_TYPE_BSON:
 				ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
-				bson_copy_to(&element->bson, element->ptr);
+				if (element->ptr)
+					bson_copy_to(&element->bson, element->ptr);
 				break;
 			case J_SMD_PARAM_TYPE_ERROR:
 				error = (GError**)element->ptr;
