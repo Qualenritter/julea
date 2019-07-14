@@ -60,7 +60,6 @@
 					}                                                                          \
 				}                                                                                  \
 			}                                                                                          \
-			J_DEBUG("call j_backend_smd_message_from_data%d", 0);                                      \
 			j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);              \
 			if (ret)                                                                                   \
 			{                                                                                          \
