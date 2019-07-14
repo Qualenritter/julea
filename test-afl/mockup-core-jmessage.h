@@ -39,7 +39,7 @@ struct JMessage
 	guint size_used;
 	JMessageType type;
 	gint ref_count;
-	gboolean client_size;
+	gboolean client_side;
 };
 static JMessage* server_reply_mockup;
 JMessage*
@@ -48,7 +48,7 @@ j_message_new(JMessageType type, gsize size)
 	JMessage* message;
 	message = g_slice_new(JMessage);
 	message->operation_count = 0;
-	message->client_size = TRUE;
+	message->client_side = TRUE;
 	message->type = type;
 	message->data = g_byte_array_new();
 	message->current = NULL;
@@ -66,6 +66,7 @@ _j_message_new_reply(JMessage* message)
 	reply = j_message_new(message->type, message->size_used);
 	j_message_append_n(reply, message->data->data, message->data->len);
 	reply->current = (gchar*)reply->data->data;
+	J_DEBUG("returned reply %p for message %p", reply, message);
 	return reply;
 }
 JMessage*
@@ -77,13 +78,12 @@ j_message_new_reply(JMessage* message_input)
 	guint i;
 	JSemanticsSafety safety = J_SEMANTICS_SAFETY_NONE;
 	JBackend* jd_smd_backend = j_smd_backend();
-	if (message_input->client_size)
+	myabort(!message_input);
+	J_DEBUG("client_side %d %p", message_input->client_side, message_input);
+	if (message_input->client_side)
 	{
-		/*
- this simulates the running server/server.c
-*/
 		message = _j_message_new_reply(message_input);
-		message->client_size = FALSE;
+		message->client_side = FALSE;
 		operation_count = message_input->operation_count;
 		switch (message->type)
 		{
@@ -113,23 +113,26 @@ j_message_new_reply(JMessage* message_input)
 			abort();
 		}
 		message = _j_message_new_reply(server_reply_mockup);
+		j_message_unref(server_reply_mockup);
 		message->operation_count = server_reply_mockup->operation_count;
 		return message;
 	}
 	else /*avoid infinite loop*/
-		return server_reply_mockup = _j_message_new_reply(message_input);
+		return server_reply_mockup = j_message_ref(_j_message_new_reply(message_input));
 }
 
 JMessage*
 j_message_ref(JMessage* message)
 {
 	myabort(!message);
+	J_DEBUG("messsage ref %p", message);
 	g_atomic_int_inc(&message->ref_count);
 	return message;
 }
 void
 j_message_unref(JMessage* message)
 {
+	J_DEBUG("messsage unref %p", message);
 	if (message && g_atomic_int_dec_and_test(&message->ref_count))
 	{
 		g_byte_array_unref(message->data);
@@ -154,7 +157,6 @@ gboolean
 j_message_append_n(JMessage* message, gconstpointer data, gsize size)
 {
 	myabort(!message);
-	myabort(message->current);
 	g_byte_array_append(message->data, data, size);
 	message->size_used += size;
 	myabort(message->size_used > message->size_requested);
@@ -203,9 +205,10 @@ j_message_get_n(JMessage* message, gsize size)
 gchar const*
 j_message_get_string(JMessage* message)
 {
-	myabort(!message);
-	gchar* ptr_end = (gchar*)message->data->data + message->data->len;
+	gchar* ptr_end;
 	gchar* ptr = message->current;
+	myabort(!message);
+	ptr_end = (gchar*)message->data->data + message->data->len;
 	while (ptr < ptr_end && *ptr)
 	{
 		ptr++;
@@ -231,7 +234,6 @@ void
 j_message_add_operation(JMessage* message, gsize size)
 {
 	myabort(!message);
-	myabort(message->current);
 	message->size_requested += size;
 	message->operation_count++;
 }

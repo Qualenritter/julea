@@ -78,8 +78,8 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 	(void)semantics;
 	gpointer batch = NULL;
 	GError* error = NULL;
-#endif
 	if (smd_backend == NULL)
+#endif
 		message = j_message_new(type, 0);
 	iter_send = j_list_iterator_new(operations);
 	while (j_list_iterator_next(iter_send))

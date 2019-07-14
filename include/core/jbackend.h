@@ -340,7 +340,19 @@ enum JBackend_smd_parameter_type
 typedef enum JBackend_smd_parameter_type JBackend_smd_parameter_type;
 struct JBackend_smd_operation
 {
-	bson_t bson; //only for temporary static storage
+	union
+	{ //only for temporary static storage
+		struct
+		{
+			gboolean bson_initialized;
+			bson_t bson;
+		};
+		struct
+		{
+			GError error;
+			GError* error_ptr;
+		};
+	};
 	union
 	{
 		gconstpointer ptr_const;

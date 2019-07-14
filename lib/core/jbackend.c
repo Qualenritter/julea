@@ -546,6 +546,8 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 	JBackend_smd_operation* element;
 	guint i;
 	guint len = 0;
+	guint tmp;
+	GError** error;
 	for (i = 0; i < arrlen; i++)
 	{
 		len += 4;
@@ -554,36 +556,80 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 		{
 		case J_SMD_PARAM_TYPE_STR:
 			if (element->ptr)
-			{
 				element->len = strlen(element->ptr) + 1;
-				len += element->len;
-			}
 			break;
 		case J_SMD_PARAM_TYPE_BLOB:
-			if (element->ptr)
-				len += element->len;
 			break;
 		case J_SMD_PARAM_TYPE_BSON:
-			if (element->ptr)
-			{
+			if (element->bson_initialized)
 				element->len = ((bson_t*)element->ptr)->len;
-				element->ptr_const = bson_get_data(element->ptr);
-				len += element->len;
+			break;
+		case J_SMD_PARAM_TYPE_ERROR:
+			element->len = 4;
+			error = (GError**)element->ptr;
+			if (error)
+			{
+				element->len += 4;
+				if (*error)
+				{
+					element->len += 4 + 4;
+					element->len += strlen((*error)->message) + 1;
+				}
 			}
 			break;
-		case J_SMD_PARAM_TYPE_ERROR: //TODO
 		case _J_SMD_PARAM_TYPE_COUNT:
 		default:
 			abort();
 		}
+		len += element->len;
 	}
 	j_message_add_operation(message, len);
 	for (i = 0; i < arrlen; i++)
 	{
 		element = &data[i];
 		j_message_append_4(message, &element->len);
-		if (element->ptr && element->len)
-			j_message_append_n(message, element->ptr, element->len);
+		if (element->len)
+		{
+			switch (element->type)
+			{
+			case J_SMD_PARAM_TYPE_STR:
+			case J_SMD_PARAM_TYPE_BLOB:
+				if (element->ptr)
+					j_message_append_n(message, element->ptr, element->len);
+				break;
+			case J_SMD_PARAM_TYPE_BSON:
+				if (element->bson_initialized)
+				{
+					j_message_append_n(message, bson_get_data(element->ptr), element->len);
+					bson_destroy(element->ptr);
+					element->bson_initialized = FALSE;
+				}
+				break;
+			case J_SMD_PARAM_TYPE_ERROR:
+				error = (GError**)element->ptr;
+				tmp = error != NULL;
+				j_message_append_4(message, &tmp);
+				if (error)
+				{
+					tmp = *error != NULL;
+					j_message_append_4(message, &tmp);
+					if (*error)
+					{
+						tmp = (*error)->code;
+						j_message_append_4(message, &tmp);
+						tmp = strlen((*error)->message) + 1;
+						j_message_append_4(message, &tmp);
+						j_message_append_n(message, (*error)->message, tmp);
+						g_error_free(*error);
+						*error = NULL;
+					}
+				}
+				break;
+			case _J_SMD_PARAM_TYPE_COUNT:
+			default:
+				abort();
+			}
+		}
 	}
 	return TRUE;
 }
@@ -594,26 +640,58 @@ j_backend_smd_message_to_data(JMessage* message, JBackend_smd_operation* data, g
 	JBackend_smd_operation* element;
 	guint i;
 	guint len;
+	gint error_code;
+	gint error_message_len;
+	GError** error;
 	gboolean ret = TRUE;
 	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
 		element = &data[i];
-		switch (element->type)
+		element->len = len;
+		if (len)
 		{
-		case J_SMD_PARAM_TYPE_STR:
-		case J_SMD_PARAM_TYPE_BLOB:
-			//this kind of parameter is never a return parameter
-			abort();
-		case J_SMD_PARAM_TYPE_BSON:
-			//only bsons are going to be recieved
-			ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
-			bson_copy_to(&element->bson, element->ptr);
-			break;
-		case J_SMD_PARAM_TYPE_ERROR: //TODO
-		case _J_SMD_PARAM_TYPE_COUNT:
-		default:
-			abort();
+			switch (element->type)
+			{
+			case J_SMD_PARAM_TYPE_STR:
+			case J_SMD_PARAM_TYPE_BLOB:
+				*(gchar**)element->ptr = g_strdup(j_message_get_n(message, len));
+				break;
+			case J_SMD_PARAM_TYPE_BSON:
+				ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
+				bson_copy_to(&element->bson, element->ptr);
+				break;
+			case J_SMD_PARAM_TYPE_ERROR:
+				error = (GError**)element->ptr;
+				if (error)
+				{
+					if (j_message_get_4(message))
+					{
+						if (j_message_get_4(message))
+						{
+							error_code = j_message_get_4(message);
+							error_message_len = j_message_get_4(message);
+							g_set_error_literal(error, JULEA_BACKEND_ERROR, error_code, j_message_get_n(message, error_message_len));
+						}
+					}
+				}
+				else
+				{
+					if (j_message_get_4(message))
+					{
+						if (j_message_get_4(message))
+						{
+							j_message_get_4(message);
+							error_message_len = j_message_get_4(message);
+							j_message_get_n(message, error_message_len);
+						}
+					}
+				}
+				break;
+			case _J_SMD_PARAM_TYPE_COUNT:
+			default:
+				abort();
+			}
 		}
 	}
 	return ret;
@@ -625,31 +703,44 @@ j_backend_smd_message_to_data_static(JMessage* message, JBackend_smd_operation* 
 	JBackend_smd_operation* element;
 	guint i;
 	guint len;
+	guint error_message_len;
 	gboolean ret = TRUE;
 	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
 		element = &data[i];
-		switch (element->type)
+		element->len = len;
+		element->ptr = NULL;
+		if (len)
 		{
-		case J_SMD_PARAM_TYPE_BLOB:
-		case J_SMD_PARAM_TYPE_STR:
-			if (len)
+			switch (element->type)
 			{
-				element->len = len;
+			case J_SMD_PARAM_TYPE_BLOB:
+			case J_SMD_PARAM_TYPE_STR:
 				element->ptr = j_message_get_n(message, len);
+				break;
+			case J_SMD_PARAM_TYPE_BSON:
+				element->ptr = &element->bson;
+				ret = bson_init_static(element->ptr, j_message_get_n(message, len), len) && ret;
+				break;
+			case J_SMD_PARAM_TYPE_ERROR:
+				if (j_message_get_4(message))
+				{
+					element->ptr = &element->error_ptr;
+					element->error_ptr = NULL;
+					if (j_message_get_4(message))
+					{
+						element->error_ptr = &element->error;
+						element->error.code = j_message_get_4(message);
+						error_message_len = j_message_get_4(message);
+						element->error.message = j_message_get_n(message, error_message_len);
+					}
+				}
+				break;
+			case _J_SMD_PARAM_TYPE_COUNT:
+			default:
+				abort();
 			}
-			else
-				element->ptr = NULL;
-			break;
-		case J_SMD_PARAM_TYPE_BSON:
-			element->ptr = &element->bson;
-			ret = bson_init_static(element->ptr, j_message_get_n(message, len), len) && ret;
-			break;
-		case J_SMD_PARAM_TYPE_ERROR: //TODO
-		case _J_SMD_PARAM_TYPE_COUNT:
-		default:
-			abort();
 		}
 	}
 	return ret;
@@ -678,7 +769,9 @@ const JBackend_smd_operation_data j_smd_schema_create_params = {
 		{ .type = J_SMD_PARAM_TYPE_BSON },
 	},
 	.out_param = {
-		{ .type = J_SMD_PARAM_TYPE_ERROR },
+		{
+			.type = J_SMD_PARAM_TYPE_ERROR,
+		},
 	},
 };
 gboolean
