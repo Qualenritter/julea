@@ -56,6 +56,7 @@ j_message_new(JMessageType type, gsize size)
 	message->size_requested = size;
 	message->size_used = 0;
 	message->ref_count = 1;
+	J_DEBUG("MESSAGE new %p", message);
 	return message;
 }
 JMessage*
@@ -67,6 +68,7 @@ _j_message_new_reply(JMessage* message)
 	reply = j_message_new(message->type, message->size_used);
 	j_message_append_n(reply, message->data->data, message->data->len);
 	reply->current = (gchar*)reply->data->data;
+	J_DEBUG("MESSAGE reply %p reply for %p", reply, message);
 	return reply;
 }
 JMessage*
@@ -81,6 +83,7 @@ j_message_new_reply(JMessage* message_input)
 	myabort(!message_input);
 	if (message_input->client_side)
 	{
+		J_DEBUG("MESSAGE reply %d", 0);
 		message = _j_message_new_reply(message_input);
 		message->client_side = FALSE;
 		operation_count = message_input->operation_count;
@@ -111,18 +114,24 @@ j_message_new_reply(JMessage* message_input)
 			J_CRITICAL("mockup only implemented for smd messages%d", 0);
 			abort();
 		}
+		J_DEBUG("MESSAGE reply %d", 1);
+		j_message_unref(message);
 		message = _j_message_new_reply(server_reply_mockup);
 		j_message_unref(server_reply_mockup);
 		message->operation_count = server_reply_mockup->operation_count;
 		return message;
 	}
 	else /*avoid infinite loop*/
+	{
+		J_DEBUG("MESSAGE reply %d", 2);
 		return server_reply_mockup = j_message_ref(j_message_new(message_input->type, 0));
+	}
 }
 
 JMessage*
 j_message_ref(JMessage* message)
 {
+	J_DEBUG("MESSAGE ref %p", message);
 	myabort(!message);
 	g_atomic_int_inc(&message->ref_count);
 	return message;
@@ -130,6 +139,7 @@ j_message_ref(JMessage* message)
 void
 j_message_unref(JMessage* message)
 {
+	J_DEBUG("MESSAGE unref %p", message);
 	if (message && g_atomic_int_dec_and_test(&message->ref_count))
 	{
 		g_byte_array_unref(message->data);

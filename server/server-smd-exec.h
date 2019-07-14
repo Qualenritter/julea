@@ -19,7 +19,7 @@
 	do                                                                                                                          \
 	{                                                                                                                           \
 		gint ret;                                                                                                           \
-		g_autoptr(JMessage) reply = NULL;                                                                                   \
+		JMessage* reply = NULL;                                                                                             \
 		gpointer batch = NULL;                                                                                              \
 		JBackend_smd_operation_data data;                                                                                   \
 		GError* error = NULL;                                                                                               \
@@ -63,4 +63,5 @@
 		j_message_send(reply, connection);                                                                                  \
 		if (error)                                                                                                          \
 			g_error_free(error);                                                                                        \
+		j_message_unref(reply);                                                                                             \
 	} while (0)
