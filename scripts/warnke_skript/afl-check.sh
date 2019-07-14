@@ -46,10 +46,10 @@ mkdir b/${g}
 		cp $f b/${g}/
 		exit 1
 	fi
-	mv x $j-${programname}.tmp-file
+	mv x $j-${programname}-$g.tmp-file
+done
+done
 	j=$(($j + 1))
-done
-done
 done
 
 exit

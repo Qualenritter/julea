@@ -69,22 +69,25 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 	JBackend_smd_operation_data* data = NULL;
 	gboolean ret = TRUE;
 	GSocketConnection* smd_connection;
-	JBackend* smd_backend = j_smd_backend();
 	g_autoptr(JListIterator) iter_send = NULL;
 	g_autoptr(JListIterator) iter_recieve = NULL;
 	g_autoptr(JMessage) message = NULL;
 	g_autoptr(JMessage) reply = NULL;
 #ifndef JULEA_TEST_MOCKUP
-	(void)semantics;
+	JBackend* smd_backend = j_smd_backend();
 	gpointer batch = NULL;
 	GError* error = NULL;
 	if (smd_backend == NULL)
+#else
+	(void)semantics;
 #endif
 		message = j_message_new(type, 0);
+	J_DEBUG("j_backend_smd_func_exec_start%d", 0);
 	iter_send = j_list_iterator_new(operations);
 	while (j_list_iterator_next(iter_send))
 	{
 		data = j_list_iterator_get(iter_send);
+		J_DEBUG("j_backend_smd_func_exec_loop%d", 0);
 #ifndef JULEA_TEST_MOCKUP
 		if (smd_backend != NULL)
 		{
@@ -99,11 +102,17 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 			if (data->out_param[data->out_param_count - 1].ptr && error)
 				*((void**)data->out_param[data->out_param_count - 1].ptr) = g_error_copy(error);
 			else
+			{
+				J_DEBUG("j_backend_smd_func_exec_call%d", 0);
 				ret = j_backend_smd_func_call(smd_backend, batch, data, type) && ret;
+			}
 		}
 		else
 #endif
+		{
+			J_DEBUG("j_backend_smd_func_exec_append%d", 0);
 			ret = j_backend_smd_message_from_data(message, data->in_param, data->in_param_count) && ret;
+		}
 	}
 #ifndef JULEA_TEST_MOCKUP
 	if (smd_backend != NULL)
@@ -119,17 +128,21 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 	else
 #endif
 	{
+		J_DEBUG("j_backend_smd_func_exec_before_send%d", 0);
 		smd_connection = j_connection_pool_pop_smd(0);
 		j_message_send(message, smd_connection);
 		reply = j_message_new_reply(message);
 		j_message_receive(reply, smd_connection);
+		J_DEBUG("j_backend_smd_func_exec_after_send%d", 0);
 		iter_recieve = j_list_iterator_new(operations);
 		while (j_list_iterator_next(iter_recieve))
 		{
 			data = j_list_iterator_get(iter_recieve);
+			J_DEBUG("j_backend_smd_func_exec_get_reply%d", 0);
 			ret = j_backend_smd_message_to_data(reply, data->out_param, data->out_param_count) && ret;
 		}
 		j_connection_pool_push_smd(0, smd_connection);
+		J_DEBUG("j_backend_smd_func_exec_finish_send%d", 0);
 	}
 	return ret;
 }
