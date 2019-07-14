@@ -614,7 +614,6 @@ j_backend_smd_message_from_data(JMessage* message, JBackend_smd_operation* data,
 				if (element->bson_initialized && element->ptr)
 				{
 					j_message_append_n(message, bson_get_data(element->ptr), element->len);
-					bson_destroy(element->ptr);
 					element->bson_initialized = FALSE;
 				}
 				break;

@@ -43,6 +43,7 @@
 		jd_smd_backend->smd.backend_batch_start(data.in_param[0].ptr, safety, &batch, &error);             \
 		for (i = 0; i < operation_count; i++)                                                              \
 		{                                                                                                  \
+			ret = FALSE;                                                                               \
 			if (i)                                                                                     \
 				j_backend_smd_message_to_data_static(message, data.in_param, data.in_param_count); \
 			if (error)                                                                                 \
@@ -61,6 +62,14 @@
 			}                                                                                          \
 			J_DEBUG("call j_backend_smd_message_from_data%d", 0);                                      \
 			j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);              \
+			if (ret)                                                                                   \
+			{                                                                                          \
+				for (i = 0; i < data.out_param_count; i++)                                         \
+				{                                                                                  \
+					if (data.out_param[i].type == J_SMD_PARAM_TYPE_BSON)                       \
+						bson_destroy(data.out_param[i].ptr);                               \
+				}                                                                                  \
+			}                                                                                          \
 		}                                                                                                  \
 		if (!error)                                                                                        \
 			jd_smd_backend->smd.backend_batch_execute(batch, &error);                                  \
