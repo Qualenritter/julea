@@ -91,7 +91,7 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 	JStatistics* statistics;
 	GInputStream* input;
 	guint64 memory_chunk_size;
-
+	JMessageType message_type;
 	(void)service;
 	(void)source_object;
 	(void)user_data;
@@ -120,8 +120,8 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		operation_count = j_message_get_count(message);
 		type_modifier = j_message_get_flags(message);
 		safety = jd_safety_message_to_semantics(type_modifier);
-
-		switch (j_message_get_type(message))
+		message_type = j_message_get_type(message);
+		switch (message_type)
 		{
 		case J_MESSAGE_NONE:
 			break;
@@ -608,29 +608,11 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
-		case J_MESSAGE_SMD_SCHEMA_CREATE:
-			smd_server_message_exec(schema_create);
-			break;
-		case J_MESSAGE_SMD_SCHEMA_GET:
-			smd_server_message_exec(schema_get);
-			break;
-		case J_MESSAGE_SMD_SCHEMA_DELETE:
-			smd_server_message_exec(schema_delete);
-			break;
-		case J_MESSAGE_SMD_INSERT:
-			smd_server_message_exec(insert);
-			break;
-		case J_MESSAGE_SMD_UPDATE:
-			smd_server_message_exec(update);
-			break;
-		case J_MESSAGE_SMD_DELETE:
-			smd_server_message_exec(delete);
-			break;
-		case J_MESSAGE_SMD_GET_ALL:
-			smd_server_message_exec(get_all);
-			break;
 		default:
-			g_warn_if_reached();
+			if (!smd_server_message_exec(message_type, message, operation_count, jd_smd_backend, safety, connection))
+			{
+				g_warn_if_reached();
+			}
 			break;
 		}
 	}

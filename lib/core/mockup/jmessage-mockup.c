@@ -59,7 +59,6 @@
 #define j_message_set_safety j_message_mockup_set_safety
 #define j_message_force_safety j_message_mockup_force_safety
 #endif
-#include "../../../server/server-smd-exec.h"
 #define myabort(val)                                         \
 	do                                                   \
 	{                                                    \
@@ -132,6 +131,7 @@ j_message_mockup_force_safety(JMessage* message, gint safety);
 static JMessage* server_reply_mockup;
 JMessage*
 _j_message_mockup_new_reply(JMessage* message);
+#include "../../../server/server-smd-exec.h"
 JMessage*
 j_message_mockup_new(JMessageType type, gsize size)
 {
@@ -164,7 +164,7 @@ j_message_mockup_new_reply(JMessage* message_input)
 	JMessage* message;
 	guint operation_count;
 	gpointer connection = (void*)TRUE;
-	guint i;
+	gint ret;
 	JSemanticsSafety safety = J_SEMANTICS_SAFETY_NONE;
 	JBackend* jd_smd_backend = j_smd_backend();
 	myabort(!message_input);
@@ -173,30 +173,9 @@ j_message_mockup_new_reply(JMessage* message_input)
 		message = _j_message_mockup_new_reply(message_input);
 		message->client_side = FALSE;
 		operation_count = message_input->operation_count;
-		switch (message->type)
+		ret = smd_server_message_exec(message->type, message, operation_count, jd_smd_backend, safety, connection);
+		if (!ret)
 		{
-		case J_MESSAGE_SMD_SCHEMA_CREATE:
-			smd_server_message_exec(schema_create);
-			break;
-		case J_MESSAGE_SMD_SCHEMA_GET:
-			smd_server_message_exec(schema_get);
-			break;
-		case J_MESSAGE_SMD_SCHEMA_DELETE:
-			smd_server_message_exec(schema_delete);
-			break;
-		case J_MESSAGE_SMD_INSERT:
-			smd_server_message_exec(insert);
-			break;
-		case J_MESSAGE_SMD_UPDATE:
-			smd_server_message_exec(update);
-			break;
-		case J_MESSAGE_SMD_DELETE:
-			smd_server_message_exec(delete);
-			break;
-		case J_MESSAGE_SMD_GET_ALL:
-			smd_server_message_exec(get_all);
-			break;
-		default:
 			J_CRITICAL("mockup only implemented for smd messages%d", 0);
 			abort();
 		}

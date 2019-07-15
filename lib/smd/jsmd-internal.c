@@ -41,29 +41,6 @@ struct J_smd_iterator_helper
 };
 typedef struct J_smd_iterator_helper J_smd_iterator_helper;
 static gboolean
-j_backend_smd_func_call(JBackend* backend, gpointer batch, JBackend_smd_operation_data* data, JMessageType type)
-{
-	switch (type)
-	{
-	case J_MESSAGE_SMD_SCHEMA_CREATE:
-		return j_backend_smd_schema_create(backend, batch, data);
-	case J_MESSAGE_SMD_SCHEMA_GET:
-		return j_backend_smd_schema_get(backend, batch, data);
-	case J_MESSAGE_SMD_SCHEMA_DELETE:
-		return j_backend_smd_schema_delete(backend, batch, data);
-	case J_MESSAGE_SMD_INSERT:
-		return j_backend_smd_insert(backend, batch, data);
-	case J_MESSAGE_SMD_UPDATE:
-		return j_backend_smd_update(backend, batch, data);
-	case J_MESSAGE_SMD_DELETE:
-		return j_backend_smd_delete(backend, batch, data);
-	case J_MESSAGE_SMD_GET_ALL:
-		return j_backend_smd_get_all(backend, batch, data);
-	default:
-		return FALSE;
-	}
-}
-static gboolean
 j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
 	JBackend_smd_operation_data* data = NULL;
@@ -95,7 +72,7 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 			if (data->out_param[data->out_param_count - 1].ptr && error)
 				*((void**)data->out_param[data->out_param_count - 1].ptr) = g_error_copy(error);
 			else
-				ret = j_backend_smd_func_call(smd_backend, batch, data, type) && ret;
+				ret = data->backend_func(smd_backend, batch, data) && ret;
 		}
 		else
 			ret = j_backend_smd_message_from_data(message, data->in_param, data->in_param_count) && ret;
