@@ -130,7 +130,7 @@ j_smd_entry_set_selector(JSMDEntry* entry, JSMDSelector* selector, GError** erro
 {
 	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_smd_selector_unref(entry->selector);
-	entry->selector = j_smd_selector_ref(selector,error);
+	entry->selector = j_smd_selector_ref(selector, error);
 	j_goto_error_subcommand(!entry->selector);
 	return TRUE;
 _error:
@@ -151,7 +151,8 @@ _error:
 gboolean
 j_smd_entry_update(JSMDEntry* entry, JBatch* batch, GError** error)
 {
-gint ret;	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
+	gint ret;
+	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
 	ret = j_smd_internal_update(entry->schema->namespace, entry->schema->name, &entry->selector->bson, &entry->bson, batch, error);
 	j_goto_error_subcommand(!ret);
@@ -161,7 +162,8 @@ _error:
 }
 gboolean
 j_smd_entry_delete(JSMDEntry* entry, JBatch* batch, GError** error)
-{gint ret;
+{
+	gint ret;
 	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
 	ret = j_smd_internal_delete(entry->schema->namespace, entry->schema->name, &entry->selector->bson, batch, error);

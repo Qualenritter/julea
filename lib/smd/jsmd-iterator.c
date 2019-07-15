@@ -35,7 +35,8 @@
 
 JSMDIterator*
 j_smd_iterator_new(JSMDSchema* schema, JSMDSelector* selector, JBatch* batch, GError** error)
-{guint ret;
+{
+	guint ret;
 	JSMDIterator* iterator = NULL;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
@@ -70,8 +71,8 @@ j_smd_iterator_unref(JSMDIterator* iterator)
 {
 	if (iterator && g_atomic_int_dec_and_test(&iterator->ref_count))
 	{
-		while(iterator->valid)
-			j_smd_iterator_next(iterator,NULL);
+		while (iterator->valid)
+			j_smd_iterator_next(iterator, NULL);
 		j_smd_schema_unref(iterator->schema);
 		j_smd_selector_unref(iterator->selector);
 		if (iterator->bson_valid)
@@ -81,7 +82,8 @@ j_smd_iterator_unref(JSMDIterator* iterator)
 }
 gboolean
 j_smd_iterator_next(JSMDIterator* iterator, GError** error)
-{guint ret;
+{
+	guint ret;
 	j_goto_error_frontend(!iterator, JULEA_FRONTEND_ERROR_ITERATOR_NULL, "");
 	j_goto_error_frontend(!iterator->valid, JULEA_FRONTEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
 	if (iterator->bson_valid)

@@ -150,7 +150,8 @@ _error:
 gboolean
 j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error)
 {
-	guint i;guint ret;
+	guint i;
+	guint ret;
 	bson_t bson;
 	const char* key;
 	char buf[20];
