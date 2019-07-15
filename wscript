@@ -325,8 +325,12 @@ def configure(ctx):
 
 	if ctx.options.gcov:
 		ctx.check_cc(
-			cflags=['-fprofile-arcs', '-ftest-coverage'],
-			ldflags=['-lgcov', '--coverage'],
+			cflags=['-fprofile-arcs',
+				'-ftest-coverage'
+			],
+			ldflags=['-lgcov',
+				'--coverage'
+			],
 			uselib_store='GCOV',
 			mandatory=False
 		)
