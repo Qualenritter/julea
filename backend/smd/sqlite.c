@@ -21,7 +21,7 @@
 #include <gmodule.h>
 #include <julea.h>
 #include <julea-internal.h>
-#include <julea-smd-internal.h>
+#include <smd/jsmd-internal.h>
 #include <core/jbackend.h>
 /*
 * this file defines makros such that the generic-sql.h implementation can call the sqlite specific functions without knowing, that it is actually sqlite

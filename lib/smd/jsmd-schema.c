@@ -30,8 +30,8 @@
 
 #include <julea.h>
 #include <julea-internal.h>
-#include <julea-smd-internal.h>
-#include <julea-smd-schema.h>
+#include <smd/jsmd-internal.h>
+#include <julea-smd.h>
 
 JSMDSchema*
 j_smd_schema_new(gchar const* namespace, gchar const* name, GError** error)

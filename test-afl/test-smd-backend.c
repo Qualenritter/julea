@@ -23,8 +23,9 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <julea.h>
-#include <julea-smd-internal.h>
+#include <smd/jsmd-internal.h>
 #include <julea-internal.h>
+#include <julea-smd.h>
 #include "afl.h"
 
 //configure here->

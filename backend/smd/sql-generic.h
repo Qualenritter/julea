@@ -18,6 +18,7 @@
 #ifndef SQL_GENERIC_BACKEND_H
 #define SQL_GENERIC_BACKEND_H
 #include <core/jerror.h>
+#include <julea-smd.h>
 /*
  * this file does not care which sql-database is actually in use, and uses only defines sql-syntax to allow fast and easy implementations for any new sql-database backend
 */

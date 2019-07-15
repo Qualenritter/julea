@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <julea.h>
-#include <julea-smd-schema.h>
+#include <julea-smd.h>
 #include <julea-internal.h>
 #include "afl.h"
 

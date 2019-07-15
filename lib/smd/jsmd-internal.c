@@ -28,7 +28,7 @@
 
 #include <bson.h>
 
-#include <julea-smd-internal.h>
+#include <smd/jsmd-internal.h>
 
 #include <julea.h>
 #include <julea-internal.h>

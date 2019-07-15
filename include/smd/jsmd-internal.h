@@ -22,7 +22,6 @@
 #include <glib.h>
 #include <bson.h>
 #include <julea.h>
-#include <julea-smd-type.h>
 
 gboolean j_smd_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error);
 gboolean j_smd_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error);
