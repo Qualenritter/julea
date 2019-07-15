@@ -34,24 +34,34 @@
 #include <julea-smd.h>
 
 JSMDSelector*
-j_smd_selector_new(JSMDSchema* schema)
+j_smd_selector_new(JSMDSchema* schema, GError** error)
 {
-	return TRUE;:_error:return FALSE;
+	JSMDSelector* selector;
+	selector = g_slice_new(JSMDSelector);
+	selector->ref_count = 1;
+	bson_init(&selector->bson);
+	selector->schema = j_smd_schema_ref(schema, error);
+	j_goto_error_subcommand(!selector->schema);
+	return selector;
+_error:
+	j_smd_selector_unref(selector);
+	return NULL;
 }
-
 JSMDSelector*
-j_smd_selector_ref(JSMDSelector* smd)
+j_smd_selector_ref(JSMDSelector* selector, GError** error)
 {
-	return TRUE;:_error:return FALSE;
+	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
+	g_atomic_int_inc(&selector->ref_count);
+	return selector;
+_error:
+	return FALSE;
 }
 void
-j_smd_selector_unref(JSMDSelector* smd)
+j_smd_selector_unref(JSMDSelector* selector)
 {
-	return TRUE;:_error:return FALSE;
-}
-
-gboolean
-j_smd_selector_equals(JSMDSelector* selector1, JSMDSelector* selector2, gboolean* equal, GError** error)
-{
-	return TRUE;:_error:return FALSE;
+	if (selector && g_atomic_int_dec_and_test(&selector->ref_count))
+	{
+		bson_destroy(&selector->bson);
+		g_slice_free(JSMDSelector, selector);
+	}
 }

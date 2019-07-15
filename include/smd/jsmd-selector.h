@@ -27,16 +27,17 @@
 
 struct JSMDSelector
 {
+	JSMDSchema* schema;
+	gint ref_count;
+	bson_t bson;
 };
 typedef struct JSMDSelector JSMDSelector;
 
-JSMDSelector* j_smd_selector_new(JSMDSchema* schema);
+JSMDSelector* j_smd_selector_new(JSMDSchema* schema, GError** error);
 
-JSMDSelector* j_smd_selector_ref(JSMDSelector* smd);
-void j_smd_selector_unref(JSMDSelector* smd);
+JSMDSelector* j_smd_selector_ref(JSMDSelector* selector, GError** error);
+void j_smd_selector_unref(JSMDSelector* selector);
 
 //TODO the functions here
-
-gboolean j_smd_selector_equals(JSMDSelector* selector1, JSMDSelector* selector2, gboolean* equal, GError** error);
 
 #endif

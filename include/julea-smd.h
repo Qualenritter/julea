@@ -21,5 +21,8 @@
 
 #include <smd/jsmd-type.h>
 #include <smd/jsmd-schema.h>
+#include <smd/jsmd-selector.h>
+#include <smd/jsmd-iterator.h>
+#include <smd/jsmd-entry.h>
 
 #endif

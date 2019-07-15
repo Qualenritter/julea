@@ -24,25 +24,28 @@
 #include <julea.h>
 #include <smd/jsmd-type.h>
 #include <smd/jsmd-selector.h>
+#include <smd/jsmd-schema.h>
 
 struct JSMDEntry
 {
+	gint ref_count;
+	JSMDSchema* schema;
+	JSMDSelector* selector;
+	bson_t bson;
 };
 typedef struct JSMDEntry JSMDEntry;
 
-JSMDEntry* j_smd_entry_new(gchar const* namespace, gchar const* name, GError** error);
+JSMDEntry* j_smd_entry_new(JSMDSchema* schema, GError** error);
 
-JSMDEntry* j_smd_entry_ref(JSMDEntry* smd, GError** error);
-void j_smd_entry_unref(JSMDEntry* smd);
+JSMDEntry* j_smd_entry_ref(JSMDEntry* entry, GError** error);
+void j_smd_entry_unref(JSMDEntry* entry);
 
-gboolean j_smd_entry_set_field(JSMDEntry* smd, gchar const* name, gconstpointer value, guint64 length, GError** error);
+gboolean j_smd_entry_set_field(JSMDEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error);
 
-gboolean j_smd_entry_set_selector(JSMDEntry* smd, JSMDSelector* selector, GError** error);
+gboolean j_smd_entry_set_selector(JSMDEntry* entry, JSMDSelector* selector, GError** error);
 
-gboolean j_smd_entry_insert(JSMDEntry* smd, JBatch* batch, GError** error);
-gboolean j_smd_entry_update(JSMDEntry* smd, JBatch* batch, GError** error);
-gboolean j_smd_entry_delete(JSMDEntry* smd, JBatch* batch, GError** error);
-
-gboolean j_smd_entry_equals(JSMDEntry* entry1, JSMDEntry* entry2, gboolean* equal, GError** error);
+gboolean j_smd_entry_insert(JSMDEntry* entry, JBatch* batch, GError** error);
+gboolean j_smd_entry_update(JSMDEntry* entry, JBatch* batch, GError** error);
+gboolean j_smd_entry_delete(JSMDEntry* entry, JBatch* batch, GError** error);
 
 #endif

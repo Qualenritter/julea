@@ -136,14 +136,14 @@ struct JSqlBatch
 	const gchar* namespace;
 };
 typedef struct JSqlBatch JSqlBatch;
-struct JSMDIterator
+struct JSqlIterator
 {
 	char* namespace;
 	char* name;
 	GArray* arr;
 	guint index;
 };
-typedef struct JSMDIterator JSMDIterator;
+typedef struct JSqlIterator JSqlIterator;
 static JSqlCacheNamespaces* cacheNamespaces = NULL;
 static j_sql_statement_type stmt_schema_structure_create = NULL;
 static j_sql_statement_type stmt_schema_structure_get = NULL;
@@ -155,9 +155,9 @@ static j_sql_statement_type stmt_transaction_commit = NULL;
 #define j_sql_transaction_commit() j_sql_step_and_reset_check_done(stmt_transaction_commit)
 #define j_sql_transaction_abort() j_sql_step_and_reset_check_done(stmt_transaction_abort)
 static void
-freeJSMDIterator(gpointer ptr)
+freeJSqlIterator(gpointer ptr)
 {
-	JSMDIterator* iter = ptr;
+	JSqlIterator* iter = ptr;
 	if (ptr)
 	{
 		g_free(iter->namespace);
@@ -785,9 +785,9 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	guint variables_count;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
-	JSMDIterator* iteratorOut;
+	JSqlIterator* iteratorOut;
 	*iterator = NULL;
-	iteratorOut = g_new(JSMDIterator, 1);
+	iteratorOut = g_new(JSqlIterator, 1);
 	iteratorOut->namespace = g_strdup(batch->namespace);
 	iteratorOut->name = g_strdup(name);
 	iteratorOut->index = 0;
@@ -836,7 +836,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	return TRUE;
 _error:
 	g_string_free(sql, TRUE);
-	freeJSMDIterator(iteratorOut);
+	freeJSqlIterator(iteratorOut);
 	return FALSE;
 }
 static gboolean
@@ -847,7 +847,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	JSqlBatch* batch = _batch;
 	guint count;
 	bson_type_t type;
-	JSMDIterator* iterator = NULL;
+	JSqlIterator* iterator = NULL;
 	bson_iter_t iter;
 	guint index;
 	gint ret;
@@ -963,7 +963,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 			bson_destroy(schema);
 		g_free(schema);
 	}
-	freeJSMDIterator(iterator);
+	freeJSqlIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
@@ -973,7 +973,7 @@ _error:
 			bson_destroy(schema);
 		g_free(schema);
 	}
-	freeJSMDIterator(iterator);
+	freeJSqlIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
 }
@@ -981,7 +981,7 @@ static gboolean
 backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GError** error)
 {
 	JSqlBatch* batch = _batch;
-	JSMDIterator* iterator = NULL;
+	JSqlIterator* iterator = NULL;
 	guint j;
 	gint ret;
 	JSqlCacheSQLPrepared* prepared = NULL;
@@ -1006,11 +1006,11 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 		j_sql_bind_int64(prepared->stmt, 1, g_array_index(iterator->arr, guint64, j));
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 	}
-	freeJSMDIterator(iterator);
+	freeJSqlIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
-	freeJSMDIterator(iterator);
+	freeJSqlIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
 }
@@ -1157,14 +1157,14 @@ backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 				break;
 			case J_SMD_TYPE_STRING:
 				ret = bson_append_utf8(metadata, name, -1, j_sql_column_text(prepared->stmt, i), -1);
-				j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "String");
+				j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "STRING");
 				break;
 			case J_SMD_TYPE_BLOB:
 				if (j_sql_column_blob(prepared->stmt, i) != NULL)
 					ret = bson_append_binary(metadata, name, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)j_sql_column_blob(prepared->stmt, i), j_sql_column_blob_len(prepared->stmt, i));
 				else
 					ret = bson_append_null(metadata, name, -1);
-				j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "Blob");
+				j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_APPEND_FAILED, "BLOB");
 				break;
 			case _J_SMD_TYPE_COUNT:
 			default:

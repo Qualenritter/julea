@@ -36,7 +36,7 @@
 JSMDSchema*
 j_smd_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
-	JSMDSchema* schema;
+	JSMDSchema* schema = NULL;
 	j_goto_error_frontend(!namespace, JULEA_FRONTEND_ERROR_NAMESPACE_NULL, "");
 	j_goto_error_frontend(!name, JULEA_FRONTEND_ERROR_NAME_NULL, "");
 	schema = g_slice_new(JSMDSchema);
@@ -150,7 +150,7 @@ _error:
 gboolean
 j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error)
 {
-	guint i;
+	guint i;guint ret;
 	bson_t bson;
 	const char* key;
 	char buf[20];
@@ -166,7 +166,8 @@ j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error)
 		schema->bson_index_initialized = TRUE;
 	}
 	bson_uint32_to_string(schema->bson_index_count, &key, buf, sizeof(buf));
-	bson_append_array_begin(&schema->bson_index, key, -1, &bson);
+	ret = bson_append_array_begin(&schema->bson_index, key, -1, &bson);
+	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
 	i = 0;
 	name = names;
 	while (name)
@@ -174,12 +175,14 @@ j_smd_schema_add_index(JSMDSchema* schema, gchar const** names, GError** error)
 		if (*name)
 		{
 			bson_uint32_to_string(i, &key, buf, sizeof(buf));
-			bson_append_utf8(&bson, key, -1, *name, -1);
+			ret = bson_append_utf8(&bson, key, -1, *name, -1);
+			j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
 			name++;
 		}
 		i++;
 	}
-	bson_append_array_end(&schema->bson_index, &bson);
+	ret = bson_append_array_end(&schema->bson_index, &bson);
+	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
 	schema->bson_index_count++;
 	return TRUE;
 _error:
@@ -195,7 +198,8 @@ j_smd_schema_create(JSMDSchema* schema, JBatch* batch, GError** error)
 	j_goto_error_frontend(!schema->bson_initialized, JULEA_FRONTEND_ERROR_BSON_NOT_INITIALIZED, "");
 	if (schema->bson_index_initialized)
 	{
-		bson_append_array(&schema->bson, "_index", -1, &schema->bson_index);
+		ret = bson_append_array(&schema->bson, "_index", -1, &schema->bson_index);
+		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
 	}
 	schema->server_side = TRUE;
 	ret = j_smd_internal_schema_create(schema->namespace, schema->name, &schema->bson, batch, error);

@@ -27,15 +27,21 @@
 
 struct JSMDIterator
 {
+	JSMDSchema* schema;
+	JSMDSelector* selector;
+	gpointer iterator;
+	gint ref_count;
+	gboolean valid;
+	gboolean bson_valid;
+	bson_t bson;
 };
 typedef struct JSMDIterator JSMDIterator;
 
-JSMDIterator* j_smd_iterator_new(JSMDSchema* schema, JSMDSelector* selector, GError** error);
-void j_smd_iterator_free(JSMDIterator* iterator, GError** error);
+JSMDIterator* j_smd_iterator_new(JSMDSchema* schema, JSMDSelector* selector, JBatch* batch, GError** error);
+JSMDIterator* j_smd_iterator_ref(JSMDIterator* iterator, GError** error);
+void j_smd_iterator_unref(JSMDIterator* iterator);
 
 gboolean j_smd_iterator_next(JSMDIterator* iterator, GError** error);
 gboolean j_smd_iterator_get_field(JSMDIterator* iterator, gchar const* name, JSMDType* type, gpointer* value, guint64* length, GError** error);
-
-gboolean j_smd_iterator_equals(JSMDIterator* iterator1, JSMDIterator* iterator2, gboolean* equal, GError** error);
 
 #endif
