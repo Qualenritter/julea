@@ -75,7 +75,9 @@ j_backend_smd_func_exec(JList* operations, JSemantics* semantics, JMessageType t
 				ret = data->backend_func(smd_backend, batch, data) && ret;
 		}
 		else
+		{
 			ret = j_backend_smd_message_from_data(message, data->in_param, data->in_param_count) && ret;
+		}
 	}
 	if (smd_backend != NULL && !JULEA_TEST_MOCKUP)
 	{

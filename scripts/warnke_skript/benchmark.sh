@@ -4,6 +4,7 @@ mount /mnt2
 ./scripts/warnke_skript/format.sh
 ./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh clean && ./waf.sh build && ./waf.sh install
 ./waf.sh configure --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh clean && ./waf.sh build && ./waf.sh install
+./waf.sh configure --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh clean && ./waf.sh build && ./waf.sh install
 thepath=$(pwd)
 rm -rf /mnt2/julea/*
 (
@@ -49,9 +50,35 @@ sleep 2
 		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../x 2>&1
 	r=$?
 	if [ $r -ne 0 ]; then
-                exit 1
-        fi
+		exit 1
+	fi
 )
+r=$?
+if [ $r -ne 0 ]; then
+	exit 1
+fi
+sleep 2
+(
+	mkdir -p benchmark_values/debug
+	cd benchmark_values/debug
+	export G_MESSAGES_DEBUG=all
+	export G_DEBUG=resident-modules,gc-friendly
+	export G_SLICE=always-malloc
+	export ASAN_OPTIONS=fast_unwind_on_malloc=0
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
+		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
+		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../x 2>&1
+	r=$?
+	if [ $r -ne 0 ]; then
+		exit 1
+	fi
+)
+r=$?
+if [ $r -ne 0 ]; then
+	exit 1
+fi
 sleep 2
 (
 	mkdir -p benchmark_values/debug

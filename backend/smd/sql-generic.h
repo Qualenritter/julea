@@ -459,6 +459,7 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 			json = j_sql_column_text(stmt_schema_structure_get, 0);
 			j_goto_error_backend(json == NULL, JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "");
 			j_goto_error_backend(!strlen(json), JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "");
+			J_DEBUG("json %s", json);
 			bson_init_from_json(schema, json, -1, NULL);
 		}
 		ret = TRUE;

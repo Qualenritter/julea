@@ -238,7 +238,7 @@ _benchmark_smd_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	const char* namespace = "namespace";
 	const char* name = "name";
 	guint array_length = 100;
-	JSMDEntry* entry;
+	JSMDEntry** entry;
 	JSMDSchema* schema;
 	guint i;
 	guint j;
@@ -249,6 +249,7 @@ _benchmark_smd_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	g_autoptr(JSemantics) semantics = NULL;
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
+	entry = g_new(JSMDEntry*, n);
 start:
 	schema = j_smd_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
@@ -258,7 +259,7 @@ start:
 		ret = j_smd_schema_add_field(schema, varname, J_SMD_TYPE_UINT32, ERROR_PARAM);
 		CHECK_ERROR(!ret);
 	}
-	ret = j_smd_schema_create(schema_array[i], batch, ERROR_PARAM);
+	ret = j_smd_schema_create(schema, batch, ERROR_PARAM);
 	CHECK_ERROR(!ret);
 	ret = j_batch_execute(batch);
 	CHECK_ERROR(!ret);
@@ -266,15 +267,15 @@ start:
 	j_benchmark_timer_start();
 	for (j = 0; j < n; j++)
 	{
-		entry = j_smd_entry_new(schema, ERROR_PARAM);
+		entry[j] = j_smd_entry_new(schema, ERROR_PARAM);
 		CHECK_ERROR(!entry);
 		for (i = 0; i < array_length; i++)
 		{
 			sprintf(varname, "varname_%d", i);
-			ret = j_smd_entry_set_field(entry, varname, &j, 4, ERROR_PARAM);
+			ret = j_smd_entry_set_field(entry[j], varname, &j, 4, ERROR_PARAM);
 			CHECK_ERROR(!ret);
 		}
-		ret = j_smd_entry_insert(entry, batch, ERROR_PARAM);
+		ret = j_smd_entry_insert(entry[j], batch, ERROR_PARAM);
 		CHECK_ERROR(!ret);
 		if (!use_batch)
 		{
@@ -293,10 +294,13 @@ start:
 	ret = j_batch_execute(batch);
 	CHECK_ERROR(!ret);
 	j_smd_schema_unref(schema);
+	for (j = 0; j < n; j++)
+		j_smd_entry_unref(entry[j]);
 	if (elapsed < target_time)
 		goto start;
 	result->elapsed_time = elapsed;
 	result->operations = n * m;
+	g_free(entry);
 }
 static void
 benchmark_smd_schema_create(BenchmarkResult* result)

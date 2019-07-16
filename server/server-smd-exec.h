@@ -19,6 +19,7 @@ gboolean
 smd_server_message_exec(JMessageType type, JMessage* message, guint operation_count, JBackend* jd_smd_backend, JSemanticsSafety safety, GSocketConnection* connection)
 {
 	guint i;
+	guint j;
 	gint ret;
 	JBackend_smd_operation_data data;
 	JMessage* reply = NULL;
@@ -51,17 +52,17 @@ smd_server_message_exec(JMessageType type, JMessage* message, guint operation_co
 	default:
 		return FALSE;
 	}
-	for (i = 0; i < data.out_param_count; i++)
+	for (j = 0; j < data.out_param_count; j++)
 	{
-		if (data.out_param[i].type == J_SMD_PARAM_TYPE_ERROR)
+		if (data.out_param[j].type == J_SMD_PARAM_TYPE_ERROR)
 		{
-			data.out_param[i].ptr = &data.out_param[i].error_ptr;
-			data.out_param[i].error_ptr = NULL;
+			data.out_param[j].ptr = &data.out_param[j].error_ptr;
+			data.out_param[j].error_ptr = NULL;
 		}
-		else if (data.out_param[i].type == J_SMD_PARAM_TYPE_BSON)
+		else if (data.out_param[j].type == J_SMD_PARAM_TYPE_BSON)
 		{
-			data.out_param[i].bson_initialized = FALSE;
-			data.out_param[i].ptr = &data.out_param[i].bson;
+			data.out_param[j].bson_initialized = FALSE;
+			data.out_param[j].ptr = &data.out_param[j].bson;
 		}
 	}
 	if (operation_count)
@@ -77,19 +78,19 @@ smd_server_message_exec(JMessageType type, JMessage* message, guint operation_co
 		else
 		{
 			ret = data.backend_func(jd_smd_backend, batch, &data);
-			for (i = 0; i < data.out_param_count; i++)
+			for (j = 0; j < data.out_param_count; j++)
 			{
-				if (ret && data.out_param[i].type == J_SMD_PARAM_TYPE_BSON)
-					data.out_param[i].bson_initialized = TRUE;
+				if (ret && data.out_param[j].type == J_SMD_PARAM_TYPE_BSON)
+					data.out_param[j].bson_initialized = TRUE;
 			}
 		}
 		j_backend_smd_message_from_data(reply, data.out_param, data.out_param_count);
 		if (ret)
 		{
-			for (i = 0; i < data.out_param_count; i++)
+			for (j = 0; j < data.out_param_count; j++)
 			{
-				if (data.out_param[i].type == J_SMD_PARAM_TYPE_BSON)
-					bson_destroy(data.out_param[i].ptr);
+				if (data.out_param[j].type == J_SMD_PARAM_TYPE_BSON)
+					bson_destroy(data.out_param[j].ptr);
 			}
 		}
 	}
