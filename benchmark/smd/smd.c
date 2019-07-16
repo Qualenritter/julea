@@ -21,6 +21,7 @@
  **/
 
 #include <julea-config.h>
+#include <math.h>
 #include <glib.h>
 #include <string.h>
 #include <julea-smd.h>
@@ -346,11 +347,11 @@ static void
 exec_tests()
 {
 	char testname[500];
-	if (n < 100000)
+	if (n <= 100000)
 	{
 		//tests with more than 100000 schema does not make sense
 		schema_array = g_new(JSMDSchema*, n);
-		if (n < 1000)
+		if (n <= 1000)
 		{
 			//not using batches with more than 1000 same functions does not make sense
 			sprintf(testname, "/smd/%d/schema/create", n);
@@ -368,7 +369,7 @@ exec_tests()
 		j_benchmark_run(testname, benchmark_smd_schema_delete_batch);
 		g_free(schema_array);
 	}
-	if (n < 1000)
+	if (n <= 1000)
 	{
 		//not using batches with more than 1000 same functions does not make sense
 		sprintf(testname, "/smd/%d/entry/insert", n);
@@ -378,41 +379,45 @@ exec_tests()
 	j_benchmark_run(testname, benchmark_smd_entry_insert_batch);
 }
 static void
-exec_tree(int depth, float min, float max)
+exec_tree(guint depth, gfloat min, gfloat max)
 {
 	//exec tests such that n increases exponentially
 	//exec tests in an ordering such that some huge and some small n are executed fast to gain a overview of the result before executing everything completely
-	float val = (max - min) * 0.5 + min;
-	if (depth == 0)
+	gfloat val = (max - min) * 0.5 + min;
+	guint imin = pow(min, 10.0);
+	guint imax = pow(max, 10.0);
+	guint ival = pow(val, 10.0);
+	if (ival != imin && ival != imax)
 	{
-		n = val;
-		exec_tests();
+		if (depth == 0)
+		{
+			n = ival;
+			exec_tests();
+		}
+		else
+		{
+			exec_tree(depth - 1, min, val);
+			exec_tree(depth - 1, val, max);
+		}
 	}
-	else
-	{
-		exec_tree(depth - 1, min, val);
-		exec_tree(depth - 1, val, max);
-	}
+}
+static void
+exec_tree1(guint depth, gfloat min, gfloat max)
+{
+	n = min;
+	exec_tests();
+	n = max;
+	exec_tests();
+	exec_tree(depth, pow(min, 1.0 / 10.0), pow(max, 1.0 / 10.0));
 }
 void
 benchmark_smd(void)
 {
 #ifdef JULEA_DEBUG
-	float min = 1;
-	float max = 5;
-	float steps = 0;
+	exec_tree1(0, 1, 5);
 #else
-	float min = 1;
-	float max = 1000000;
-	float steps = 5; //this exponentially " 2 ^ (steps + 1) " increases the amount of executed tests
-#endif
 	guint i;
-	//
-	n = min;
-	exec_tests();
-	//
-	n = max;
-	exec_tests();
-	for (i = 0; i < steps; i++)
-		exec_tree(i, min, max);
+	for (i = 0; i < 7; i++)
+		exec_tree1(i, 1, 10000000);
+#endif
 }

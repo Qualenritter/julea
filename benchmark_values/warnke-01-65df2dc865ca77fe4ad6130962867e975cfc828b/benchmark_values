@@ -68,4 +68,7 @@
 /smd/entry/insert-batch-50000:                     60.254 seconds (6639/s) [60.389 seconds]
 /smd/schema/create-batch-100000:                   447.378 seconds (224/s) [447.378 seconds]
 /smd/schema/get-batch-100000:                      61.001 seconds (36065/s) [61.606 seconds]
-/smd/schema/delete-batch-100000:                   
+/smd/schema/delete-batch-100000:                   443.808 seconds (225/s) [443.820 seconds]
+/smd/entry/insert-100000:                          74.110 seconds (5397/s) [74.217 seconds]
+/smd/entry/insert-batch-100000:                    60.349 seconds (6628/s) [60.471 seconds]
+/smd/schema/create-batch-1000000:                  
