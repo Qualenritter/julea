@@ -395,7 +395,6 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 3, json, -1);
 	j_sql_step_and_reset_check_done_constraint(stmt_schema_structure_create);
-	J_DEBUG("%s", sql->str);
 	j_sql_exec_or_error(sql->str, j_sql_done);
 	bson_free(json);
 	g_string_free(sql, TRUE);
@@ -459,7 +458,6 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 			json = j_sql_column_text(stmt_schema_structure_get, 0);
 			j_goto_error_backend(json == NULL, JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "");
 			j_goto_error_backend(!strlen(json), JULEA_BACKEND_ERROR_SCHEMA_NOT_FOUND, "");
-			J_DEBUG("json %s", json);
 			bson_init_from_json(schema, json, -1, NULL);
 		}
 		ret = TRUE;
@@ -469,7 +467,6 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 	return TRUE;
 _error:
 	j_sql_reset(stmt_schema_structure_get);
-	J_DEBUG("ret %d", FALSE);
 	return FALSE;
 }
 static gboolean
@@ -488,7 +485,6 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	j_sql_bind_text(stmt_schema_structure_delete, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_delete, 2, name, -1);
 	j_sql_step_and_reset_check_done(stmt_schema_structure_delete);
-	J_DEBUG("%s", sql->str);
 	j_sql_exec_or_error(sql->str, j_sql_done);
 	j_sql_transaction_commit();
 	g_string_free(sql, TRUE);
@@ -811,7 +807,6 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		j_goto_error_subcommand(!ret);
 		prepared->sql = g_string_new(sql->str);
 		prepared->variables_count = variables_count;
-		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
@@ -823,7 +818,6 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		ret = bind_selector_query(&iter, prepared, TRUE, &variables_count, error);
 		j_goto_error_subcommand(!ret);
 	}
-	J_DEBUG("%s", prepared->sql->str);
 	j_sql_loop(prepared->stmt, ret)
 	{
 		count++;
@@ -888,7 +882,6 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		prepared->variables_count++;
 		g_string_append_printf(prepared->sql, " WHERE _id = ?%d", prepared->variables_count);
 		g_hash_table_insert(prepared->variables_index, g_strdup("_id"), GINT_TO_POINTER(prepared->variables_count));
-		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
@@ -998,7 +991,6 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 1;
 		g_string_append_printf(prepared->sql, "DELETE FROM %s_%s WHERE _id = ?1", batch->namespace, name);
-		J_DEBUG("%s", prepared->sql->str);
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}

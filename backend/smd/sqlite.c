@@ -123,6 +123,7 @@ static sqlite3* backend_db = NULL;
 	do                                                                                                   \
 	{                                                                                                    \
 		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL); \
+		J_DEBUG("PREPARE SQL '%s'", sql);                                                            \
 		j_sql_check(_ret_, SQLITE_OK);                                                               \
 	} while (0)
 #define j_sql_finalize(stmt)                           \
