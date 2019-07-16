@@ -1,10 +1,11 @@
 umount /mnt2
 mount /mnt2
+rm -rf build* prefix*
 ./scripts/warnke_skript/kill.sh
 ./scripts/warnke_skript/format.sh
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh clean && ./waf.sh build && ./waf.sh install
-./waf.sh configure --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh clean && ./waf.sh build && ./waf.sh install
-./waf.sh configure --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh clean && ./waf.sh build && ./waf.sh install
+./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh build && ./waf.sh install
+./waf.sh configure --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh build && ./waf.sh install
+./waf.sh configure --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh build && ./waf.sh install
 thepath=$(pwd)
 rm -rf /mnt2/julea/*
 (
@@ -37,6 +38,7 @@ githash=$(git log --pretty=format:'%H' -n 1)
 )&
 sleep 2
 (
+	rm -rf benchmark_values/debug
 	mkdir -p benchmark_values/debug
 	cd benchmark_values/debug
 	export G_MESSAGES_DEBUG=all
@@ -59,6 +61,7 @@ if [ $r -ne 0 ]; then
 fi
 sleep 2
 (
+	rm -rf benchmark_values/debug
 	mkdir -p benchmark_values/debug
 	cd benchmark_values/debug
 	export G_MESSAGES_DEBUG=all
@@ -81,6 +84,7 @@ if [ $r -ne 0 ]; then
 fi
 sleep 2
 (
+	rm -rf benchmark_values/debug
 	mkdir -p benchmark_values/debug
 	cd benchmark_values/debug
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
@@ -89,6 +93,7 @@ sleep 2
 )
 sleep 2
 (
+	rm -rf benchmark_values/warnke-${githash}
 	mkdir -p benchmark_values/warnke-${githash}
 	cd benchmark_values/warnke-${githash}
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH

@@ -342,52 +342,77 @@ benchmark_smd_entry_insert_batch(BenchmarkResult* result)
 {
 	_benchmark_smd_entry_insert(result, TRUE);
 }
-void
-benchmark_smd(void)
+static void
+exec_tests()
 {
-	char cwd[PATH_MAX];
-	guint n_values[] = {
-		1, 5, //
-#ifndef JULEA_DEBUG
-		10, 50, //
-		100, 500, //
-		1000, 5000, //
-		10000,
-		50000, //
-		100000, //
-		1000000, //
-#endif
-	};
-	guint i;
-	guint res;
-	char* res2;
-	char testname[500 + PATH_MAX];
-	res2 = getcwd(cwd, sizeof(cwd));
-	for (i = 0; i < sizeof(n_values) / sizeof(*n_values); i++)
+	char testname[500];
+	if (n < 100000)
 	{
-		n = n_values[i];
+		//tests with more than 100000 schema does not make sense
 		schema_array = g_new(JSMDSchema*, n);
 		if (n < 1000)
 		{
-			sprintf(testname, "/smd/schema/create-%d", n);
+			//not using batches with more than 1000 same functions does not make sense
+			sprintf(testname, "/smd/%d/schema/create", n);
 			j_benchmark_run(testname, benchmark_smd_schema_create);
-			sprintf(testname, "/smd/schema/get-%d", n);
+			sprintf(testname, "/smd/%d/schema/get", n);
 			j_benchmark_run(testname, benchmark_smd_schema_get);
-			sprintf(testname, "/smd/schema/delete-%d", n);
+			sprintf(testname, "/smd/%d/schema/delete", n);
 			j_benchmark_run(testname, benchmark_smd_schema_delete);
 		}
-		sprintf(testname, "/smd/schema/create-batch-%d", n);
+		sprintf(testname, "/smd/%d/schema/create-batch", n);
 		j_benchmark_run(testname, benchmark_smd_schema_create_batch);
-		sprintf(testname, "/smd/schema/get-batch-%d", n);
+		sprintf(testname, "/smd/%d/schema/get-batch", n);
 		j_benchmark_run(testname, benchmark_smd_schema_get_batch);
-		sprintf(testname, "/smd/schema/delete-batch-%d", n);
+		sprintf(testname, "/smd/%d/schema/delete-batch", n);
 		j_benchmark_run(testname, benchmark_smd_schema_delete_batch);
 		g_free(schema_array);
-		sprintf(testname, "/smd/entry/insert-%d", n);
-		j_benchmark_run(testname, benchmark_smd_entry_insert);
-		sprintf(testname, "/smd/entry/insert-batch-%d", n);
-		j_benchmark_run(testname, benchmark_smd_entry_insert_batch);
 	}
-	(void)res;
-	(void)res2;
+	if (n < 1000)
+	{
+		//not using batches with more than 1000 same functions does not make sense
+		sprintf(testname, "/smd/%d/entry/insert", n);
+		j_benchmark_run(testname, benchmark_smd_entry_insert);
+	}
+	sprintf(testname, "/smd/%d/entry/insert-batch", n);
+	j_benchmark_run(testname, benchmark_smd_entry_insert_batch);
+}
+static void
+exec_tree(int depth, float min, float max)
+{
+	//exec tests such that n increases exponentially
+	//exec tests in an ordering such that some huge and some small n are executed fast to gain a overview of the result before executing everything completely
+	float val = (max - min) * 0.5 + min;
+	if (depth == 0)
+	{
+		n = val;
+		exec_tests();
+	}
+	else
+	{
+		exec_tree(depth - 1, min, val);
+		exec_tree(depth - 1, val, max);
+	}
+}
+void
+benchmark_smd(void)
+{
+#ifdef JULEA_DEBUG
+	float min = 1;
+	float max = 5;
+	float steps = 0;
+#else
+	float min = 1;
+	float max = 1000000;
+	float steps = 5; //this exponentially " 2 ^ (steps + 1) " increases the amount of executed tests
+#endif
+	guint i;
+	//
+	n = min;
+	exec_tests();
+	//
+	n = max;
+	exec_tests();
+	for (i = 0; i < steps; i++)
+		exec_tree(i, min, max);
 }
