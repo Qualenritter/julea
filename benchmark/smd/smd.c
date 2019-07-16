@@ -404,10 +404,13 @@ exec_tree(guint depth, gfloat min, gfloat max)
 static void
 exec_tree1(guint depth, gfloat min, gfloat max)
 {
-	n = min;
-	exec_tests();
-	n = max;
-	exec_tests();
+	if (depth == 0)
+	{
+		n = min;
+		exec_tests();
+		n = max;
+		exec_tests();
+	}
 	exec_tree(depth, pow(min, 1.0 / 10.0), pow(max, 1.0 / 10.0));
 }
 void
@@ -418,6 +421,6 @@ benchmark_smd(void)
 #else
 	guint i;
 	for (i = 0; i < 7; i++)
-		exec_tree1(i, 1, 10000000);
+		exec_tree1(i, 1, 1000000);
 #endif
 }
