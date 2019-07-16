@@ -2,24 +2,70 @@ umount /mnt2
 mount /mnt2
 ./scripts/warnke_skript/kill.sh
 ./scripts/warnke_skript/format.sh
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark
-# --debug --sanitize --hdf5=./dependencies/opt/spack/linux-ubuntu18.10-x86_64/gcc-8.3.0/hdf5-develop-qckzbb5gxnzeixlnhtgkq5mxvavegx4n
-./waf.sh clean
-./waf.sh build
-./waf.sh install
+./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh clean && ./waf.sh build && ./waf.sh install
+./waf.sh configure --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh clean && ./waf.sh build && ./waf.sh install
 thepath=$(pwd)
 rm -rf /mnt2/julea/*
-(export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH; export JULEA_CONFIG=~/.config/julea/julea-benchmark; ./build-gcc-benchmark/tools/julea-config --user \
-  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
-  --smd-servers="$(hostname)" \
-  --object-backend=posix --object-component=server --object-path=/mnt2/julea/object \
-  --kv-backend=sqlite --kv-component=server --kv-path=/mnt2/julea/kv \
-  --smd-backend=sqlite --smd-component=server --smd-path=/mnt2/julea/smd)
+(
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	./build-gcc-benchmark/tools/julea-config --user \
+		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
+		  --smd-servers="$(hostname)" \
+		  --object-backend=posix --object-component=server --object-path=/mnt2/julea/object-benchmark \
+		  --kv-backend=sqlite --kv-component=server --kv-path=/mnt2/julea/kv-benchmark \
+		  --smd-backend=sqlite --smd-component=server --smd-path=/mnt2/julea/smd-benchmark
+)
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
+(
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	./build-gcc-benchmark/tools/julea-config --user \
+		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
+		  --smd-servers="$(hostname)" \
+		  --object-backend=posix --object-component=client --object-path=/mnt2/julea/object-benchmark \
+		  --kv-backend=sqlite --kv-component=client --kv-path=/mnt2/julea/kv-benchmark \
+		  --smd-backend=sqlite --smd-component=client --smd-path=:memory:
+)
+mv ~/.config/julea/julea ~/.config/julea/julea-benchmark-debug
 githash=$(git log --pretty=format:'%H' -n 1)
-#rm -rf benchmark_values/warnke-${githash}
-#mkdir benchmark_values/warnke-${githash}
-(export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH; export JULEA_CONFIG=~/.config/julea/julea-benchmark; ./build-gcc-benchmark/server/julea-server )&
+(
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	./build-gcc-benchmark/server/julea-server
+)&
 sleep 2
-(cd benchmark_values/warnke-${githash}; export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH; export JULEA_CONFIG=~/.config/julea/julea-benchmark; ../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values)
+(
+	mkdir -p benchmark_values/debug
+	cd benchmark_values/debug
+	export G_MESSAGES_DEBUG=all
+	export G_DEBUG=resident-modules,gc-friendly
+	export G_SLICE=always-malloc
+	export ASAN_OPTIONS=fast_unwind_on_malloc=0
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
+		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
+		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../x 2>&1
+	r=$?
+	if [ $r -ne 0 ]; then
+                exit 1
+        fi
+)
+sleep 2
+(
+	mkdir -p benchmark_values/debug
+	cd benchmark_values/debug
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	../../build-gcc-benchmark-debug/benchmark/julea-benchmark
+)
+sleep 2
+(
+	mkdir -p benchmark_values/warnke-${githash}
+	cd benchmark_values/warnke-${githash}
+	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
+)
 ./scripts/warnke_skript/kill.sh

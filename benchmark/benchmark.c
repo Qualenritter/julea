@@ -191,6 +191,8 @@ main(int argc, char** argv)
 		g_print("name%selapsed%soperations%sbytes%stotal_elapsed\n", opt_machine_separator, opt_machine_separator, opt_machine_separator, opt_machine_separator);
 	}
 
+	benchmark_smd();
+	/*
 	// Core
 	benchmark_background_operation();
 	benchmark_cache();
@@ -219,6 +221,6 @@ main(int argc, char** argv)
 	g_free(opt_path);
 	g_free(opt_semantics);
 	g_free(opt_template);
-
+*/
 	return 0;
 }
