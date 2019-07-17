@@ -10,7 +10,7 @@ first_index=$1
 if [ -z "$first_index" ] ; then	first_index=9 ; fi
 afl_path="afl${first_index}"
 tmp_path="/mnt2/julea"
-${log_path}_path="${log_path}"
+log_path="log"
 mkdir -p ${log_path}
 
 function julea_run(){
@@ -65,17 +65,17 @@ function julea_run(){
 		export AFL_NO_AFFINITY=1
 		export AFL_SKIP_CRASHES=1
 		export JULEA_CONFIG=~/.config/julea/julea${index}
-		export GCOV_PREFIX=./${afl_path}/cov/fuzzer${index}
+		export GCOV_PREFIX=${afl_path}/cov/fuzzer${index}
 		export AFL_DONT_OPTIMIZE=1
 		export AFL_HARDEN=1
 		export PATH=~/afl:$PATH
 		export AFL_SKIP_CPUFREQ=1
-		mkdir -p ./${afl_path}/cov/fuzzer${index}/src/julea/
-		cp -r build-${name} ./${afl_path}/cov/fuzzer${index}/src/julea/
+		mkdir -p ${afl_path}/cov/fuzzer${index}/src/julea/
+		cp -r build-${name} ${afl_path}/cov/fuzzer${index}/src/julea/
 		for (( i=0; i < ${servercount}; i++ ))
 		do
-			mkdir -p ./${afl_path}/cov/server${index}-$i/src/julea/
-			cp -r build-${name} ./${afl_path}/cov/server${index}-$i/src/julea/
+			mkdir -p ${afl_path}/cov/server${index}-$i/src/julea/
+			cp -r build-${name} ${afl_path}/cov/server${index}-$i/src/julea/
 		done
 		mkdir -p ${afl_path}/out
 		for (( i=0; i < ${servercount}; i++ ))
@@ -86,7 +86,7 @@ function julea_run(){
 					--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="${tmp_path}/kv${index}-$i" \
 					--smd-servers="${servers}"    --smd-backend=sqlite   --smd-component="${component}"    --smd-path=":memory:"
 				eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}-$i"
-				export GCOV_PREFIX=./${afl_path}/cov/server${index}-$i
+				export GCOV_PREFIX=${afl_path}/cov/server${index}-$i
 				export JULEA_CONFIG=~/.config/julea/julea${index}-$i
 				echo ./build-${name}/server/julea-server --port=$((10000 + ${index} * 10 + $i))
 				     ./build-${name}/server/julea-server --port=$((10000 + ${index} * 10 + $i)) &
@@ -94,7 +94,7 @@ function julea_run(){
 		done
 		sleep 2s
 		echo "export JULEA_CONFIG=~/.config/julea/julea${index}"
-		for a in ./${afl_path}/start-files/*.bin; do
+		for a in ${afl_path}/start-files/*.bin; do
 			echo "cat $a | ./build-${name}/test-afl/${programname}"
 			      cat $a | ./build-${name}/test-afl/${programname}
 		done
@@ -110,12 +110,12 @@ function julea_run(){
 				)
 			fi
 		fi
-		afl-fuzz ${aflfuzzflags} fuzzer${index} -i ./${afl_path}/start-files -o ./${afl_path}/out ./build-${name}/test-afl/${programname}
+		afl-fuzz ${aflfuzzflags} fuzzer${index} -i ${afl_path}/start-files -o ${afl_path}/out ./build-${name}/test-afl/${programname}
 	)
 }
 
-cp test-afl/bin/* ./${afl_path}/start-files/
-c=$(ls -la ./${afl_path}/start-files/ | wc -l)
+cp test-afl/bin/* ${afl_path}/start-files/
+c=$(ls -la ${afl_path}/start-files/ | wc -l)
 if (( $c < 10 )); then
     i=0
     (
@@ -130,8 +130,8 @@ if (( $c < 10 )); then
                 eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
 		export LD_LIBRARY_PATH=prefix-${name}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
-		./build-${name}/test-afl/julea-test-afl-smd-backend ./afl
-		./build-${name}/test-afl/julea-test-afl-smd-schema ./afl
+		./build-${name}/test-afl/julea-test-afl-smd-backend ${afl_path}
+		./build-${name}/test-afl/julea-test-afl-smd-schema ${afl_path}
 	)
 fi
 i=${first_index};

@@ -21,7 +21,7 @@ waf-extras/*.pyc
 .waf-*/
 
 # AFL generated files
-afl
+afl*
 
 # Benchmarks temporary file
 nohup.out
