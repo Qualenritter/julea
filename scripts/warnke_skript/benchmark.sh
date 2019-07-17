@@ -99,5 +99,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
+	./scripts/warnke_skript/kill.sh
 )
+wait
 ./scripts/warnke_skript/kill.sh
