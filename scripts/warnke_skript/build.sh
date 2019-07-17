@@ -1,4 +1,5 @@
 #!/bin/bash
+cc_prefix=$1
 afl_path="afl${first_index}"
 tmp_path="/mnt2/julea"
 log_path="log"
@@ -13,14 +14,14 @@ function julea_compile(){
 		asan=$3
 		hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 		name=$(echo "${compiler}-${flags}" | sed "s/ /-/g" | sed "s/--/-/g" | sed "s/--/-/g")
-		export CC=${compiler}
+		export CC=${cc_prefix}${compiler}
+echo $CC
 		if [ "${asan}" = "asan" ]; then
 			export AFL_USE_ASAN=1
 			export ASAN_OPTIONS=abort_on_error=1,symbolize=0
 			flags="${flags} --debug"
 		name="${name}-asan"
 		fi
-		export PATH=~/afl:$PATH
 		./waf configure ${flags} --out build-${name} --prefix=prefix-${name} --libdir=prefix-${name} --bindir=prefix-${name} --destdir=prefix-${name} --hdf=${hdf}
 		./waf.sh build -j12
 		./waf.sh install -j12
