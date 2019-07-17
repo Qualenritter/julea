@@ -1,2 +1,2 @@
 #!/bin/bash
-./scripts/warnke_skript/build.sh "~/afl/"
+./scripts/warnke_skript/build.sh "/home/warnke/afl/"
