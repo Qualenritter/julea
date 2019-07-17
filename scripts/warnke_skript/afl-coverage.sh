@@ -1,3 +1,4 @@
+#!/bin/bash
 rm -rf afl/cov/coverage.info afl/cov/html*
 touch afl/cov/coverage.info
 

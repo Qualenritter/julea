@@ -1,3 +1,4 @@
+#!/bin/bash
 files=""
 files="${files} $(ls afl/out/*/crashes/* | grep -v README )"
 files="${files} $(ls afl/start-files/* | grep -v README )"

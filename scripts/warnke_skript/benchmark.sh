@@ -1,3 +1,4 @@
+#!/bin/bash
 umount /mnt2
 mount /mnt2
 rm -rf build* prefix*

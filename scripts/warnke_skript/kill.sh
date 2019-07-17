@@ -1,3 +1,4 @@
+#!/bin/bash
 pkill julea-benchmark
 pkill julea-test*
 pkill julea-server

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 mkdir -p ${afl_path}/start-files
 
 # this may fail but improves afl speed

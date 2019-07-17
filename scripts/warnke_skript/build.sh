@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 afl_path="afl${first_index}"
 tmp_path="/mnt2/julea"
 log_path="log"
