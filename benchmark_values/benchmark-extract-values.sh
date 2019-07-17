@@ -42,9 +42,9 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [5000:*]
-set xlabel "#Datatypes" noenhanced
-set ylabel "operation/second" noenhanced
+set yrange [100:*]
+set xlabel "#Schema" noenhanced
+set ylabel "create/second" noenhanced
 EOF
 str=""
 for f in ${folders}; do
@@ -66,8 +66,8 @@ set logscale x
 set logscale y
 set key right outside
 set yrange [10000:*]
-set xlabel "#Datatypes" noenhanced
-set ylabel "operation/second" noenhanced
+set xlabel "#Schema" noenhanced
+set ylabel "get/second" noenhanced
 EOF
 str=""
 for f in ${folders}; do
@@ -88,9 +88,9 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [5000:*]
-set xlabel "#Datatypes" noenhanced
-set ylabel "operation/second" noenhanced
+set yrange [100:*]
+set xlabel "#Schema" noenhanced
+set ylabel "delete/second" noenhanced
 EOF
 str=""
 for f in ${folders}; do
@@ -111,8 +111,8 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [1000:*]
-set xlabel "#struct{int[100]}; in File" noenhanced
+set yrange [100:*]
+set xlabel "#entity{int[100]}" noenhanced
 set ylabel "int/second" noenhanced
 EOF
 str=""
