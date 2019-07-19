@@ -344,7 +344,7 @@ benchmark_db_entry_insert_batch(BenchmarkResult* result)
 	_benchmark_db_entry_insert(result, TRUE);
 }
 static void
-exec_tests()
+exec_tests(void)
 {
 	char testname[500];
 	if (n <= 100000)
@@ -383,10 +383,10 @@ exec_tree(guint depth, gfloat min, gfloat max)
 {
 	//exec tests such that n increases exponentially
 	//exec tests in an ordering such that some huge and some small n are executed fast to gain a overview of the result before executing everything completely
-	gfloat val = (max - min) * 0.5 + min;
-	guint imin = pow(min, 10.0);
-	guint imax = pow(max, 10.0);
-	guint ival = pow(val, 10.0);
+	gfloat val = (max - min) * 0.5f + min;
+	guint imin = pow(min, 10.0f);
+	guint imax = pow(max, 10.0f);
+	guint ival = pow(val, 10.0f);
 	if (ival != imin && ival != imax)
 	{
 		if (depth == 0)
@@ -411,7 +411,7 @@ exec_tree1(guint depth, gfloat min, gfloat max)
 		n = max;
 		exec_tests();
 	}
-	exec_tree(depth, pow(min, 1.0 / 10.0), pow(max, 1.0 / 10.0));
+	exec_tree(depth, pow(min, 1.0f / 10.0f), pow(max, 1.0f / 10.0f));
 }
 void
 benchmark_db(void)

@@ -4,13 +4,8 @@ event_entry_new(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
-	if (the_stored_entry_synced)
-	{
-		//TODO delete in backend
-		the_stored_entry_synced = FALSE;
-	}
-	if (the_stored_entry)
-		j_db_entry_unref(the_stored_entry);
+	j_db_entry_unref(the_stored_entry);
+	the_stored_entry_field_count = 0;
 	switch (random_values.invalid_switch % 2)
 	{
 	case 1: //schema NULL
@@ -65,6 +60,7 @@ event_entry_set_field(void)
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	switch (random_values.invalid_switch % 1)
 	{
+		//TODO NULL - parameter
 	case 0:
 		//TODO verify set field effect
 		type = random_values.var_type;
@@ -102,13 +98,7 @@ event_entry_set_field(void)
 			break;
 		case J_DB_TYPE_STRING:
 		case J_DB_TYPE_BLOB:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
-			J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
-			J_DEBUG("%p", varname_strbuf);
-			J_DEBUG("%p", varvalue_strbuf);
-			J_DEBUG("%p", error);
-			J_DEBUG("%p", the_stored_entry);
 			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			break;
@@ -128,15 +118,33 @@ event_entry_set_field(void)
 static void
 event_entry_insert(void)
 {
-	//TODO
+	JBatch* batch;
+	GError* error = NULL;
+	guint ret;
+	guint ret_expected;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	ret_expected = the_stored_entry != NULL;
+	ret_expected = ret_expected && the_stored_entry_field_count;
+	switch (random_values.invalid_switch % 1)
+	{
+	//TODO NULL - parameter
+	case 0:
+		ret = j_db_entry_insert(the_stored_entry, batch, &error);
+		ret = j_batch_execute(batch) && ret;
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	default:
+		MYABORT();
+	}
+	j_batch_unref(batch);
 }
 static void
 event_entry_update(void)
 {
-	//TODO
+	//TODO event_entry_update
 }
 static void
 event_entry_delete(void)
 {
-	//TODO
+	//TODO event_entry_delete
 }

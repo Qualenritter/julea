@@ -219,7 +219,7 @@ event_schema_get_fields(void)
 static void
 event_schema_add_index(void)
 {
-	//TODO test index function
+	//TODO event_schema_add_index
 }
 static void
 event_schema_create(void)
@@ -308,6 +308,7 @@ event_schema_get(void)
 static void
 event_schema_delete(void)
 {
+	//TODO schema delete invalidates all entrys iterators and selectors
 	gboolean ret_expected;
 	gboolean ret;
 	GError* error = NULL;

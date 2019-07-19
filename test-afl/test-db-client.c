@@ -33,6 +33,8 @@
 #define AFL_VARNAME_FORMAT "varname_%d"
 #define AFL_VARVALUE_FORMAT "value_%d"
 #define AFL_LIMIT_ENTRY 4
+#define AFL_LIMIT_SELECTOR 4
+#define AFL_LIMIT_ITERATOR 4
 #define AFL_LIMIT_SCHEMA_FIELDS 4
 #define AFL_LIMIT_SCHEMA_NAMESPACE 4
 #define AFL_LIMIT_SCHEMA_NAME 4
@@ -94,6 +96,16 @@ struct JDBAflRandomValues
 	{ //entry
 		guint entry;
 	};
+	struct
+	{ //selector
+		guint selector;
+		guint selector_mode;
+		guint selector_selector;
+	};
+	struct
+	{ //iterator
+		guint iterator;
+	};
 	guint invalid_switch;
 };
 typedef struct JDBAflRandomValues JDBAflRandomValues;
@@ -106,8 +118,20 @@ static JDBType schema_field_types[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_N
 //entry->
 static JDBEntry* stored_entrys[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
 #define the_stored_entry stored_entrys[random_values.namespace][random_values.name][random_values.entry]
-static gboolean stored_entrys_synced[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
-#define the_stored_entry_synced stored_entrys_synced[random_values.namespace][random_values.name][random_values.entry]
+static gboolean stored_entrys_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
+#define the_stored_entry_field_count stored_entrys_field_count[random_values.namespace][random_values.name][random_values.entry]
+//<-
+//selector->
+static JDBSelector* stored_selectors[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SELECTOR];
+#define the_stored_selector stored_selectors[random_values.namespace][random_values.name][random_values.selector]
+static gboolean stored_selectors_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SELECTOR];
+#define the_stored_selector_field_count stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector]
+//<-
+//iterator->
+static JDBIterator* stored_iterators[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
+#define the_stored_iterator stored_iterators[random_values.namespace][random_values.name][random_values.iterator]
+static gboolean stored_iterators_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
+#define the_stored_iterator_field_count stored_iterators_field_count[random_values.namespace][random_values.name][random_values.iterator]
 //<-
 //allgemein->
 static char name_strbuf[AFL_LIMIT_STRING_LEN];
@@ -157,7 +181,17 @@ main(int argc, char* argv[])
 			for (k = 0; k < AFL_LIMIT_ENTRY; k++)
 			{
 				stored_entrys[i][j][k] = NULL;
-				stored_entrys_synced[i][j][k] = FALSE;
+				stored_entrys_field_count[i][j][k] = 0;
+			}
+			for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
+			{
+				stored_selectors[i][j][k] = NULL;
+				stored_selectors_field_count[i][j][k] = 0;
+			}
+			for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
+			{
+				stored_iterators[i][j][k] = NULL;
+				stored_iterators_field_count[i][j][k] = 0;
 			}
 		}
 	}
@@ -173,6 +207,7 @@ main(int argc, char* argv[])
 		random_values.namespace = random_values.namespace % AFL_LIMIT_SCHEMA_NAMESPACE;
 		random_values.name = random_values.name % AFL_LIMIT_SCHEMA_NAME;
 		random_values.entry = random_values.entry % AFL_LIMIT_ENTRY;
+		random_values.selector = random_values.selector % AFL_LIMIT_SELECTOR;
 		random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 		switch (event)
 		{
@@ -280,12 +315,21 @@ main(int argc, char* argv[])
 			{
 				for (k = 0; k < AFL_LIMIT_ENTRY; k++)
 				{
-					if (stored_entrys_synced[i][j][k])
-					{
-						//TODO delete from server
-					}
 					j_db_entry_unref(stored_entrys[i][j][k]);
 					stored_entrys[i][j][k] = NULL;
+					stored_entrys_field_count[i][j][k] = 0;
+				}
+				for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
+				{
+					j_db_selector_unref(stored_selectors[i][j][k]);
+					stored_selectors[i][j][k] = NULL;
+					stored_selectors_field_count[i][j][k] = 0;
+				}
+				for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
+				{
+					j_db_iterator_unref(stored_iterators[i][j][k]);
+					stored_iterators[i][j][k] = NULL;
+					stored_iterators_field_count[i][j][k] = 0;
 				}
 				if (stored_schemas[i][j])
 				{
