@@ -315,7 +315,7 @@ event_schema_get(void)
 		switch (random_values.invalid_switch % 3)
 		{
 		case 2: //schema null
-			ret_expected = TRUE;
+			ret_expected = FALSE;
 			schema = j_db_schema_new(stored_schemas[random_values.namespace][random_values.name]->namespace, stored_schemas[random_values.namespace][random_values.name]->name, &error);
 			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
 			ret = j_db_schema_get(NULL, batch, &error);
@@ -323,23 +323,26 @@ event_schema_get(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 1: //batch null
-			ret_expected = TRUE;
+			ret_expected = FALSE;
 			schema = j_db_schema_new(stored_schemas[random_values.namespace][random_values.name]->namespace, stored_schemas[random_values.namespace][random_values.name]->name, &error);
 			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
 			ret = j_db_schema_get(schema, NULL, &error);
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0: //success
-			ret_expected = TRUE;
+			ret_expected = stored_schemas[random_values.namespace][random_values.name]->server_side;
 			schema = j_db_schema_new(stored_schemas[random_values.namespace][random_values.name]->namespace, stored_schemas[random_values.namespace][random_values.name]->name, &error);
-			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
+			J_AFL_DEBUG_ERROR(schema != NULL, TRUE, error);
 			ret = j_db_schema_get(schema, batch, &error);
 			ret = j_batch_execute(batch) && ret;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			ret = j_db_schema_equals(schema, stored_schemas[random_values.namespace][random_values.name], &bool_tmp, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (bool_tmp != ret_expected)
-				MYABORT();
+			if (ret)
+			{
+				ret = j_db_schema_equals(schema, stored_schemas[random_values.namespace][random_values.name], &bool_tmp, &error);
+				J_AFL_DEBUG_ERROR(ret, TRUE, error);
+				if (!bool_tmp)
+					MYABORT();
+			}
 			break;
 		default:
 			MYABORT();
