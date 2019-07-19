@@ -30,7 +30,6 @@ struct JDBEntry
 {
 	gint ref_count;
 	JDBSchema* schema;
-	JDBSelector* selector;
 	bson_t bson;
 };
 typedef struct JDBEntry JDBEntry;
@@ -42,10 +41,8 @@ void j_db_entry_unref(JDBEntry* entry);
 
 gboolean j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error);
 
-gboolean j_db_entry_set_selector(JDBEntry* entry, JDBSelector* selector, GError** error);
-
 gboolean j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error);
-gboolean j_db_entry_update(JDBEntry* entry, JBatch* batch, GError** error);
-gboolean j_db_entry_delete(JDBEntry* entry, JBatch* batch, GError** error);
+gboolean j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
+gboolean j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
 
 #endif

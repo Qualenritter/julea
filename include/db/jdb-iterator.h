@@ -37,7 +37,7 @@ struct JDBIterator
 };
 typedef struct JDBIterator JDBIterator;
 
-JDBIterator* j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, JBatch* batch, GError** error);
+JDBIterator* j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error);
 JDBIterator* j_db_iterator_ref(JDBIterator* iterator, GError** error);
 void j_db_iterator_unref(JDBIterator* iterator);
 

@@ -34,12 +34,13 @@
 #include <julea-db.h>
 
 JDBIterator*
-j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, JBatch* batch, GError** error)
+j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 {
 	guint ret;
+	JBatch* batch;
+	JSemantics* semantics;
 	JDBIterator* iterator = NULL;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
-	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
 	j_goto_error_subcommand(!iterator->schema);
@@ -49,7 +50,12 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, JBatch* batch, GErro
 	iterator->ref_count = 1;
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
+	semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+	batch = j_batch_new(semantics);
 	ret = j_db_internal_query(schema->namespace, schema->name, &selector->bson, &iterator->iterator, batch, error);
+	ret = ret && j_batch_execute(batch);
+	j_batch_unref(batch);
+	j_semantics_unref(semantics);
 	j_goto_error_subcommand(!ret);
 	iterator->valid = TRUE;
 	return iterator;

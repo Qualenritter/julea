@@ -24,20 +24,29 @@
 #include <julea.h>
 #include <db/jdb-type.h>
 #include <db/jdb-schema.h>
-
+enum JDBSelectorMode
+{
+	J_DB_SELECTOR_MODE_AND,
+	J_DB_SELECTOR_MODE_OR,
+	_J_DB_SELECTOR_MODE_COUNT,
+};
+typedef enum JDBSelectorMode JDBSelectorMode;
 struct JDBSelector
 {
+	JDBSelectorMode mode;
 	JDBSchema* schema;
 	gint ref_count;
 	bson_t bson;
+	guint bson_count;
 };
 typedef struct JDBSelector JDBSelector;
 
-JDBSelector* j_db_selector_new(JDBSchema* schema, GError** error);
+JDBSelector* j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error);
 
 JDBSelector* j_db_selector_ref(JDBSelector* selector, GError** error);
 void j_db_selector_unref(JDBSelector* selector);
 
-//TODO the functions here
+gboolean j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator operator, gconstpointer value, guint64 length, GError** error);
+gboolean j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error);
 
 #endif

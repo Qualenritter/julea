@@ -41,7 +41,6 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 	entry = g_slice_new(JDBEntry);
 	bson_init(&entry->bson);
 	entry->ref_count = 1;
-	entry->selector = NULL;
 	entry->schema = j_db_schema_ref(schema, error);
 	j_goto_error_subcommand(!entry->schema);
 	return entry;
@@ -63,7 +62,6 @@ j_db_entry_unref(JDBEntry* entry)
 {
 	if (entry && g_atomic_int_dec_and_test(&entry->ref_count))
 	{
-		j_db_selector_unref(entry->selector);
 		j_db_schema_unref(entry->schema);
 		bson_destroy(&entry->bson);
 		g_slice_free(JDBEntry, entry);
@@ -126,17 +124,6 @@ _error:
 	return FALSE;
 }
 gboolean
-j_db_entry_set_selector(JDBEntry* entry, JDBSelector* selector, GError** error)
-{
-	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
-	j_db_selector_unref(entry->selector);
-	entry->selector = j_db_selector_ref(selector, error);
-	j_goto_error_subcommand(!entry->selector);
-	return TRUE;
-_error:
-	return FALSE;
-}
-gboolean
 j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
 	gint ret;
@@ -149,24 +136,24 @@ _error:
 	return FALSE;
 }
 gboolean
-j_db_entry_update(JDBEntry* entry, JBatch* batch, GError** error)
+j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	gint ret;
 	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
-	ret = j_db_internal_update(entry->schema->namespace, entry->schema->name, &entry->selector->bson, &entry->bson, batch, error);
+	ret = j_db_internal_update(entry->schema->namespace, entry->schema->name, &selector->bson, &entry->bson, batch, error);
 	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
 	return FALSE;
 }
 gboolean
-j_db_entry_delete(JDBEntry* entry, JBatch* batch, GError** error)
+j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	gint ret;
 	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
-	ret = j_db_internal_delete(entry->schema->namespace, entry->schema->name, &entry->selector->bson, batch, error);
+	ret = j_db_internal_delete(entry->schema->namespace, entry->schema->name, &selector->bson, batch, error);
 	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
