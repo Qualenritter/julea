@@ -102,7 +102,13 @@ event_entry_set_field(void)
 			break;
 		case J_DB_TYPE_STRING:
 		case J_DB_TYPE_BLOB:
-			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str);
+			J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
+			J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			J_DEBUG("%p", varname_strbuf);
+			J_DEBUG("%p", varvalue_strbuf);
+			J_DEBUG("%p", error);
+			J_DEBUG("%p", the_stored_entry);
 			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			break;
