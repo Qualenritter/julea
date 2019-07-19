@@ -150,6 +150,8 @@ _error:
 gboolean
 j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 {
+	/*TODO prevent double insert same index*/
+	/*TODO check indexed column already exist*/
 	guint i;
 	guint ret;
 	bson_t bson;
