@@ -279,8 +279,8 @@ main(int argc, char* argv[])
 					{
 						//TODO delete from server
 					}
-					j_db_entry_unref(stored_entrys[i][j]);
-					stored_entrys[i][j] = NULL;
+					j_db_entry_unref(stored_entrys[i][j][k]);
+					stored_entrys[i][j][k] = NULL;
 				}
 				if (stored_schemas[i][j])
 				{

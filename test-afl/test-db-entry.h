@@ -3,7 +3,7 @@ event_entry_new(void)
 {
 	GError* error = NULL;
 	guint ret;
-	gboolean ret_expected;
+	guint ret_expected;
 	if (the_stored_entry_synced)
 	{
 		//TODO delete in backend
@@ -32,7 +32,7 @@ static void
 event_entry_ref(void)
 {
 	GError* error = NULL;
-	JDBentry* ptr = NULL;
+	JDBEntry* ptr = NULL;
 	if (the_stored_entry)
 	{
 		if (the_stored_entry->ref_count != 1)
@@ -58,7 +58,7 @@ event_entry_set_field(void)
 {
 	GError* error = NULL;
 	guint ret;
-	gboolean ret_expected;
+	guint ret_expected;
 	JDBType type;
 	ret_expected = the_stored_entry != NULL;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
@@ -87,7 +87,7 @@ event_entry_set_field(void)
 			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_uint64, 8, &error);
 			break;
 		case J_DB_TYPE_FLOAT64:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_ufloat64, 8, &error);
+			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_float64, 8, &error);
 			break;
 		case J_DB_TYPE_STRING:
 		case J_DB_TYPE_BLOB:
@@ -101,7 +101,6 @@ event_entry_set_field(void)
 	default:
 		MYABORT();
 	}
-}
 }
 static void
 event_entry_insert(void)
