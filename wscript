@@ -465,8 +465,8 @@ def build(ctx):
 	)
 
 	ctx.program(
-		source=ctx.path.ant_glob('test-afl/test-db-schema.c'),
-		target='test-afl/julea-test-afl-db-schema',
+		source=ctx.path.ant_glob('test-afl/test-db-client.c'),
+		target='test-afl/julea-test-afl-db-client',
 		use=use_julea_object + use_julea_item + use_julea_hdf + use_julea_db,
 		includes=include_julea_core + ['test-afl'],
 		rpath=get_rpath(ctx),

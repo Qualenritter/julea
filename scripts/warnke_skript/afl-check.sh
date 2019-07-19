@@ -43,7 +43,7 @@ for f in ${files}
 do
 for g in gcc-asan gcc-asan-mockup
 do
-	for programname in "julea-test-afl-db-backend" "julea-test-afl-db-schema"
+	for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
 	do
 
 	rm -rf /mnt2/julea/*
