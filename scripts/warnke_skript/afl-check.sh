@@ -35,12 +35,14 @@ mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 j=0
 
+for g in gcc-asan gcc-asan-mockup
+do
+	mkdir -p b/${g}
+done
 for f in ${files}
 do
 for g in gcc-asan gcc-asan-mockup
 do
-echo "using binary : $g"
-mkdir b/${g}
 	for programname in "julea-test-afl-db-backend" "julea-test-afl-db-schema"
 	do
 

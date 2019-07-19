@@ -402,7 +402,7 @@ main(int argc, char* argv[])
 	guint i;
 	guint j;
 	GError* error = NULL;
-	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	JBatch* batch;
 	if (argc > 1)
 	{
 		char filename[50 + strlen(argv[1])];
@@ -433,6 +433,7 @@ main(int argc, char* argv[])
 	while (__AFL_LOOP(1000))
 #endif
 	{
+		batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	loop:
 		MY_READ_MAX(event, _AFL_EVENT_EVENT_COUNT);
 		MY_READ(random_values);
@@ -491,7 +492,7 @@ main(int argc, char* argv[])
 				{
 					if (stored_schemas[i][j]->server_side)
 					{
-						j_db_schema_delete(stored_schemas[i][j], batch, &error);
+						ret = j_db_schema_delete(stored_schemas[i][j], batch, &error);
 						ret = j_batch_execute(batch) && ret;
 						J_AFL_DEBUG_ERROR(ret, TRUE, error);
 					}
@@ -500,6 +501,7 @@ main(int argc, char* argv[])
 				}
 			}
 		}
+		j_batch_unref(batch);
 	}
 fini:
 	return 0;
