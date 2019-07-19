@@ -76,8 +76,19 @@ event_schema_new(void)
 {
 	GError* error = NULL;
 	guint i;
+	guint ret;
+	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	if (stored_schemas[random_values.namespace][random_values.name])
+	{
+		if (stored_schemas[random_values.namespace][random_values.name]->server_side)
+		{
+			ret = j_db_schema_delete(stored_schemas[random_values.namespace][random_values.name], batch, &error);
+			ret = j_batch_execute(batch) && ret;
+			J_AFL_DEBUG_ERROR(ret, TRUE, error);
+		}
 		j_db_schema_unref(stored_schemas[random_values.namespace][random_values.name]);
+		stored_schemas[random_values.namespace][random_values.name] = NULL;
+	}
 	stored_schemas[random_values.namespace][random_values.name] = NULL;
 	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
 	sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
@@ -315,17 +326,13 @@ event_schema_get(void)
 		switch (random_values.invalid_switch % 3)
 		{
 		case 2: //schema null
-			ret_expected = FALSE;
-			schema = j_db_schema_new(stored_schemas[random_values.namespace][random_values.name]->namespace, stored_schemas[random_values.namespace][random_values.name]->name, &error);
-			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
 			ret = j_db_schema_get(NULL, batch, &error);
 			ret = j_batch_execute(batch) && ret;
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 1: //batch null
-			ret_expected = FALSE;
 			schema = j_db_schema_new(stored_schemas[random_values.namespace][random_values.name]->namespace, stored_schemas[random_values.namespace][random_values.name]->name, &error);
-			J_AFL_DEBUG_ERROR(schema != NULL, ret_expected, error);
+			J_AFL_DEBUG_ERROR(schema != NULL, TRUE, error);
 			ret = j_db_schema_get(schema, NULL, &error);
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
@@ -357,30 +364,29 @@ event_schema_delete(void)
 	gboolean ret;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	switch (random_values.invalid_switch % 4)
+	switch (random_values.invalid_switch % 3)
 	{
-	case 3:
-		ret_expected = stored_schemas[random_values.namespace][random_values.name] != NULL;
-		ret = j_db_schema_delete(stored_schemas[random_values.namespace][random_values.name], batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
 	case 2:
-		ret_expected = stored_schemas[random_values.namespace][random_values.name] != NULL;
 		ret = j_db_schema_delete(NULL, batch, &error);
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 1:
-		ret_expected = stored_schemas[random_values.namespace][random_values.name] != NULL;
 		ret = j_db_schema_delete(stored_schemas[random_values.namespace][random_values.name], NULL, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:
 		ret_expected = stored_schemas[random_values.namespace][random_values.name] != NULL;
+		if (stored_schemas[random_values.namespace][random_values.name])
+			ret_expected = ret_expected && stored_schemas[random_values.namespace][random_values.name]->server_side;
 		ret = j_db_schema_delete(stored_schemas[random_values.namespace][random_values.name], batch, &error);
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			j_db_schema_unref(stored_schemas[random_values.namespace][random_values.name]);
+			stored_schemas[random_values.namespace][random_values.name] = NULL;
+		}
 		break;
 	default:
 		MYABORT();
