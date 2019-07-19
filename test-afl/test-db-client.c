@@ -40,7 +40,7 @@
 
 enum JDBAflEvent
 {
-	AFL_EVENT_DB_ENTRY_NEW=0,
+	AFL_EVENT_DB_ENTRY_NEW = 0,
 	AFL_EVENT_DB_ENTRY_REF,
 	AFL_EVENT_DB_ENTRY_SET_FIELD,
 	AFL_EVENT_DB_ENTRY_INSERT,
@@ -67,15 +67,28 @@ enum JDBAflEvent
 };
 typedef enum JDBAflEvent JDBAflEvent;
 struct JDBAflRandomValues
-{	struct{//schema
+{
+	struct
+	{ //schema
 		guint namespace;
 		guint name;
 	};
-	struct{//fields
+	struct
+	{ //fields
 		guint var_name;
 		JDBType var_type;
+		union
+		{ //values
+			guint32 var_value_uint32;
+			gint32 var_value_sint32;
+			guint64 var_value_uint64;
+			gint64 var_value_sint64;
+			gfloat var_value_float32;
+			gdouble var_value_float64;
+		};
 	};
-	struct{//entry
+	struct
+	{ //entry
 		guint entry;
 	};
 	guint invalid_switch;
@@ -83,11 +96,15 @@ struct JDBAflRandomValues
 typedef struct JDBAflRandomValues JDBAflRandomValues;
 //schema->
 static JDBSchema* stored_schemas[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME];
+#define the_stored_schema stored_schemas[random_values.namespace][random_values.name]
 static JDBType schema_field_types[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SCHEMA_FIELDS];
+#define the_schema_field_type schema_field_types[random_values.namespace][random_values.name][random_values.var_name]
 //<-
 //entry->
 static JDBEntry* stored_entrys[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
+#define the_stored_entry stored_entrys[random_values.namespace][random_values.name][random_values.entry]
 static gboolean stored_entrys_synced[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
+#define the_stored_entry_synced stored_entrys_synced[random_values.namespace][random_values.name][random_values.entry]
 //<-
 //allgemein->
 static char name_strbuf[AFL_LIMIT_STRING_LEN];
@@ -107,7 +124,7 @@ main(int argc, char* argv[])
 	gboolean ret;
 	FILE* file;
 	JDBAflEvent event;
-	guint i,j,k;
+	guint i, j, k;
 	GError* error = NULL;
 	JBatch* batch;
 	if (argc > 1)
@@ -133,7 +150,8 @@ main(int argc, char* argv[])
 		for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 		{
 			stored_schemas[i][j] = NULL;
-			for (k = 0; k < AFL_LIMIT_ENTRY; k++){
+			for (k = 0; k < AFL_LIMIT_ENTRY; k++)
+			{
 				stored_entrys[i][j][k] = NULL;
 				stored_entrys_synced[i][j][k] = FALSE;
 			}
@@ -153,18 +171,48 @@ main(int argc, char* argv[])
 		random_values.entry = random_values.entry % AFL_LIMIT_ENTRY;
 		switch (event)
 		{
-case AFL_EVENT_DB_ENTRY_NEW:J_DEBUG("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);event_entry_new();break;
-case AFL_EVENT_DB_ENTRY_REF:J_DEBUG("AFL_EVENT_DB_ENTRY_REF %d %d %d", random_values.namespace, random_values.name, random_values.entry);event_entry_ref();break;
-case AFL_EVENT_DB_ENTRY_SET_FIELD:J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);event_entry_set_field();break;
-case AFL_EVENT_DB_ENTRY_INSERT:J_DEBUG("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);event_entry_insert();break;
-case AFL_EVENT_DB_ENTRY_UPDATE:J_DEBUG("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);event_entry_update();break;
-case AFL_EVENT_DB_ENTRY_DELETE:J_DEBUG("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);event_entry_delete();break;
-case AFL_EVENT_DB_ITERATOR_NEW:J_DEBUG("AFL_EVENT_DB_ITERATOR_NEW %d %d", random_values.namespace, random_values.name);event_iterator_new();break;
-case AFL_EVENT_DB_ITERATOR_REF:J_DEBUG("AFL_EVENT_DB_ITERATOR_REF %d %d", random_values.namespace, random_values.name);event_iterator_ref();break;
-case AFL_EVENT_DB_ITERATOR_NEXT:J_DEBUG("AFL_EVENT_DB_ITERATOR_NEXT %d %d", random_values.namespace, random_values.name);event_iterator_next();break;
-case AFL_EVENT_DB_ITERATOR_GET_FIELD:J_DEBUG("AFL_EVENT_DB_ITERATOR_GET_FIELD %d %d", random_values.namespace, random_values.name);event_iterator_get_field();break;
+		case AFL_EVENT_DB_ENTRY_NEW:
+			J_DEBUG("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			event_entry_new();
+			break;
+		case AFL_EVENT_DB_ENTRY_REF:
+			J_DEBUG("AFL_EVENT_DB_ENTRY_REF %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			event_entry_ref();
+			break;
+		case AFL_EVENT_DB_ENTRY_SET_FIELD:
+			J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			event_entry_set_field();
+			break;
+		case AFL_EVENT_DB_ENTRY_INSERT:
+			J_DEBUG("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			event_entry_insert();
+			break;
+		case AFL_EVENT_DB_ENTRY_UPDATE:
+			J_DEBUG("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			event_entry_update();
+			break;
+		case AFL_EVENT_DB_ENTRY_DELETE:
+			J_DEBUG("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+			event_entry_delete();
+			break;
+		case AFL_EVENT_DB_ITERATOR_NEW:
+			J_DEBUG("AFL_EVENT_DB_ITERATOR_NEW %d %d", random_values.namespace, random_values.name);
+			event_iterator_new();
+			break;
+		case AFL_EVENT_DB_ITERATOR_REF:
+			J_DEBUG("AFL_EVENT_DB_ITERATOR_REF %d %d", random_values.namespace, random_values.name);
+			event_iterator_ref();
+			break;
+		case AFL_EVENT_DB_ITERATOR_NEXT:
+			J_DEBUG("AFL_EVENT_DB_ITERATOR_NEXT %d %d", random_values.namespace, random_values.name);
+			event_iterator_next();
+			break;
+		case AFL_EVENT_DB_ITERATOR_GET_FIELD:
+			J_DEBUG("AFL_EVENT_DB_ITERATOR_GET_FIELD %d %d", random_values.namespace, random_values.name);
+			event_iterator_get_field();
+			break;
 		case AFL_EVENT_DB_SCHEMA_NEW:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_NEW %d %d", random_values.namespace, random_values.name);break;
+			J_DEBUG("AFL_EVENT_DB_SCHEMA_NEW %d %d", random_values.namespace, random_values.name);
 			event_schema_new();
 			break;
 		case AFL_EVENT_DB_SCHEMA_REF:
@@ -199,10 +247,22 @@ case AFL_EVENT_DB_ITERATOR_GET_FIELD:J_DEBUG("AFL_EVENT_DB_ITERATOR_GET_FIELD %d
 			J_DEBUG("AFL_EVENT_DB_SCHEMA_DELETE %d %d", random_values.namespace, random_values.name);
 			event_schema_delete();
 			break;
-case AFL_EVENT_DB_SELECTOR_NEW:J_DEBUG("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);event_selector_new();break;
-case AFL_EVENT_DB_SELECTOR_REF:J_DEBUG("AFL_EVENT_DB_SELECTOR_REF %d %d", random_values.namespace, random_values.name);event_selector_ref();break;
-case AFL_EVENT_DB_SELECTOR_ADD_FIELD:J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);event_selector_add_field();break;
-case AFL_EVENT_DB_SELECTOR_ADD_SELECTOR:J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_SELECTOR %d %d", random_values.namespace, random_values.name);event_selector_add_selector();break;
+		case AFL_EVENT_DB_SELECTOR_NEW:
+			J_DEBUG("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
+			event_selector_new();
+			break;
+		case AFL_EVENT_DB_SELECTOR_REF:
+			J_DEBUG("AFL_EVENT_DB_SELECTOR_REF %d %d", random_values.namespace, random_values.name);
+			event_selector_ref();
+			break;
+		case AFL_EVENT_DB_SELECTOR_ADD_FIELD:
+			J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
+			event_selector_add_field();
+			break;
+		case AFL_EVENT_DB_SELECTOR_ADD_SELECTOR:
+			J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_SELECTOR %d %d", random_values.namespace, random_values.name);
+			event_selector_add_selector();
+			break;
 		case _AFL_EVENT_DB_COUNT:
 		default:
 			MYABORT();
@@ -213,6 +273,15 @@ case AFL_EVENT_DB_SELECTOR_ADD_SELECTOR:J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_SELEC
 		{
 			for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 			{
+				for (k = 0; k < AFL_LIMIT_ENTRY; k++)
+				{
+					if (stored_entrys_synced[i][j][k])
+					{
+						//TODO delete from server
+					}
+					j_db_entry_unref(stored_entrys[i][j]);
+					stored_entrys[i][j] = NULL;
+				}
 				if (stored_schemas[i][j])
 				{
 					if (stored_schemas[i][j]->server_side)
