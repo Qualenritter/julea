@@ -284,7 +284,7 @@ event_schema_create(void)
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0: //success
-		ret_expected = TRUE;
+		ret_expected = stored_schemas[random_values.namespace][random_values.name] != NULL;
 		k = 0;
 		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
 			if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
