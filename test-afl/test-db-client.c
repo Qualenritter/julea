@@ -31,6 +31,7 @@
 #define AFL_NAMESPACE_FORMAT "namespace_%d"
 #define AFL_NAME_FORMAT "name_%d"
 #define AFL_VARNAME_FORMAT "varname_%d"
+#define AFL_VARVALUE_FORMAT "value_%d"
 #define AFL_LIMIT_ENTRY 4
 #define AFL_LIMIT_SCHEMA_FIELDS 4
 #define AFL_LIMIT_SCHEMA_NAMESPACE 4
@@ -85,6 +86,7 @@ struct JDBAflRandomValues
 			gint64 var_value_sint64;
 			gfloat var_value_float32;
 			gdouble var_value_float64;
+			guint var_value_str;
 		};
 	};
 	struct
@@ -110,6 +112,7 @@ static gboolean stored_entrys_synced[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEM
 static char name_strbuf[AFL_LIMIT_STRING_LEN];
 static char namespace_strbuf[AFL_LIMIT_STRING_LEN];
 static char varname_strbuf[AFL_LIMIT_STRING_LEN];
+static char varvalue_strbuf[AFL_LIMIT_STRING_LEN];
 static JDBAflRandomValues random_values;
 //<-
 
@@ -169,6 +172,7 @@ main(int argc, char* argv[])
 		random_values.namespace = random_values.namespace % AFL_LIMIT_SCHEMA_NAMESPACE;
 		random_values.name = random_values.name % AFL_LIMIT_SCHEMA_NAME;
 		random_values.entry = random_values.entry % AFL_LIMIT_ENTRY;
+		random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 		switch (event)
 		{
 		case AFL_EVENT_DB_ENTRY_NEW:

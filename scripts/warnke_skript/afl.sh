@@ -148,7 +148,7 @@ if (( $c < 10 )); then
 		export LD_LIBRARY_PATH=prefix-${name}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
 		./build-${name}/test-afl/julea-test-afl-db-backend ${afl_path}
-		./build-${name}/test-afl/julea-test-afl-db-schema ${afl_path}
+		./build-${name}/test-afl/julea-test-afl-db-client ${afl_path}
 	)
 fi
 i=${first_index};
