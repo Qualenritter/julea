@@ -64,11 +64,17 @@ event_selector_add_field(void)
 	switch (random_values.invalid_switch % 5)
 	{
 	case 4: //not existing varname
-		ret = j_db_schema_get_field(the_stored_selector->schema, "_not_existing_name_", &type, &error);
+		if (the_stored_selector)
+			ret = j_db_schema_get_field(the_stored_selector->schema, "_not_existing_name_", &type, &error);
+		else
+			ret = j_db_schema_get_field(NULL, "_not_existing_name_", &type, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 3: //NULL varname
-		ret = j_db_schema_get_field(the_stored_selector->schema, NULL, &type, &error);
+		if (the_stored_selector)
+			ret = j_db_schema_get_field(the_stored_selector->schema, NULL, &type, &error);
+		else
+			ret = j_db_schema_get_field(NULL, NULL, &type, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 2: //NULL selector
@@ -76,7 +82,10 @@ event_selector_add_field(void)
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 1: //NULL type
-		ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, NULL, &error);
+		if (the_stored_selector)
+			ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, NULL, &error);
+		else
+			ret = j_db_schema_get_field(NULL, varname_strbuf, NULL, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:

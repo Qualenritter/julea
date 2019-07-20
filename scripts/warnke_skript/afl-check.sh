@@ -20,8 +20,7 @@ files=""
 files="${files} $(ls afl/out/*/crashes/* | grep -v README )"
 files="${files} $(ls afl/start-files/* | grep -v README )"
 ./scripts/warnke_skript/format.sh
-rm -rf /mnt2/julea/* b
-mkdir b
+rm -rf /mnt2/julea/* *.tmp-file
 (export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
 (export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
 i=300
@@ -63,7 +62,6 @@ do
 		echo "invalid $f $g"
 	else
 		echo "valid $f $g"
-		cp $f b/${g}/
 		exit 1
 	fi
 	mv x $j-${programname}-$g.tmp-file
