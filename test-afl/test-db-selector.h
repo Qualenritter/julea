@@ -5,6 +5,7 @@ event_selector_new(void)
 	guint ret;
 	guint ret_expected;
 	j_db_selector_unref(the_stored_selector);
+	the_stored_selector = NULL;
 	the_stored_selector_field_count = 0;
 	random_values.selector_mode = random_values.selector_mode % (_J_DB_SELECTOR_MODE_COUNT + 1);
 	switch (random_values.invalid_switch % 2)
@@ -46,7 +47,7 @@ event_selector_ref(void)
 	}
 	else
 	{
-		ptr = j_db_selector_ref(the_stored_selector, &error);
+		ptr = j_db_selector_ref(NULL, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, FALSE, error);
 	}
 }
@@ -58,7 +59,6 @@ event_selector_add_field(void)
 	guint ret_expected;
 	JDBType type;
 	ret_expected = the_stored_selector != NULL;
-	J_DEBUG("%d", ret_expected);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	switch (random_values.invalid_switch % 5)
@@ -91,12 +91,10 @@ event_selector_add_field(void)
 	case 0:
 		type = random_values.var_type;
 		ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
-		J_DEBUG("%d %d", ret_expected, the_schema_field_type);
 		if (the_stored_selector)
 			ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, &type, &error);
 		else
 			ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-		J_DEBUG("%d %d", type, _J_DB_TYPE_COUNT);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		switch (type)
 		{
