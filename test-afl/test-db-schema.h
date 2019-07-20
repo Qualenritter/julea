@@ -53,7 +53,7 @@ event_schema_delete_helper(void)
 		{
 			j_db_iterator_unref(stored_iterators[random_values.namespace][random_values.name][k]);
 			stored_iterators[random_values.namespace][random_values.name][k] = NULL;
-			stored_iterators_field_count[random_values.namespace][random_values.name][k] = 0;
+			stored_iterators_next_count[random_values.namespace][random_values.name][k] = 0;
 		}
 	}
 }
@@ -336,7 +336,6 @@ event_schema_get(void)
 static void
 event_schema_delete(void)
 {
-	//TODO schema delete invalidates all entrys iterators and selectors
 	gboolean ret_expected;
 	gboolean ret;
 	GError* error = NULL;
@@ -368,4 +367,5 @@ event_schema_delete(void)
 	default:
 		MYABORT();
 	}
+	event_schema_delete_helper();
 }

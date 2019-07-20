@@ -60,11 +60,25 @@ event_entry_set_field(void)
 	J_DEBUG("%d", ret_expected);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
-	switch (random_values.invalid_switch % 1)
+	switch (random_values.invalid_switch % 5)
 	{
-		//TODO NULL - parameter
+	case 4: //not existing varname
+		ret = j_db_schema_get_field(the_stored_entry->schema, "_not_existing_name_", &type, &error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
+		break;
+	case 3: //NULL varname
+		ret = j_db_schema_get_field(the_stored_entry->schema, NULL, &type, &error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
+		break;
+	case 2: //NULL entry
+		ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
+		break;
+	case 1: //NULL type
+		ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, NULL, &error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
+		break;
 	case 0:
-		//TODO verify set field effect
 		type = random_values.var_type;
 		ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
 		J_DEBUG("%d %d", ret_expected, the_schema_field_type);
@@ -144,9 +158,16 @@ event_entry_insert(void)
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = the_stored_entry != NULL;
 	ret_expected = ret_expected && the_stored_entry_field_count;
-	switch (random_values.invalid_switch % 1)
+	switch (random_values.invalid_switch % 3)
 	{
-	//TODO NULL - parameter
+	case 2: //NULL entry
+		ret = j_db_entry_insert(NULL, batch, &error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
+		break;
+	case 1: //NULL batch
+		ret = j_db_entry_insert(the_stored_entry, NULL, &error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
+		break;
 	case 0:
 		ret = j_db_entry_insert(the_stored_entry, batch, &error);
 		ret = j_batch_execute(batch) && ret;
@@ -160,10 +181,65 @@ event_entry_insert(void)
 static void
 event_entry_update(void)
 {
-	//TODO event_entry_update
+	JBatch* batch;
+	GError* error = NULL;
+	guint ret;
+	guint ret_expected;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	ret_expected = the_stored_entry != NULL;
+	ret_expected = ret_expected && the_stored_entry_field_count;
+	ret_expected = ret_expected && the_stored_selector;
+	switch (random_values.invalid_switch % 4)
+	{
+	case 3: //null selector
+		ret = j_db_entry_update(the_stored_entry, NULL, batch, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	case 2: //null entry
+		ret = j_db_entry_update(NULL, the_stored_selector, batch, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	case 1: //null batch
+		ret = j_db_entry_update(the_stored_entry, the_stored_selector, NULL, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	case 0:
+		ret = j_db_entry_update(the_stored_entry, the_stored_selector, batch, &error);
+		ret = j_batch_execute(batch) && ret;
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	default:
+		MYABORT();
+	}
+	j_batch_unref(batch);
 }
 static void
 event_entry_delete(void)
 {
-	//TODO event_entry_delete
+	JBatch* batch;
+	GError* error = NULL;
+	guint ret;
+	guint ret_expected;
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	ret_expected = the_stored_entry != NULL;
+	ret_expected = ret_expected && the_stored_entry_field_count;
+	switch (random_values.invalid_switch % 3)
+	{
+	case 2: //null entry
+		ret = j_db_entry_delete(NULL, the_stored_selector, batch, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	case 1: //null batch
+		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, NULL, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	case 0:
+		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, batch, &error);
+		ret = j_batch_execute(batch) && ret;
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		break;
+	default:
+		MYABORT();
+	}
+	j_batch_unref(batch);
 }

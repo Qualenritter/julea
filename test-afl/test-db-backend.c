@@ -275,7 +275,8 @@ build_metadata(void)
 					}
 				}
 				else
-				{ //TODO test other types for the invalid extra column - should fail on the column name anyway
+				{
+					//TODO test other types for the invalid extra column - should fail on the column name anyway
 					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, AFL_LIMIT_SCHEMA_VARIABLES);
 					bson_append_int32(bson, varname_strbuf, -1, 1); //not existent varname
 					ret_expected = FALSE;
@@ -512,7 +513,8 @@ event_query_all(void)
 static void
 event_delete(void)
 {
-	GError* error = NULL; //TODO delete ALL at once using empty bson and NULL
+	GError* error = NULL;
+	//TODO delete ALL at once using empty bson and NULL
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bson_t bson_child;
 	bson_t bson_child2;
@@ -903,7 +905,8 @@ event_schema_delete(void)
 static void
 event_schema_create(void)
 {
-	GError* error = NULL; //TODO test create index
+	GError* error = NULL;
+	//TODO test create index
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bson_t bson_child;
 	gboolean ret;

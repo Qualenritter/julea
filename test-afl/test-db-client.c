@@ -132,8 +132,8 @@ static gboolean stored_selectors_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIM
 //iterator->
 static JDBIterator* stored_iterators[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
 #define the_stored_iterator stored_iterators[random_values.namespace][random_values.name][random_values.iterator]
-static gboolean stored_iterators_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
-#define the_stored_iterator_field_count stored_iterators_field_count[random_values.namespace][random_values.name][random_values.iterator]
+static gboolean stored_iterators_next_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
+#define the_stored_iterator_next_count stored_iterators_next_count[random_values.namespace][random_values.name][random_values.iterator]
 //<-
 //allgemein->
 static char name_strbuf[AFL_LIMIT_STRING_LEN];
@@ -191,7 +191,7 @@ main(int argc, char* argv[])
 			for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
 			{
 				stored_iterators[i][j][k] = NULL;
-				stored_iterators_field_count[i][j][k] = 0;
+				stored_iterators_next_count[i][j][k] = 0;
 			}
 		}
 	}
