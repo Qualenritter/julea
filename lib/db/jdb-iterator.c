@@ -43,8 +43,13 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
 	j_goto_error_subcommand(!iterator->schema);
-	iterator->selector = j_db_selector_ref(selector, error);
-	j_goto_error_subcommand(!iterator->selector && selector);
+	if (selector)
+	{
+		iterator->selector = j_db_selector_ref(selector, error);
+		j_goto_error_subcommand(!iterator->selector);
+	}
+	else
+		iterator->selector = NULL;
 	iterator->iterator = NULL;
 	iterator->ref_count = 1;
 	iterator->valid = FALSE;

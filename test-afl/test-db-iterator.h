@@ -15,6 +15,8 @@ event_iterator_new(void)
 		break;
 	case 1: //selector NULL - is allowed - should get everything
 		ret_expected = the_stored_schema != NULL;
+		if (the_stored_schema)
+			ret_expected = ret_expected && the_stored_schema->server_side;
 		the_stored_iterator = j_db_iterator_new(the_stored_schema, NULL, &error);
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);

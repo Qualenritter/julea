@@ -67,6 +67,7 @@ j_db_selector_unref(JDBSelector* selector)
 {
 	if (selector && g_atomic_int_dec_and_test(&selector->ref_count))
 	{
+		j_db_schema_unref(selector->schema);
 		bson_destroy(&selector->bson);
 		g_slice_free(JDBSelector, selector);
 	}
