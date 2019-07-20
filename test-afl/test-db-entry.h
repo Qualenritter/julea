@@ -57,6 +57,7 @@ event_entry_set_field(void)
 	guint ret_expected;
 	JDBType type;
 	ret_expected = the_stored_entry != NULL;
+	J_DEBUG("%d", ret_expected);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	switch (random_values.invalid_switch % 1)
@@ -65,11 +66,13 @@ event_entry_set_field(void)
 	case 0:
 		//TODO verify set field effect
 		type = random_values.var_type;
-		ret_expected = ret_expected && the_schema_field_type != _J_DB_TYPE_COUNT;
+		ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
+		J_DEBUG("%d %d", ret_expected, the_schema_field_type);
 		if (the_stored_entry)
 			ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, &type, &error);
 		else
 			ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
+		J_DEBUG("%d %d", type, _J_DB_TYPE_COUNT);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		ret_expected = ret_expected && !(the_stored_entry_field_set & (1 << random_values.var_name));
 		switch (type)

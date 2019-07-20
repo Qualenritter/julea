@@ -151,12 +151,9 @@ static JDBAflRandomValues random_values;
 int
 main(int argc, char* argv[])
 {
-	gboolean ret;
 	FILE* file;
 	JDBAflEvent event;
 	guint i, j, k;
-	GError* error = NULL;
-	JBatch* batch;
 	if (argc > 1)
 	{
 		char filename[50 + strlen(argv[1])];
@@ -203,7 +200,6 @@ main(int argc, char* argv[])
 	while (__AFL_LOOP(1000))
 #endif
 	{
-		batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	loop:
 		MY_READ_MAX(event, _AFL_EVENT_DB_COUNT);
 		MY_READ(random_values);
@@ -314,42 +310,12 @@ main(int argc, char* argv[])
 		goto loop;
 	cleanup:
 		for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
-		{
 			for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 			{
-				for (k = 0; k < AFL_LIMIT_ENTRY; k++)
-				{
-					j_db_entry_unref(stored_entrys[i][j][k]);
-					stored_entrys[i][j][k] = NULL;
-					stored_entrys_field_count[i][j][k] = 0;
-					stored_entrys_field_set[i][j][k] = 0;
-				}
-				for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
-				{
-					j_db_selector_unref(stored_selectors[i][j][k]);
-					stored_selectors[i][j][k] = NULL;
-					stored_selectors_field_count[i][j][k] = 0;
-				}
-				for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
-				{
-					j_db_iterator_unref(stored_iterators[i][j][k]);
-					stored_iterators[i][j][k] = NULL;
-					stored_iterators_field_count[i][j][k] = 0;
-				}
-				if (stored_schemas[i][j])
-				{
-					if (stored_schemas[i][j]->server_side)
-					{
-						ret = j_db_schema_delete(stored_schemas[i][j], batch, &error);
-						ret = j_batch_execute(batch) && ret;
-						J_AFL_DEBUG_ERROR(ret, TRUE, error);
-					}
-					j_db_schema_unref(stored_schemas[i][j]);
-					stored_schemas[i][j] = NULL;
-				}
+				random_values.namespace = i;
+				random_values.name = j;
+				event_schema_delete_helper();
 			}
-		}
-		j_batch_unref(batch);
 	}
 fini:
 	return 0;
