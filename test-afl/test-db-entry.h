@@ -75,7 +75,10 @@ event_entry_set_field(void)
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 1: //NULL type
-		ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, NULL, &error);
+		if (the_stored_entry != NULL)
+			ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, NULL, &error);
+		else
+			ret = j_db_schema_get_field(NULL, varname_strbuf, NULL, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:
