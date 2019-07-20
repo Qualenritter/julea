@@ -63,11 +63,17 @@ event_entry_set_field(void)
 	switch (random_values.invalid_switch % 5)
 	{
 	case 4: //not existing varname
-		ret = j_db_schema_get_field(the_stored_entry->schema, "_not_existing_name_", &type, &error);
+		if (the_stored_entry != NULL)
+			ret = j_db_schema_get_field(the_stored_entry->schema, "_not_existing_name_", &type, &error);
+		else
+			ret = j_db_schema_get_field(NULL, "_not_existing_name_", &type, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 3: //NULL varname
-		ret = j_db_schema_get_field(the_stored_entry->schema, NULL, &type, &error);
+		if (the_stored_entry != NULL)
+			ret = j_db_schema_get_field(the_stored_entry->schema, NULL, &type, &error);
+		else
+			ret = j_db_schema_get_field(NULL, NULL, &type, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 2: //NULL entry
