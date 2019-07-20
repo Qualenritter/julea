@@ -86,6 +86,7 @@ event_iterator_next(void)
 				case JULEA_BACKEND_ERROR_SELECTOR_NULL:
 				case JULEA_BACKEND_ERROR_METADATA_NULL:
 				case JULEA_BACKEND_ERROR_ITERATOR_NULL:
+				case JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 					ret_expected = FALSE;
 					break;
 				case JULEA_BACKEND_ERROR_BSON_APPEND_FAILED:
@@ -96,7 +97,6 @@ event_iterator_next(void)
 				case JULEA_BACKEND_ERROR_BSON_ITER_RECOURSE:
 				case JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND:
 				case JULEA_BACKEND_ERROR_COMPARATOR_INVALID:
-				case JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 				case JULEA_BACKEND_ERROR_METADATA_EMPTY:
 				case JULEA_BACKEND_ERROR_NO_VARIABLE_SET:
 				case JULEA_BACKEND_ERROR_SCHEMA_EMPTY:
@@ -127,6 +127,7 @@ event_iterator_next(void)
 				case JULEA_FRONTEND_ERROR_ITERATOR_NULL:
 				case JULEA_FRONTEND_ERROR_SCHEMA_NULL:
 				case JULEA_FRONTEND_ERROR_BATCH_NULL:
+				case JULEA_FRONTEND_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 					ret_expected = FALSE;
 					break;
 				case JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED:
@@ -138,7 +139,6 @@ event_iterator_next(void)
 				case JULEA_FRONTEND_ERROR_DB_TYPE_INVALID:
 				case JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND:
 				case JULEA_FRONTEND_ERROR_SELECTOR_MODE_INVALID:
-				case JULEA_FRONTEND_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 				case JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE:
 				case JULEA_FRONTEND_ERROR_VARIABLE_ALREADY_SET:
 				default:
@@ -172,6 +172,7 @@ event_iterator_get_field(void)
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = the_stored_iterator != NULL;
 	ret_expected = ret_expected && the_schema_field_type != _J_DB_TYPE_COUNT;
+	ret_expected = ret_expected && the_stored_iterator_next_count;
 	switch (random_values.invalid_switch % 6)
 	{
 	case 5: //iterator null
