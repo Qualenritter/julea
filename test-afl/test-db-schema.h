@@ -67,18 +67,18 @@ event_schema_ref(void)
 {
 	GError* error = NULL;
 	JDBSchema* ptr = NULL;
+	gint ref_count;
 	if (the_stored_schema)
 	{
-		if (the_stored_schema->ref_count != 1)
-			MYABORT();
+		ref_count = the_stored_schema->ref_count;
 		ptr = j_db_schema_ref(the_stored_schema, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 		if (ptr != the_stored_schema)
 			MYABORT();
-		if (the_stored_schema->ref_count != 2)
+		if (the_stored_schema->ref_count != ref_count + 1)
 			MYABORT();
 		j_db_schema_unref(the_stored_schema);
-		if (the_stored_schema->ref_count != 1)
+		if (the_stored_schema->ref_count != ref_count)
 			MYABORT();
 	}
 	else

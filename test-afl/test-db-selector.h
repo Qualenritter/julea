@@ -16,7 +16,10 @@ event_selector_new(void)
 		break;
 	case 0: //success
 		ret_expected = the_stored_schema != NULL;
+		J_DEBUG("%d", ret_expected);
 		ret_expected = ret_expected && (random_values.selector_mode != _J_DB_SELECTOR_MODE_COUNT);
+		J_DEBUG("%d", ret_expected);
+		J_DEBUG("%d", random_values.selector_mode);
 		the_stored_selector = j_db_selector_new(the_stored_schema, random_values.selector_mode, &error);
 		ret = the_stored_selector != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
@@ -30,18 +33,18 @@ event_selector_ref(void)
 {
 	GError* error = NULL;
 	JDBSelector* ptr = NULL;
+	gint ref_count;
 	if (the_stored_selector)
 	{
-		if (the_stored_selector->ref_count != 1)
-			MYABORT();
+		ref_count = the_stored_selector->ref_count;
 		ptr = j_db_selector_ref(the_stored_selector, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 		if (ptr != the_stored_selector)
 			MYABORT();
-		if (the_stored_selector->ref_count != 2)
+		if (the_stored_selector->ref_count != ref_count + 1)
 			MYABORT();
 		j_db_selector_unref(the_stored_selector);
-		if (the_stored_selector->ref_count != 1)
+		if (the_stored_selector->ref_count != ref_count)
 			MYABORT();
 	}
 	else

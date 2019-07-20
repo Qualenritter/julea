@@ -37,7 +37,8 @@ JDBSelector*
 j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
 	gboolean ret;
-	JDBSelector* selector;
+	JDBSelector* selector = NULL;
+	j_goto_error_frontend(mode >= _J_DB_SELECTOR_MODE_COUNT, JULEA_FRONTEND_ERROR_SELECTOR_MODE_INVALID, mode);
 	selector = g_slice_new(JDBSelector);
 	selector->ref_count = 1;
 	selector->mode = mode;

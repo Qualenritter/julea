@@ -35,18 +35,18 @@ event_iterator_ref(void)
 {
 	GError* error = NULL;
 	JDBIterator* ptr = NULL;
+	gint ref_count;
 	if (the_stored_iterator)
 	{
-		if (the_stored_iterator->ref_count != 1)
-			MYABORT();
+		ref_count = the_stored_iterator->ref_count;
 		ptr = j_db_iterator_ref(the_stored_iterator, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 		if (ptr != the_stored_iterator)
 			MYABORT();
-		if (the_stored_iterator->ref_count != 2)
+		if (the_stored_iterator->ref_count != ref_count + 1)
 			MYABORT();
 		j_db_iterator_unref(the_stored_iterator);
-		if (the_stored_iterator->ref_count != 1)
+		if (the_stored_iterator->ref_count != ref_count)
 			MYABORT();
 	}
 	else
