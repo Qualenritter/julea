@@ -75,7 +75,6 @@ j_db_selector_unref(JDBSelector* selector)
 gboolean
 j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator operator, gconstpointer value, guint64 length, GError** error)
 {
-	const char* key;
 	char buf[20];
 	bson_t bson;
 	JDBType type;
@@ -83,8 +82,8 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator op
 	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	ret = j_db_schema_get_field(selector->schema, name, &type, error);
 	j_goto_error_subcommand(!ret);
-	bson_uint32_to_string(selector->bson_count, &key, buf, sizeof(buf));
-	bson_append_document_begin(&selector->bson, key, -1, &bson);
+	sprintf(buf, "%d", selector->bson_count);
+	bson_append_document_begin(&selector->bson, buf, -1, &bson);
 
 	ret = bson_append_utf8(&bson, "_name", -1, name, -1);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
@@ -140,15 +139,14 @@ _error:
 gboolean
 j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
-	const char* key;
 	char buf[20];
 	gboolean ret;
 	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	j_goto_error_frontend(!sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	bson_uint32_to_string(selector->bson_count, &key, buf, sizeof(buf));
-	ret = bson_append_document(&selector->bson, key, -1, &sub_selector->bson);
+	sprintf(buf, "%d", selector->bson_count);
+	ret = bson_append_document(&selector->bson, buf, -1, &sub_selector->bson);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "DOCUMENT");
-	selector->bson_count++;
+	selector->bson_count += sub_selector->bson_count;
 	return TRUE;
 _error:
 	return FALSE;
