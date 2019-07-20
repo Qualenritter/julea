@@ -208,6 +208,7 @@ main(int argc, char* argv[])
 		random_values.name = random_values.name % AFL_LIMIT_SCHEMA_NAME;
 		random_values.entry = random_values.entry % AFL_LIMIT_ENTRY;
 		random_values.selector = random_values.selector % AFL_LIMIT_SELECTOR;
+		random_values.iterator = random_values.iterator % AFL_LIMIT_ITERATOR;
 		random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 		switch (event)
 		{
