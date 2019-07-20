@@ -25,7 +25,6 @@ event_iterator_new(void)
 		ret_expected = the_stored_schema != NULL;
 		if (the_stored_schema)
 			ret_expected = ret_expected && the_stored_schema->server_side;
-		ret_expected = ret_expected && the_stored_selector != NULL;
 		the_stored_iterator = j_db_iterator_new(the_stored_schema, the_stored_selector, &error);
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
