@@ -34,10 +34,6 @@ mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 j=0
 
-for g in gcc-asan gcc-asan-mockup
-do
-	mkdir -p b/${g}
-done
 for f in ${files}
 do
 for g in gcc-asan gcc-asan-mockup
