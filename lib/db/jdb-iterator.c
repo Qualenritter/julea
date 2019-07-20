@@ -37,6 +37,7 @@ JDBIterator*
 j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 {
 	guint ret;
+	guint ret2 = FALSE;
 	JBatch* batch;
 	JDBIterator* iterator = NULL;
 	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
@@ -55,13 +56,23 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	ret = j_db_internal_query(schema->namespace, schema->name, &selector->bson, &iterator->iterator, batch, error);
-	ret = ret && j_batch_execute(batch);
+	if (selector && selector->bson_count)
+		ret2 = j_db_internal_query(schema->namespace, schema->name, &selector->bson, &iterator->iterator, batch, error);
+	else
+		ret2 = j_db_internal_query(schema->namespace, schema->name, NULL, &iterator->iterator, batch, error);
+	ret = ret2 && j_batch_execute(batch);
 	j_batch_unref(batch);
 	j_goto_error_subcommand(!ret);
 	iterator->valid = TRUE;
 	return iterator;
 _error:
+	if (ret2)
+	{
+		while (j_db_internal_iterate(iterator->iterator, NULL, NULL))
+		{
+			/*do nothing*/
+		}
+	}
 	j_db_iterator_unref(iterator);
 	return NULL;
 }
