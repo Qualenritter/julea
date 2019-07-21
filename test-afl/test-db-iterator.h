@@ -50,8 +50,7 @@ event_iterator_new(void)
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }
 static void
@@ -65,13 +64,10 @@ event_iterator_ref(void)
 		ref_count = the_stored_iterator->ref_count;
 		ptr = j_db_iterator_ref(the_stored_iterator, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
-		if (ptr != the_stored_iterator)
-			MYABORT();
-		if (the_stored_iterator->ref_count != ref_count + 1)
-			MYABORT();
+		MYABORT_IF(ptr != the_stored_iterator);
+		MYABORT_IF(the_stored_iterator->ref_count != ref_count + 1);
 		j_db_iterator_unref(the_stored_iterator);
-		if (the_stored_iterator->ref_count != ref_count)
-			MYABORT();
+		MYABORT_IF(the_stored_iterator->ref_count != ref_count);
 	}
 	else
 	{
@@ -176,8 +172,7 @@ event_iterator_next(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		}
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }
 static void
@@ -221,14 +216,11 @@ event_iterator_get_field(void)
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)
 		{
-			if (type == _J_DB_TYPE_COUNT)
-				MYABORT();
-			if (!value)
-				MYABORT();
+			MYABORT_IF(type == _J_DB_TYPE_COUNT);
+			MYABORT_IF(!value);
 		}
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 	if (value)
 		g_free(value);

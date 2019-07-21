@@ -43,8 +43,7 @@ event_selector_new(void)
 		ret = the_stored_selector != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }
 static void
@@ -58,13 +57,10 @@ event_selector_ref(void)
 		ref_count = the_stored_selector->ref_count;
 		ptr = j_db_selector_ref(the_stored_selector, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
-		if (ptr != the_stored_selector)
-			MYABORT();
-		if (the_stored_selector->ref_count != ref_count + 1)
-			MYABORT();
+		MYABORT_IF(ptr != the_stored_selector);
+		MYABORT_IF(the_stored_selector->ref_count != ref_count + 1);
 		j_db_selector_unref(the_stored_selector);
-		if (the_stored_selector->ref_count != ref_count)
-			MYABORT();
+		MYABORT_IF(the_stored_selector->ref_count != ref_count);
 	}
 	else
 	{
@@ -165,15 +161,12 @@ event_selector_add_field(void)
 			break;
 		case _J_DB_TYPE_COUNT:
 			ret = FALSE;
-			if (ret_expected)
-				MYABORT();
+			MYABORT_IF(ret_expected);
 			break;
-		default:
-			MYABORT();
+			MYABORT_DEFAULT();
 		}
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }
 static void
@@ -194,7 +187,6 @@ event_selector_add_selector(void)
 		if (ret)
 			the_stored_selector_field_count += stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector_selector];
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }

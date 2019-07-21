@@ -308,8 +308,7 @@ main(int argc, char* argv[])
 			event_selector_add_selector();
 			break;
 		case _AFL_EVENT_DB_COUNT:
-		default:
-			MYABORT();
+			MYABORT_DEFAULT();
 		}
 		goto loop;
 	cleanup:

@@ -114,75 +114,60 @@ build_selector_single(guint varname, guint value)
 	bson_t bson_child;
 	selector = bson_new();
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, varname);
-	if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
-		MYABORT();
+	MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 	bson_append_document_begin(selector, "0", -1, &bson_child);
-	if (!bson_append_int32(&bson_child, "_operator", -1, J_DB_OPERATOR_EQ))
-		MYABORT();
-	if (!bson_append_utf8(&bson_child, "_name", -1, varname_strbuf, -1))
-		MYABORT();
+	MYABORT_IF(!bson_append_int32(&bson_child, "_operator", -1, J_DB_OPERATOR_EQ));
+	MYABORT_IF(!bson_append_utf8(&bson_child, "_name", -1, varname_strbuf, -1));
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		switch (namespace_vartypes[random_values.namespace][random_values.name][varname])
 		{
 		case J_DB_TYPE_SINT32:
-			if (!bson_append_int32(&bson_child, "_value", -1, value))
-				MYABORT();
+			MYABORT_IF(!bson_append_int32(&bson_child, "_value", -1, value));
 			break;
 		case J_DB_TYPE_UINT32:
-			if (!bson_append_int32(&bson_child, "_value", -1, value))
-				MYABORT();
+			MYABORT_IF(!bson_append_int32(&bson_child, "_value", -1, value));
 			break;
 		case J_DB_TYPE_FLOAT32:
-			if (!bson_append_double(&bson_child, "_value", -1, value))
-				MYABORT();
+			MYABORT_IF(!bson_append_double(&bson_child, "_value", -1, value));
 			break;
 		case J_DB_TYPE_SINT64:
-			if (!bson_append_int64(&bson_child, "_value", -1, value))
-				MYABORT();
+			MYABORT_IF(!bson_append_int64(&bson_child, "_value", -1, value));
 			break;
 		case J_DB_TYPE_UINT64:
-			if (!bson_append_int64(&bson_child, "_value", -1, value))
-				MYABORT();
+			MYABORT_IF(!bson_append_int64(&bson_child, "_value", -1, value));
 			break;
 		case J_DB_TYPE_FLOAT64:
-			if (!bson_append_double(&bson_child, "_value", -1, value))
-				MYABORT();
+			MYABORT_IF(!bson_append_double(&bson_child, "_value", -1, value));
 			break;
 		case J_DB_TYPE_STRING:
 			if (value == AFL_LIMIT_SCHEMA_VALUES)
 			{
-				if (!bson_append_utf8(&bson_child, "_value", -1, "not_existent_var_name", -1))
-					MYABORT();
+				MYABORT_IF(!bson_append_utf8(&bson_child, "_value", -1, "not_existent_var_name", -1));
 			}
 			else
 			{
-				if (!bson_append_utf8(&bson_child, "_value", -1, namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], -1))
-					MYABORT();
+				MYABORT_IF(!bson_append_utf8(&bson_child, "_value", -1, namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], -1));
 			}
 			break;
 		case J_DB_TYPE_BLOB:
 			if (value == AFL_LIMIT_SCHEMA_VALUES)
 			{
-				if (!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)"not_existent_var_name", 1 + strlen("not_existent_var_name")))
-					MYABORT();
+				MYABORT_IF(!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)"not_existent_var_name", 1 + strlen("not_existent_var_name")));
 			}
 			else
 			{
-				if (!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], 1 + strlen(namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES])))
-					MYABORT();
+				MYABORT_IF(!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], 1 + strlen(namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES])));
 			}
 			break;
 		case _J_DB_TYPE_COUNT:
-		default:
-			MYABORT();
+			MYABORT_DEFAULT();
 		}
 	}
 	else
 	{ //operation on not existent namespace
 		ret_expected = FALSE;
-		if (!bson_append_int32(&bson_child, "_value", -1, value))
-			MYABORT();
+		MYABORT_IF(!bson_append_int32(&bson_child, "_value", -1, value));
 	}
 	bson_append_document_end(selector, &bson_child);
 	J_AFL_DEBUG_BSON(selector);
@@ -235,47 +220,38 @@ build_metadata(void)
 					{
 					case J_DB_TYPE_SINT32:
 						count++;
-						if (!bson_append_int32(bson, varname_strbuf, -1, (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
-							MYABORT();
+						MYABORT_IF(!bson_append_int32(bson, varname_strbuf, -1, (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]));
 						break;
 					case J_DB_TYPE_UINT32:
 						count++;
-						if (!bson_append_int32(bson, varname_strbuf, -1, (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
-							MYABORT();
+						MYABORT_IF(!bson_append_int32(bson, varname_strbuf, -1, (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]));
 						break;
 					case J_DB_TYPE_FLOAT32:
 						count++;
-						if (!bson_append_double(bson, varname_strbuf, -1, (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]))
-							MYABORT();
+						MYABORT_IF(!bson_append_double(bson, varname_strbuf, -1, (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]));
 						break;
 					case J_DB_TYPE_SINT64:
 						count++;
-						if (!bson_append_int64(bson, varname_strbuf, -1, (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
-							MYABORT();
+						MYABORT_IF(!bson_append_int64(bson, varname_strbuf, -1, (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]));
 						break;
 					case J_DB_TYPE_UINT64:
 						count++;
-						if (!bson_append_int64(bson, varname_strbuf, -1, (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]))
-							MYABORT();
+						MYABORT_IF(!bson_append_int64(bson, varname_strbuf, -1, (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]));
 						break;
 					case J_DB_TYPE_FLOAT64:
 						count++;
-						if (!bson_append_double(bson, varname_strbuf, -1, (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]))
-							MYABORT();
+						MYABORT_IF(!bson_append_double(bson, varname_strbuf, -1, (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i]));
 						break;
 					case J_DB_TYPE_STRING:
 						count++;
-						if (!bson_append_utf8(bson, varname_strbuf, -1, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], -1))
-							MYABORT();
+						MYABORT_IF(!bson_append_utf8(bson, varname_strbuf, -1, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], -1));
 						break;
 					case J_DB_TYPE_BLOB:
 						count++;
-						if (!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])))
-							MYABORT();
+						MYABORT_IF(!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])));
 						break;
 					case _J_DB_TYPE_COUNT:
-					default:
-						MYABORT();
+						MYABORT_DEFAULT();
 					}
 				}
 				else
@@ -341,8 +317,7 @@ event_query_single(void)
 		case 4: //invalid bson - value of not allowed bson type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
-			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
-				MYABORT();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_document_begin(&bson_child, "_value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
@@ -356,8 +331,7 @@ event_query_single(void)
 		case 3: //invalid bson - operator undefined enum
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
-			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
-				MYABORT();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_int32(&bson_child, "operator", -1, _J_DB_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
@@ -370,8 +344,7 @@ event_query_single(void)
 		case 2: //invalid bson - operator of invalid type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
-			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
-				MYABORT();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
@@ -385,8 +358,7 @@ event_query_single(void)
 		case 1: //invalid bson - key of type something else than a document
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
-			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
-				MYABORT();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			bson_append_int32(selector, varname_strbuf, -1, 0);
 			ret = j_db_internal_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, &error);
 			ret = j_batch_execute(batch) && ret;
@@ -434,62 +406,49 @@ event_query_single(void)
 	{
 		ret = j_db_internal_iterate(iterator, &bson, &error);
 		J_AFL_DEBUG_ERROR(ret, TRUE, error);
-		if (!bson_iter_init(&iter, &bson))
-			MYABORT();
-		if (!bson_iter_find(&iter, "_id"))
-			MYABORT();
+		MYABORT_IF(!bson_iter_init(&iter, &bson));
+		MYABORT_IF(!bson_iter_find(&iter, "_id"));
 		for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 		{
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
-			if (!bson_iter_init(&iter, &bson))
-				MYABORT();
+			MYABORT_IF(!bson_iter_init(&iter, &bson));
 			if (i < namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
 			{
-				if (!bson_iter_find(&iter, varname_strbuf))
-					MYABORT();
+				MYABORT_IF(!bson_iter_find(&iter, varname_strbuf));
 				switch (namespace_vartypes[random_values.namespace][random_values.name][i])
 				{
 				case J_DB_TYPE_SINT32:
-					if ((gint32)bson_iter_int32(&iter) != (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i])
-						MYABORT();
+					MYABORT_IF((gint32)bson_iter_int32(&iter) != (gint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]);
 					break;
 				case J_DB_TYPE_UINT32:
-					if ((guint32)bson_iter_int32(&iter) != (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i])
-						MYABORT();
+					MYABORT_IF((guint32)bson_iter_int32(&iter) != (guint32)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]);
 					break;
 				case J_DB_TYPE_FLOAT32:
-					if (!G_APPROX_VALUE((gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001f))
-						MYABORT();
+					MYABORT_IF(!G_APPROX_VALUE((gfloat)bson_iter_double(&iter), (gfloat)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001f));
 					break;
 				case J_DB_TYPE_SINT64:
-					if ((gint64)bson_iter_int64(&iter) != (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i])
-						MYABORT();
+					MYABORT_IF((gint64)bson_iter_int64(&iter) != (gint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]);
 					break;
 				case J_DB_TYPE_UINT64:
-					if ((guint64)bson_iter_int64(&iter) != (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i])
-						MYABORT();
+					MYABORT_IF((guint64)bson_iter_int64(&iter) != (guint64)namespace_varvalues_int64[random_values.namespace][random_values.name][random_values.values.value_index][i]);
 					break;
 				case J_DB_TYPE_FLOAT64:
-					if (!G_APPROX_VALUE((gdouble)bson_iter_double(&iter), (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 001))
-						MYABORT();
+					MYABORT_IF(!G_APPROX_VALUE((gdouble)bson_iter_double(&iter), (gdouble)namespace_varvalues_double[random_values.namespace][random_values.name][random_values.values.value_index][i], 0.001));
 					break;
 				case J_DB_TYPE_STRING:
-					if (g_strcmp0(bson_iter_utf8(&iter, NULL), namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]))
-						MYABORT();
+					MYABORT_IF(g_strcmp0(bson_iter_utf8(&iter, NULL), namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]));
 					break;
 				case J_DB_TYPE_BLOB:
 					if (bson_iter_type(&iter) == BSON_TYPE_BINARY)
 					{
 						bson_iter_binary(&iter, NULL, &binary_len, &binary);
-						if (g_strcmp0((const char*)binary, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]))
-							MYABORT();
+						MYABORT_IF(g_strcmp0((const char*)binary, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]));
 					}
-					else if (bson_iter_type(&iter) != BSON_TYPE_NULL)
-						MYABORT();
+					else
+						MYABORT_IF(bson_iter_type(&iter) != BSON_TYPE_NULL);
 					break;
 				case _J_DB_TYPE_COUNT:
-				default:
-					MYABORT();
+					MYABORT_DEFAULT();
 				}
 			}
 			else if (i < namespace_varcount[random_values.namespace][random_values.name])
@@ -498,8 +457,7 @@ event_query_single(void)
 			}
 			else
 			{
-				if (bson_iter_find(&iter, varname_strbuf))
-					MYABORT();
+				MYABORT_IF(bson_iter_find(&iter, varname_strbuf));
 			}
 		}
 		bson_destroy(&bson);
@@ -850,21 +808,16 @@ event_schema_get(void)
 			for (i = 0; i < AFL_LIMIT_SCHEMA_VARIABLES; i++)
 			{
 				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
-				if (!bson_iter_init(&iter, &bson))
-					MYABORT();
+				MYABORT_IF(!bson_iter_init(&iter, &bson));
 				if (i < namespace_varcount[random_values.namespace][random_values.name])
 				{
-					if (!bson_iter_find(&iter, varname_strbuf))
-						MYABORT();
-					if (!BSON_ITER_HOLDS_INT32(&iter))
-						MYABORT();
-					if (namespace_vartypes[random_values.namespace][random_values.name][i] != (JDBType)bson_iter_int32(&iter))
-						MYABORT();
+					MYABORT_IF(!bson_iter_find(&iter, varname_strbuf));
+					MYABORT_IF(!BSON_ITER_HOLDS_INT32(&iter));
+					MYABORT_IF(namespace_vartypes[random_values.namespace][random_values.name][i] != (JDBType)bson_iter_int32(&iter));
 				}
 				else
 				{
-					if (bson_iter_find(&iter, varname_strbuf))
-						MYABORT();
+					MYABORT_IF(bson_iter_find(&iter, varname_strbuf));
 				}
 			}
 		}
@@ -901,8 +854,7 @@ event_schema_delete(void)
 	J_AFL_DEBUG_ERROR_NO_EXPECT(ret, error);
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
-		if (!ret)
-			MYABORT();
+		MYABORT_IF(!ret);
 		if (namespace_bson[random_values.namespace][random_values.name])
 			bson_destroy(namespace_bson[random_values.namespace][random_values.name]);
 		namespace_bson[random_values.namespace][random_values.name] = NULL;
@@ -910,8 +862,7 @@ event_schema_delete(void)
 	}
 	else
 	{
-		if (ret)
-			MYABORT();
+		MYABORT_IF(ret);
 	}
 }
 static void
@@ -979,8 +930,7 @@ event_schema_create(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:
-			MYABORT();
+			MYABORT_DEFAULT();
 		}
 	}
 	random_values.schema_create.duplicate_variables = random_values.schema_create.duplicate_variables % 2;
@@ -1138,8 +1088,7 @@ main(int argc, char* argv[])
 			event_query_single();
 			break;
 		case _AFL_EVENT_DB_COUNT:
-		default:
-			MYABORT();
+			MYABORT_DEFAULT();
 		}
 		goto loop;
 	cleanup:

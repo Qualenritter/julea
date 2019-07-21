@@ -41,8 +41,7 @@ event_entry_new(void)
 		ret = the_stored_entry != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }
 static void
@@ -56,13 +55,10 @@ event_entry_ref(void)
 		ref_count = the_stored_entry->ref_count;
 		ptr = j_db_entry_ref(the_stored_entry, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
-		if (ptr != the_stored_entry)
-			MYABORT();
-		if (the_stored_entry->ref_count != ref_count + 1)
-			MYABORT();
+		MYABORT_IF(ptr != the_stored_entry);
+		MYABORT_IF(the_stored_entry->ref_count != ref_count + 1);
 		j_db_entry_unref(the_stored_entry);
-		if (the_stored_entry->ref_count != ref_count)
-			MYABORT();
+		MYABORT_IF(the_stored_entry->ref_count != ref_count);
 	}
 	else
 	{
@@ -168,15 +164,12 @@ event_entry_set_field(void)
 			break;
 		case _J_DB_TYPE_COUNT:
 			ret = FALSE;
-			if (ret_expected)
-				MYABORT();
+			MYABORT_IF(ret_expected);
 			break;
-		default:
-			MYABORT();
+			MYABORT_DEFAULT();
 		}
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 }
 static void
@@ -204,8 +197,7 @@ event_entry_insert(void)
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 	j_batch_unref(batch);
 }
@@ -239,8 +231,7 @@ event_entry_update(void)
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 	j_batch_unref(batch);
 }
@@ -269,8 +260,7 @@ event_entry_delete(void)
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
-		MYABORT();
+		MYABORT_DEFAULT();
 	}
 	j_batch_unref(batch);
 }
