@@ -152,7 +152,7 @@ _error:
 	return FALSE;
 }
 
-gboolean
+bson_t*
 j_db_selector_get_bson(JDBSelector* selector)
 {
 	if (selector && selector->bson_count > 0)

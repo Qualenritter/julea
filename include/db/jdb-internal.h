@@ -35,6 +35,6 @@ gboolean j_db_internal_query(gchar const* namespace, gchar const* name, bson_t c
 gboolean j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error);
 
 //client side additional internal functions
-gboolean j_db_selector_get_bson(JDBSelector* selector);
+bson_t* j_db_selector_get_bson(JDBSelector* selector);
 
 #endif
