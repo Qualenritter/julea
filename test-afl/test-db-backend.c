@@ -114,7 +114,7 @@ build_selector_single(guint varname, guint value)
 	bson_t bson_child;
 	selector = bson_new();
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, varname);
-	if (!bson_append_int32(&bson_child, "_mode", -1, J_DB_SELECTOR_MODE_AND))
+	if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
 		MYABORT();
 	bson_append_document_begin(selector, "0", -1, &bson_child);
 	if (!bson_append_int32(&bson_child, "_operator", -1, J_DB_OPERATOR_EQ))

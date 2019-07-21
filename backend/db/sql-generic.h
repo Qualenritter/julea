@@ -680,6 +680,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND, "_name");
 			ret = BSON_ITER_HOLDS_UTF8(&iterchild);
 			g_string_append_printf(sql, "%s ", bson_iter_utf8(&iterchild, NULL));
+			ret = bson_iter_recurse(iter, &iterchild);
 			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_RECOURSE, "");
 			ret = bson_iter_find(&iterchild, "_operator");
 			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_KEY_NOT_FOUND, "_operator");
