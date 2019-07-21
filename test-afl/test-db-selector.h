@@ -77,8 +77,10 @@ event_selector_add_field(void)
 	guint ret;
 	guint ret_expected;
 	JDBType type;
+	JDBOperator operator= random_values.selector_operator %(_J_DB_OPERATOR_COUNT + 1);
 	J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	ret_expected = the_stored_selector != NULL;
+	ret_expected = ret_expected && operator<_J_DB_OPERATOR_COUNT;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	switch (random_values.invalid_switch % 5)
@@ -119,37 +121,37 @@ event_selector_add_field(void)
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, &random_values.var_value_sint32, 4, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint32, 4, & error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
 			break;
 		case J_DB_TYPE_UINT32:
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, &random_values.var_value_uint32, 4, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint32, 4, & error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, &random_values.var_value_float32, 4, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float32, 4, & error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
 			break;
 		case J_DB_TYPE_SINT64:
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, &random_values.var_value_sint64, 8, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint64, 8, & error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
 			break;
 		case J_DB_TYPE_UINT64:
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, &random_values.var_value_uint64, 8, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint64, 8, & error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, &random_values.var_value_float64, 8, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float64, 8, & error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
@@ -157,7 +159,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_STRING:
 		case J_DB_TYPE_BLOB:
 			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
-			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, type, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
+			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;

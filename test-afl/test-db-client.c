@@ -101,6 +101,7 @@ struct JDBAflRandomValues
 	{ //selector
 		guint selector;
 		guint selector_mode;
+		guint selector_operator;
 		guint selector_selector;
 	};
 	struct

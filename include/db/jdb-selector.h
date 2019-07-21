@@ -24,13 +24,6 @@
 #include <julea.h>
 #include <db/jdb-type.h>
 #include <db/jdb-schema.h>
-enum JDBSelectorMode
-{
-	J_DB_SELECTOR_MODE_AND,
-	J_DB_SELECTOR_MODE_OR,
-	_J_DB_SELECTOR_MODE_COUNT,
-};
-typedef enum JDBSelectorMode JDBSelectorMode;
 struct JDBSelector
 {
 	JDBSelectorMode mode;

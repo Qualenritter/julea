@@ -80,6 +80,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator op
 	JDBType type;
 	gboolean ret;
 	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
+	j_goto_error_frontend(operator>= _J_DB_OPERATOR_COUNT, JULEA_FRONTEND_ERROR_OPERATOR_INVALID, "");
 	ret = j_db_schema_get_field(selector->schema, name, &type, error);
 	j_goto_error_subcommand(!ret);
 	sprintf(buf, "%d", selector->bson_count);
