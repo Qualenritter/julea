@@ -252,11 +252,11 @@ event_entry_delete(void)
 	{
 	case 2: //null entry
 		ret = j_db_entry_delete(NULL, the_stored_selector, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 1: //null batch
 		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:
 		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, batch, &error);
