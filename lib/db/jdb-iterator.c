@@ -104,13 +104,12 @@ j_db_iterator_next(JDBIterator* iterator, GError** error)
 	j_goto_error_frontend(!iterator->valid, JULEA_FRONTEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
 	if (iterator->bson_valid)
 		bson_destroy(&iterator->bson);
+	iterator->bson_valid = FALSE;
 	ret = j_db_internal_iterate(iterator->iterator, &iterator->bson, error);
 	j_goto_error_subcommand(!ret);
 	iterator->bson_valid = TRUE;
 	return TRUE;
 _error:
-	if (iterator)
-		iterator->valid = FALSE;
 	return FALSE;
 }
 gboolean
