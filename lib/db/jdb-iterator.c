@@ -132,42 +132,43 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
 	ret = bson_iter_find(&iter, name);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND, "");
+	J_DEBUG("type %d", *type);
 	switch (*type)
 	{
 	case J_DB_TYPE_SINT32:
 		j_goto_error_frontend(!BSON_ITER_HOLDS_INT32(&iter), JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gint32, 1);
-		*(gint32*)value = bson_iter_int32(&iter);
+		*((gint32*)*value) = bson_iter_int32(&iter);
 		*length = sizeof(gint32);
 		break;
 	case J_DB_TYPE_UINT32:
 		j_goto_error_frontend(!BSON_ITER_HOLDS_INT32(&iter), JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(guint32, 1);
-		*(guint32*)value = bson_iter_int32(&iter);
+		*((guint32*)*value) = bson_iter_int32(&iter);
 		*length = sizeof(guint32);
 		break;
 	case J_DB_TYPE_FLOAT32:
 		j_goto_error_frontend(!BSON_ITER_HOLDS_DOUBLE(&iter), JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gfloat, 1);
-		*(gfloat*)value = bson_iter_double(&iter);
+		*((gfloat*)*value) = bson_iter_double(&iter);
 		*length = sizeof(gfloat);
 		break;
 	case J_DB_TYPE_SINT64:
 		j_goto_error_frontend(!BSON_ITER_HOLDS_INT64(&iter), JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gint64, 1);
-		*(gint64*)value = bson_iter_int64(&iter);
+		*((gint64*)*value) = bson_iter_int64(&iter);
 		*length = sizeof(gint64);
 		break;
 	case J_DB_TYPE_UINT64:
 		j_goto_error_frontend(!BSON_ITER_HOLDS_INT64(&iter), JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(guint64, 1);
-		*(guint64*)value = bson_iter_int64(&iter);
+		*((guint64*)*value) = bson_iter_int64(&iter);
 		*length = sizeof(guint64);
 		break;
 	case J_DB_TYPE_FLOAT64:
 		j_goto_error_frontend(!BSON_ITER_HOLDS_DOUBLE(&iter), JULEA_FRONTENT_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gdouble, 1);
-		*(gdouble*)value = bson_iter_double(&iter);
+		*((gdouble*)*value) = bson_iter_double(&iter);
 		*length = sizeof(gdouble);
 		break;
 	case J_DB_TYPE_STRING:

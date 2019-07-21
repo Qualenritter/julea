@@ -221,7 +221,8 @@ event_iterator_get_field(void)
 		if (ret)
 		{
 			MYABORT_IF(type == _J_DB_TYPE_COUNT);
-			MYABORT_IF(!value);
+			MYABORT_IF(length && !value);
+			MYABORT_IF(!length && value);
 		}
 		break;
 		MYABORT_DEFAULT();
