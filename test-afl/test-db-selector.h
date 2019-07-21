@@ -117,7 +117,7 @@ event_selector_add_field(void)
 			ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, &type, &error);
 		else
 			ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected || ret, error);
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
