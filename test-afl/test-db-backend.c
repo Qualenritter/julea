@@ -114,58 +114,62 @@ build_selector_single(guint varname, guint value)
 	bson_t bson_child;
 	selector = bson_new();
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, varname);
-	bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-	if (!bson_append_int32(&bson_child, "operator", -1, J_DB_OPERATOR_EQ))
+	if (!bson_append_int32(&bson_child, "_mode", -1, J_DB_SELECTOR_MODE_AND))
+		MYABORT();
+	bson_append_document_begin(selector, "0", -1, &bson_child);
+	if (!bson_append_int32(&bson_child, "_operator", -1, J_DB_OPERATOR_EQ))
+		MYABORT();
+	if (!bson_append_utf8(&bson_child, "_name", -1, varname_strbuf, -1))
 		MYABORT();
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		switch (namespace_vartypes[random_values.namespace][random_values.name][varname])
 		{
 		case J_DB_TYPE_SINT32:
-			if (!bson_append_int32(&bson_child, "value", -1, value))
+			if (!bson_append_int32(&bson_child, "_value", -1, value))
 				MYABORT();
 			break;
 		case J_DB_TYPE_UINT32:
-			if (!bson_append_int32(&bson_child, "value", -1, value))
+			if (!bson_append_int32(&bson_child, "_value", -1, value))
 				MYABORT();
 			break;
 		case J_DB_TYPE_FLOAT32:
-			if (!bson_append_double(&bson_child, "value", -1, value))
+			if (!bson_append_double(&bson_child, "_value", -1, value))
 				MYABORT();
 			break;
 		case J_DB_TYPE_SINT64:
-			if (!bson_append_int64(&bson_child, "value", -1, value))
+			if (!bson_append_int64(&bson_child, "_value", -1, value))
 				MYABORT();
 			break;
 		case J_DB_TYPE_UINT64:
-			if (!bson_append_int64(&bson_child, "value", -1, value))
+			if (!bson_append_int64(&bson_child, "_value", -1, value))
 				MYABORT();
 			break;
 		case J_DB_TYPE_FLOAT64:
-			if (!bson_append_double(&bson_child, "value", -1, value))
+			if (!bson_append_double(&bson_child, "_value", -1, value))
 				MYABORT();
 			break;
 		case J_DB_TYPE_STRING:
 			if (value == AFL_LIMIT_SCHEMA_VALUES)
 			{
-				if (!bson_append_utf8(&bson_child, "value", -1, "not_existent_var_name", -1))
+				if (!bson_append_utf8(&bson_child, "_value", -1, "not_existent_var_name", -1))
 					MYABORT();
 			}
 			else
 			{
-				if (!bson_append_utf8(&bson_child, "value", -1, namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], -1))
+				if (!bson_append_utf8(&bson_child, "_value", -1, namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], -1))
 					MYABORT();
 			}
 			break;
 		case J_DB_TYPE_BLOB:
 			if (value == AFL_LIMIT_SCHEMA_VALUES)
 			{
-				if (!bson_append_binary(&bson_child, "value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)"not_existent_var_name", 1 + strlen("not_existent_var_name")))
+				if (!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)"not_existent_var_name", 1 + strlen("not_existent_var_name")))
 					MYABORT();
 			}
 			else
 			{
-				if (!bson_append_binary(&bson_child, "value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], 1 + strlen(namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES])))
+				if (!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], 1 + strlen(namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES])))
 					MYABORT();
 			}
 			break;
@@ -177,7 +181,7 @@ build_selector_single(guint varname, guint value)
 	else
 	{ //operation on not existent namespace
 		ret_expected = FALSE;
-		if (!bson_append_int32(&bson_child, "value", -1, value))
+		if (!bson_append_int32(&bson_child, "_value", -1, value))
 			MYABORT();
 	}
 	bson_append_document_end(selector, &bson_child);
@@ -338,7 +342,7 @@ event_query_single(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
+			bson_append_document_begin(&bson_child, "_value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_db_internal_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, &error);
@@ -540,7 +544,7 @@ event_delete(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
+			bson_append_document_begin(&bson_child, "_value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_db_internal_delete(namespace_strbuf, name_strbuf, selector, batch, &error);
@@ -691,7 +695,7 @@ event_update(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_document_begin(&bson_child, "value", -1, &bson_child2);
+			bson_append_document_begin(&bson_child, "_value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_db_internal_update(namespace_strbuf, name_strbuf, selector, metadata, batch, &error);
