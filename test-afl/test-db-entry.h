@@ -218,15 +218,15 @@ event_entry_update(void)
 	{
 	case 3: //null selector
 		ret = j_db_entry_update(the_stored_entry, NULL, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 2: //null entry
 		ret = j_db_entry_update(NULL, the_stored_selector, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 1: //null batch
 		ret = j_db_entry_update(the_stored_entry, the_stored_selector, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:
 		ret = j_db_entry_update(the_stored_entry, the_stored_selector, batch, &error);
