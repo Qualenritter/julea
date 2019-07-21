@@ -26,6 +26,7 @@ event_schema_delete_helper(void)
 	GError* error = NULL;
 	guint ret;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	J_DEBUG("event_schema_delete_helper");
 	if (the_stored_schema)
 	{
 		if (the_stored_schema->server_side)
@@ -55,17 +56,19 @@ event_schema_delete_helper(void)
 			stored_iterators[random_values.namespace][random_values.name][k] = NULL;
 			stored_iterators_next_count[random_values.namespace][random_values.name][k] = 0;
 		}
+		for (k = 0; k < AFL_LIMIT_SCHEMA_FIELDS; k++)
+		{
+			schema_field_types[random_values.namespace][random_values.name][k] = _J_DB_TYPE_COUNT;
+		}
 	}
 }
 static void
 event_schema_new(void)
 {
 	GError* error = NULL;
-	guint i;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	if (the_stored_schema)
 		event_schema_delete_helper();
-	the_stored_schema = NULL;
 	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
 	sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
 	switch (random_values.invalid_switch % 3)
@@ -81,10 +84,6 @@ event_schema_new(void)
 	case 0:
 		the_stored_schema = j_db_schema_new(namespace_strbuf, name_strbuf, &error);
 		J_AFL_DEBUG_ERROR(the_stored_schema != NULL, TRUE, error);
-		for (i = 0; i < AFL_LIMIT_SCHEMA_FIELDS; i++)
-		{
-			schema_field_types[random_values.namespace][random_values.name][i] = _J_DB_TYPE_COUNT;
-		}
 		break;
 	default:
 		MYABORT();
@@ -121,17 +120,21 @@ event_schema_add_field(void)
 	gboolean ret;
 	GError* error = NULL;
 	gboolean ret_expected;
-	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = the_stored_schema != NULL;
+	J_DEBUG("ret_expected %d", ret_expected);
 	ret_expected = ret_expected && random_values.var_type < _J_DB_TYPE_COUNT;
+	J_DEBUG("ret_expected %d", ret_expected);
 	ret_expected = ret_expected && the_schema_field_type == _J_DB_TYPE_COUNT;
+	J_DEBUG("ret_expected %d", ret_expected);
 	if (the_stored_schema)
 		ret_expected = ret_expected && !the_stored_schema->server_side;
+	J_DEBUG("ret_expected %d", ret_expected);
 	if (random_values.invalid_switch % 2)
 	{
 		ret_expected = FALSE;
+		J_DEBUG("ret_expected %d", ret_expected);
 		ret = j_db_schema_add_field(the_stored_schema, NULL, random_values.var_type, &error);
 	}
 	else

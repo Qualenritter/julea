@@ -1,3 +1,24 @@
+/*
+ * JULEA - Flexible storage framework
+ * Copyright (C) 2019 Benjamin Warnke
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * this file is part of 'test-db-client.c'
+ */
 static void
 event_entry_new(void)
 {
@@ -57,6 +78,7 @@ event_entry_set_field(void)
 	guint ret_expected;
 	JDBType type;
 	ret_expected = the_stored_entry != NULL;
+	J_DEBUG("ret_expected %d", ret_expected);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	switch (random_values.invalid_switch % 5)
@@ -89,10 +111,13 @@ event_entry_set_field(void)
 	case 0:
 		type = random_values.var_type;
 		ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
+		J_DEBUG("ret_expected %d", ret_expected);
+		J_DEBUG("the_stored_entry!=NULL %d", the_stored_entry != NULL);
 		if (the_stored_entry)
 			ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, &type, &error);
 		else
 			ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
+		J_DEBUG("type %d", type);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		ret_expected = ret_expected && !(the_stored_entry_field_set & (1 << random_values.var_name));
 		switch (type)

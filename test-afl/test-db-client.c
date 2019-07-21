@@ -193,6 +193,10 @@ main(int argc, char* argv[])
 				stored_iterators[i][j][k] = NULL;
 				stored_iterators_next_count[i][j][k] = 0;
 			}
+			for (k = 0; k < AFL_LIMIT_SCHEMA_FIELDS; k++)
+			{
+				schema_field_types[i][j][k] = _J_DB_TYPE_COUNT;
+			}
 		}
 	}
 #ifdef __AFL_HAVE_MANUAL_CONTROL
