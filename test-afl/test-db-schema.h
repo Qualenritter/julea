@@ -37,29 +37,29 @@ event_schema_delete_helper(void)
 		}
 		j_db_schema_unref(the_stored_schema);
 		the_stored_schema = NULL;
-		for (k = 0; k < AFL_LIMIT_ENTRY; k++)
-		{
-			j_db_entry_unref(stored_entrys[random_values.namespace][random_values.name][k]);
-			stored_entrys[random_values.namespace][random_values.name][k] = NULL;
-			stored_entrys_field_count[random_values.namespace][random_values.name][k] = 0;
-			stored_entrys_field_set[random_values.namespace][random_values.name][k] = 0;
-		}
-		for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
-		{
-			j_db_selector_unref(stored_selectors[random_values.namespace][random_values.name][k]);
-			stored_selectors[random_values.namespace][random_values.name][k] = NULL;
-			stored_selectors_field_count[random_values.namespace][random_values.name][k] = 0;
-		}
-		for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
-		{
-			j_db_iterator_unref(stored_iterators[random_values.namespace][random_values.name][k]);
-			stored_iterators[random_values.namespace][random_values.name][k] = NULL;
-			stored_iterators_next_count[random_values.namespace][random_values.name][k] = 0;
-		}
-		for (k = 0; k < AFL_LIMIT_SCHEMA_FIELDS; k++)
-		{
-			schema_field_types[random_values.namespace][random_values.name][k] = _J_DB_TYPE_COUNT;
-		}
+	}
+	for (k = 0; k < AFL_LIMIT_ENTRY; k++)
+	{
+		j_db_entry_unref(stored_entrys[random_values.namespace][random_values.name][k]);
+		stored_entrys[random_values.namespace][random_values.name][k] = NULL;
+		stored_entrys_field_count[random_values.namespace][random_values.name][k] = 0;
+		stored_entrys_field_set[random_values.namespace][random_values.name][k] = 0;
+	}
+	for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
+	{
+		j_db_selector_unref(stored_selectors[random_values.namespace][random_values.name][k]);
+		stored_selectors[random_values.namespace][random_values.name][k] = NULL;
+		stored_selectors_field_count[random_values.namespace][random_values.name][k] = 0;
+	}
+	for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
+	{
+		j_db_iterator_unref(stored_iterators[random_values.namespace][random_values.name][k]);
+		stored_iterators[random_values.namespace][random_values.name][k] = NULL;
+		stored_iterators_next_count[random_values.namespace][random_values.name][k] = 0;
+	}
+	for (k = 0; k < AFL_LIMIT_SCHEMA_FIELDS; k++)
+	{
+		schema_field_types[random_values.namespace][random_values.name][k] = _J_DB_TYPE_COUNT;
 	}
 }
 static void
@@ -67,8 +67,7 @@ event_schema_new(void)
 {
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	if (the_stored_schema)
-		event_schema_delete_helper();
+	event_schema_delete_helper();
 	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
 	sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
 	switch (random_values.invalid_switch % 3)
@@ -365,6 +364,7 @@ event_schema_delete(void)
 		{
 			j_db_schema_unref(the_stored_schema);
 			the_stored_schema = NULL;
+			event_schema_delete_helper();
 		}
 		break;
 	default:
