@@ -41,7 +41,6 @@ event_schema_delete_helper(void)
 	{
 		j_db_entry_unref(stored_entrys[random_values.namespace][random_values.name][k]);
 		stored_entrys[random_values.namespace][random_values.name][k] = NULL;
-		stored_entrys_field_count[random_values.namespace][random_values.name][k] = 0;
 		stored_entrys_field_set[random_values.namespace][random_values.name][k] = 0;
 	}
 	for (k = 0; k < AFL_LIMIT_SELECTOR; k++)

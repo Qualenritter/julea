@@ -119,8 +119,6 @@ static JDBType schema_field_types[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_N
 //entry->
 static JDBEntry* stored_entrys[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
 #define the_stored_entry stored_entrys[random_values.namespace][random_values.name][random_values.entry]
-static gboolean stored_entrys_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
-#define the_stored_entry_field_count stored_entrys_field_count[random_values.namespace][random_values.name][random_values.entry]
 static guint stored_entrys_field_set[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
 #define the_stored_entry_field_set stored_entrys_field_set[random_values.namespace][random_values.name][random_values.entry]
 //<-
@@ -181,7 +179,6 @@ main(int argc, char* argv[])
 			for (k = 0; k < AFL_LIMIT_ENTRY; k++)
 			{
 				stored_entrys[i][j][k] = NULL;
-				stored_entrys_field_count[i][j][k] = 0;
 				stored_entrys_field_set[i][j][k] = 0;
 			}
 			for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
