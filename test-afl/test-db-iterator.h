@@ -217,6 +217,8 @@ event_iterator_get_field(void)
 		break;
 	case 0:
 		ret = j_db_iterator_get_field(the_stored_iterator, varname_strbuf, &type, &value, &length, &error);
+		if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_BSON_NOT_INITIALIZED)
+			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)
 		{

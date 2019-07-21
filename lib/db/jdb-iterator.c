@@ -99,17 +99,20 @@ j_db_iterator_unref(JDBIterator* iterator)
 gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
-	guint ret;
+	guint ret = TRUE;
 	j_goto_error_frontend(!iterator, JULEA_FRONTEND_ERROR_ITERATOR_NULL, "");
 	j_goto_error_frontend(!iterator->valid, JULEA_FRONTEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
 	if (iterator->bson_valid)
 		bson_destroy(&iterator->bson);
-	iterator->bson_valid = FALSE;
 	ret = j_db_internal_iterate(iterator->iterator, &iterator->bson, error);
 	j_goto_error_subcommand(!ret);
-	iterator->bson_valid = TRUE;
 	return TRUE;
 _error:
+	if (!ret)
+	{
+		iterator->valid = FALSE;
+		iterator->bson_valid = FALSE;
+	}
 	return FALSE;
 }
 gboolean
