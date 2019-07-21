@@ -508,6 +508,7 @@ event_delete(void)
 			break;
 		case 4: //invalid bson - value of not allowed bson type
 			selector = bson_new();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_document_begin(&bson_child, "_value", -1, &bson_child2);
@@ -519,6 +520,7 @@ event_delete(void)
 			break;
 		case 3: //invalid bson - operator undefined enum
 			selector = bson_new();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_int32(&bson_child, "operator", -1, _J_DB_OPERATOR_COUNT + 1);
@@ -529,6 +531,7 @@ event_delete(void)
 			break;
 		case 2: //invalid bson - operator of invalid type
 			selector = bson_new();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
@@ -540,6 +543,7 @@ event_delete(void)
 			break;
 		case 1: //invalid bson - key of type something else than a document
 			selector = bson_new();
+			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_int32(selector, varname_strbuf, -1, 0);
 			ret = j_db_internal_delete(namespace_strbuf, name_strbuf, selector, batch, &error);
