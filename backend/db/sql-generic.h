@@ -816,7 +816,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
 	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", batch->namespace, name);
-	if (selector && bson_count_keys(selector))
+	if (selector && (1 < bson_count_keys(selector)))
 	{
 		g_string_append(sql, " WHERE ");
 		ret = bson_iter_init(&iter, selector);
@@ -843,7 +843,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	if (selector && bson_count_keys(selector))
+	if (selector && (1 < bson_count_keys(selector)))
 	{
 		ret = bson_iter_init(&iter, selector);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_INIT, "");
@@ -887,7 +887,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	j_goto_error_backend(!name, JULEA_BACKEND_ERROR_NAME_NULL, "");
 	j_goto_error_backend(!batch, JULEA_BACKEND_ERROR_BATCH_NULL, "");
 	j_goto_error_backend(!selector, JULEA_BACKEND_ERROR_SELECTOR_NULL, "");
-	j_goto_error_backend(!bson_count_keys(selector), JULEA_BACKEND_ERROR_SELECTOR_EMPTY, "");
+	j_goto_error_backend(bson_count_keys(selector) < 2, JULEA_BACKEND_ERROR_SELECTOR_EMPTY, "");
 	j_goto_error_backend(!metadata, JULEA_BACKEND_ERROR_METADATA_NULL, "");
 	prepared = getCachePrepared(batch->namespace, name, "update", error);
 	j_goto_error_subcommand(!prepared);
@@ -1080,7 +1080,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		variables_count++;
 	}
 	g_string_append_printf(sql, " FROM %s_%s", batch->namespace, name);
-	if (selector && bson_count_keys(selector))
+	if (selector && (1 < bson_count_keys(selector)))
 	{
 		g_string_append(sql, " WHERE ");
 		ret = bson_iter_init(&iter, selector);
@@ -1116,7 +1116,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		g_hash_table_destroy(variables_type);
 		variables_type = NULL;
 	}
-	if (selector && bson_count_keys(selector))
+	if (selector && (1 < bson_count_keys(selector)))
 	{
 		ret = bson_iter_init(&iter, selector);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_INIT, "");

@@ -56,10 +56,7 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	if (selector && selector->bson_count)
-		ret2 = j_db_internal_query(schema->namespace, schema->name, &selector->bson, &iterator->iterator, batch, error);
-	else
-		ret2 = j_db_internal_query(schema->namespace, schema->name, NULL, &iterator->iterator, batch, error);
+	ret2 = j_db_internal_query(schema->namespace, schema->name, j_db_selector_get_bson(selector), &iterator->iterator, batch, error);
 	ret = ret2 && j_batch_execute(batch);
 	j_batch_unref(batch);
 	j_goto_error_subcommand(!ret);

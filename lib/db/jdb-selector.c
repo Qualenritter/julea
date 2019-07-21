@@ -151,3 +151,11 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 _error:
 	return FALSE;
 }
+
+gboolean
+j_db_selector_get_bson(JDBSelector* selector)
+{
+	if (selector && selector->bson_count > 0)
+		return &selector->bson;
+	return NULL;
+}

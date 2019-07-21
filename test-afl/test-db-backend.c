@@ -341,6 +341,8 @@ event_query_single(void)
 		case 4: //invalid bson - value of not allowed bson type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
+				MYABORT();
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_document_begin(&bson_child, "_value", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);

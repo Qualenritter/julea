@@ -139,10 +139,12 @@ gboolean
 j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	gint ret;
+	bson_t* bson;
 	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
-	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	ret = j_db_internal_update(entry->schema->namespace, entry->schema->name, &selector->bson, &entry->bson, batch, error);
+	bson = j_db_selector_get_bson(selector);
+	j_goto_error_frontend(!bson, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
+	ret = j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error);
 	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
@@ -154,8 +156,7 @@ j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 	gint ret;
 	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
 	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
-	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	ret = j_db_internal_delete(entry->schema->namespace, entry->schema->name, &selector->bson, batch, error);
+	ret = j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error);
 	j_goto_error_subcommand(!ret);
 	return TRUE;
 _error:
