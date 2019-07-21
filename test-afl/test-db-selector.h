@@ -28,6 +28,7 @@ event_selector_new(void)
 	j_db_selector_unref(the_stored_selector);
 	the_stored_selector = NULL;
 	the_stored_selector_field_count = 0;
+	J_DEBUG("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
 	random_values.selector_mode = random_values.selector_mode % (_J_DB_SELECTOR_MODE_COUNT + 1);
 	switch (random_values.invalid_switch % 2)
 	{
@@ -52,6 +53,7 @@ event_selector_ref(void)
 	GError* error = NULL;
 	JDBSelector* ptr = NULL;
 	gint ref_count;
+	J_DEBUG("AFL_EVENT_DB_SELECTOR_REF %d %d", random_values.namespace, random_values.name);
 	if (the_stored_selector)
 	{
 		ref_count = the_stored_selector->ref_count;
@@ -75,6 +77,7 @@ event_selector_add_field(void)
 	guint ret;
 	guint ret_expected;
 	JDBType type;
+	J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	ret_expected = the_stored_selector != NULL;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
@@ -175,6 +178,7 @@ event_selector_add_selector(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
+	J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_SELECTOR %d %d", random_values.namespace, random_values.name);
 	random_values.selector_selector = random_values.selector_selector % AFL_LIMIT_SELECTOR;
 	ret_expected = the_stored_selector != NULL;
 	switch (random_values.invalid_switch % 1)

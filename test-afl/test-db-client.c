@@ -67,6 +67,7 @@ enum JDBAflEvent
 	AFL_EVENT_DB_SELECTOR_REF,
 	AFL_EVENT_DB_SELECTOR_ADD_FIELD,
 	AFL_EVENT_DB_SELECTOR_ADD_SELECTOR,
+	AFL_EVENT_DB_AFL_INIT,
 	_AFL_EVENT_DB_COUNT,
 };
 typedef enum JDBAflEvent JDBAflEvent;
@@ -216,96 +217,87 @@ main(int argc, char* argv[])
 		switch (event)
 		{
 		case AFL_EVENT_DB_ENTRY_NEW:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			event_entry_new();
 			break;
 		case AFL_EVENT_DB_ENTRY_REF:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_REF %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			event_entry_ref();
 			break;
 		case AFL_EVENT_DB_ENTRY_SET_FIELD:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			event_entry_set_field();
 			break;
 		case AFL_EVENT_DB_ENTRY_INSERT:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			event_entry_insert();
 			break;
 		case AFL_EVENT_DB_ENTRY_UPDATE:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			event_entry_update();
 			break;
 		case AFL_EVENT_DB_ENTRY_DELETE:
-			J_DEBUG("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 			event_entry_delete();
 			break;
 		case AFL_EVENT_DB_ITERATOR_NEW:
-			J_DEBUG("AFL_EVENT_DB_ITERATOR_NEW %d %d", random_values.namespace, random_values.name);
 			event_iterator_new();
 			break;
 		case AFL_EVENT_DB_ITERATOR_REF:
-			J_DEBUG("AFL_EVENT_DB_ITERATOR_REF %d %d", random_values.namespace, random_values.name);
 			event_iterator_ref();
 			break;
 		case AFL_EVENT_DB_ITERATOR_NEXT:
-			J_DEBUG("AFL_EVENT_DB_ITERATOR_NEXT %d %d", random_values.namespace, random_values.name);
 			event_iterator_next();
 			break;
 		case AFL_EVENT_DB_ITERATOR_GET_FIELD:
-			J_DEBUG("AFL_EVENT_DB_ITERATOR_GET_FIELD %d %d", random_values.namespace, random_values.name);
 			event_iterator_get_field();
 			break;
 		case AFL_EVENT_DB_SCHEMA_NEW:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_NEW %d %d", random_values.namespace, random_values.name);
 			event_schema_new();
 			break;
 		case AFL_EVENT_DB_SCHEMA_REF:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_REF %d %d", random_values.namespace, random_values.name);
 			event_schema_ref();
 			break;
 		case AFL_EVENT_DB_SCHEMA_ADD_FIELD:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 			event_schema_add_field();
 			break;
 		case AFL_EVENT_DB_SCHEMA_GET_FIELD:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_GET_FIELD %d %d", random_values.namespace, random_values.name);
 			event_schema_get_field();
 			break;
 		case AFL_EVENT_DB_SCHEMA_GET_FIELDS:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_GET_FIELDS %d %d", random_values.namespace, random_values.name);
 			event_schema_get_fields();
 			break;
 		case AFL_EVENT_DB_SCHEMA_ADD_INDEX:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_ADD_INDEX %d %d", random_values.namespace, random_values.name);
 			event_schema_add_index();
 			break;
 		case AFL_EVENT_DB_SCHEMA_CREATE:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_CREATE %d %d", random_values.namespace, random_values.name);
 			event_schema_create();
 			break;
 		case AFL_EVENT_DB_SCHEMA_GET:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_GET %d %d", random_values.namespace, random_values.name);
 			event_schema_get();
 			break;
 		case AFL_EVENT_DB_SCHEMA_DELETE:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_DELETE %d %d", random_values.namespace, random_values.name);
 			event_schema_delete();
 			break;
 		case AFL_EVENT_DB_SELECTOR_NEW:
-			J_DEBUG("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
 			event_selector_new();
 			break;
 		case AFL_EVENT_DB_SELECTOR_REF:
-			J_DEBUG("AFL_EVENT_DB_SELECTOR_REF %d %d", random_values.namespace, random_values.name);
 			event_selector_ref();
 			break;
 		case AFL_EVENT_DB_SELECTOR_ADD_FIELD:
-			J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 			event_selector_add_field();
 			break;
 		case AFL_EVENT_DB_SELECTOR_ADD_SELECTOR:
-			J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_SELECTOR %d %d", random_values.namespace, random_values.name);
 			event_selector_add_selector();
+			break;
+		case AFL_EVENT_DB_AFL_INIT:
+			//this initializes one element of each class
+			event_schema_new();
+			event_schema_add_field();
+			event_schema_create();
+			event_entry_new();
+			event_entry_set_field();
+			event_entry_insert();
+			event_selector_new();
+			event_selector_add_field();
+			event_iterator_new();
+			event_iterator_next();
+			event_iterator_get_field();
 			break;
 		case _AFL_EVENT_DB_COUNT:
 			MYABORT_DEFAULT();

@@ -66,6 +66,7 @@ event_schema_new(void)
 {
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_NEW %d %d", random_values.namespace, random_values.name);
 	event_schema_delete_helper();
 	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
 	sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
@@ -92,6 +93,7 @@ event_schema_ref(void)
 	GError* error = NULL;
 	JDBSchema* ptr = NULL;
 	gint ref_count;
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_REF %d %d", random_values.namespace, random_values.name);
 	if (the_stored_schema)
 	{
 		ref_count = the_stored_schema->ref_count;
@@ -114,6 +116,7 @@ event_schema_add_field(void)
 	gboolean ret;
 	GError* error = NULL;
 	gboolean ret_expected;
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = the_stored_schema != NULL;
@@ -139,6 +142,7 @@ event_schema_get_field(void)
 	JDBType type;
 	GError* error = NULL;
 	gboolean ret_expected;
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_GET_FIELD %d %d", random_values.namespace, random_values.name);
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = the_stored_schema != NULL;
@@ -177,6 +181,7 @@ event_schema_get_fields(void)
 	gchar** names_cur;
 	GError* error = NULL;
 	gboolean ret_expected;
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_GET_FIELDS %d %d", random_values.namespace, random_values.name);
 	ret_expected = the_stored_schema != NULL;
 	switch (random_values.invalid_switch % 3)
 	{
@@ -231,6 +236,7 @@ event_schema_get_fields(void)
 static void
 event_schema_add_index(void)
 {
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_ADD_INDEX %d %d", random_values.namespace, random_values.name);
 	//TODO event_schema_add_index
 }
 static void
@@ -242,6 +248,7 @@ event_schema_create(void)
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	gboolean ret;
 	gboolean ret_expected;
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_CREATE %d %d", random_values.namespace, random_values.name);
 	switch (random_values.invalid_switch % 3)
 	{
 	case 2: //batch null
@@ -280,6 +287,7 @@ event_schema_get(void)
 	gboolean ret;
 	gboolean bool_tmp;
 	gboolean ret_expected;
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_GET %d %d", random_values.namespace, random_values.name);
 	if (the_stored_schema != NULL)
 	{
 		switch (random_values.invalid_switch % 3)
@@ -321,6 +329,7 @@ event_schema_delete(void)
 	gboolean ret;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	J_DEBUG("AFL_EVENT_DB_SCHEMA_DELETE %d %d", random_values.namespace, random_values.name);
 	switch (random_values.invalid_switch % 3)
 	{
 	case 2:

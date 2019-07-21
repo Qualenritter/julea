@@ -25,6 +25,7 @@ event_iterator_new(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
+	J_DEBUG("AFL_EVENT_DB_ITERATOR_NEW %d %d", random_values.namespace, random_values.name);
 	j_db_iterator_unref(the_stored_iterator);
 	the_stored_iterator_next_count = 0;
 	switch (random_values.invalid_switch % 3)
@@ -59,6 +60,7 @@ event_iterator_ref(void)
 	GError* error = NULL;
 	JDBIterator* ptr = NULL;
 	gint ref_count;
+	J_DEBUG("AFL_EVENT_DB_ITERATOR_REF %d %d", random_values.namespace, random_values.name);
 	if (the_stored_iterator)
 	{
 		ref_count = the_stored_iterator->ref_count;
@@ -81,6 +83,7 @@ event_iterator_next(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
+	J_DEBUG("AFL_EVENT_DB_ITERATOR_NEXT %d %d", random_values.namespace, random_values.name);
 	switch (random_values.invalid_switch % 2)
 	{
 	case 1: //null iterator
@@ -184,6 +187,7 @@ event_iterator_get_field(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
+	J_DEBUG("AFL_EVENT_DB_ITERATOR_GET_FIELD %d %d", random_values.namespace, random_values.name);
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	ret_expected = the_stored_iterator != NULL;
