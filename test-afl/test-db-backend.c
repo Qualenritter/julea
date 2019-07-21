@@ -356,6 +356,8 @@ event_query_single(void)
 		case 3: //invalid bson - operator undefined enum
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
+				MYABORT();
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_int32(&bson_child, "operator", -1, _J_DB_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
@@ -368,6 +370,8 @@ event_query_single(void)
 		case 2: //invalid bson - operator of invalid type
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
+				MYABORT();
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
 			bson_append_document_begin(&bson_child, "operator", -1, &bson_child2);
 			bson_append_document_end(&bson_child, &bson_child2);
@@ -381,6 +385,8 @@ event_query_single(void)
 		case 1: //invalid bson - key of type something else than a document
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
+			if (!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND))
+				MYABORT();
 			bson_append_int32(selector, varname_strbuf, -1, 0);
 			ret = j_db_internal_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, &error);
 			ret = j_batch_execute(batch) && ret;
