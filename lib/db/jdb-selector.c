@@ -84,7 +84,6 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator op
 	j_goto_error_subcommand(!ret);
 	sprintf(buf, "%d", selector->bson_count);
 	bson_append_document_begin(&selector->bson, buf, -1, &bson);
-
 	ret = bson_append_utf8(&bson, "_name", -1, name, -1);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
 	ret = bson_append_int32(&bson, "_operator", -1, operator);
