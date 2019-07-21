@@ -73,6 +73,7 @@ event_selector_ref(void)
 static void
 event_selector_add_field(void)
 {
+	//TODO test null value parameter
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;

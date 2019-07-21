@@ -214,6 +214,7 @@ event_entry_update(void)
 	ret_expected = the_stored_entry != NULL;
 	ret_expected = ret_expected && the_stored_entry_field_set;
 	ret_expected = ret_expected && the_stored_selector;
+	ret_expected = ret_expected && j_db_selector_get_bson(the_stored_selector);
 	switch (random_values.invalid_switch % 4)
 	{
 	case 3: //null selector
@@ -247,7 +248,6 @@ event_entry_delete(void)
 	J_DEBUG("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = the_stored_entry != NULL;
-	ret_expected = ret_expected && the_stored_entry_field_set;
 	switch (random_values.invalid_switch % 3)
 	{
 	case 2: //null entry
