@@ -639,6 +639,8 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 	g_string_append(sql, "( ");
 	while (bson_iter_next(iter))
 	{
+		if (!g_strcmp0(bson_iter_key(iter), "_mode"))
+			continue;
 		ret = BSON_ITER_HOLDS_DOCUMENT(iter);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(iter));
 		ret = bson_iter_recurse(iter, &iterchild);
@@ -684,7 +686,6 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 			ret = BSON_ITER_HOLDS_INT32(&iterchild);
 			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iterchild));
 			op = bson_iter_int32(&iterchild);
-			g_string_append_printf(sql, "%s ", bson_iter_key(iter));
 			switch (op)
 			{
 			case J_DB_OPERATOR_LT:
@@ -718,9 +719,8 @@ _error:
 	return FALSE;
 }
 static gboolean
-bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, JDBSelectorMode mode, guint* variables_count, GError** error)
+bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* variables_count, GError** error)
 {
-	JDBSelectorMode mode_child;
 	uint32_t binary_len;
 	const uint8_t* binary;
 	bson_iter_t iterchild;
@@ -728,18 +728,17 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, JDBSelect
 	bson_type_t type;
 	while (bson_iter_next(iter))
 	{
+		if (!g_strcmp0(bson_iter_key(iter), "_mode"))
+			continue;
 		ret = BSON_ITER_HOLDS_DOCUMENT(iter);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(iter));
 		ret = bson_iter_recurse(iter, &iterchild);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_RECOURSE, "");
 		if (bson_iter_find(&iterchild, "_mode"))
 		{
-			ret = BSON_ITER_HOLDS_INT32(&iterchild);
-			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iterchild));
-			mode_child = bson_iter_int32(&iterchild);
 			ret = bson_iter_recurse(iter, &iterchild);
 			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_RECOURSE, "");
-			ret = bind_selector_query(&iterchild, prepared, mode_child, variables_count, error);
+			ret = bind_selector_query(&iterchild, prepared, variables_count, error);
 			j_goto_error_subcommand(!ret);
 		}
 		else
@@ -848,7 +847,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		ret = bson_iter_init(&iter, selector);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_INIT, "");
 		variables_count = 0;
-		ret = bind_selector_query(&iter, prepared, mode_child, &variables_count, error);
+		ret = bind_selector_query(&iter, prepared, &variables_count, error);
 		j_goto_error_subcommand(!ret);
 	}
 	j_sql_loop(prepared->stmt, ret)
@@ -1121,7 +1120,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		ret = bson_iter_init(&iter, selector);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_INIT, "");
 		variables_count2 = 0;
-		ret = bind_selector_query(&iter, prepared, mode_child, &variables_count2, error);
+		ret = bind_selector_query(&iter, prepared, &variables_count2, error);
 		j_goto_error_subcommand(!ret);
 	}
 	*iterator = prepared;
