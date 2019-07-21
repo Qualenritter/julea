@@ -528,12 +528,13 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 			count++;
 			j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(iter));
 			break;
-		case BSON_TYPE_NULL:
-			j_sql_bind_null(prepared->stmt, index);
-			break;
 		case BSON_TYPE_BINARY:
+			count++;
 			bson_iter_binary(iter, NULL, &binary_len, &binary);
 			j_sql_bind_blob(prepared->stmt, index, binary, binary_len);
+			break;
+		case BSON_TYPE_NULL:
+			j_sql_bind_null(prepared->stmt, index);
 			break;
 		case BSON_TYPE_EOD:
 		case BSON_TYPE_DOCUMENT:
