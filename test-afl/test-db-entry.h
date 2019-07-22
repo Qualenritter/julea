@@ -180,6 +180,7 @@ event_entry_insert(void)
 	J_DEBUG("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = the_stored_entry != NULL;
+	ret_expected = ret_expected && the_stored_schema->server_side;
 	ret_expected = ret_expected && the_stored_entry_field_set;
 	switch (random_values.invalid_switch % 3)
 	{
