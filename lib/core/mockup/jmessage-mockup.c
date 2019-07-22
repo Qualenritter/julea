@@ -39,7 +39,6 @@
 #define j_message_ref j_message_mockup_ref
 #define j_message_unref j_message_mockup_unref
 #define j_message_get_type j_message_mockup_get_type
-#define j_message_get_flags j_message_mockup_get_flags
 #define j_message_get_count j_message_mockup_get_count
 #define j_message_append_1 j_message_mockup_append_1
 #define j_message_append_4 j_message_mockup_append_4
@@ -56,8 +55,6 @@
 #define j_message_write j_message_mockup_write
 #define j_message_add_send j_message_mockup_add_send
 #define j_message_add_operation j_message_mockup_add_operation
-#define j_message_set_safety j_message_mockup_set_safety
-#define j_message_force_safety j_message_mockup_force_safety
 #endif
 #define myabort(val)                                         \
 	do                                                   \
@@ -114,8 +111,6 @@ void
 j_message_mockup_add_operation(JMessage* message, gsize size);
 JMessageType
 j_message_mockup_get_type(JMessage const* message);
-JMessageFlags
-j_message_mockup_get_flags(JMessage const* message);
 guint32
 j_message_mockup_get_count(JMessage const* message);
 gboolean
@@ -124,10 +119,6 @@ gboolean
 j_message_mockup_write(JMessage* message, GOutputStream* stream);
 void
 j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size);
-void
-j_message_mockup_set_safety(JMessage* message, JSemantics* semantics);
-void
-j_message_mockup_force_safety(JMessage* message, gint safety);
 static JMessage* server_reply_mockup;
 JMessage*
 _j_message_mockup_new_reply(JMessage* message);
@@ -313,12 +304,6 @@ j_message_mockup_get_type(JMessage const* message)
 	myabort(!message);
 	return message->type;
 }
-JMessageFlags
-j_message_mockup_get_flags(JMessage const* message)
-{
-	J_CRITICAL("mockup not implemented%d", 0);
-	abort();
-}
 guint32
 j_message_mockup_get_count(JMessage const* message)
 {
@@ -345,16 +330,4 @@ j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size)
 	abort();
 }
 
-void
-j_message_mockup_set_safety(JMessage* message, JSemantics* semantics)
-{
-	J_CRITICAL("mockup not implemented%d", 0);
-	abort();
-}
-void
-j_message_mockup_force_safety(JMessage* message, gint safety)
-{
-	J_CRITICAL("mockup not implemented%d", 0);
-	abort();
-}
 #pragma GCC diagnostic pop
