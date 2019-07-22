@@ -144,6 +144,7 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	j_goto_error_frontend(!sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	j_goto_error_frontend(selector == sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_EQUAL, "");
+	j_goto_error_frontend(!sub_selector->bson_count, JULEA_FRONTEND_ERROR_SELECTOR_EMPTY, "");
 	sprintf(buf, "%d", selector->bson_count);
 	ret = bson_append_document(&selector->bson, buf, -1, &sub_selector->bson);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "DOCUMENT");

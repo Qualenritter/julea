@@ -646,6 +646,22 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(iter));
 		ret = bson_iter_recurse(iter, &iterchild);
 		j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_RECOURSE, "");
+		if (!first)
+		{
+			switch (mode)
+			{
+			case J_DB_SELECTOR_MODE_AND:
+				g_string_append(sql, " AND ");
+				break;
+			case J_DB_SELECTOR_MODE_OR:
+				g_string_append(sql, " OR ");
+				break;
+			case _J_DB_SELECTOR_MODE_COUNT:
+			default:
+				j_goto_error_backend(TRUE, JULEA_BACKEND_ERROR_OPERATOR_INVALID, "");
+			}
+		}
+		first = FALSE;
 		if (bson_iter_find(&iterchild, "_mode"))
 		{
 			ret = BSON_ITER_HOLDS_INT32(&iterchild);
@@ -659,22 +675,6 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 		else
 		{
 			(*variables_count)++;
-			if (!first)
-			{
-				switch (mode)
-				{
-				case J_DB_SELECTOR_MODE_AND:
-					g_string_append(sql, " AND ");
-					break;
-				case J_DB_SELECTOR_MODE_OR:
-					g_string_append(sql, " OR ");
-					break;
-				case _J_DB_SELECTOR_MODE_COUNT:
-				default:
-					j_goto_error_backend(TRUE, JULEA_BACKEND_ERROR_OPERATOR_INVALID, "");
-				}
-			}
-			first = FALSE;
 			ret = bson_iter_recurse(iter, &iterchild);
 			j_goto_error_backend(!ret, JULEA_BACKEND_ERROR_BSON_ITER_RECOURSE, "");
 			ret = bson_iter_find(&iterchild, "_name");
@@ -716,6 +716,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 		}
 	}
 	g_string_append(sql, " )");
+	j_goto_error_backend(first, JULEA_BACKEND_ERROR_SELECTOR_EMPTY, "");
 	return TRUE;
 _error:
 	return FALSE;
