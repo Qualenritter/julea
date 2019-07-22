@@ -34,7 +34,7 @@ enum JDBType
 typedef enum JDBType JDBType;
 enum JDBSelectorMode
 {
-	J_DB_SELECTOR_MODE_AND,
+	J_DB_SELECTOR_MODE_AND = 0,
 	J_DB_SELECTOR_MODE_OR,
 	_J_DB_SELECTOR_MODE_COUNT,
 };
