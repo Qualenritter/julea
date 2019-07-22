@@ -81,6 +81,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator op
 	gboolean ret;
 	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	j_goto_error_frontend(operator>= _J_DB_OPERATOR_COUNT, JULEA_FRONTEND_ERROR_OPERATOR_INVALID, "");
+	j_goto_error_frontend(selector->bson_count + 1 > 500, JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX, 500);
 	ret = j_db_schema_get_field(selector->schema, name, &type, error);
 	j_goto_error_subcommand(!ret);
 	sprintf(buf, "%d", selector->bson_count);
@@ -145,6 +146,7 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 	j_goto_error_frontend(!sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	j_goto_error_frontend(selector == sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_EQUAL, "");
 	j_goto_error_frontend(!sub_selector->bson_count, JULEA_FRONTEND_ERROR_SELECTOR_EMPTY, "");
+	j_goto_error_frontend(selector->bson_count + sub_selector->bson_count > 500, JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX, 500);
 	sprintf(buf, "%d", selector->bson_count);
 	ret = bson_append_document(&selector->bson, buf, -1, &sub_selector->bson);
 	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "DOCUMENT");

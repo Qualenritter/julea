@@ -161,6 +161,8 @@ event_selector_add_field(void)
 		case J_DB_TYPE_BLOB:
 			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
+			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
 				the_stored_selector_field_count++;
@@ -191,6 +193,8 @@ event_selector_add_selector(void)
 		ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
 		ret_expected = ret_expected && random_values.selector_selector != random_values.selector;
 		ret = j_db_selector_add_selector(the_stored_selector, stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector], &error);
+		if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)
 			the_stored_selector_field_count += stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector_selector];
