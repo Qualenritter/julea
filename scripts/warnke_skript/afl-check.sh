@@ -52,7 +52,7 @@ do
 		echo ${programname} > x
 		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
 			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
-			./build-${g}/test-afl/${programname} >> x 2>&1)
+			./build-${g}/test-afl/${programname} >> log/x 2>&1)
 	r=$?
 	if [ $r -eq 0 ]; then
 		echo "invalid $f $g"
@@ -60,7 +60,7 @@ do
 		echo "valid $f $g"
 		exit 1
 	fi
-	mv x $j-${programname}-$g.tmp-file
+	mv log/x log/$j-${programname}-$g.tmp-file
 done
 done
 	j=$(($j + 1))

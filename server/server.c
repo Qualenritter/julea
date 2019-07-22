@@ -615,11 +615,17 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 			j_message_send(reply, connection);
 		}
 		break;
+		case J_MESSAGE_DB_SCHEMA_CREATE:
+		case J_MESSAGE_DB_SCHEMA_GET:
+		case J_MESSAGE_DB_SCHEMA_DELETE:
+		case J_MESSAGE_DB_INSERT:
+		case J_MESSAGE_DB_UPDATE:
+		case J_MESSAGE_DB_DELETE:
+		case J_MESSAGE_DB_GET_ALL:
+			db_server_message_exec(message_type, message, operation_count, jd_db_backend, safety, connection);
+			break;
 		default:
-			if (!db_server_message_exec(message_type, message, operation_count, jd_db_backend, safety, connection))
-			{
-				g_warn_if_reached();
-			}
+			g_warn_if_reached();
 			break;
 		}
 	}
