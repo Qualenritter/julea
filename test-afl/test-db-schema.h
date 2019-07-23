@@ -83,7 +83,8 @@ event_schema_new(void)
 		the_stored_schema = j_db_schema_new(namespace_strbuf, name_strbuf, &error);
 		J_AFL_DEBUG_ERROR(the_stored_schema != NULL, TRUE, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -164,7 +165,8 @@ event_schema_get_field(void)
 			MYABORT_IF(type != the_schema_field_type);
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 }
@@ -228,7 +230,8 @@ event_schema_get_fields(void)
 			g_strfreev(names);
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 }
@@ -273,7 +276,8 @@ event_schema_create(void)
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	j_db_schema_unref(schema);
 }
@@ -316,7 +320,8 @@ event_schema_get(void)
 				MYABORT_IF(!bool_tmp);
 			}
 			break;
-			MYABORT_DEFAULT();
+		default:
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		j_db_schema_unref(schema);
 	}
@@ -354,7 +359,8 @@ event_schema_delete(void)
 			event_schema_delete_helper();
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	event_schema_delete_helper();
 }

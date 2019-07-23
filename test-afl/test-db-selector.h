@@ -44,7 +44,8 @@ event_selector_new(void)
 		ret = the_stored_selector != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -183,10 +184,12 @@ event_selector_add_field(void)
 			ret = FALSE;
 			MYABORT_IF(ret_expected);
 			break;
-			MYABORT_DEFAULT();
+		default:
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -211,6 +214,7 @@ event_selector_add_selector(void)
 		if (ret)
 			the_stored_selector_field_count += stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector_selector];
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }

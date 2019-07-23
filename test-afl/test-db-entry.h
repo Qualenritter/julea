@@ -41,7 +41,8 @@ event_entry_new(void)
 		ret = the_stored_entry != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -164,10 +165,12 @@ event_entry_set_field(void)
 			ret = FALSE;
 			MYABORT_IF(ret_expected);
 			break;
-			MYABORT_DEFAULT();
+		default:
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -197,7 +200,8 @@ event_entry_insert(void)
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	j_batch_unref(batch);
 }
@@ -236,7 +240,8 @@ event_entry_update(void)
 			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	j_batch_unref(batch);
 }
@@ -268,7 +273,8 @@ event_entry_delete(void)
 			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	j_batch_unref(batch);
 }

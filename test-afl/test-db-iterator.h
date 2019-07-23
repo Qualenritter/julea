@@ -51,7 +51,8 @@ event_iterator_new(void)
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -175,7 +176,8 @@ event_iterator_next(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
 static void
@@ -227,7 +229,8 @@ event_iterator_get_field(void)
 			MYABORT_IF(!length && value);
 		}
 		break;
-		MYABORT_DEFAULT();
+	default:
+		MYABORT(); //LCOV_EXCL_LINE
 	}
 	if (value)
 		g_free(value);

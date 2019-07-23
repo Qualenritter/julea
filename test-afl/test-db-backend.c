@@ -161,7 +161,8 @@ build_selector_single(guint varname, guint value)
 			}
 			break;
 		case _J_DB_TYPE_COUNT:
-			MYABORT_DEFAULT();
+		default:
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
 	else
@@ -251,7 +252,8 @@ build_metadata(void)
 						MYABORT_IF(!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])));
 						break;
 					case _J_DB_TYPE_COUNT:
-						MYABORT_DEFAULT();
+					default:
+						MYABORT(); //LCOV_EXCL_LINE
 					}
 				}
 				else
@@ -448,7 +450,8 @@ event_query_single(void)
 						MYABORT_IF(bson_iter_type(&iter) != BSON_TYPE_NULL);
 					break;
 				case _J_DB_TYPE_COUNT:
-					MYABORT_DEFAULT();
+				default:
+					MYABORT(); //LCOV_EXCL_LINE
 				}
 			}
 			else if (i < namespace_varcount[random_values.namespace][random_values.name])
@@ -934,7 +937,8 @@ event_schema_create(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-			MYABORT_DEFAULT();
+		default:
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
 	random_values.schema_create.duplicate_variables = random_values.schema_create.duplicate_variables % 2;
@@ -1092,7 +1096,8 @@ main(int argc, char* argv[])
 			event_query_single();
 			break;
 		case _AFL_EVENT_DB_COUNT:
-			MYABORT_DEFAULT();
+		default:
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		goto loop;
 	cleanup:
