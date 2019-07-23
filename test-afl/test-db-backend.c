@@ -193,7 +193,7 @@ build_metadata(void)
 			return FALSE;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
 	metadata = bson_new();
@@ -371,7 +371,7 @@ event_query_single(void)
 			break;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		if (selector)
 		{
@@ -557,7 +557,7 @@ event_delete(void)
 			break;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		if (selector)
 		{
@@ -619,7 +619,7 @@ event_insert(void)
 			break;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
 	ret = j_db_internal_insert(namespace_strbuf, name_strbuf, metadata, batch, &error);
@@ -721,7 +721,7 @@ event_update(void)
 			break;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 		if (selector)
 		{
@@ -806,7 +806,7 @@ event_schema_get(void)
 			break;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
 	ret_expected = namespace_exist[random_values.namespace][random_values.name];
@@ -860,7 +860,7 @@ event_schema_delete(void)
 			break;
 		case 0:
 		default: //LCOV_EXCL_LINE
-			MY_ABORT(); //LCOV_EXCL_LINE
+			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
 	ret = j_db_internal_schema_delete(namespace_strbuf, name_strbuf, batch, &error);
