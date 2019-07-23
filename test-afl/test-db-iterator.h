@@ -51,7 +51,7 @@ event_iterator_new(void)
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
-	default:
+	default: //LCOV_EXCL_LINE
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
@@ -128,7 +128,7 @@ event_iterator_next(void)
 				case JULEA_BACKEND_ERROR_SQL_FAILED:
 				case JULEA_BACKEND_ERROR_THREADING_ERROR:
 				case JULEA_BACKEND_ERROR_VARIABLE_NOT_FOUND:
-				default:
+				default: //LCOV_EXCL_LINE
 					ret_expected = TRUE;
 				}
 			}
@@ -162,7 +162,7 @@ event_iterator_next(void)
 				case JULEA_FRONTEND_ERROR_SELECTOR_MODE_INVALID:
 				case JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE:
 				case JULEA_FRONTEND_ERROR_VARIABLE_ALREADY_SET:
-				default:
+				default: //LCOV_EXCL_LINE
 					ret_expected = TRUE;
 				}
 			}
@@ -176,7 +176,7 @@ event_iterator_next(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		}
 		break;
-	default:
+	default: //LCOV_EXCL_LINE
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
@@ -229,7 +229,7 @@ event_iterator_get_field(void)
 			MYABORT_IF(!length && value);
 		}
 		break;
-	default:
+	default: //LCOV_EXCL_LINE
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 	if (value)

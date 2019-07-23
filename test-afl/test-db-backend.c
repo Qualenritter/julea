@@ -161,7 +161,7 @@ build_selector_single(guint varname, guint value)
 			}
 			break;
 		case _J_DB_TYPE_COUNT:
-		default:
+		default: //LCOV_EXCL_LINE
 			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
@@ -192,7 +192,7 @@ build_metadata(void)
 			metadata = NULL;
 			return FALSE;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 	}
 	metadata = bson_new();
@@ -252,7 +252,7 @@ build_metadata(void)
 						MYABORT_IF(!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])));
 						break;
 					case _J_DB_TYPE_COUNT:
-					default:
+					default: //LCOV_EXCL_LINE
 						MYABORT(); //LCOV_EXCL_LINE
 					}
 				}
@@ -369,7 +369,7 @@ event_query_single(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 		if (selector)
 		{
@@ -450,7 +450,7 @@ event_query_single(void)
 						MYABORT_IF(bson_iter_type(&iter) != BSON_TYPE_NULL);
 					break;
 				case _J_DB_TYPE_COUNT:
-				default:
+				default: //LCOV_EXCL_LINE
 					MYABORT(); //LCOV_EXCL_LINE
 				}
 			}
@@ -554,7 +554,7 @@ event_delete(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 		if (selector)
 		{
@@ -615,7 +615,7 @@ event_insert(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 	}
 	ret = j_db_internal_insert(namespace_strbuf, name_strbuf, metadata, batch, &error);
@@ -716,7 +716,7 @@ event_update(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 		if (selector)
 		{
@@ -800,7 +800,7 @@ event_schema_get(void)
 			J_AFL_DEBUG_ERROR(ret, namespace_exist[random_values.namespace][random_values.name], error);
 			break;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 	}
 	ret_expected = namespace_exist[random_values.namespace][random_values.name];
@@ -853,7 +853,7 @@ event_schema_delete(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:;
+		default: //LCOV_EXCL_LINE;
 		}
 	}
 	ret = j_db_internal_schema_delete(namespace_strbuf, name_strbuf, batch, &error);
@@ -937,7 +937,7 @@ event_schema_create(void)
 			J_AFL_DEBUG_ERROR(ret, FALSE, error);
 			break;
 		case 0:
-		default:
+		default: //LCOV_EXCL_LINE
 			MYABORT(); //LCOV_EXCL_LINE
 		}
 	}
@@ -1096,7 +1096,7 @@ main(int argc, char* argv[])
 			event_query_single();
 			break;
 		case _AFL_EVENT_DB_COUNT:
-		default:
+		default: //LCOV_EXCL_LINE
 			MYABORT(); //LCOV_EXCL_LINE
 		}
 		goto loop;

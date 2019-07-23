@@ -299,7 +299,7 @@ main(int argc, char* argv[])
 			event_iterator_get_field();
 			break;
 		case _AFL_EVENT_DB_COUNT:
-		default:
+		default: //LCOV_EXCL_LINE
 			MYABORT(); //LCOV_EXCL_LINE
 		}
 		goto loop;
