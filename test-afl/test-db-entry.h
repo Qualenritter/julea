@@ -213,6 +213,7 @@ event_entry_update(void)
 	ret_expected = the_stored_entry != NULL;
 	ret_expected = ret_expected && the_stored_entry_field_set;
 	ret_expected = ret_expected && the_stored_selector;
+	ret_expected = ret_expected && the_stored_schema->server_side;
 	ret_expected = ret_expected && j_db_selector_get_bson(the_stored_selector);
 	switch (random_values.invalid_switch % 4)
 	{
