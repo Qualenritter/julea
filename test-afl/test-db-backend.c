@@ -1095,7 +1095,7 @@ main(int argc, char* argv[])
 			event_query_all();
 			event_query_single();
 			break;
-		case _AFL_EVENT_DB_COUNT:
+		case _AFL_EVENT_DB_COUNT: //LCOV_EXCL_LINE
 		default: //LCOV_EXCL_LINE
 			MYABORT(); //LCOV_EXCL_LINE
 		}
