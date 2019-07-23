@@ -106,6 +106,7 @@ j_db_iterator_next(JDBIterator* iterator, GError** error)
 		bson_destroy(&iterator->bson);
 	ret = j_db_internal_iterate(iterator->iterator, &iterator->bson, error);
 	j_goto_error_subcommand(!ret);
+	iterator->bson_valid =TRUE;
 	return TRUE;
 _error:
 	if (!ret)
