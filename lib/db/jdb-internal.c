@@ -258,9 +258,9 @@ j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* se
 	return TRUE;
 }
 static gboolean
-j_db_get_all_exec(JList* operations, JSemantics* semantics)
+j_db_query_exec(JList* operations, JSemantics* semantics)
 {
-	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_GET_ALL);
+	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_QUERY);
 }
 gboolean
 j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error)
@@ -274,7 +274,7 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	memset(&helper->bson, 0, sizeof(bson_t));
 	*iterator = helper;
 	data = g_slice_new(JBackendOperation);
-	memcpy(data, &j_backend_operation_db_get_all, sizeof(JBackendOperation));
+	memcpy(data, &j_backend_operation_db_query, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
@@ -283,7 +283,7 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	op = j_operation_new();
 	op->key = namespace;
 	op->data = data;
-	op->exec_func = j_db_get_all_exec;
+	op->exec_func = j_db_query_exec;
 	op->free_func = j_backend_db_func_free;
 	j_batch_add(batch, op);
 	return TRUE;

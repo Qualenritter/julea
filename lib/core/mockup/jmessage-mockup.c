@@ -153,6 +153,7 @@ _j_message_mockup_new_reply(JMessage* message)
 JMessage*
 j_message_mockup_new_reply(JMessage* message_input)
 {
+#if (JULEA_TEST_MOCKUP == 1)
 	JMessage* message;
 	guint operation_count;
 	gpointer connection = (void*)TRUE;
@@ -181,6 +182,7 @@ j_message_mockup_new_reply(JMessage* message_input)
 	{
 		return server_reply_mockup = j_message_mockup_ref(j_message_mockup_new(message_input->type, 0));
 	}
+#endif
 }
 
 JMessage*
