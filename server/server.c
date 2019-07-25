@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if (JULEA_TEST_MOCKUP == 0)
 #include <julea-config.h>
+#if (JULEA_TEST_MOCKUP == 0)
 
 #include <glib.h>
 #include <glib/gstdio.h>
