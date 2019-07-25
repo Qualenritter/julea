@@ -104,6 +104,14 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 gboolean
 db_server_message_exec(JMessageType message_type, JMessage* message, guint operation_count, JBackend* jd_db_backend, JSemanticsSafety safety, GSocketConnection* connection)
 {
+		 gchar const* key;
+                gchar const* namespace;
+                gchar const* path;
+                guint32 operation_count;
+                JBackendOperation backend_operation;
+                JSemantics* semantics;
+                JSemanticsSafety safety;
+                guint i;
 #endif
 		switch (message_type)
 		{

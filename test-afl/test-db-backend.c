@@ -116,7 +116,7 @@ build_selector_single(guint varname, guint value)
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, varname);
 	MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 	bson_append_document_begin(selector, "0", -1, &bson_child);
-	MYABORT_IF(!bson_append_int32(&bson_child, "_operator", -1, J_DB_OPERATOR_EQ));
+	MYABORT_IF(!bson_append_int32(&bson_child, "_operator", -1, J_DB_SELECTOR_OPERATOR_EQ));
 	MYABORT_IF(!bson_append_utf8(&bson_child, "_name", -1, varname_strbuf, -1));
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
@@ -336,7 +336,7 @@ event_query_single(void)
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_int32(&bson_child, "operator", -1, _J_DB_OPERATOR_COUNT + 1);
+			bson_append_int32(&bson_child, "operator", -1, _J_DB_SELECTOR_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_db_internal_query(namespace_strbuf, name_strbuf, selector, &iterator, batch, &error);
 			ret = j_batch_execute(batch) && ret;
@@ -528,7 +528,7 @@ event_delete(void)
 			MYABORT_IF(!bson_append_int32(selector, "_mode", -1, J_DB_SELECTOR_MODE_AND));
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_int32(&bson_child, "operator", -1, _J_DB_OPERATOR_COUNT + 1);
+			bson_append_int32(&bson_child, "operator", -1, _J_DB_SELECTOR_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_db_internal_delete(namespace_strbuf, name_strbuf, selector, batch, &error);
 			ret = j_batch_execute(batch) && ret;
@@ -683,7 +683,7 @@ event_update(void)
 			selector = bson_new();
 			sprintf(varname_strbuf, AFL_VARNAME_FORMAT, 0);
 			bson_append_document_begin(selector, varname_strbuf, -1, &bson_child);
-			bson_append_int32(&bson_child, "operator", -1, _J_DB_OPERATOR_COUNT + 1);
+			bson_append_int32(&bson_child, "operator", -1, _J_DB_SELECTOR_OPERATOR_COUNT + 1);
 			bson_append_document_end(selector, &bson_child);
 			ret = j_db_internal_update(namespace_strbuf, name_strbuf, selector, metadata, batch, &error);
 			ret = j_batch_execute(batch) && ret;
