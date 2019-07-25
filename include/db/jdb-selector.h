@@ -72,7 +72,7 @@ JDBSelector* j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError**
 JDBSelector* j_db_selector_ref(JDBSelector* selector, GError** error);
 void j_db_selector_unref(JDBSelector* selector);
 
-gboolean j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBOperator operator, gconstpointer value, guint64 length, GError** error);
+gboolean j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error);
 gboolean j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error);
 
 #endif

@@ -21,6 +21,7 @@
 #pragma GCC diagnostic ignored "-Wredundant-decls"
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#define JULEA_DB_COMPILATION
 #include <julea-config.h>
 #include <stdio.h>
 #include <math.h>
@@ -122,7 +123,7 @@ j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size);
 static JMessage* server_reply_mockup;
 JMessage*
 _j_message_mockup_new_reply(JMessage* message);
-#include "../../../server/server-db-exec.h"
+#include "../../../server/server.c"
 JMessage*
 j_message_mockup_new(JMessageType type, gsize size)
 {

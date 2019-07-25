@@ -43,7 +43,7 @@ typedef struct J_db_iterator_helper J_db_iterator_helper;
 static gboolean
 j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
-	JBackend_db_operation_data* data = NULL;
+	JBackendOperation* data = NULL;
 	gboolean ret = TRUE;
 	GSocketConnection* db_connection;
 	g_autoptr(JListIterator) iter_send = NULL;
@@ -76,7 +76,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 		}
 		else
 		{
-			ret = j_backend_db_message_from_data(message, data->in_param, data->in_param_count) && ret;
+			ret = j_backend_operation_to_message(message, data->in_param, data->in_param_count) && ret;
 		}
 	}
 	if (db_backend != NULL && !JULEA_TEST_MOCKUP)
@@ -99,7 +99,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 		while (j_list_iterator_next(iter_recieve))
 		{
 			data = j_list_iterator_get(iter_recieve);
-			ret = j_backend_db_message_to_data(reply, data->out_param, data->out_param_count) && ret;
+			ret = j_backend_operation_from_message(reply, data->out_param, data->out_param_count) && ret;
 		}
 		j_connection_pool_push_db(0, db_connection);
 	}
@@ -108,9 +108,9 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 static void
 j_backend_db_func_free(gpointer _data)
 {
-	JBackend_db_operation_data* data = _data;
+	JBackendOperation* data = _data;
 	if (data)
-		g_slice_free(JBackend_db_operation_data, data);
+		g_slice_free(JBackendOperation, data);
 }
 
 static gboolean
@@ -122,9 +122,9 @@ gboolean
 j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error)
 {
 	JOperation* op;
-	JBackend_db_operation_data* data;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_schema_create_params, sizeof(JBackend_db_operation_data));
+	JBackendOperation* data;
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = schema;
@@ -146,9 +146,9 @@ gboolean
 j_db_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error)
 {
 	JOperation* op;
-	JBackend_db_operation_data* data;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_schema_get_params, sizeof(JBackend_db_operation_data));
+	JBackendOperation* data;
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->out_param[0].ptr_const = schema;
@@ -170,9 +170,9 @@ gboolean
 j_db_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error)
 {
 	JOperation* op;
-	JBackend_db_operation_data* data;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_schema_delete_params, sizeof(JBackend_db_operation_data));
+	JBackendOperation* data;
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->out_param[0].ptr_const = error;
@@ -193,9 +193,9 @@ gboolean
 j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error)
 {
 	JOperation* op;
-	JBackend_db_operation_data* data;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_insert_params, sizeof(JBackend_db_operation_data));
+	JBackendOperation* data;
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_insert, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = metadata;
@@ -217,9 +217,9 @@ gboolean
 j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error)
 {
 	JOperation* op;
-	JBackend_db_operation_data* data;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_update_params, sizeof(JBackend_db_operation_data));
+	JBackendOperation* data;
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_update, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
@@ -242,9 +242,9 @@ gboolean
 j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error)
 {
 	JOperation* op;
-	JBackend_db_operation_data* data;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_delete_params, sizeof(JBackend_db_operation_data));
+	JBackendOperation* data;
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_delete, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
@@ -267,14 +267,14 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 {
 	J_db_iterator_helper* helper;
 	JOperation* op;
-	JBackend_db_operation_data* data;
+	JBackendOperation* data;
 	j_goto_error_backend(!iterator, JULEA_BACKEND_ERROR_ITERATOR_NULL, "");
 	helper = g_slice_new(J_db_iterator_helper);
 	helper->initialized = FALSE;
 	memset(&helper->bson, 0, sizeof(bson_t));
 	*iterator = helper;
-	data = g_slice_new(JBackend_db_operation_data);
-	memcpy(data, &j_db_get_all_params, sizeof(JBackend_db_operation_data));
+	data = g_slice_new(JBackendOperation);
+	memcpy(data, &j_backend_operation_db_get_all, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
 	data->in_param[1].ptr_const = name;
 	data->in_param[2].ptr_const = selector;
