@@ -105,8 +105,9 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 		JBackendOperation backend_operation;
 		JSemantics* semantics;
 		guint i;
-
+#ifndef MOCKUP_COMPILES
 		operation_count = j_message_get_count(message);
+#endif
 		semantics = j_message_get_semantics(message);
 		safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
 		j_semantics_unref(semantics);
