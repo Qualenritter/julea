@@ -79,7 +79,7 @@ event_selector_add_field(void)
 	guint ret;
 	guint ret_expected;
 	JDBType type;
-	JDBOperator operator= random_values.selector_operator %(_J_DB_SELECTOR_OPERATOR_COUNT + 1);
+	JDBSelectorOperator operator= random_values.selector_operator %(_J_DB_SELECTOR_OPERATOR_COUNT + 1);
 	J_DEBUG("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	ret_expected = the_stored_selector != NULL;
 	ret_expected = ret_expected && operator<_J_DB_SELECTOR_OPERATOR_COUNT;

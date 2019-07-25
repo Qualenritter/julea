@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define JULEA_DB_COMPILATION
 #if (GLIB_MAJOR_VERSION < 2) || (GLIB_MINOR_VERSION < 58)
 #define G_APPROX_VALUE(a, b, epsilon) ((((a) > (b) ? (a) - (b) : (b) - (a)) < (epsilon)) || !isfinite(a) || !isfinite(b))
 #endif

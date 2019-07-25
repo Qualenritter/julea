@@ -183,6 +183,7 @@ j_message_mockup_new_reply(JMessage* message_input)
 		return server_reply_mockup = j_message_mockup_ref(j_message_mockup_new(message_input->type, 0));
 	}
 #else
+	(void)server_reply_mockup;
 	return NULL;
 #endif
 }
