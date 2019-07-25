@@ -18,7 +18,6 @@
  */
 
 #include <julea-config.h>
-#if (JULEA_TEST_MOCKUP == 0)
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -40,7 +39,10 @@ static JConfiguration* jd_configuration;
 
 static JBackend* jd_object_backend;
 static JBackend* jd_kv_backend;
+
+#if (JULEA_TEST_MOCKUP == 0)
 static JBackend* jd_db_backend;
+#endif
 
 static guint jd_thread_num = 0;
 
@@ -56,14 +58,18 @@ jd_signal(gpointer data)
 
 	return FALSE;
 }
-
+#if (JULEA_TEST_MOCKUP == 0)
 static gboolean
 jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObject* source_object, gpointer user_data)
+#else
+static gboolean
+db_server_message_exec(JMessageType message_type, JMessage* message, guint operation_count, JBackend* jd_db_backend, JSemanticsSafety safety, GSocketConnection* connection)
+#endif
 {
-	JMemoryChunk* memory_chunk;
+	JMemoryChunk* memory_chunk = NULL;
 	g_autoptr(JMessage) message = NULL;
-	JStatistics* statistics;
-	GInputStream* input;
+	JStatistics* statistics = NULL;
+	GInputStream* input = NULL;
 	guint64 memory_chunk_size;
 	JMessageType message_type;
 	gboolean first = TRUE;
@@ -73,9 +79,8 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 	(void)user_data;
 
 	j_trace_enter(G_STRFUNC, NULL);
-
+#if (JULEA_TEST_MOCKUP == 0)
 	j_helper_set_nodelay(connection, TRUE);
-
 	statistics = j_statistics_new(TRUE);
 	memory_chunk_size = j_configuration_get_max_operation_size(jd_configuration);
 	memory_chunk = j_memory_chunk_new(memory_chunk_size);
@@ -85,13 +90,16 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 
 	while (j_message_receive(message, connection))
 	{
+#endif
 		gchar const* key;
 		gchar const* namespace;
 		gchar const* path;
+#if (JULEA_TEST_MOCKUP == 0)
+		JSemanticsSafety safety;
 		guint32 operation_count;
+#endif
 		JBackendOperation backend_operation;
 		JSemantics* semantics;
-		JSemanticsSafety safety;
 		guint i;
 
 		operation_count = j_message_get_count(message);
@@ -100,19 +108,6 @@ jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObjec
 		j_semantics_unref(semantics);
 
 		message_type = j_message_get_type(message);
-#else
-gboolean
-db_server_message_exec(JMessageType message_type, JMessage* message, guint operation_count, JBackend* jd_db_backend, JSemanticsSafety safety, GSocketConnection* connection)
-{
-		 gchar const* key;
-                gchar const* namespace;
-                gchar const* path;
-                guint32 operation_count;
-                JBackendOperation backend_operation;
-                JSemantics* semantics;
-                JSemanticsSafety safety;
-                guint i;
-#endif
 		switch (message_type)
 		{
 		case J_MESSAGE_NONE:
@@ -744,6 +739,7 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 
 		G_UNLOCK(jd_statistics);
 	}
+#endif
 
 	j_memory_chunk_free(memory_chunk);
 	j_statistics_free(statistics);
@@ -751,7 +747,6 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 	j_trace_leave(G_STRFUNC);
 
 	return TRUE;
-#endif
 }
 
 static gboolean
