@@ -17,6 +17,7 @@
  */
 
 /* this mockup should avoid the network communication and execute the requested backend operations on the client side instead */
+#define MOCKUP_COMPILES
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wredundant-decls"
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -169,7 +170,6 @@ j_message_mockup_new_reply(JMessage* message_input)
 		ret = db_server_message_exec(message->type, message, operation_count, jd_db_backend, safety, connection);
 		if (!ret)
 		{
-			J_CRITICAL("mockup only implemented for db messages%d", 0);
 			abort();
 		}
 		j_message_mockup_unref(message);

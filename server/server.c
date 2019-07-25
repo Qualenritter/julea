@@ -40,7 +40,7 @@ static JConfiguration* jd_configuration;
 static JBackend* jd_object_backend;
 static JBackend* jd_kv_backend;
 
-#if (JULEA_TEST_MOCKUP == 0)
+#ifndef MOCKUP_COMPILES
 static JBackend* jd_db_backend;
 #endif
 
@@ -58,28 +58,32 @@ jd_signal(gpointer data)
 
 	return FALSE;
 }
-#if (JULEA_TEST_MOCKUP == 0)
+#ifndef MOCKUP_COMPILES
 static gboolean
 jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObject* source_object, gpointer user_data)
 #else
-static gboolean
+gboolean
 db_server_message_exec(JMessageType message_type, JMessage* message, guint operation_count, JBackend* jd_db_backend, JSemanticsSafety safety, GSocketConnection* connection)
 #endif
 {
 	JMemoryChunk* memory_chunk = NULL;
+#ifndef MOCKUP_COMPILES
 	g_autoptr(JMessage) message = NULL;
+#endif
 	JStatistics* statistics = NULL;
 	GInputStream* input = NULL;
 	guint64 memory_chunk_size;
+#ifndef MOCKUP_COMPILES
 	JMessageType message_type;
+#endif
 	gboolean first = TRUE;
-
+#ifndef MOCKUP_COMPILES
 	(void)service;
 	(void)source_object;
 	(void)user_data;
-
+#endif
 	j_trace_enter(G_STRFUNC, NULL);
-#if (JULEA_TEST_MOCKUP == 0)
+#ifndef MOCKUP_COMPILES
 	j_helper_set_nodelay(connection, TRUE);
 	statistics = j_statistics_new(TRUE);
 	memory_chunk_size = j_configuration_get_max_operation_size(jd_configuration);
@@ -94,7 +98,7 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 		gchar const* key;
 		gchar const* namespace;
 		gchar const* path;
-#if (JULEA_TEST_MOCKUP == 0)
+#ifndef MOCKUP_COMPILES
 		JSemanticsSafety safety;
 		guint32 operation_count;
 #endif
@@ -106,8 +110,9 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 		semantics = j_message_get_semantics(message);
 		safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
 		j_semantics_unref(semantics);
-
+#ifndef MOCKUP_COMPILES
 		message_type = j_message_get_type(message);
+#endif
 		switch (message_type)
 		{
 		case J_MESSAGE_NONE:
@@ -714,7 +719,7 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 			g_warn_if_reached();
 			break;
 		}
-#if (JULEA_TEST_MOCKUP == 0)
+#ifndef MOCKUP_COMPILES
 	}
 
 	{
@@ -796,7 +801,7 @@ jd_daemon(void)
 
 	return TRUE;
 }
-#if (JULEA_TEST_MOCKUP == 0)
+#ifndef MOCKUP_COMPILES
 int
 main(int argc, char** argv)
 {
