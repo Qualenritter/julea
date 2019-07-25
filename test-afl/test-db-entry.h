@@ -236,7 +236,7 @@ event_entry_update(void)
 	case 0:
 		ret = j_db_entry_update(the_stored_entry, the_stored_selector, batch, &error);
 		ret = j_batch_execute(batch) && ret;
-		if (error && error->domain == JULEA_BACKEND_ERROR && error->code == JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+		if (error && error->domain == J_BACKEND_DB_ERROR && error->code == J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
 			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;
@@ -269,7 +269,7 @@ event_entry_delete(void)
 	case 0:
 		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, batch, &error);
 		ret = j_batch_execute(batch) && ret;
-		if (error && error->domain == JULEA_BACKEND_ERROR && error->code == JULEA_BACKEND_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+		if (error && error->domain == J_BACKEND_DB_ERROR && error->code == J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
 			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		break;

@@ -18,21 +18,10 @@
 #include <core/jerror.h>
 
 GQuark
-julea_backend_error_quark(void)
-{
-	return g_quark_from_static_string("julea-backend-error-quark");
-}
-GQuark
 julea_frontend_error_quark(void)
 {
 	return g_quark_from_static_string("julea-frontend-error-quark");
 }
-#define JULEA_REGISTER_BACKEND_ERROR(e, s) s,
-const char* const JuleaBackendErrorFormat[] = {
-	"Generic Backend Error%s",
-#include <core/jerror.h>
-};
-#undef JULEA_REGISTER_BACKEND_ERROR
 #define JULEA_REGISTER_FRONTEND_ERROR(e, s) s,
 const char* const JuleaFrontendErrorFormat[] = {
 	"Generic Frontend Error%s",
