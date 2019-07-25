@@ -591,7 +591,7 @@ j_backend_db_batch_start (JBackend* backend, gchar const* namespace, JSemanticsS
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
@@ -609,7 +609,7 @@ j_backend_db_batch_execute (JBackend* backend, gpointer batch, GError** error)
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
@@ -626,7 +626,7 @@ j_backend_db_schema_create (JBackend* backend, gpointer batch, gchar const* name
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(schema != NULL, FALSE);
@@ -645,7 +645,7 @@ j_backend_db_schema_get (JBackend* backend, gpointer batch, gchar const* name, b
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(schema != NULL, FALSE);
@@ -664,7 +664,7 @@ j_backend_db_schema_delete (JBackend* backend, gpointer batch, gchar const* name
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
@@ -682,7 +682,7 @@ j_backend_db_insert (JBackend* backend, gpointer batch, gchar const* name, bson_
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(metadata != NULL, FALSE);
@@ -701,7 +701,7 @@ j_backend_db_update (JBackend* backend, gpointer batch, gchar const* name, bson_
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(selector != NULL, FALSE);
@@ -721,7 +721,7 @@ j_backend_db_delete (JBackend* backend, gpointer batch, gchar const* name, bson_
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(selector != NULL, FALSE);
@@ -740,7 +740,7 @@ j_backend_db_query (JBackend* backend, gpointer batch, gchar const* name, bson_t
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(selector != NULL, FALSE);
@@ -760,7 +760,7 @@ j_backend_db_iterate (JBackend* backend, gpointer iterator, bson_t* metadata, GE
 	gboolean ret;
 
 	g_return_val_if_fail(backend != NULL, FALSE);
-	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
+	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(iterator != NULL, FALSE);
 	g_return_val_if_fail(metadata != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
