@@ -15,17 +15,104 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <sqlite3.h>
+
 #include <julea-config.h>
+
 #include <glib.h>
 #include <gmodule.h>
+
+#include <sqlite3.h>
+
 #include <julea.h>
 #include <julea-internal.h>
-#include <db/jdb-internal.h>
-#include <core/jbackend.h>
+#include <julea-db.h>
+
+// FIXME clean up
+
+const char* const JuleaBackendErrorFormat[] = {
+	"Generic Backend Error%s",
+	"%s:%s: batch not set%s",
+	"%s:%s: bson append failed. db type was '%s'",
+	"%s:%s: bson generic error",
+	"%s:%s: bson invalid%s",
+	"%s:%s: bson invalid type '%d'",
+	"%s:%s: bson iter init failed%s",
+	"%s:%s: bson iter recourse failed%s",
+	"%s:%s: bson is missing required key '%s'",
+	"%s:%s: db comparator invalid '%d'",
+	"%s:%s: db invalid type '%d'",
+	"%s:%s: no more elements to iterate%s",
+	"%s:%s: iterator not set%s",
+	"%s:%s: metadata is empty%s",
+	"%s:%s: metadata not set%s",
+	"%s:%s: name not set%s",
+	"%s:%s: namespace not set%s",
+	"%s:%s: no variable set to a not NULL value%s",
+	"%s:%s: db operator invalid '%d'",
+	"%s:%s: schema is empty%s",
+	"%s:%s: schema not found%s",
+	"%s:%s: schema not set%s",
+	"%s:%s: selector is empty%s",
+	"%s:%s: selector not set%s",
+	"%s:%s: sql constraint error '%d' '%s'",
+	"%s:%s: sql error '%d' '%s'",
+	"%s:%s: some other thread modified critical variables without lock%s",
+	"%s:%s: variable '%s' not defined in schema"
+};
+
+#ifdef JULEA_DEBUG
+#define J_WARNING(format, ...)                                                   \
+	do                                                                       \
+	{                                                                        \
+		g_warning("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+	} while (0)
+#define J_INFO(format, ...)                                                   \
+	do                                                                    \
+	{                                                                     \
+		g_info("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+	} while (0)
+#define J_DEBUG(format, ...)                                                   \
+	do                                                                     \
+	{                                                                      \
+		g_debug("%s:%s: " format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+	} while (0)
+#define J_DEBUG_ERROR(format, ...)                                   \
+	do                                                           \
+	{                                                            \
+		g_debug(format, G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+	} while (0)
+#else
+#define J_WARNING(format, ...)
+#define J_INFO(format, ...)
+#define J_DEBUG(format, ...)
+#define J_DEBUG_ERROR(format, ...)
+#endif
+
+#define j_goto_error_backend(val, err_code, ...)                                                                                                  \
+	do                                                                                                                                        \
+	{                                                                                                                                         \
+		_Pragma("GCC diagnostic push");                                                                                                   \
+		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                                        \
+		if (val)                                                                                                                          \
+		{                                                                                                                                 \
+			J_DEBUG_ERROR(JuleaBackendErrorFormat[err_code], ##__VA_ARGS__);                                                          \
+			g_set_error(error, J_BACKEND_DB_ERROR, err_code, JuleaBackendErrorFormat[err_code], G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
+			goto _error;                                                                                                              \
+		}                                                                                                                                 \
+		_Pragma("GCC diagnostic pop");                                                                                                    \
+	} while (0)
+
+#define j_goto_error_subcommand(val) \
+	do                           \
+	{                            \
+		if (val)             \
+			goto _error; \
+	} while (0)
+
 /*
 * this file defines makros such that the generic-sql.h implementation can call the sqlite specific functions without knowing, that it is actually sqlite
 */
+
 #define j_sql_statement_type sqlite3_stmt*
 #define j_sql_done SQLITE_DONE
 static sqlite3* backend_db = NULL;
@@ -51,7 +138,7 @@ static sqlite3* backend_db = NULL;
 	do                                                                                                                 \
 	{                                                                                                                  \
 		if (ret == SQLITE_CONSTRAINT)                                                                              \
-			j_goto_error_backend(TRUE, JULEA_BACKEND_ERROR_SQL_CONSTRAINT, _ret_, sqlite3_errmsg(backend_db)); \
+			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_SQL_CONSTRAINT, _ret_, sqlite3_errmsg(backend_db)); \
 		else                                                                                                       \
 			j_sql_check(ret, flag);                                                                            \
 	} while (0)
@@ -156,13 +243,13 @@ static sqlite3* backend_db = NULL;
 		if (_ret_ != SQLITE_OK)                                                                                \
 		{                                                                                                      \
 			j_sql_finalize(_stmt_);                                                                        \
-			j_goto_error_backend(TRUE, JULEA_BACKEND_ERROR_SQL_FAILED, _ret_, sqlite3_errmsg(backend_db)); \
+			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_SQL_FAILED, _ret_, sqlite3_errmsg(backend_db)); \
 		}                                                                                                      \
 		_ret_ = sqlite3_step(_stmt_);                                                                          \
 		if (_ret_ != SQLITE_DONE)                                                                              \
 		{                                                                                                      \
 			j_sql_finalize(_stmt_);                                                                        \
-			j_goto_error_backend(TRUE, JULEA_BACKEND_ERROR_SQL_FAILED, _ret_, sqlite3_errmsg(backend_db)); \
+			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_SQL_FAILED, _ret_, sqlite3_errmsg(backend_db)); \
 		}                                                                                                      \
 		j_sql_finalize(_stmt_);                                                                                \
 	} while (0)
@@ -189,7 +276,9 @@ static sqlite3* backend_db = NULL;
 #define j_sql_column_uint64(stmt, idx) (guint64) sqlite3_column_int64(stmt, idx)
 #define j_sql_column_blob(stmt, idx) (const char*)sqlite3_column_blob(stmt, idx)
 #define j_sql_column_blob_len(stmt, idx) (guint64) sqlite3_column_bytes(stmt, idx)
-#include "sql-generic.h"
+
+#include "sql-generic.c"
+
 static gboolean
 backend_init(gchar const* path)
 {
@@ -226,7 +315,6 @@ backend_fini(void)
 	fini_sql();
 	ret = sqlite3_close(backend_db);
 	j_sql_check(ret, SQLITE_OK);
-_error:;
 }
 static JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_DB,
@@ -246,6 +334,7 @@ static JBackend sqlite_backend = {
 		.backend_batch_execute = backend_batch_execute,
 	},
 };
+
 G_MODULE_EXPORT
 JBackend*
 backend_info(void)

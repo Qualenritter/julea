@@ -19,6 +19,10 @@
 #ifndef JULEA_DB_TYPE_H
 #define JULEA_DB_TYPE_H
 
+#if !defined(JULEA_DB_H) && !defined(JULEA_DB_COMPILATION)
+#error "Only <julea-db.h> can be included directly."
+#endif
+
 enum JDBType
 {
 	J_DB_TYPE_SINT32 = 0,
@@ -29,26 +33,9 @@ enum JDBType
 	J_DB_TYPE_FLOAT64,
 	J_DB_TYPE_STRING,
 	J_DB_TYPE_BLOB,
-	_J_DB_TYPE_COUNT,
+	_J_DB_TYPE_COUNT
 };
+
 typedef enum JDBType JDBType;
-enum JDBSelectorMode
-{
-	J_DB_SELECTOR_MODE_AND = 0,
-	J_DB_SELECTOR_MODE_OR,
-	_J_DB_SELECTOR_MODE_COUNT,
-};
-typedef enum JDBSelectorMode JDBSelectorMode;
-enum JDBOperator
-{
-	J_DB_OPERATOR_LT = 0, //<
-	J_DB_OPERATOR_LE, //<=
-	J_DB_OPERATOR_GT, //>
-	J_DB_OPERATOR_GE, //>=
-	J_DB_OPERATOR_EQ, //=
-	J_DB_OPERATOR_NE, //!=
-	_J_DB_OPERATOR_COUNT,
-};
-typedef enum JDBOperator JDBOperator;
 
 #endif

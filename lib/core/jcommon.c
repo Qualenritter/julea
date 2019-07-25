@@ -307,11 +307,11 @@ j_configuration (void)
 }
 
 /**
- * Returns the data backend.
+ * Returns the object backend.
  *
  * \private
  *
- * \return The data backend.
+ * \return The object backend.
  */
 JBackend*
 j_object_backend (void)
@@ -326,11 +326,11 @@ j_object_backend (void)
 }
 
 /**
- * Returns the data backend.
+ * Returns the kv backend.
  *
  * \private
  *
- * \return The data backend.
+ * \return The kv backend.
  */
 JBackend*
 j_kv_backend (void)
@@ -345,14 +345,14 @@ j_kv_backend (void)
 }
 
 /**
- * Returns the data backend.
+ * Returns the db backend.
  *
  * \private
  *
- * \return The data backend.
+ * \return The db backend.
  */
 JBackend*
-j_db_backend(void)
+j_db_backend (void)
 {
 	JCommon* common;
 

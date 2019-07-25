@@ -68,6 +68,7 @@ struct JConfiguration
 		 * The number of kv servers.
 		 */
 		guint32 kv_len;
+
 		/**
 		 * The number of db servers.
 		 */

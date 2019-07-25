@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * \file
+ **/
+
 #ifndef JULEA_DB_H
 #define JULEA_DB_H
 

@@ -1,7 +1,3 @@
-# Diff
-*.orig
-*.rej
-
 # Dependencies
 dependencies/
 
@@ -10,6 +6,10 @@ example/hello-world
 
 # Doxygen
 html/
+
+# Patch
+*.orig
+*.rej
 
 # Sublime Text
 *.sublime-*

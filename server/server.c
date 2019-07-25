@@ -69,6 +69,7 @@ jd_on_run (GThreadedSocketService* service, GSocketConnection* connection, GObje
 	GInputStream* input;
 	guint64 memory_chunk_size;
 	JMessageType message_type;
+	gboolean first = TRUE;
 
 	(void)service;
 	(void)source_object;
@@ -91,6 +92,7 @@ jd_on_run (GThreadedSocketService* service, GSocketConnection* connection, GObje
 		gchar const* namespace;
 		gchar const* path;
 		guint32 operation_count;
+		JBackendOperation backend_operation;
 		JSemantics* semantics;
 		JSemanticsSafety safety;
 		guint i;
@@ -595,13 +597,114 @@ jd_on_run (GThreadedSocketService* service, GSocketConnection* connection, GObje
 				}
 				break;
 			case J_MESSAGE_DB_SCHEMA_CREATE:
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
+				first = FALSE;
+				// fallthrough
 			case J_MESSAGE_DB_SCHEMA_GET:
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
+				first = FALSE;
+				// fallthrough
 			case J_MESSAGE_DB_SCHEMA_DELETE:
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
+				first = FALSE;
+				// fallthrough
 			case J_MESSAGE_DB_INSERT:
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_insert, sizeof(JBackendOperation));
+				first = FALSE;
+				// fallthrough
 			case J_MESSAGE_DB_UPDATE:
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_update, sizeof(JBackendOperation));
+				first = FALSE;
+				// fallthrough
 			case J_MESSAGE_DB_DELETE:
-			case J_MESSAGE_DB_GET_ALL:
-				db_server_message_exec(message_type, message, operation_count, jd_db_backend, safety, connection);
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_delete, sizeof(JBackendOperation));
+				first = FALSE;
+				// fallthrough
+			case J_MESSAGE_DB_QUERY:
+				if(first)
+					memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
+				first = FALSE;
+				{
+					g_autoptr(JMessage) reply = NULL;
+					g_autoptr(GError) error = NULL;
+					gpointer batch = NULL;
+					gint ret;
+
+					reply = j_message_new_reply(message);
+
+					for (guint j = 0; j < backend_operation.out_param_count; j++)
+					{
+						if (backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_ERROR)
+						{
+							backend_operation.out_param[j].ptr = &backend_operation.out_param[j].error_ptr;
+							backend_operation.out_param[j].error_ptr = NULL;
+						}
+						else if (backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_BSON)
+						{
+							backend_operation.out_param[j].bson_initialized = FALSE;
+							backend_operation.out_param[j].ptr = &backend_operation.out_param[j].bson;
+						}
+					}
+					if (operation_count)
+					{
+						j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
+					}
+
+					j_backend_db_batch_start(jd_db_backend, backend_operation.in_param[0].ptr, safety, &batch, &error);
+
+					for (i = 0; i < operation_count; i++)
+					{
+						ret = FALSE;
+						if (i)
+						{
+							j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
+						}
+
+						if (error)
+						{
+							backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = g_error_copy(error);
+						}
+						else
+						{
+							ret = backend_operation.backend_func(jd_db_backend, batch, &backend_operation);
+							for (guint j = 0; j < backend_operation.out_param_count; j++)
+							{
+								if (ret && backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_BSON)
+								{
+									backend_operation.out_param[j].bson_initialized = TRUE;
+								}
+							}
+						}
+
+						j_backend_operation_to_message(reply, backend_operation.out_param, backend_operation.out_param_count);
+
+						if (ret)
+						{
+							for (guint j = 0; j < backend_operation.out_param_count; j++)
+							{
+								if (backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_BSON)
+								{
+									bson_destroy(backend_operation.out_param[j].ptr);
+								}
+							}
+						}
+					}
+
+					if (error == NULL)
+					{
+						j_backend_db_batch_execute(jd_db_backend, batch, &error);
+					}
+
+					j_message_send(reply, connection);
+
+					first = TRUE;
+				}
 				break;
 			default:
 				g_warn_if_reached();
