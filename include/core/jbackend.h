@@ -93,7 +93,6 @@ enum JBackendComponent
 
 typedef enum JBackendComponent JBackendComponent;
 
-//! This struct contains the required functions for the different backends
 struct JBackend
 {
 	JBackendType type;
@@ -345,55 +344,6 @@ struct JBackend
 	};
 };
 typedef struct JBackend JBackend;
-/* following functions could be generalized to be used with all backends -->> */
-enum JBackend_db_parameter_type
-{
-	J_DB_PARAM_TYPE_STR = 0,
-	J_DB_PARAM_TYPE_BLOB,
-	J_DB_PARAM_TYPE_BSON,
-	J_DB_PARAM_TYPE_ERROR,
-	_J_DB_PARAM_TYPE_COUNT,
-};
-typedef enum JBackend_db_parameter_type JBackend_db_parameter_type;
-struct JBackend_db_operation
-{
-	union
-	{ //only for temporary static storage
-		struct
-		{
-			gboolean bson_initialized;
-			bson_t bson;
-		};
-		struct
-		{
-			GError error;
-			GError* error_ptr;
-		};
-	};
-	union
-	{
-		gconstpointer ptr_const;
-		gpointer ptr;
-	};
-	gint len; //of ptr data
-	JBackend_db_parameter_type type;
-};
-typedef struct JBackend_db_operation JBackend_db_operation;
-struct JBackend_db_operation_data;
-typedef struct JBackend_db_operation_data JBackend_db_operation_data;
-struct JBackend_db_operation_data
-{
-	gboolean (*backend_func) (JBackend* backend, gpointer batch, JBackend_db_operation_data* data);
-	guint in_param_count;
-	guint out_param_count;
-	JBackend_db_operation in_param[20]; //into function
-	//the last out parameter must be of type 'J_DB_PARAM_TYPE_ERROR'
-	JBackend_db_operation out_param[20]; //retrieve from function
-};
-gboolean j_backend_db_message_from_data (JMessage* message, JBackend_db_operation* data, guint len);
-gboolean j_backend_db_message_to_data (JMessage* message, JBackend_db_operation* data, guint len);
-gboolean j_backend_db_message_to_data_static (JMessage* message, JBackend_db_operation* data, guint len);
-/* previous functions could be generalized to be used with all backends <<-- */
 
 GQuark j_backend_db_error_quark (void);
 
@@ -402,7 +352,6 @@ JBackend* backend_info (void);
 gboolean j_backend_load_client (gchar const*, gchar const*, JBackendType, GModule**, JBackend**);
 gboolean j_backend_load_server (gchar const*, gchar const*, JBackendType, GModule**, JBackend**);
 
-//object backend ->
 gboolean j_backend_object_init (JBackend*, gchar const*);
 void j_backend_object_fini (JBackend*);
 
@@ -418,7 +367,6 @@ gboolean j_backend_object_sync (JBackend*, gpointer);
 gboolean j_backend_object_read (JBackend*, gpointer, gpointer, guint64, guint64, guint64*);
 gboolean j_backend_object_write (JBackend*, gpointer, gconstpointer, guint64, guint64, guint64*);
 
-//kv backend ->
 gboolean j_backend_kv_init (JBackend*, gchar const*);
 void j_backend_kv_fini (JBackend*);
 
@@ -433,7 +381,6 @@ gboolean j_backend_kv_get_all (JBackend*, gchar const*, gpointer*);
 gboolean j_backend_kv_get_by_prefix (JBackend*, gchar const*, gchar const*, gpointer*);
 gboolean j_backend_kv_iterate (JBackend*, gpointer, gchar const**, gconstpointer*, guint32*);
 
-//db backend ->
 gboolean j_backend_db_init (JBackend*, gchar const*);
 void j_backend_db_fini (JBackend*);
 
