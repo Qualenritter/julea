@@ -27,6 +27,8 @@
 #include <julea-internal.h>
 #include <julea-db.h>
 
+#include <core/jbson-wrapper.h>
+
 // FIXME clean up
 
 const char* const JuleaBackendErrorFormat[] = {
@@ -88,18 +90,18 @@ const char* const JuleaBackendErrorFormat[] = {
 #define J_DEBUG_ERROR(format, ...)
 #endif
 
-#define j_goto_error_backend(val, err_code, ...)                                                                                                  \
-	do                                                                                                                                        \
-	{                                                                                                                                         \
-		_Pragma("GCC diagnostic push");                                                                                                   \
-		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                                        \
-		if (val)                                                                                                                          \
-		{                                                                                                                                 \
-			J_DEBUG_ERROR(JuleaBackendErrorFormat[err_code], ##__VA_ARGS__);                                                          \
+#define j_goto_error_backend(val, err_code, ...)                                                                                                 \
+	do                                                                                                                                       \
+	{                                                                                                                                        \
+		_Pragma("GCC diagnostic push");                                                                                                  \
+		_Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                                       \
+		if (val)                                                                                                                         \
+		{                                                                                                                                \
+			J_DEBUG_ERROR(JuleaBackendErrorFormat[err_code], ##__VA_ARGS__);                                                         \
 			g_set_error(error, J_BACKEND_DB_ERROR, err_code, JuleaBackendErrorFormat[err_code], G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
-			goto _error;                                                                                                              \
-		}                                                                                                                                 \
-		_Pragma("GCC diagnostic pop");                                                                                                    \
+			goto _error;                                                                                                             \
+		}                                                                                                                                \
+		_Pragma("GCC diagnostic pop");                                                                                                   \
 	} while (0)
 
 #define j_goto_error_subcommand(val) \
@@ -134,13 +136,13 @@ static sqlite3* backend_db = NULL;
 			goto _error; \
 	} while (0)
 #endif
-#define j_sql_constraint_check(ret, flag)                                                                                  \
-	do                                                                                                                 \
-	{                                                                                                                  \
-		if (ret == SQLITE_CONSTRAINT)                                                                              \
+#define j_sql_constraint_check(ret, flag)                                                                                 \
+	do                                                                                                                \
+	{                                                                                                                 \
+		if (ret == SQLITE_CONSTRAINT)                                                                             \
 			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_SQL_CONSTRAINT, _ret_, sqlite3_errmsg(backend_db)); \
-		else                                                                                                       \
-			j_sql_check(ret, flag);                                                                            \
+		else                                                                                                      \
+			j_sql_check(ret, flag);                                                                           \
 	} while (0)
 #define j_sql_reset(stmt)                         \
 	do                                        \
@@ -235,23 +237,23 @@ static sqlite3* backend_db = NULL;
 	if ((ret = sqlite3_step(stmt)) != SQLITE_ROW)     \
 		j_sql_check_constraint(ret, SQLITE_DONE); \
 	else
-#define j_sql_exec_or_error(sql, flag)                                                                                 \
-	do                                                                                                             \
-	{                                                                                                              \
-		j_sql_statement_type _stmt_;                                                                           \
-		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, 0, &_stmt_, NULL);                                \
-		if (_ret_ != SQLITE_OK)                                                                                \
-		{                                                                                                      \
-			j_sql_finalize(_stmt_);                                                                        \
+#define j_sql_exec_or_error(sql, flag)                                                                                \
+	do                                                                                                            \
+	{                                                                                                             \
+		j_sql_statement_type _stmt_;                                                                          \
+		gint _ret_ = sqlite3_prepare_v3(backend_db, sql, -1, 0, &_stmt_, NULL);                               \
+		if (_ret_ != SQLITE_OK)                                                                               \
+		{                                                                                                     \
+			j_sql_finalize(_stmt_);                                                                       \
 			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_SQL_FAILED, _ret_, sqlite3_errmsg(backend_db)); \
-		}                                                                                                      \
-		_ret_ = sqlite3_step(_stmt_);                                                                          \
-		if (_ret_ != SQLITE_DONE)                                                                              \
-		{                                                                                                      \
-			j_sql_finalize(_stmt_);                                                                        \
+		}                                                                                                     \
+		_ret_ = sqlite3_step(_stmt_);                                                                         \
+		if (_ret_ != SQLITE_DONE)                                                                             \
+		{                                                                                                     \
+			j_sql_finalize(_stmt_);                                                                       \
 			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_SQL_FAILED, _ret_, sqlite3_errmsg(backend_db)); \
-		}                                                                                                      \
-		j_sql_finalize(_stmt_);                                                                                \
+		}                                                                                                     \
+		j_sql_finalize(_stmt_);                                                                               \
 	} while (0)
 #define j_sql_exec_and_get_number(sql, number)                     \
 	do                                                         \

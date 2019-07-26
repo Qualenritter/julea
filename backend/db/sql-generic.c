@@ -333,31 +333,38 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	JDBType type;
 	gboolean first;
 	guint i;
-	gint ret;
+	gboolean has_next;
+	gboolean equals;
 	guint counter = 0;
 	gboolean found_index = FALSE;
 	char* json = NULL;
+	const char* tmp_string;
 	GString* sql = g_string_new(NULL);
 	j_sql_transaction_begin();
 	j_goto_error_backend(!name, J_BACKEND_DB_ERROR_NAME_NULL, "");
 	j_goto_error_backend(!batch, J_BACKEND_DB_ERROR_BATCH_NULL, "");
 	j_goto_error_backend(!schema, J_BACKEND_DB_ERROR_SCHEMA_NULL, "");
 	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", batch->namespace, name);
-	ret = bson_iter_init(&iter, schema);
-	j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
-	while (bson_iter_next(&iter))
+	if (!j_bson_iter_init(&iter, schema, error))
+		goto _error;
+	while (TRUE)
 	{
-		if (!g_strcmp0(bson_iter_key(&iter), "_index"))
+		if (!j_bson_iter_next(&iter, &has_next, error))
+			goto _error;
+		if (!has_next)
+			break;
+		if (!j_bson_iter_key_equals(&iter, "_index", &equals, error))
+			goto _error;
+		if (equals)
 		{
 			found_index = TRUE;
 		}
 		else
 		{
 			counter++;
-			g_string_append_printf(sql, ", %s", bson_iter_key(&iter));
-			ret = BSON_ITER_HOLDS_INT32(&iter);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
-			type = bson_iter_int32(&iter);
+			g_string_append_printf(sql, ", %s", j_bson_iter_key(&iter, error));
+			if (!j_bson_iter_get_value(&iter, J_DB_TYPE_UINT32, &type, NULL, error))
+				goto _error;
 			switch (type)
 			{
 			case J_DB_TYPE_SINT32:
@@ -392,41 +399,49 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	}
 	g_string_append(sql, " )");
 	j_goto_error_backend(!counter, J_BACKEND_DB_ERROR_SCHEMA_EMPTY, "");
-	json = bson_as_json(schema, NULL);
+	json = j_bson_as_json(schema, error);
+	if (!json)
+		goto _error;
 	j_sql_bind_text(stmt_schema_structure_create, 1, batch->namespace, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 2, name, -1);
 	j_sql_bind_text(stmt_schema_structure_create, 3, json, -1);
 	j_sql_step_and_reset_check_done_constraint(stmt_schema_structure_create);
 	j_sql_exec_or_error(sql->str, j_sql_done);
-	bson_free(json);
+	j_bson_free_json(json);
 	g_string_free(sql, TRUE);
 	if (found_index)
 	{
 		i = 0;
-		ret = bson_iter_init(&iter, schema);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
-		ret = bson_iter_find(&iter, "_index");
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_KEY_NOT_FOUND, "_index");
-		ret = BSON_ITER_HOLDS_ARRAY(&iter);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
-		ret = bson_iter_recurse(&iter, &iter_child);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
-		while (bson_iter_next(&iter_child))
+		if (!j_bson_iter_init(&iter, schema, error))
+			goto _error;
+		if (!j_bson_iter_find(&iter, "_index", error))
+			goto _error;
+		if (!j_bson_iter_recurse_array(&iter, &iter_child, error))
+			goto _error;
+		while (TRUE)
 		{
+			if (!j_bson_iter_next(&iter_child, &has_next, error))
+				goto _error;
+			if (!has_next)
+				break;
 			sql = g_string_new(NULL);
 			first = TRUE;
 			g_string_append_printf(sql, "CREATE INDEX %s_%s_%d ON %s_%s ( ", batch->namespace, name, i, batch->namespace, name);
-			ret = BSON_ITER_HOLDS_ARRAY(&iter_child);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter_child));
-			ret = bson_iter_recurse(&iter_child, &iter_child2);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
-			while (bson_iter_next(&iter_child2))
+			if (!j_bson_iter_recurse_array(&iter_child, &iter_child2, error))
+				goto _error;
+			while (TRUE)
 			{
+				if (!j_bson_iter_next(&iter_child2, &has_next, error))
+					goto _error;
+				if (!has_next)
+					break;
 				if (first)
 					first = FALSE;
 				else
 					g_string_append(sql, ", ");
-				g_string_append_printf(sql, "%s", bson_iter_utf8(&iter_child2, NULL));
+				if (!j_bson_iter_get_value(&iter_child2, J_DB_TYPE_STRING, &tmp_string, NULL, error))
+					goto _error;
+				g_string_append_printf(sql, "%s", tmp_string);
 			}
 			g_string_append(sql, " )");
 			j_sql_exec_or_error(sql->str, j_sql_done);
@@ -438,7 +453,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	return TRUE;
 _error:
 	j_sql_transaction_abort();
-	bson_free(json);
+	j_bson_free_json(json);
 	g_string_free(sql, TRUE);
 	return FALSE;
 }
@@ -460,7 +475,8 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 			json = j_sql_column_text(stmt_schema_structure_get, 0);
 			j_goto_error_backend(json == NULL, J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND, "");
 			j_goto_error_backend(!strlen(json), J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND, "");
-			bson_init_from_json(schema, json, -1, NULL);
+			if (!j_bson_init_from_json(schema, json, error))
+				goto _error;
 		}
 		ret = TRUE;
 	}
@@ -499,61 +515,69 @@ _error:
 static gboolean
 insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 {
+	const char* tmp_string;
+	JDBType type;
 	uint32_t binary_len;
 	const uint8_t* binary;
-	bson_type_t type;
 	guint i;
+	gboolean has_next;
 	guint index;
 	guint count = 0;
+	gdouble value_double;
+	const char* value_string;
+	guint64 value_int64;
+	guint32 value_int32;
 	for (i = 0; i < prepared->variables_count; i++)
 		j_sql_bind_null(prepared->stmt, i + 1);
-	while (bson_iter_next(iter))
+	while (TRUE)
 	{
-		type = bson_iter_type(iter);
-		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(iter)));
-		j_goto_error_backend(!index, J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND, bson_iter_key(iter));
+		if (!j_bson_iter_next(iter, &has_next, error))
+			goto _error;
+		if (!has_next)
+			break;
+		if (!j_bson_iter_type_db(iter, &type, error))
+			goto _error;
+		tmp_string = j_bson_iter_key(iter, error);
+		if (!tmp_string)
+			goto _error;
+		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, tmp_string));
+		j_goto_error_backend(!index, J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND, tmp_string);
 		switch (type)
 		{
-		case BSON_TYPE_DOUBLE:
+		case J_DB_TYPE_FLOAT32:
+		case J_DB_TYPE_FLOAT64:
 			count++;
-			j_sql_bind_double(prepared->stmt, index, bson_iter_double(iter));
+			if (!j_bson_iter_get_value(iter, type, &value_double, NULL, error))
+				goto _error;
+			j_sql_bind_double(prepared->stmt, index, value_double);
 			break;
-		case BSON_TYPE_UTF8:
+		case J_DB_TYPE_STRING:
 			count++;
-			j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(iter, NULL), -1);
+			if (!j_bson_iter_get_value(iter, type, &value_string, NULL, error))
+				goto _error;
+			j_sql_bind_text(prepared->stmt, index, value_string, -1);
 			break;
-		case BSON_TYPE_INT32:
+		case J_DB_TYPE_SINT32:
+		case J_DB_TYPE_UINT32:
 			count++;
-			j_sql_bind_int(prepared->stmt, index, bson_iter_int32(iter));
+			if (!j_bson_iter_get_value(iter, type, &value_int32, NULL, error))
+				goto _error;
+			j_sql_bind_int(prepared->stmt, index, value_int32);
 			break;
-		case BSON_TYPE_INT64:
+		case J_DB_TYPE_SINT64:
+		case J_DB_TYPE_UINT64:
 			count++;
-			j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(iter));
+			if (!j_bson_iter_get_value(iter, type, &value_int64, NULL, error))
+				goto _error;
+			j_sql_bind_int64(prepared->stmt, index, value_int64);
 			break;
-		case BSON_TYPE_BINARY:
+		case J_DB_TYPE_BLOB:
 			count++;
-			bson_iter_binary(iter, NULL, &binary_len, &binary);
+			if (!j_bson_iter_get_value(iter, type, &binary, &binary_len, error))
+				goto _error;
 			j_sql_bind_blob(prepared->stmt, index, binary, binary_len);
 			break;
-		case BSON_TYPE_NULL:
-			j_sql_bind_null(prepared->stmt, index);
-			break;
-		case BSON_TYPE_EOD:
-		case BSON_TYPE_DOCUMENT:
-		case BSON_TYPE_ARRAY:
-		case BSON_TYPE_UNDEFINED:
-		case BSON_TYPE_OID:
-		case BSON_TYPE_BOOL:
-		case BSON_TYPE_DATE_TIME:
-		case BSON_TYPE_REGEX:
-		case BSON_TYPE_DBPOINTER:
-		case BSON_TYPE_CODE:
-		case BSON_TYPE_SYMBOL:
-		case BSON_TYPE_CODEWSCOPE:
-		case BSON_TYPE_TIMESTAMP:
-		case BSON_TYPE_DECIMAL128:
-		case BSON_TYPE_MAXKEY:
-		case BSON_TYPE_MINKEY:
+		case _J_DB_TYPE_COUNT:
 		default:
 			j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, type);
 		}
@@ -568,39 +592,48 @@ static gboolean
 backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GError** error)
 {
 	JSqlBatch* batch = _batch;
+	gboolean has_next;
 	guint i;
 	guint ret;
 	bson_iter_t iter;
-	bson_t* schema = NULL;
+	bson_t schema;
+	const char* tmp_string;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
 	j_goto_error_backend(!metadata, J_BACKEND_DB_ERROR_METADATA_NULL, "");
 	j_goto_error_backend(!name, J_BACKEND_DB_ERROR_NAME_NULL, "");
 	j_goto_error_backend(!batch, J_BACKEND_DB_ERROR_BATCH_NULL, "");
-	j_goto_error_backend(!bson_count_keys(metadata), J_BACKEND_DB_ERROR_METADATA_EMPTY, "");
+	if (!j_bson_has_enough_keys(metadata, 1, error))
+		goto _error;
 	prepared = getCachePrepared(batch->namespace, name, "insert", error);
 	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
-		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(batch, name, schema, error);
+		schema_initialized = backend_schema_get(batch, name, &schema, error);
 		j_goto_error_subcommand(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 		g_string_append_printf(prepared->sql, "INSERT INTO %s_%s (", batch->namespace, name);
-		ret = bson_iter_init(&iter, schema);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
-		while (bson_iter_next(&iter))
+		if (!j_bson_iter_init(&iter, &schema, error))
+			goto _error;
+		while (TRUE)
 		{
-			ret = BSON_ITER_HOLDS_INT32(&iter);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
+			if (!j_bson_iter_next(&iter, &has_next, error))
+				goto _error;
+			if (!has_next)
+				break;
+			if (!j_bson_iter_get_value(&iter, J_DB_TYPE_UINT32, NULL, NULL, error))
+				goto _error;
 			if (prepared->variables_count)
 				g_string_append(prepared->sql, ", ");
 			prepared->variables_count++;
-			g_string_append_printf(prepared->sql, "%s", bson_iter_key(&iter));
-			g_hash_table_insert(prepared->variables_index, g_strdup(bson_iter_key(&iter)), GINT_TO_POINTER(prepared->variables_count));
+			tmp_string = j_bson_iter_key(&iter, error);
+			if (!tmp_string)
+				goto _error;
+			g_string_append_printf(prepared->sql, "%s", tmp_string);
+			g_hash_table_insert(prepared->variables_index, g_strdup(tmp_string), GINT_TO_POINTER(prepared->variables_count));
 		}
 		g_string_append(prepared->sql, ") VALUES ( ?1");
 		for (i = 1; i < prepared->variables_count; i++)
@@ -609,25 +642,17 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	ret = bson_iter_init(&iter, metadata);
-	j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
+	if (!j_bson_iter_init(&iter, metadata, error))
+		goto _error;
 	ret = insert_helper(prepared, &iter, error);
 	j_goto_error_subcommand(!ret);
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
+	if (schema_initialized)
+		j_bson_destroy(&schema);
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
+	if (schema_initialized)
+		j_bson_destroy(&schema);
 	j_sql_transaction_abort();
 	return FALSE;
 }
@@ -636,18 +661,25 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 {
 	JDBSelectorMode mode_child;
 	gint ret;
+	gboolean equals;
+	gboolean has_next;
 	JDBSelectorOperator op;
 	gboolean first = TRUE;
+	const char* tmp_string;
 	bson_iter_t iterchild;
 	g_string_append(sql, "( ");
-	while (bson_iter_next(iter))
+	while (TRUE)
 	{
-		if (!g_strcmp0(bson_iter_key(iter), "_mode"))
+		if (!j_bson_iter_next(iter, &has_next, error))
+			goto _error;
+		if (!has_next)
+			break;
+		if (!j_bson_iter_key_equals(iter, "_mode", &equals, error))
+			goto _error;
+		if (equals)
 			continue;
-		ret = BSON_ITER_HOLDS_DOCUMENT(iter);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(iter));
-		ret = bson_iter_recurse(iter, &iterchild);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
+		if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+			goto _error;
 		if (!first)
 		{
 			switch (mode)
@@ -664,32 +696,31 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 			}
 		}
 		first = FALSE;
-		if (bson_iter_find(&iterchild, "_mode"))
+		if (j_bson_iter_find(&iterchild, "_mode", NULL))
 		{
-			ret = BSON_ITER_HOLDS_INT32(&iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iterchild));
-			mode_child = bson_iter_int32(&iterchild);
-			ret = bson_iter_recurse(iter, &iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
+			if (!j_bson_iter_get_value(&iterchild, J_DB_TYPE_UINT32, &mode_child, NULL, error))
+				goto _error;
+			if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+				goto _error;
 			ret = build_selector_query(&iterchild, sql, mode_child, variables_count, error);
 			j_goto_error_subcommand(!ret);
 		}
 		else
 		{
 			(*variables_count)++;
-			ret = bson_iter_recurse(iter, &iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
-			ret = bson_iter_find(&iterchild, "_name");
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_KEY_NOT_FOUND, "_name");
-			ret = BSON_ITER_HOLDS_UTF8(&iterchild);
-			g_string_append_printf(sql, "%s ", bson_iter_utf8(&iterchild, NULL));
-			ret = bson_iter_recurse(iter, &iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
-			ret = bson_iter_find(&iterchild, "_operator");
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_KEY_NOT_FOUND, "_operator");
-			ret = BSON_ITER_HOLDS_INT32(&iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iterchild));
-			op = bson_iter_int32(&iterchild);
+			if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+				goto _error;
+			if (!j_bson_iter_find(&iterchild, "_name", error))
+				goto _error;
+			if (!j_bson_iter_get_value(&iterchild, J_DB_TYPE_STRING, &tmp_string, NULL, error))
+				goto _error;
+			g_string_append_printf(sql, "%s ", tmp_string);
+			if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+				goto _error;
+			if (!j_bson_iter_find(&iterchild, "_operator", error))
+				goto _error;
+			if (!j_bson_iter_get_value(&iterchild, J_DB_TYPE_UINT32, &op, NULL, error))
+				goto _error;
 			switch (op)
 			{
 			case J_DB_SELECTOR_OPERATOR_LT:
@@ -729,68 +760,73 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* va
 	uint32_t binary_len;
 	const uint8_t* binary;
 	bson_iter_t iterchild;
+	gdouble value_double;
+	const char* value_string;
+	guint64 value_int64;
+	guint32 value_int32;
 	gint ret;
-	bson_type_t type;
-	while (bson_iter_next(iter))
+	JDBType type;
+	gboolean has_next;
+	gboolean equals;
+	while (TRUE)
 	{
-		if (!g_strcmp0(bson_iter_key(iter), "_mode"))
+		if (!j_bson_iter_next(iter, &has_next, error))
+			goto _error;
+		if (!has_next)
+			break;
+		if (!j_bson_iter_key_equals(iter, "_mode", &equals, error))
+			goto _error;
+		if (equals)
 			continue;
-		ret = BSON_ITER_HOLDS_DOCUMENT(iter);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(iter));
-		ret = bson_iter_recurse(iter, &iterchild);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
-		if (bson_iter_find(&iterchild, "_mode"))
+		if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+			goto _error;
+		if (j_bson_iter_find(&iterchild, "_mode", NULL))
 		{
-			ret = bson_iter_recurse(iter, &iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
+			if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+				goto _error;
 			ret = bind_selector_query(&iterchild, prepared, variables_count, error);
 			j_goto_error_subcommand(!ret);
 		}
 		else
 		{
 			(*variables_count)++;
-			ret = bson_iter_recurse(iter, &iterchild);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE, "");
+			if (!j_bson_iter_recurse_document(iter, &iterchild, error))
+				goto _error;
 			ret = bson_iter_find(&iterchild, "_value");
 			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_KEY_NOT_FOUND, "_value");
-			type = bson_iter_type(&iterchild);
+			if (!j_bson_iter_type_db(iter, &type, error))
+				goto _error;
 			switch (type)
 			{
-			case BSON_TYPE_DOUBLE:
-				j_sql_bind_double(prepared->stmt, *variables_count, bson_iter_double(&iterchild));
+			case J_DB_TYPE_FLOAT32:
+			case J_DB_TYPE_FLOAT64:
+				if (!j_bson_iter_get_value(iter, type, &value_double, NULL, error))
+					goto _error;
+				j_sql_bind_double(prepared->stmt, *variables_count, value_double);
 				break;
-			case BSON_TYPE_UTF8:
-				j_sql_bind_text(prepared->stmt, *variables_count, bson_iter_utf8(&iterchild, NULL), -1);
+			case J_DB_TYPE_STRING:
+				if (!j_bson_iter_get_value(iter, type, &value_string, NULL, error))
+					goto _error;
+				j_sql_bind_text(prepared->stmt, *variables_count, value_string, -1);
 				break;
-			case BSON_TYPE_INT32:
-				j_sql_bind_int(prepared->stmt, *variables_count, bson_iter_int32(&iterchild));
+			case J_DB_TYPE_SINT32:
+			case J_DB_TYPE_UINT32:
+				if (!j_bson_iter_get_value(iter, type, &value_int32, NULL, error))
+					goto _error;
+				j_sql_bind_int(prepared->stmt, *variables_count, value_int32);
 				break;
-			case BSON_TYPE_INT64:
-				j_sql_bind_int64(prepared->stmt, *variables_count, bson_iter_int64(&iterchild));
+			case J_DB_TYPE_SINT64:
+			case J_DB_TYPE_UINT64:
+				if (!j_bson_iter_get_value(iter, type, &value_int64, NULL, error))
+					goto _error;
+				j_sql_bind_int64(prepared->stmt, *variables_count, value_int64);
 				break;
-			case BSON_TYPE_NULL:
-				j_sql_bind_null(prepared->stmt, *variables_count);
-				break;
-			case BSON_TYPE_BINARY:
-				bson_iter_binary(&iterchild, NULL, &binary_len, &binary);
+			case J_DB_TYPE_BLOB:
+				if (!j_bson_iter_get_value(iter, type, &binary, &binary_len, error))
+					goto _error;
 				j_sql_bind_blob(prepared->stmt, *variables_count, binary, binary_len);
 				break;
-			case BSON_TYPE_EOD:
-			case BSON_TYPE_DOCUMENT:
-			case BSON_TYPE_ARRAY:
-			case BSON_TYPE_UNDEFINED:
-			case BSON_TYPE_OID:
-			case BSON_TYPE_BOOL:
-			case BSON_TYPE_DATE_TIME:
-			case BSON_TYPE_REGEX:
-			case BSON_TYPE_DBPOINTER:
-			case BSON_TYPE_CODE:
-			case BSON_TYPE_SYMBOL:
-			case BSON_TYPE_CODEWSCOPE:
-			case BSON_TYPE_TIMESTAMP:
-			case BSON_TYPE_DECIMAL128:
-			case BSON_TYPE_MAXKEY:
-			case BSON_TYPE_MINKEY:
+			case _J_DB_TYPE_COUNT:
 			default:
 				j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, type);
 			}
@@ -820,18 +856,17 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
 	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", batch->namespace, name);
-	if (selector && (1 < bson_count_keys(selector)))
+	if (selector && j_bson_has_enough_keys(selector, 2, NULL))
 	{
 		g_string_append(sql, " WHERE ");
-		ret = bson_iter_init(&iter, selector);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
-		ret = bson_iter_find(&iter, "_mode");
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_KEY_NOT_FOUND, "_mode");
-		ret = BSON_ITER_HOLDS_INT32(&iter);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
-		mode_child = bson_iter_int32(&iter);
-		ret = bson_iter_init(&iter, selector);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
+		if (!j_bson_iter_init(&iter, selector, error))
+			goto _error;
+		if (!j_bson_iter_find(&iter, "_mode", error))
+			goto _error;
+		if (!j_bson_iter_get_value(&iter, J_DB_TYPE_UINT32, &mode_child, NULL, error))
+			goto _error;
+		if (!j_bson_iter_init(&iter, selector, error))
+			goto _error;
 		variables_count = 0;
 		ret = build_selector_query(&iter, sql, mode_child, &variables_count, error);
 		j_goto_error_subcommand(!ret);
@@ -847,10 +882,10 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		j_sql_prepare(prepared->sql->str, &prepared->stmt);
 		prepared->initialized = TRUE;
 	}
-	if (selector && (1 < bson_count_keys(selector)))
+	if (selector && j_bson_has_enough_keys(selector, 2, NULL))
 	{
-		ret = bson_iter_init(&iter, selector);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
+		if (!j_bson_iter_init(&iter, selector, error))
+			goto _error;
 		variables_count = 0;
 		ret = bind_selector_query(&iter, prepared, &variables_count, error);
 		j_goto_error_subcommand(!ret);
@@ -878,43 +913,56 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	const uint8_t* binary;
 	JSqlBatch* batch = _batch;
 	guint count;
-	bson_type_t type;
+	JDBType type;
+	gdouble value_double;
+	const char* value_string;
+	guint64 value_int64;
+	guint32 value_int32;
 	JSqlIterator* iterator = NULL;
 	bson_iter_t iter;
 	guint index;
 	gint ret;
 	guint i, j;
-	bson_t* schema = NULL;
+	const char* tmp_string;
+	gboolean has_next;
+	bson_t schema;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_sql_transaction_begin();
 	j_goto_error_backend(!name, J_BACKEND_DB_ERROR_NAME_NULL, "");
 	j_goto_error_backend(!batch, J_BACKEND_DB_ERROR_BATCH_NULL, "");
 	j_goto_error_backend(!selector, J_BACKEND_DB_ERROR_SELECTOR_NULL, "");
-	j_goto_error_backend(bson_count_keys(selector) < 2, J_BACKEND_DB_ERROR_SELECTOR_EMPTY, "");
+	if (!j_bson_has_enough_keys(selector, 2, error))
+		goto _error;
 	j_goto_error_backend(!metadata, J_BACKEND_DB_ERROR_METADATA_NULL, "");
 	prepared = getCachePrepared(batch->namespace, name, "update", error);
 	j_goto_error_subcommand(!prepared);
 	if (!prepared->initialized)
 	{
-		schema = g_new0(bson_t, 1);
-		schema_initialized = backend_schema_get(batch, name, schema, error);
+		schema_initialized = backend_schema_get(batch, name, &schema, error);
 		j_goto_error_subcommand(!schema_initialized);
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 		g_string_append_printf(prepared->sql, "UPDATE %s_%s SET ", batch->namespace, name);
-		ret = bson_iter_init(&iter, schema);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
-		while (bson_iter_next(&iter))
+		if (!j_bson_iter_init(&iter, &schema, error))
+			goto _error;
+		while (TRUE)
 		{
-			ret = BSON_ITER_HOLDS_INT32(&iter);
-			j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
+			if (!j_bson_iter_next(&iter, &has_next, error))
+				goto _error;
+			if (!has_next)
+				break;
+			if (!j_bson_iter_get_value(&iter, J_DB_TYPE_UINT32, NULL, NULL, error))
+				goto _error;
 			if (prepared->variables_count)
 				g_string_append(prepared->sql, ", ");
 			prepared->variables_count++;
-			g_string_append_printf(prepared->sql, "%s = ?%d", bson_iter_key(&iter), prepared->variables_count);
-			g_hash_table_insert(prepared->variables_index, g_strdup(bson_iter_key(&iter)), GINT_TO_POINTER(prepared->variables_count));
+			tmp_string = j_bson_iter_key(&iter, error);
+			if (!tmp_string)
+				goto _error;
+			g_string_append_printf(prepared->sql, "%s = ?%d", tmp_string, prepared->variables_count);
+			g_hash_table_insert(prepared->variables_index, g_strdup(tmp_string), GINT_TO_POINTER(prepared->variables_count));
 		}
 		prepared->variables_count++;
 		g_string_append_printf(prepared->sql, " WHERE _id = ?%d", prepared->variables_count);
@@ -932,55 +980,57 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, "_id"));
 		j_goto_error_backend(!index, J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND, "_id");
 		j_sql_bind_int64(prepared->stmt, index, g_array_index(iterator->arr, guint64, j));
-		ret = bson_iter_init(&iter, metadata);
-		j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
-		while (bson_iter_next(&iter))
+		if (!j_bson_iter_init(&iter, metadata, error))
+			goto _error;
+		while (TRUE)
 		{
-			type = bson_iter_type(&iter);
-			index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, bson_iter_key(&iter)));
-			j_goto_error_backend(!index, J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND, bson_iter_key(&iter));
+			if (!j_bson_iter_next(&iter, &has_next, error))
+				goto _error;
+			if (!has_next)
+				break;
+			if (!j_bson_iter_type_db(&iter, &type, error))
+				goto _error;
+			tmp_string = j_bson_iter_key(&iter, error);
+			if (!tmp_string)
+				goto _error;
+			index = GPOINTER_TO_INT(g_hash_table_lookup(prepared->variables_index, tmp_string));
+			j_goto_error_backend(!index, J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND, tmp_string);
 			switch (type)
 			{
-			case BSON_TYPE_DOUBLE:
+			case J_DB_TYPE_FLOAT32:
+			case J_DB_TYPE_FLOAT64:
 				count++;
-				j_sql_bind_double(prepared->stmt, index, bson_iter_double(&iter));
+				if (!j_bson_iter_get_value(&iter, type, &value_double, NULL, error))
+					goto _error;
+				j_sql_bind_double(prepared->stmt, index, value_double);
 				break;
-			case BSON_TYPE_UTF8:
+			case J_DB_TYPE_STRING:
 				count++;
-				j_sql_bind_text(prepared->stmt, index, bson_iter_utf8(&iter, NULL), -1);
+				if (!j_bson_iter_get_value(&iter, type, &value_string, NULL, error))
+					goto _error;
+				j_sql_bind_text(prepared->stmt, index, value_string, -1);
 				break;
-			case BSON_TYPE_INT32:
+			case J_DB_TYPE_SINT32:
+			case J_DB_TYPE_UINT32:
 				count++;
-				j_sql_bind_int(prepared->stmt, index, bson_iter_int32(&iter));
+				if (!j_bson_iter_get_value(&iter, type, &value_int32, NULL, error))
+					goto _error;
+				j_sql_bind_int(prepared->stmt, index, value_int32);
 				break;
-			case BSON_TYPE_INT64:
+			case J_DB_TYPE_SINT64:
+			case J_DB_TYPE_UINT64:
 				count++;
-				j_sql_bind_int64(prepared->stmt, index, bson_iter_int64(&iter));
+				if (!j_bson_iter_get_value(&iter, type, &value_int64, NULL, error))
+					goto _error;
+				j_sql_bind_int64(prepared->stmt, index, value_int64);
 				break;
-			case BSON_TYPE_NULL:
-				j_sql_bind_null(prepared->stmt, index);
-				break;
-			case BSON_TYPE_BINARY:
+			case J_DB_TYPE_BLOB:
 				count++;
-				bson_iter_binary(&iter, NULL, &binary_len, &binary);
+				if (!j_bson_iter_get_value(&iter, type, &binary, &binary_len, error))
+					goto _error;
 				j_sql_bind_blob(prepared->stmt, index, binary, binary_len);
 				break;
-			case BSON_TYPE_EOD:
-			case BSON_TYPE_DOCUMENT:
-			case BSON_TYPE_ARRAY:
-			case BSON_TYPE_UNDEFINED:
-			case BSON_TYPE_OID:
-			case BSON_TYPE_BOOL:
-			case BSON_TYPE_DATE_TIME:
-			case BSON_TYPE_REGEX:
-			case BSON_TYPE_DBPOINTER:
-			case BSON_TYPE_CODE:
-			case BSON_TYPE_SYMBOL:
-			case BSON_TYPE_CODEWSCOPE:
-			case BSON_TYPE_TIMESTAMP:
-			case BSON_TYPE_DECIMAL128:
-			case BSON_TYPE_MAXKEY:
-			case BSON_TYPE_MINKEY:
+			case _J_DB_TYPE_COUNT:
 			default:
 				j_goto_error_backend(TRUE, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, type);
 			}
@@ -988,22 +1038,14 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		j_sql_step_and_reset_check_done_constraint(prepared->stmt);
 		j_goto_error_backend(!count, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
 	}
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
+	if (schema_initialized)
+		j_bson_destroy(&schema);
 	freeJSqlIterator(iterator);
 	j_sql_transaction_commit();
 	return TRUE;
 _error:
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
+	if (schema_initialized)
+		j_bson_destroy(&schema);
 	freeJSqlIterator(iterator);
 	j_sql_transaction_abort();
 	return FALSE;
@@ -1048,7 +1090,7 @@ static gboolean
 backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	JDBSelectorMode mode_child;
-	bson_t* schema = NULL;
+	bson_t schema;
 	gboolean schema_initialized = FALSE;
 	JSqlBatch* batch = _batch;
 	gboolean ret;
@@ -1065,11 +1107,10 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	variables_type = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 	g_string_append(sql, "SELECT ");
 	variables_count = 0;
-	schema = g_new0(bson_t, 1);
-	schema_initialized = backend_schema_get(batch, name, schema, error);
+	schema_initialized = backend_schema_get(batch, name, &schema, error);
 	j_goto_error_subcommand(!schema_initialized);
-	ret = bson_iter_init(&iter, schema);
-	j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_ITER_INIT, "");
+	if (!j_bson_iter_init(&iter, &schema, error))
+		goto _error;
 	g_string_append(sql, "_id");
 	g_hash_table_insert(variables_index, GINT_TO_POINTER(variables_count), g_strdup("_id"));
 	g_hash_table_insert(variables_type, g_strdup("_id"), GINT_TO_POINTER(J_DB_TYPE_UINT32));
@@ -1130,21 +1171,13 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	}
 	*iterator = prepared;
 	g_string_free(sql, TRUE);
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
+	if (schema_initialized)
+		bson_destroy(&schema);
 	return TRUE;
 _error:
 	g_string_free(sql, TRUE);
-	if (schema)
-	{
-		if (schema_initialized)
-			bson_destroy(schema);
-		g_free(schema);
-	}
+	if (schema_initialized)
+		bson_destroy(&schema);
 	if (variables_index)
 		g_hash_table_destroy(variables_index);
 	if (variables_type)
