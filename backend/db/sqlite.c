@@ -29,6 +29,22 @@
 
 #include <core/jbson-wrapper.h>
 
+enum JSQLError
+{
+	J_SQL_ERROR_BIND,
+	J_SQL_ERROR_INVALID_TYPE,
+	_J_SQL_ERROR_COUNT
+};
+typedef enum JSQLError JSQLError;
+
+static GQuark
+j_sql_error_quark(void)
+{
+	return g_quark_from_static_string("j-sql-error-quark");
+}
+
+#define J_SQL_ERROR j_sql_error_quark()
+
 // FIXME clean up
 
 const char* const JuleaBackendErrorFormat[] = {
@@ -107,10 +123,94 @@ const char* const JuleaBackendErrorFormat[] = {
 /*
 * this file defines makros such that the generic-sql.h implementation can call the sqlite specific functions without knowing, that it is actually sqlite
 */
+static sqlite3* backend_db = NULL;
+static gboolean
+j_sql_bind_null(void* _stmt, guint idx, GError** error)
+{
+	sqlite3_stmt* stmt = _stmt;
+	if (sqlite3_bind_null(stmt, idx) != SQLITE_OK)
+	{
+		g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+static gboolean
+j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBType_value* value, GError** error)
+{
+	sqlite3_stmt* stmt = _stmt;
+	switch (type)
+	{
+	case J_DB_TYPE_SINT32:
+		if (sqlite3_bind_int64(stmt, idx, value->val_sint32) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_UINT32:
+		if (sqlite3_bind_int64(stmt, idx, value->val_uint32) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_SINT64:
+		if (sqlite3_bind_int64(stmt, idx, value->val_sint64) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_UINT64:
+		if (sqlite3_bind_int64(stmt, idx, value->val_uint64) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_FLOAT32:
+		if (sqlite3_bind_double(stmt, idx, value->val_float32) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_FLOAT64:
+		if (sqlite3_bind_double(stmt, idx, value->val_float64) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_STRING:
+		if (sqlite3_bind_text(stmt, idx, value->val_string, -1, NULL) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case J_DB_TYPE_BLOB:
+		if (sqlite3_bind_blob(stmt, idx, value->val_blob, value->val_blob_length, NULL) != SQLITE_OK)
+		{
+			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			goto _error;
+		}
+		break;
+	case _J_DB_TYPE_COUNT:
+	default:
+		g_set_error_literal(error, J_SQL_ERROR, J_SQL_ERROR_INVALID_TYPE, "bson iter invalid type");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
 
 #define j_sql_statement_type sqlite3_stmt*
 #define j_sql_done SQLITE_DONE
-static sqlite3* backend_db = NULL;
 #ifdef JULEA_DEBUG
 #define j_sql_check(ret, flag)                                                              \
 	do                                                                                  \
@@ -164,42 +264,6 @@ static sqlite3* backend_db = NULL;
 		gint _ret2_ = sqlite3_reset(stmt);          \
 		j_sql_constraint_check(_ret_, SQLITE_DONE); \
 		j_sql_constraint_check(_ret2_, SQLITE_OK);  \
-	} while (0)
-#define j_sql_bind_null(stmt, idx)                         \
-	do                                                 \
-	{                                                  \
-		gint _ret_ = sqlite3_bind_null(stmt, idx); \
-		j_sql_check(_ret_, SQLITE_OK);             \
-	} while (0)
-#define j_sql_bind_int64(stmt, idx, val)                         \
-	do                                                       \
-	{                                                        \
-		gint _ret_ = sqlite3_bind_int64(stmt, idx, val); \
-		j_sql_check(_ret_, SQLITE_OK);                   \
-	} while (0)
-#define j_sql_bind_int(stmt, idx, val)                         \
-	do                                                     \
-	{                                                      \
-		gint _ret_ = sqlite3_bind_int(stmt, idx, val); \
-		j_sql_check(_ret_, SQLITE_OK);                 \
-	} while (0)
-#define j_sql_bind_blob(stmt, idx, val, val_len)                               \
-	do                                                                     \
-	{                                                                      \
-		gint _ret_ = sqlite3_bind_blob(stmt, idx, val, val_len, NULL); \
-		j_sql_check(_ret_, SQLITE_OK);                                 \
-	} while (0)
-#define j_sql_bind_double(stmt, idx, val)                         \
-	do                                                        \
-	{                                                         \
-		gint _ret_ = sqlite3_bind_double(stmt, idx, val); \
-		j_sql_check(_ret_, SQLITE_OK);                    \
-	} while (0)
-#define j_sql_bind_text(stmt, idx, val, val_len)                               \
-	do                                                                     \
-	{                                                                      \
-		gint _ret_ = sqlite3_bind_text(stmt, idx, val, val_len, NULL); \
-		j_sql_check(_ret_, SQLITE_OK);                                 \
 	} while (0)
 #define j_sql_prepare(sql, stmt)                                                                             \
 	do                                                                                                   \
