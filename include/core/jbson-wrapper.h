@@ -67,6 +67,5 @@ gboolean j_bson_iter_type_db(bson_iter_t* iter, JDBType* type, GError** error);
 gboolean j_bson_has_enough_keys(const bson_t* bson, guint32 min_keys, GError** error);
 void j_bson_destroy(bson_t* bson);
 gboolean j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value* value, GError** error);
-gboolean
-j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error)
+gboolean j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error);
 #endif

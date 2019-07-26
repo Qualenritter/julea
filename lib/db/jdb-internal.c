@@ -310,7 +310,7 @@ j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 	{
 		if (!memcmp(&helper->bson, &zerobson, sizeof(bson_t)))
 		{
-			g_set_error(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BSON_INVALID, "");
+			g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_INVALID, "iterator invalid");
 			goto error2;
 		}
 		if (!j_bson_iter_init(&helper->iter, &helper->bson, error))
