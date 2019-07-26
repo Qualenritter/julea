@@ -299,9 +299,6 @@ _error:
 gboolean
 j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
-	gint ret;
-	const uint8_t* data;
-	uint32_t length;
 	J_db_iterator_helper* helper = iterator;
 	gboolean has_next;
 	bson_t zerobson;

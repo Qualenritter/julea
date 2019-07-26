@@ -96,6 +96,7 @@ event_iterator_next(void)
 		ret_expected = TRUE;
 		if (error)
 		{ //this selects which errors count as error and which not
+			ret_expected = TRUE;
 			if (error->domain == J_BACKEND_DB_ERROR)
 			{
 				switch (error->code)
@@ -110,26 +111,16 @@ event_iterator_next(void)
 				case J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 					ret_expected = FALSE;
 					break;
-				case J_BACKEND_DB_ERROR_BSON_APPEND_FAILED:
-				case J_BACKEND_DB_ERROR_BSON_FAILED:
-				case J_BACKEND_DB_ERROR_BSON_INVALID:
-				case J_BACKEND_DB_ERROR_BSON_INVALID_TYPE:
-				case J_BACKEND_DB_ERROR_BSON_ITER_INIT:
-				case J_BACKEND_DB_ERROR_BSON_ITER_RECOURSE:
-				case J_BACKEND_DB_ERROR_BSON_KEY_NOT_FOUND:
 				case J_BACKEND_DB_ERROR_COMPARATOR_INVALID:
-				case J_BACKEND_DB_ERROR_METADATA_EMPTY:
 				case J_BACKEND_DB_ERROR_NO_VARIABLE_SET:
 				case J_BACKEND_DB_ERROR_SCHEMA_EMPTY:
 				case J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND:
 				case J_BACKEND_DB_ERROR_SELECTOR_EMPTY:
 				case J_BACKEND_DB_ERROR_DB_TYPE_INVALID:
-				case J_BACKEND_DB_ERROR_SQL_CONSTRAINT:
-				case J_BACKEND_DB_ERROR_SQL_FAILED:
 				case J_BACKEND_DB_ERROR_THREADING_ERROR:
 				case J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND:
 				default: //LCOV_EXCL_LINE
-					ret_expected = TRUE;
+					 ;
 				}
 			}
 			else if (error->domain == JULEA_FRONTEND_ERROR)
@@ -163,7 +154,7 @@ event_iterator_next(void)
 				case JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE:
 				case JULEA_FRONTEND_ERROR_VARIABLE_ALREADY_SET:
 				default: //LCOV_EXCL_LINE
-					ret_expected = TRUE;
+					 ;
 				}
 			}
 		}
