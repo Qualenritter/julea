@@ -218,7 +218,6 @@ init_sql(void)
 		goto _error;
 	return TRUE;
 _error:
-	J_DEBUG("ERROR (%d) (%s)", error->code, error->message);
 	g_error_free(error);
 	return FALSE;
 }
@@ -765,7 +764,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 		}
 	}
 	g_string_append(sql, " )");
-	if (!first)
+	if (first)
 	{
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_SELECTOR_EMPTY, "selector empty");
 		goto _error;
