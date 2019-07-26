@@ -43,7 +43,6 @@ function julea_run(){
 		if [ "${servercount}" -eq "0" ]; then
 			component="client"
 		else
-			compiler="afl-gcc"
 			component="server"
 			i=0
 			port=$((10000 + ${index} * 10 + $i))
@@ -158,7 +157,7 @@ i=$(($i + 1)); julea_run "afl-gcc" "--coverage" "" "$i" "-m none -t 10000 -S" "0
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --debug" "" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
-i=$(($i + 1)); julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" " " "asan" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --testmockup" "" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
@@ -176,9 +175,9 @@ i=$(($i + 1)); julea_run "afl-gcc" "--coverage" "" "$i" "-m none -t 10000 -S" "1
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --debug" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
-i=$(($i + 1)); julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+i=$(($i + 1)); julea_run "afl-gcc" " " "asan" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
-i=$(($i + 1)); julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+i=$(($i + 1)); julea_run "afl-clang-fast" " " " " "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
