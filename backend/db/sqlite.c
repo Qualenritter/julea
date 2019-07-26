@@ -104,13 +104,6 @@ const char* const JuleaBackendErrorFormat[] = {
 		_Pragma("GCC diagnostic pop");                                                                                                   \
 	} while (0)
 
-#define j_goto_error_subcommand(val) \
-	do                           \
-	{                            \
-		if (val)             \
-			goto _error; \
-	} while (0)
-
 /*
 * this file defines makros such that the generic-sql.h implementation can call the sqlite specific functions without knowing, that it is actually sqlite
 */
@@ -303,8 +296,8 @@ backend_init(gchar const* path)
 		j_sql_check(ret, SQLITE_OK);
 	}
 	j_sql_exec_or_error("PRAGMA foreign_keys = ON", SQLITE_DONE);
-	ret = init_sql();
-	j_goto_error_subcommand(!ret);
+	if (!init_sql())
+		goto _error;
 	return (backend_db != NULL);
 _error:
 	sqlite3_close(backend_db);

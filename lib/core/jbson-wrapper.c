@@ -251,7 +251,7 @@ j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError*
 			return FALSE;
 		}
 		if (value->val_blob && value->val_blob_length)
-			bson_iter_binary(iter, NULL, &value->val_blob_length, &value->val_blob);
+			bson_iter_binary(iter, NULL, &value->val_blob_length, (const uint8_t**)&value->val_blob);
 		break;
 	case _J_DB_TYPE_COUNT:
 	default:
