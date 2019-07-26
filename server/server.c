@@ -85,10 +85,11 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 	j_trace_enter(G_STRFUNC, NULL);
 #ifndef MOCKUP_COMPILES
 	j_helper_set_nodelay(connection, TRUE);
+#endif
 	statistics = j_statistics_new(TRUE);
 	memory_chunk_size = j_configuration_get_max_operation_size(jd_configuration);
 	memory_chunk = j_memory_chunk_new(memory_chunk_size);
-
+#ifndef MOCKUP_COMPILES
 	message = j_message_new(J_MESSAGE_NONE, 0);
 	input = g_io_stream_get_input_stream(G_IO_STREAM(connection));
 

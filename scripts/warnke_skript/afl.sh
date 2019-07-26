@@ -172,6 +172,24 @@ i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup" "" "$i" "-m none -t 100
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup --debug" "" "$i" "-m none -t 10000 -M" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
 sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "--coverage" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "--coverage --debug" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "" "asan" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "--coverage --testmockup" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-gcc" "--coverage --testmockup --debug" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-clang-fast" "" "" "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-clang-fast" "--debug" "" "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup" "" "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
+i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup --debug" "" "$i" "-m none -t 10000 -M" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.err" &
+sleep 0.5s
 done
 
 
