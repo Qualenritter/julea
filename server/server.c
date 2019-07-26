@@ -87,7 +87,11 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 	j_helper_set_nodelay(connection, TRUE);
 #endif
 	statistics = j_statistics_new(TRUE);
+#ifndef MOCKUP_COMPILES
 	memory_chunk_size = j_configuration_get_max_operation_size(jd_configuration);
+#else
+	memory_chunk_size = 4096;
+#endif
 	memory_chunk = j_memory_chunk_new(memory_chunk_size);
 #ifndef MOCKUP_COMPILES
 	message = j_message_new(J_MESSAGE_NONE, 0);
