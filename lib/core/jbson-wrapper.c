@@ -92,7 +92,87 @@ j_bson_iter_key(bson_iter_t* iter, GError** error)
 }
 
 gboolean
-j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* length, GError** error)
+j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value* value, GError** error)
+{
+	switch (type)
+	{
+	case J_DB_TYPE_SINT32:
+		if (!bson_append_int32(bson, name, -1, value->val_sint32))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_UINT32:
+		if (!bson_append_int32(bson, name, -1, value->val_uint32))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_SINT64:
+		if (!bson_append_int64(bson, name, -1, value->val_sint64))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_UINT64:
+		if (!bson_append_int64(bson, name, -1, value->val_uint64))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_FLOAT64:
+		if (!bson_append_double(bson, name, -1, value->val_float64))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_FLOAT32:
+		if (!bson_append_double(bson, name, -1, value->val_float32))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_STRING:
+		if (!bson_append_utf8(bson, name, -1, value->val_string, -1))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+			return FALSE;
+		}
+		break;
+	case J_DB_TYPE_BLOB:
+		if (!value->val_blob)
+		{
+			if (!bson_append_null(bson, name, -1))
+			{
+				g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+				return FALSE;
+			}
+		}
+		else
+		{
+			if (!bson_append_binary(bson, name, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)value->val_blob, value->val_blob_length))
+			{
+				g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_FAILED, "bson append failed");
+				return FALSE;
+			}
+		}
+		break;
+	case _J_DB_TYPE_COUNT:
+	default:
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+gboolean
+j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError** error)
 {
 	if (iter == NULL)
 	{
@@ -102,6 +182,14 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
+		if (!BSON_ITER_HOLDS_INT32(iter))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
+			return FALSE;
+		}
+		if (value)
+			value->val_sint32 = bson_iter_int32(iter);
+		break;
 	case J_DB_TYPE_UINT32:
 		if (!BSON_ITER_HOLDS_INT32(iter))
 		{
@@ -109,7 +197,7 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 			return FALSE;
 		}
 		if (value)
-			*(guint32*)value = bson_iter_int32(iter);
+			value->val_uint32 = bson_iter_int32(iter);
 		break;
 	case J_DB_TYPE_FLOAT64:
 		if (!BSON_ITER_HOLDS_DOUBLE(iter))
@@ -118,7 +206,7 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 			return FALSE;
 		}
 		if (value)
-			*(gdouble*)value = bson_iter_double(iter);
+			value->val_float64 = bson_iter_double(iter);
 		break;
 	case J_DB_TYPE_FLOAT32:
 		if (!BSON_ITER_HOLDS_DOUBLE(iter))
@@ -127,9 +215,17 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 			return FALSE;
 		}
 		if (value)
-			*(gfloat*)value = bson_iter_double(iter);
+			value->val_float32 = bson_iter_double(iter);
 		break;
 	case J_DB_TYPE_SINT64:
+		if (!BSON_ITER_HOLDS_INT64(iter))
+		{
+			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
+			return FALSE;
+		}
+		if (value)
+			value->val_sint64 = bson_iter_int64(iter);
+		break;
 	case J_DB_TYPE_UINT64:
 		if (!BSON_ITER_HOLDS_INT64(iter))
 		{
@@ -137,7 +233,7 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 			return FALSE;
 		}
 		if (value)
-			*(guint32*)value = bson_iter_int64(iter);
+			value->val_uint64 = bson_iter_int64(iter);
 		break;
 	case J_DB_TYPE_STRING:
 		if (!BSON_ITER_HOLDS_UTF8(iter))
@@ -146,7 +242,7 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 			return FALSE;
 		}
 		if (value)
-			*(const char**)value = bson_iter_utf8(iter, NULL);
+			value->val_string = bson_iter_utf8(iter, NULL);
 		break;
 	case J_DB_TYPE_BLOB:
 		if (!BSON_ITER_HOLDS_BINARY(iter))
@@ -154,8 +250,8 @@ j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* 
 			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
 			return FALSE;
 		}
-		if (value && length)
-			bson_iter_binary(iter, NULL, length, value);
+		if (value->val_blob && value->val_blob_length)
+			bson_iter_binary(iter, NULL, &value->val_blob_length, &value->val_blob);
 		break;
 	case _J_DB_TYPE_COUNT:
 	default:

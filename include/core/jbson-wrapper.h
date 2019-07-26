@@ -38,6 +38,7 @@ enum JBsonError
 	J_BSON_ERROR_BSON_NULL,
 	J_BSON_ERROR_BSON_INIT_FROM_JSON_FAILED,
 	J_BSON_ERROR_BSON_NOT_ENOUGH_KEYS,
+	J_BSON_ERROR_BSON_APPEND_FAILED,
 	J_BSON_ERROR_ITER_NULL,
 	J_BSON_ERROR_ITER_INIT,
 	J_BSON_ERROR_ITER_INVALID_TYPE,
@@ -55,7 +56,7 @@ gboolean j_bson_iter_init(bson_iter_t* iter, const bson_t* bson, GError** error)
 gboolean j_bson_iter_next(bson_iter_t* iter, gboolean* has_next, GError** error);
 gboolean j_bson_iter_key_equals(bson_iter_t* iter, const char* key, gboolean* equals, GError** error);
 const char* j_bson_iter_key(bson_iter_t* iter, GError** error);
-gboolean j_bson_iter_get_value(bson_iter_t* iter, JDBType type, gpointer value, guint32* length, GError** error);
+gboolean j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError** error);
 char* j_bson_as_json(const bson_t* bson, GError** error);
 void j_bson_free_json(char* json);
 gboolean j_bson_iter_find(bson_iter_t* iter, const char* key, GError** error);
@@ -65,4 +66,5 @@ gboolean j_bson_init_from_json(bson_t* bson, const char* json, GError** error);
 gboolean j_bson_iter_type_db(bson_iter_t* iter, JDBType* type, GError** error);
 gboolean j_bson_has_enough_keys(const bson_t* bson, guint32 min_keys, GError** error);
 void j_bson_destroy(bson_t* bson);
+gboolean j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value* value, GError** error);
 #endif
