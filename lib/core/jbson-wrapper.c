@@ -245,13 +245,18 @@ j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError*
 			value->val_string = bson_iter_utf8(iter, NULL);
 		break;
 	case J_DB_TYPE_BLOB:
+		if (BSON_ITER_HOLDS_NULL(iter))
+		{
+			value->val_blob_length = 0;
+			value->val_blob = NULL;
+			break;
+		}
 		if (!BSON_ITER_HOLDS_BINARY(iter))
 		{
 			g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
 			return FALSE;
 		}
-		if (value->val_blob && value->val_blob_length)
-			bson_iter_binary(iter, NULL, &value->val_blob_length, (const uint8_t**)&value->val_blob);
+		bson_iter_binary(iter, NULL, &value->val_blob_length, (const uint8_t**)&value->val_blob);
 		break;
 	case _J_DB_TYPE_COUNT:
 	default:
