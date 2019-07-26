@@ -347,6 +347,29 @@ j_bson_iter_recurse_document(bson_iter_t* iter, bson_iter_t* iter_child, GError*
 }
 
 gboolean
+j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error)
+{
+	const uint8_t* data;
+	uint32_t length;
+	if (iter == NULL)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
+		return FALSE;
+	}
+	if (!BSON_ITER_HOLDS_DOCUMENT(iter))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
+		return FALSE;
+	}
+	if (bson)
+	{
+		bson_iter_document(iter, &length, &data);
+		bson_init_static(bson, data, length);
+	}
+	return TRUE;
+}
+
+gboolean
 j_bson_init_from_json(bson_t* bson, const char* json, GError** error)
 {
 	if (bson == NULL)

@@ -32,37 +32,7 @@
 
 #include <julea.h>
 #include <julea-internal.h>
-
-const char* const JuleaBackendErrorFormat[] = {
-        "Generic Backend Error%s",
-        "%s:%s: batch not set%s",
-        "%s:%s: bson append failed. db type was '%s'",
-        "%s:%s: bson generic error",
-        "%s:%s: bson invalid%s",
-        "%s:%s: bson invalid type '%d'",
-        "%s:%s: bson iter init failed%s",
-        "%s:%s: bson iter recourse failed%s",
-        "%s:%s: bson is missing required key '%s'",
-        "%s:%s: db comparator invalid '%d'",
-        "%s:%s: db invalid type '%d'",
-        "%s:%s: no more elements to iterate%s",
-        "%s:%s: iterator not set%s",
-        "%s:%s: metadata is empty%s",
-        "%s:%s: metadata not set%s",
-        "%s:%s: name not set%s",
-        "%s:%s: namespace not set%s",
-        "%s:%s: no variable set to a not NULL value%s",
-        "%s:%s: db operator invalid '%d'",
-        "%s:%s: schema is empty%s",
-        "%s:%s: schema not found%s",
-        "%s:%s: schema not set%s",
-        "%s:%s: selector is empty%s",
-        "%s:%s: selector not set%s",
-        "%s:%s: sql constraint error '%d' '%s'",
-        "%s:%s: sql error '%d' '%s'",
-        "%s:%s: some other thread modified critical variables without lock%s",
-        "%s:%s: variable '%s' not defined in schema"
-};
+#include <core/jbson-wrapper.h>
 
 struct J_db_iterator_helper
 {
@@ -71,27 +41,6 @@ struct J_db_iterator_helper
 	gboolean initialized;
 };
 typedef struct J_db_iterator_helper J_db_iterator_helper;
-
-#define j_goto_error_backend(val, err_code, ...)                                                                                                  \
-        do                                                                                                                                        \
-        {                                                                                                                                         \
-                _Pragma("GCC diagnostic push");                                                                                                   \
-                _Pragma("GCC diagnostic ignored \"-Wformat-nonliteral\"");                                                                        \
-                if (val)                                                                                                                          \
-                {                                                                                                                                 \
-                        J_DEBUG_ERROR(JuleaBackendErrorFormat[err_code], ##__VA_ARGS__);                                                          \
-                        g_set_error(error, J_BACKEND_DB_ERROR, err_code, JuleaBackendErrorFormat[err_code], G_STRLOC, G_STRFUNC, ##__VA_ARGS__); \
-                        goto _error;                                                                                                              \
-                }                                                                                                                                 \
-                _Pragma("GCC diagnostic pop");                                                                                                    \
-        } while (0)
-
-#define j_goto_error_subcommand(val) \
-        do                           \
-        {                            \
-                if (val)             \
-                        goto _error; \
-        } while (0)
 
 static gboolean
 j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
@@ -321,7 +270,11 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	J_db_iterator_helper* helper;
 	JOperation* op;
 	JBackendOperation* data;
-	j_goto_error_backend(!iterator, J_BACKEND_DB_ERROR_ITERATOR_NULL, "");
+	if (!iterator)
+	{
+		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NULL, "iterator not set");
+		goto _error;
+	}
 	helper = g_slice_new(J_db_iterator_helper);
 	helper->initialized = FALSE;
 	memset(&helper->bson, 0, sizeof(bson_t));
@@ -350,6 +303,7 @@ j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 	const uint8_t* data;
 	uint32_t length;
 	J_db_iterator_helper* helper = iterator;
+	gboolean has_next;
 	bson_t zerobson;
 	memset(&zerobson, 0, sizeof(bson_t));
 	if (!helper->initialized)
@@ -359,16 +313,19 @@ j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 			g_set_error(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BSON_INVALID, "");
 			goto error2;
 		}
-		bson_iter_init(&helper->iter, &helper->bson);
+		if (!j_bson_iter_init(&helper->iter, &helper->bson, error))
+			goto _error;
 		helper->initialized = TRUE;
 	}
-	ret = bson_iter_next(&helper->iter);
-	j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
-	ret = BSON_ITER_HOLDS_DOCUMENT(&helper->iter);
-	j_goto_error_backend(!ret, J_BACKEND_DB_ERROR_BSON_INVALID_TYPE, bson_iter_type(&helper->iter));
-	bson_iter_document(&helper->iter, &length, &data);
-	if (metadata)
-		bson_init_static(metadata, data, length);
+	if (!j_bson_iter_next(&helper->iter, &has_next, error))
+		goto _error;
+	if (!has_next)
+	{
+		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no more elements");
+		goto _error;
+	}
+	if (!j_bson_iter_copy_document(&helper->iter, metadata, error))
+		goto _error;
 	return TRUE;
 _error:
 	bson_destroy(&helper->bson);
