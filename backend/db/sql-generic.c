@@ -194,7 +194,7 @@ deleteCachePrepared(gchar const* namespace, gchar const* name)
 static gboolean
 init_sql(void)
 {
-	GError** error = NULL;
+	GError* error = NULL;
 	if (!j_sql_exec(
 		    "CREATE TABLE IF NOT EXISTS schema_structure ("
 		    "namespace TEXT,"
@@ -202,22 +202,24 @@ init_sql(void)
 		    "value TEXT,"
 		    "PRIMARY KEY (namespace, name)"
 		    ")",
-		    error))
+		    &error))
 		goto _error;
-	if (!j_sql_prepare("INSERT INTO schema_structure(namespace, name, value) VALUES (?1, ?2, ?3)", &stmt_schema_structure_create, error))
+	if (!j_sql_prepare("INSERT INTO schema_structure(namespace, name, value) VALUES (?1, ?2, ?3)", &stmt_schema_structure_create, &error))
 		goto _error;
-	if (!j_sql_prepare("SELECT value FROM schema_structure WHERE namespace=?1 AND name=?2", &stmt_schema_structure_get, error))
+	if (!j_sql_prepare("SELECT value FROM schema_structure WHERE namespace=?1 AND name=?2", &stmt_schema_structure_get, &error))
 		goto _error;
-	if (!j_sql_prepare("DELETE FROM schema_structure WHERE namespace=?1 AND name=?2", &stmt_schema_structure_delete, error))
+	if (!j_sql_prepare("DELETE FROM schema_structure WHERE namespace=?1 AND name=?2", &stmt_schema_structure_delete, &error))
 		goto _error;
-	if (!j_sql_prepare("BEGIN TRANSACTION", &stmt_transaction_begin, error))
+	if (!j_sql_prepare("BEGIN TRANSACTION", &stmt_transaction_begin, &error))
 		goto _error;
-	if (!j_sql_prepare("COMMIT", &stmt_transaction_commit, error))
+	if (!j_sql_prepare("COMMIT", &stmt_transaction_commit, &error))
 		goto _error;
-	if (!j_sql_prepare("ROLLBACK", &stmt_transaction_abort, error))
+	if (!j_sql_prepare("ROLLBACK", &stmt_transaction_abort, &error))
 		goto _error;
 	return TRUE;
 _error:
+	J_DEBUG("ERROR (%d) (%s)", error->code, error->message);
+	g_error_free(error);
 	return FALSE;
 }
 static void
