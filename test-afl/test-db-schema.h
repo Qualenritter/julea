@@ -64,7 +64,6 @@ static void
 event_schema_new(void)
 {
 	GError* error = NULL;
-	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	J_DEBUG("AFL_EVENT_DB_SCHEMA_NEW %d %d", random_values.namespace, random_values.name);
 	event_schema_delete_helper();
 	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
