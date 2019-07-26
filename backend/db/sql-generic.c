@@ -25,12 +25,16 @@
  * this file does not care which sql-database is actually in use, and uses only defines sql-syntax to allow fast and easy implementations for any new sql-database backend
 */
 
+#ifdef JULEA_DEBUG
 #define j_goto(label)                                                \
 	do                                                           \
 	{                                                            \
 		g_debug("%s:%s: goto " #label, G_STRLOC, G_STRFUNC); \
 		goto label;                                          \
 	} while (0)
+#else
+#define j_goto(label) goto label;
+#endif
 
 struct JSqlCacheNamespaces
 {
