@@ -456,7 +456,7 @@ def build(ctx):
 
 	# AFL-Tests
 	ctx.program(
-		source=ctx.path.ant_glob('test-afl/test-db-backend.c'),
+		source=ctx.path.ant_glob('test-afl/test-db-backend-main.c'),
 		target='test-afl/julea-test-afl-db-backend',
 		use=use_julea_object + use_julea_item + use_julea_hdf + use_julea_db,
 		includes=include_julea_core + ['test-afl'],
