@@ -107,6 +107,7 @@ static char name_strbuf[AFL_LIMIT_STRING_LEN];
 static char varname_strbuf[AFL_LIMIT_STRING_LEN];
 static bson_t* selector;
 static bson_t* metadata;
+static JDBAflEvent event;
 //<-
 static gboolean
 build_selector_single(guint varname, guint value)
@@ -1000,31 +1001,32 @@ event_schema_create(void)
 		}
 	}
 }
-int
-main(int argc, char* argv[])
+
+static void
+test_db_backend_create_base_test_files(const char* path)
 {
 	FILE* file;
-	JDBAflEvent event;
-	guint i, j, k;
-	guint tmp;
-	if (argc > 1)
+	guint i;
+	char filename[50 + strlen(path)];
+	mkdir(path, S_IRUSR | S_IRGRP | S_IROTH);
+	sprintf(filename, "%s/start-files", path);
+	mkdir(filename, S_IRUSR | S_IRGRP | S_IROTH);
+	memset(&random_values, 0, sizeof(random_values));
+	for (i = 0; i < _AFL_EVENT_DB_COUNT; i++)
 	{
-		char filename[50 + strlen(argv[1])];
-		mkdir(argv[1], S_IRUSR | S_IRGRP | S_IROTH);
-		sprintf(filename, "%s/start-files", argv[1]);
-		mkdir(filename, S_IRUSR | S_IRGRP | S_IROTH);
-		memset(&random_values, 0, sizeof(random_values));
-		for (i = 0; i < _AFL_EVENT_DB_COUNT; i++)
-		{
-			sprintf(filename, "%s/start-files/test-db-backend-%d.bin", argv[1], i);
-			file = fopen(filename, "wb");
-			event = i;
-			fwrite(&event, sizeof(event), 1, file);
-			fwrite(&random_values, sizeof(random_values), 1, file);
-			fclose(file);
-		}
-		goto fini;
+		sprintf(filename, "%s/start-files/test-db-backend-%d.bin", path, i);
+		file = fopen(filename, "wb");
+		event = i;
+		fwrite(&event, sizeof(event), 1, file);
+		fwrite(&random_values, sizeof(random_values), 1, file);
+		fclose(file);
 	}
+}
+
+static void
+test_db_backend_init(void)
+{
+	guint i, j, k;
 	for (i = 0; i < AFL_LIMIT_SCHEMA_STRING_VALUES; i++)
 	{
 		sprintf(&namespace_varvalues_string_const[i][0], AFL_STRING_CONST_FORMAT, i);
@@ -1042,84 +1044,79 @@ main(int argc, char* argv[])
 			}
 		}
 	}
-#ifdef __AFL_HAVE_MANUAL_CONTROL
-	//https://github.com/mirrorer/afl/tree/master/llvm_mode
-	// this does not work with threads or network connections
-	//        __AFL_INIT();
-	//      while (__AFL_LOOP(1000))
-#endif
+}
+
+static void
+test_db_backend_exec(void)
+{
+	guint tmp;
+	random_values.namespace = random_values.namespace % AFL_LIMIT_SCHEMA_NAMESPACE;
+	random_values.name = random_values.name % AFL_LIMIT_SCHEMA_NAME;
+	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
+	sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
+	switch (event)
 	{
-	loop:
-		MY_READ_MAX(event, _AFL_EVENT_DB_COUNT);
-		MY_READ(random_values);
-		random_values.namespace = random_values.namespace % AFL_LIMIT_SCHEMA_NAMESPACE;
-		random_values.name = random_values.name % AFL_LIMIT_SCHEMA_NAME;
-		sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
-		sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
-		switch (event)
+	case AFL_EVENT_DB_SCHEMA_CREATE:
+		J_DEBUG("AFL_EVENT_DB_SCHEMA_CREATE %s %s", namespace_strbuf, name_strbuf);
+		event_schema_get();
+		event_schema_create();
+		event_schema_get();
+		break;
+	case AFL_EVENT_DB_SCHEMA_GET:
+		J_DEBUG("AFL_EVENT_DB_SCHEMA_GET %s %s", namespace_strbuf, name_strbuf);
+		event_schema_get();
+		break;
+	case AFL_EVENT_DB_SCHEMA_DELETE:
+		J_DEBUG("AFL_EVENT_DB_SCHEMA_DELETE %s %s", namespace_strbuf, name_strbuf);
+		event_schema_get();
+		event_schema_delete();
+		event_schema_get();
+		break;
+	case AFL_EVENT_DB_INSERT:
+		J_DEBUG("AFL_EVENT_DB_INSERT %s %s", namespace_strbuf, name_strbuf);
+		random_values.values.existent = 1;
+		tmp = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES);
+		event_query_all();
+		random_values.values.value_index = tmp;
+		event_delete();
+		event_query_all();
+		random_values.values.value_index = tmp;
+		event_insert();
+		event_query_all();
+		break;
+	case AFL_EVENT_DB_UPDATE:
+		J_DEBUG("AFL_EVENT_DB_UPDATE %s %s", namespace_strbuf, name_strbuf);
+		event_query_all();
+		event_update();
+		event_query_all();
+		break;
+	case AFL_EVENT_DB_DELETE:
+		J_DEBUG("AFL_EVENT_DB_DELETE %s %s", namespace_strbuf, name_strbuf);
+		event_query_all();
+		event_delete();
+		event_query_all();
+		break;
+	case AFL_EVENT_DB_QUERY_ALL:
+		J_DEBUG("AFL_EVENT_DB_QUERY_ALL %s %s", namespace_strbuf, name_strbuf);
+		event_query_all();
+		event_query_single();
+		break;
+	case _AFL_EVENT_DB_COUNT: //LCOV_EXCL_LINE
+	default: //LCOV_EXCL_LINE
+		MYABORT(); //LCOV_EXCL_LINE
+	}
+}
+static void
+test_db_backend_cleanup(void)
+{
+	guint i, j;
+	for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
+	{
+		for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 		{
-		case AFL_EVENT_DB_SCHEMA_CREATE:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_CREATE %s %s", namespace_strbuf, name_strbuf);
-			event_schema_get();
-			event_schema_create();
-			event_schema_get();
-			break;
-		case AFL_EVENT_DB_SCHEMA_GET:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_GET %s %s", namespace_strbuf, name_strbuf);
-			event_schema_get();
-			break;
-		case AFL_EVENT_DB_SCHEMA_DELETE:
-			J_DEBUG("AFL_EVENT_DB_SCHEMA_DELETE %s %s", namespace_strbuf, name_strbuf);
-			event_schema_get();
-			event_schema_delete();
-			event_schema_get();
-			break;
-		case AFL_EVENT_DB_INSERT:
-			J_DEBUG("AFL_EVENT_DB_INSERT %s %s", namespace_strbuf, name_strbuf);
-			random_values.values.existent = 1;
-			tmp = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES);
-			event_query_all();
-			random_values.values.value_index = tmp;
-			event_delete();
-			event_query_all();
-			random_values.values.value_index = tmp;
-			event_insert();
-			event_query_all();
-			break;
-		case AFL_EVENT_DB_UPDATE:
-			J_DEBUG("AFL_EVENT_DB_UPDATE %s %s", namespace_strbuf, name_strbuf);
-			event_query_all();
-			event_update();
-			event_query_all();
-			break;
-		case AFL_EVENT_DB_DELETE:
-			J_DEBUG("AFL_EVENT_DB_DELETE %s %s", namespace_strbuf, name_strbuf);
-			event_query_all();
-			event_delete();
-			event_query_all();
-			break;
-		case AFL_EVENT_DB_QUERY_ALL:
-			J_DEBUG("AFL_EVENT_DB_QUERY_ALL %s %s", namespace_strbuf, name_strbuf);
-			event_query_all();
-			event_query_single();
-			break;
-		case _AFL_EVENT_DB_COUNT: //LCOV_EXCL_LINE
-		default: //LCOV_EXCL_LINE
-			MYABORT(); //LCOV_EXCL_LINE
-		}
-		goto loop;
-	cleanup:
-		for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
-		{
-			for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
-			{
-				if (namespace_bson[i][j])
-					bson_destroy(namespace_bson[i][j]);
-				namespace_bson[i][j] = NULL;
-			}
+			if (namespace_bson[i][j])
+				bson_destroy(namespace_bson[i][j]);
+			namespace_bson[i][j] = NULL;
 		}
 	}
-fini:
-	j_fini(); //memory leaks count as error -> free everything possible
-	return 0;
 }

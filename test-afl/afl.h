@@ -86,6 +86,23 @@
 		MY_READ(var);      \
 		var = var % (max); \
 	} while (0)
+#ifdef JULEA_TEST_COMPILES
+#define MYABORT()                       \
+	do                              \
+	{                               \
+		J_DEBUG("abort %d", 0); \
+		g_assert_not_reached();                \
+	} while (0)
+#define MYABORT_IF(val)                         \
+	do                                      \
+	{                                       \
+		if (val)                        \
+		{                               \
+			J_DEBUG("abort %d", 0); \
+			g_assert_not_reached();                \
+		}                               \
+	} while (0)
+#else
 #define MYABORT()                       \
 	do                              \
 	{                               \
@@ -101,3 +118,4 @@
 			abort();                \
 		}                               \
 	} while (0)
+#endif
