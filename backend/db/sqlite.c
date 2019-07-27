@@ -270,9 +270,8 @@ backend_init(gchar const* path)
 {
 	g_autofree gchar* dirname = NULL;
 	g_return_val_if_fail(path != NULL, FALSE);
-	if (strncmp("memory", path, 6))
+	if (strncmp("memory", path, 5))
 	{
-		J_DEBUG("init useing path=%s", path);
 		dirname = g_path_get_dirname(path);
 		g_mkdir_with_parents(dirname, 0700);
 		if (sqlite3_open(path, &backend_db) != SQLITE_OK)
@@ -280,7 +279,6 @@ backend_init(gchar const* path)
 	}
 	else
 	{
-		J_DEBUG("init useing path=%s", ":memory:");
 		if (sqlite3_open(":memory:", &backend_db) != SQLITE_OK)
 			goto _error;
 	}
