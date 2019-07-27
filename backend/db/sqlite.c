@@ -270,7 +270,7 @@ backend_init(gchar const* path)
 {
 	g_autofree gchar* dirname = NULL;
 	g_return_val_if_fail(path != NULL, FALSE);
-	if (strncmp(":memory:", path, 7))
+	if (strncmp("memory", path, 6))
 	{
 		J_DEBUG("init useing path=%s", path);
 		dirname = g_path_get_dirname(path);
