@@ -29,7 +29,7 @@ mkdir -p ${basepath}
 (
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export G_DEBUG=resident-modules,gc-friendly
-	export G_MESSAGES_DEBUG=all
+	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
 	./scripts/test.sh
 )
