@@ -21,8 +21,8 @@ files="${files} $(ls afl/out/*/crashes/* | grep -v README )"
 files="${files} $(ls afl/start-files/* | grep -v README )"
 ./scripts/warnke_skript/format.sh
 rm -rf /mnt2/julea/* *.tmp-file
-(export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
-(export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
+(export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
+(export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
 i=300
 (export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
@@ -31,16 +31,35 @@ i=300
   --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/kv${i}" \
   --db-backend=sqlite --db-component=client --db-path="/mnt2/julea/db${i}")
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
+i=301
+(export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
+  --object-servers="$(hostname):13000" --kv-servers="$(hostname):13000" \
+  --db-servers="$(hostname):13000" \
+  --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
+  --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/kv${i}" \
+  --db-backend=sqlite --db-component=client --db-path="/mnt2/julea/db${i}")
+mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 j=0
+
+(
+	export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH
+	export JULEA_CONFIG=~/.config/julea/julea301
+	export ASAN_OPTIONS=fast_unwind_on_malloc=0
+	export G_DEBUG=resident-modules,gc-friendly
+	export G_MESSAGES_DEBUG=all
+	export G_SLICE=always-malloc
+	./build-gcc-asan/server/julea-server --port=13000
+)&
 
 for f in ${files}
 do
 for g in gcc-asan gcc-asan-mockup
 do
-	for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
-	do
-
+for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
+do
+for i in 300 301
+do
 	rm -rf /mnt2/julea/*
 	(
 		export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH
@@ -61,6 +80,7 @@ do
 		exit 1
 	fi
 	mv log/x log/$j-${programname}-$g.tmp-file
+done
 done
 done
 	j=$(($j + 1))

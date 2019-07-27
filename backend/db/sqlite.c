@@ -56,7 +56,7 @@ j_sql_prepare(const char* sql, void* _stmt, GError** error)
 	}
 	return TRUE;
 _error:
-	j_sql_finalize(stmt, NULL);
+	j_sql_finalize(*stmt, NULL);
 	return FALSE;
 }
 
