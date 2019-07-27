@@ -256,6 +256,11 @@ j_sql_step_and_reset_check_done(void* _stmt, GError** error)
 		goto _error;
 	return TRUE;
 _error:
+	if (!j_sql_reset(_stmt, error))
+		goto _error2;
+	return FALSE;
+_error2:
+	/*something failed very hard*/
 	return FALSE;
 }
 #include "sql-generic.c"

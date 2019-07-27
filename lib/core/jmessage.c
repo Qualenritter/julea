@@ -94,7 +94,6 @@ typedef struct JMessageData JMessageData;
 /**
  * A message header.
  **/
-//#pragma pack(4)
 struct JMessageHeader
 {
 	/**
@@ -122,7 +121,6 @@ struct JMessageHeader
 	 **/
 	guint32 op_count;
 };
-//#pragma pack()
 
 typedef struct JMessageHeader JMessageHeader;
 
