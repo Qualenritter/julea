@@ -25,6 +25,7 @@
 static gdouble target_time = 0;
 static guint n = 0;
 static JDBSchema** schema_array = NULL;
+static BenchmarkResult* benchmark_db_schema_ref_executed = NULL; /*execute only once*/
 
 static void
 _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch)
@@ -226,6 +227,47 @@ benchmark_db_schema_get_batch(BenchmarkResult* result)
 {
 	_benchmark_db_schema_get(result, TRUE);
 }
+static void
+benchmark_db_schema_ref(BenchmarkResult* result)
+{
+	guint batch_count = 1000;
+	GError* error = NULL;
+	const char* namespace = "namespace";
+	const char* name = "name";
+	JDBSchema* schema;
+	JDBSchema* schema2;
+	guint i;
+	guint m = 0;
+	gdouble elapsed = 0;
+	if (benchmark_db_schema_ref_executed)
+	{
+		memcpy(result, benchmark_db_schema_ref_executed, sizeof(*result));
+		return;
+	}
+	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
+	CHECK_ERROR(!schema);
+start:
+	m += batch_count;
+	j_benchmark_timer_start();
+	for (i = 0; i < batch_count; i++)
+	{
+		schema2 = j_db_schema_ref(schema, ERROR_PARAM);
+		CHECK_ERROR(!schema2);
+		CHECK_ERROR(schema != schema2);
+	}
+	elapsed += j_benchmark_timer_elapsed();
+	for (i = 0; i < batch_count; i++)
+	{
+		j_db_schema_unref(schema);
+	}
+	if (elapsed < target_time)
+		goto start;
+	result->elapsed_time = elapsed;
+	result->operations = n * m;
+	j_db_schema_unref(schema);
+	benchmark_db_schema_ref_executed = g_new(BenchmarkResult, 1);
+	memcpy(benchmark_db_schema_ref_executed, result, sizeof(*result));
+}
 
 void
 benchmark_db_schema(gdouble _target_time, guint _n)
@@ -254,5 +296,7 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 		sprintf(testname, "/db/%d/schema/delete-batch", n);
 		j_benchmark_run(testname, benchmark_db_schema_delete_batch);
 		g_free(schema_array);
+		sprintf(testname, "/db/%d/schema/ref", n);
+		j_benchmark_run(testname, benchmark_db_schema_ref);
 	}
 }
