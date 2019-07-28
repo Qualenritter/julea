@@ -107,7 +107,7 @@ j_sql_column(void* _stmt, guint idx, JDBType type, JDBType_value* value, GError*
 		break;
 	case _J_DB_TYPE_COUNT:
 	default:
-		g_set_error_literal(error, J_SQL_ERROR, J_SQL_ERROR_INVALID_TYPE, "bson iter invalid type");
+		g_set_error_literal(error, J_SQL_ERROR, J_SQL_ERROR_INVALID_TYPE, "sql invalid type");
 		goto _error;
 	}
 	return TRUE;
