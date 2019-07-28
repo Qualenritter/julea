@@ -73,7 +73,7 @@ function julea_run(){
 		./build-${name}/tools/julea-config --user \
 			--object-servers="${servers}" --object-backend=posix --object-component="${component}" --object-path="${tmp_path}/object${index}" \
 			--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="${tmp_path}/kv${index}" \
-			--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path=":memory:"
+			--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path="memory"
 		eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
 		export G_SLICE=always-malloc
 		export G_DEBUG=gc-friendly,resident-modules
@@ -100,7 +100,7 @@ function julea_run(){
 				./build-${name}/tools/julea-config --user \
 					--object-servers="${servers}" --object-backend=posix --object-component="${component}" --object-path="${tmp_path}/object${index}-$i" \
 					--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="${tmp_path}/kv${index}-$i" \
-					--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path=":memory:"
+					--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path="memory"
 				eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}-$i"
 				export GCOV_PREFIX=${afl_path}/cov/server${index}-$i
 				export JULEA_CONFIG=~/.config/julea/julea${index}-$i
@@ -142,7 +142,7 @@ if (( $c < 10 )); then
 		./build-${name}/tools/julea-config --user \
 			--object-servers="${servers}" --object-backend=posix --object-component="${component}" --object-path="${tmp_path}/object${index}" \
 			--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="${tmp_path}/kv${index}" \
-			--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path=":memory:"
+			--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path="memory"
                 eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
 		export LD_LIBRARY_PATH=prefix-${name}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}

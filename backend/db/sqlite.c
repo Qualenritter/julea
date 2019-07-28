@@ -215,7 +215,7 @@ j_sql_exec(const char* sql, GError** error)
 		goto _error;
 	return TRUE;
 _error:
-	if (!j_sql_finalize(stmt, error))
+	if (!j_sql_finalize(stmt, NULL))
 		goto _error2;
 	return FALSE;
 _error2:
@@ -256,7 +256,7 @@ j_sql_step_and_reset_check_done(void* _stmt, GError** error)
 		goto _error;
 	return TRUE;
 _error:
-	if (!j_sql_reset(_stmt, error))
+	if (!j_sql_reset(_stmt, NULL))
 		goto _error2;
 	return FALSE;
 _error2:
