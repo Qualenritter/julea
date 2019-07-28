@@ -22,7 +22,7 @@
 
 #include "db.h"
 #ifdef JULEA_DEBUG
-static gdouble target_time = 1;
+static gdouble target_time = 0.001;
 #else
 static gdouble target_time = 60;
 #endif

@@ -37,31 +37,30 @@
 #ifdef JULEA_DEBUG
 #define ERROR_PARAM &error
 #define CHECK_ERROR(_ret_)                                                       \
-        do                                                                       \
-        {                                                                        \
-                if (error)                                                       \
-                {                                                                \
-                        J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
-                        abort();                                                 \
-                }                                                                \
-                if (_ret_)                                                       \
-                {                                                                \
-                        J_DEBUG("ret was %d", _ret_);                            \
-                        abort();                                                 \
-                }                                                                \
-        } while (0)
+	do                                                                       \
+	{                                                                        \
+		if (error)                                                       \
+		{                                                                \
+			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
+			abort();                                                 \
+		}                                                                \
+		if (_ret_)                                                       \
+		{                                                                \
+			J_DEBUG("ret was %d", _ret_);                            \
+			abort();                                                 \
+		}                                                                \
+	} while (0)
 #else
 #define ERROR_PARAM NULL
 #define CHECK_ERROR(_ret_)   \
-        do                   \
-        {                    \
-                (void)error; \
-                (void)_ret_; \
-        } while (0)
+	do                   \
+	{                    \
+		(void)error; \
+		(void)_ret_; \
+	} while (0)
 #endif
 
 void benchmark_db_schema(gdouble _target_time, guint _n);
 void benchmark_db_entry(gdouble _target_time, guint _n);
-
 
 #endif
