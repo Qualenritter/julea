@@ -67,7 +67,7 @@ sleep 2
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
-		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../x 2>&1
+		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x 2>&1
 	r=$?
 	if [ $r -ne 0 ]; then
 		exit 1
@@ -90,7 +90,7 @@ sleep 2
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
-		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../x 2>&1
+		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../log/x 2>&1
 	r=$?
 	if [ $r -ne 0 ]; then
 		exit 1
