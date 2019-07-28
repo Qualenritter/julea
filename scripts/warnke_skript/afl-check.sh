@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 files=""
-files="${files} $(ls afl/out/*/crashes/* | grep -v README )"
+files="${files} $(ls afl/out/*/crashes/* | grep -v README | shuf)"
 files="${files} $(ls afl/start-files/* | grep -v README )"
 ./scripts/warnke_skript/format.sh
 rm -rf /mnt2/julea/* *.tmp-file

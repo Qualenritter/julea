@@ -122,7 +122,7 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	if (!j_bson_iter_not_find(&iter, name, error))
 		goto _error;
 	val.val_uint32 = type;
-	if (!j_bson_append_value(&schema->bson, name, type, &val, error))
+	if (!j_bson_append_value(&schema->bson, name, J_DB_TYPE_UINT32, &val, error))
 		goto _error;
 	return TRUE;
 _error:
@@ -172,28 +172,28 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	guint i;
 	JDBType_value val;
 	const char* key;
-	*names = NULL;
-	*types = NULL;
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
+		goto _error2;
 	}
 	if (!names)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error;
+		goto _error2;
 	}
 	if (!types)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_NULL, "type must not be NULL");
-		goto _error;
+		goto _error2;
 	}
 	if (!schema->bson_initialized)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NOT_FOUND, "variable not found");
 		goto _error;
 	}
+	*names = NULL;
+	*types = NULL;
 	if (!j_bson_iter_init(&iter, &schema->bson, error))
 		goto _error;
 	if (!j_bson_count_keys(&schema->bson, &count, error))
@@ -222,6 +222,7 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 _error:
 	/*TODO free names*/
 	/*TODO free types*/
+_error2:
 	return FALSE;
 }
 gboolean
