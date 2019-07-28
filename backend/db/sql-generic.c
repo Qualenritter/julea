@@ -640,8 +640,6 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 				j_goto(_error);
 			if (!has_next)
 				break;
-			if (!j_bson_iter_value(&iter, J_DB_TYPE_UINT32, NULL, error))
-				j_goto(_error);
 			if (prepared->variables_count)
 				g_string_append(prepared->sql, ", ");
 			prepared->variables_count++;
