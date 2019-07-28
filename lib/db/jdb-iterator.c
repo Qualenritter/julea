@@ -32,6 +32,7 @@
 #include <julea-internal.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
+#include <core/jbson-wrapper.h>
 
 JDBIterator*
 j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
@@ -40,14 +41,20 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	guint ret2 = FALSE;
 	JBatch* batch;
 	JDBIterator* iterator = NULL;
-	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	if (!schema)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
+		goto _error;
+	}
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
-	j_goto_error_subcommand(!iterator->schema);
+	if (!iterator->schema)
+		goto _error;
 	if (selector)
 	{
 		iterator->selector = j_db_selector_ref(selector, error);
-		j_goto_error_subcommand(!iterator->selector);
+		if (!iterator->selector)
+			goto _error;
 	}
 	else
 		iterator->selector = NULL;
@@ -59,7 +66,8 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	ret2 = j_db_internal_query(schema->namespace, schema->name, j_db_selector_get_bson(selector), &iterator->iterator, batch, error);
 	ret = ret2 && j_batch_execute(batch);
 	j_batch_unref(batch);
-	j_goto_error_subcommand(!ret);
+	if (!ret)
+		goto _error;
 	iterator->valid = TRUE;
 	return iterator;
 _error:
@@ -76,7 +84,11 @@ _error:
 JDBIterator*
 j_db_iterator_ref(JDBIterator* iterator, GError** error)
 {
-	j_goto_error_frontend(!iterator, JULEA_FRONTEND_ERROR_ITERATOR_NULL, "");
+	if (!iterator)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
+		goto _error;
+	}
 	g_atomic_int_inc(&iterator->ref_count);
 	return iterator;
 _error:
@@ -92,7 +104,7 @@ j_db_iterator_unref(JDBIterator* iterator)
 		j_db_schema_unref(iterator->schema);
 		j_db_selector_unref(iterator->selector);
 		if (iterator->bson_valid)
-			bson_destroy(&iterator->bson);
+			j_bson_destroy(&iterator->bson);
 		g_slice_free(JDBIterator, iterator);
 	}
 }
@@ -100,13 +112,21 @@ gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
 	guint ret = TRUE;
-	j_goto_error_frontend(!iterator, JULEA_FRONTEND_ERROR_ITERATOR_NULL, "");
-	j_goto_error_frontend(!iterator->valid, JULEA_FRONTEND_ERROR_ITERATOR_NO_MORE_ELEMENTS, "");
+	if (!iterator)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
+		goto _error;
+	}
+	if (!iterator->valid)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "iterator no more elements");
+		goto _error;
+	}
 	if (iterator->bson_valid)
-		bson_destroy(&iterator->bson);
-	ret = j_db_internal_iterate(iterator->iterator, &iterator->bson, error);
-	j_goto_error_subcommand(!ret);
-	iterator->bson_valid =TRUE;
+		j_bson_destroy(&iterator->bson);
+	if (!j_db_internal_iterate(iterator->iterator, &iterator->bson, error))
+		goto _error;
+	iterator->bson_valid = TRUE;
 	return TRUE;
 _error:
 	if (!ret)
@@ -119,87 +139,89 @@ _error:
 gboolean
 j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error)
 {
-	uint32_t len;
-	const uint8_t* binary;
-	gint ret;
+	JDBType_value val;
 	bson_iter_t iter;
-	j_goto_error_frontend(!iterator, JULEA_FRONTEND_ERROR_ITERATOR_NULL, "");
-	j_goto_error_frontend(!iterator->bson_valid, JULEA_FRONTEND_ERROR_BSON_NOT_INITIALIZED, "");
-	j_goto_error_frontend(!name, JULEA_FRONTEND_ERROR_NAME_NULL, "");
-	j_goto_error_frontend(!type, JULEA_FRONTEND_ERROR_TYPE_NULL, "");
-	j_goto_error_frontend(!value, JULEA_FRONTEND_ERROR_VALUE_NULL, "");
-	j_goto_error_frontend(!length, JULEA_FRONTEND_ERROR_LENGTH_NULL, "");
-	ret = j_db_schema_get_field(iterator->schema, name, type, error);
-	j_goto_error_subcommand(!ret);
-	ret = bson_iter_init(&iter, &iterator->bson);
-	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_ITER_INIT, "");
-	ret = bson_iter_find(&iter, name);
-	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_VARIABLE_NOT_FOUND, "");
-	J_DEBUG("type %d", *type);
+	if (!iterator)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
+		goto _error;
+	}
+	if (!iterator->bson_valid)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NOT_INITIALIZED, "iterator must be initialized");
+		goto _error;
+	}
+	if (!name)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
+		goto _error;
+	}
+	if (!type)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_NULL, "type must not be NULL");
+		goto _error;
+	}
+	if (!value)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VALUE_NULL, "value must not be NULL");
+		goto _error;
+	}
+	if (!length)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_LENGTH_NULL, "length must not be NULL");
+		goto _error;
+	}
+	if (!j_db_schema_get_field(iterator->schema, name, type, error))
+		goto _error;
+	if (!j_bson_iter_init(&iter, &iterator->bson, error))
+		goto _error;
+	if (!j_bson_iter_find(&iter, name, error))
+		goto _error;
+	if (!j_bson_iter_value(&iter, *type, &val, error))
+		goto _error;
 	switch (*type)
 	{
 	case J_DB_TYPE_SINT32:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_INT32(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gint32, 1);
-		*((gint32*)*value) = bson_iter_int32(&iter);
+		*((gint32*)*value) = val.val_sint32;
 		*length = sizeof(gint32);
 		break;
 	case J_DB_TYPE_UINT32:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_INT32(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(guint32, 1);
-		*((guint32*)*value) = bson_iter_int32(&iter);
+		*((guint32*)*value) = val.val_uint32;
 		*length = sizeof(guint32);
 		break;
 	case J_DB_TYPE_FLOAT32:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_DOUBLE(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gfloat, 1);
-		*((gfloat*)*value) = bson_iter_double(&iter);
+		*((gfloat*)*value) = val.val_float32;
 		*length = sizeof(gfloat);
 		break;
 	case J_DB_TYPE_SINT64:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_INT64(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gint64, 1);
-		*((gint64*)*value) = bson_iter_int64(&iter);
+		*((gint64*)*value) = val.val_sint64;
 		*length = sizeof(gint64);
 		break;
 	case J_DB_TYPE_UINT64:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_INT64(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(guint64, 1);
-		*((guint64*)*value) = bson_iter_int64(&iter);
+		*((guint64*)*value) = val.val_uint64;
 		*length = sizeof(guint64);
 		break;
 	case J_DB_TYPE_FLOAT64:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_DOUBLE(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
 		*value = g_new(gdouble, 1);
-		*((gdouble*)*value) = bson_iter_double(&iter);
+		*((gdouble*)*value) = val.val_float64;
 		*length = sizeof(gdouble);
 		break;
 	case J_DB_TYPE_STRING:
-		j_goto_error_frontend(!BSON_ITER_HOLDS_UTF8(&iter), JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
-		bson_iter_utf8(&iter, &len);
-		*value = g_new(gchar, len);
-		memcpy(*value, bson_iter_utf8(&iter, NULL), len);
-		*length = len;
+		*value = g_strdup(val.val_string);
+		*length = strlen(val.val_string);
 		break;
 	case J_DB_TYPE_BLOB:
-		if (BSON_ITER_HOLDS_BINARY(&iter))
-		{
-			bson_iter_binary(&iter, NULL, &len, &binary);
-			*value = g_new(gchar, len);
-			memcpy(*value, binary, len);
-			*length = len;
-		}
-		else if (BSON_ITER_HOLDS_NULL(&iter))
-		{
-			*value = NULL;
-			*length = 0;
-		}
-		else
-			j_goto_error_frontend(TRUE, JULEA_FRONTEND_ERROR_BSON_INVALID_TYPE, bson_iter_type(&iter));
+		*value = g_new(gchar, val.val_blob_length);
+		memcpy(*value, val.val_blob, val.val_blob_length);
+		*length = val.val_blob_length;
 		break;
 	case _J_DB_TYPE_COUNT:
-	default:
-		abort();
+	default:;
 	}
 	return TRUE;
 _error:

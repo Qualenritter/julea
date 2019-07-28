@@ -32,14 +32,20 @@
 #include <julea-internal.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
+#include <core/jbson-wrapper.h>
 
 JDBEntry*
 j_db_entry_new(JDBSchema* schema, GError** error)
 {
 	JDBEntry* entry = NULL;
-	j_goto_error_frontend(!schema, JULEA_FRONTEND_ERROR_SCHEMA_NULL, "");
+	if (!schema)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
+		goto _error;
+	}
 	entry = g_slice_new(JDBEntry);
-	bson_init(&entry->bson);
+	if (!j_bson_init(&entry->bson, error))
+		goto _error;
 	entry->ref_count = 1;
 	entry->schema = j_db_schema_ref(schema, error);
 	j_goto_error_subcommand(!entry->schema);
@@ -51,7 +57,11 @@ _error:
 JDBEntry*
 j_db_entry_ref(JDBEntry* entry, GError** error)
 {
-	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
+	if (!entry)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
+		goto _error;
+	}
 	g_atomic_int_inc(&entry->ref_count);
 	return entry;
 _error:
@@ -63,7 +73,7 @@ j_db_entry_unref(JDBEntry* entry)
 	if (entry && g_atomic_int_dec_and_test(&entry->ref_count))
 	{
 		j_db_schema_unref(entry->schema);
-		bson_destroy(&entry->bson);
+		j_bson_destroy(&entry->bson);
 		g_slice_free(JDBEntry, entry);
 	}
 }
@@ -72,53 +82,58 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 {
 	JDBType type;
 	gboolean ret;
-	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
-	j_goto_error_frontend(!name, JULEA_FRONTEND_ERROR_VARIABLE_NAME_NULL, "");
+	JDBType_value val;
+	if (!entry)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
+		goto _error;
+	}
+	if (!name)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
+		goto _error;
+	}
 	ret = j_db_schema_get_field(entry->schema, name, &type, error);
 	j_goto_error_subcommand(!ret);
-	ret = bson_has_field(&entry->bson, name);
-	j_goto_error_frontend(ret, JULEA_FRONTEND_ERROR_VARIABLE_ALREADY_SET, "");
+	if (!j_bson_has_field(&entry->bson, name, &ret, error))
+		goto _error;
+	if (ret)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_ALREADY_SET, "variable value must not be set more than once");
+		goto _error;
+	}
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
-		ret = bson_append_int32(&entry->bson, name, -1, *(gint32 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "SINT32");
+		val.val_sint32 = *(const gint32*)value;
 		break;
 	case J_DB_TYPE_UINT32:
-		ret = bson_append_int32(&entry->bson, name, -1, *(guint32 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "UINT32");
-		break;
-	case J_DB_TYPE_FLOAT32:
-		ret = bson_append_double(&entry->bson, name, -1, *(gfloat const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "FLOAT32");
+		val.val_uint32 = *(const guint32*)value;
 		break;
 	case J_DB_TYPE_SINT64:
-		ret = bson_append_int64(&entry->bson, name, -1, *(gint64 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "SINT64");
+		val.val_sint64 = *(const gint64*)value;
 		break;
 	case J_DB_TYPE_UINT64:
-		ret = bson_append_int64(&entry->bson, name, -1, *(guint64 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "UINT64");
+		val.val_uint64 = *(const guint64*)value;
+		break;
+	case J_DB_TYPE_FLOAT32:
+		val.val_float32 = *(const gfloat*)value;
 		break;
 	case J_DB_TYPE_FLOAT64:
-		ret = bson_append_double(&entry->bson, name, -1, *(gdouble const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "FLOAT64");
+		val.val_float64 = *(const gdouble*)value;
 		break;
 	case J_DB_TYPE_STRING:
-		ret = bson_append_utf8(&entry->bson, name, -1, value, -1);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "STRING");
+		val.val_string = (const char*)value;
 		break;
 	case J_DB_TYPE_BLOB:
-		if (value)
-			ret = bson_append_binary(&entry->bson, name, -1, BSON_SUBTYPE_BINARY, value, length);
-		else
-			ret = bson_append_null(&entry->bson, name, -1);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "BLOB");
+		val.val_blob = (const char*)value;
+		val.val_blob_length = length;
 		break;
 	case _J_DB_TYPE_COUNT:
-	default:
-		j_goto_error_frontend(TRUE, JULEA_FRONTEND_ERROR_DB_TYPE_INVALID, "");
+	default:;
 	}
+	if (!j_bson_append_value(&entry->bson, name, type, &val, error))
+		goto _error;
 	return TRUE;
 _error:
 	return FALSE;
@@ -127,8 +142,16 @@ gboolean
 j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
 	gint ret;
-	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
-	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
+	if (!entry)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
+		goto _error;
+	}
+	if (!batch)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
+		goto _error;
+	}
 	ret = j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error);
 	j_goto_error_subcommand(!ret);
 	return TRUE;
@@ -140,8 +163,16 @@ j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 {
 	gint ret;
 	bson_t* bson;
-	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
-	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
+	if (!entry)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
+		goto _error;
+	}
+	if (!batch)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
+		goto _error;
+	}
 	bson = j_db_selector_get_bson(selector);
 	j_goto_error_frontend(!bson, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
 	ret = j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error);
@@ -154,8 +185,16 @@ gboolean
 j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	gint ret;
-	j_goto_error_frontend(!entry, JULEA_FRONTEND_ERROR_ENTRY_NULL, "");
-	j_goto_error_frontend(!batch, JULEA_FRONTEND_ERROR_BATCH_NULL, "");
+	if (!entry)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
+		goto _error;
+	}
+	if (!batch)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
+		goto _error;
+	}
 	ret = j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error);
 	j_goto_error_subcommand(!ret);
 	return TRUE;

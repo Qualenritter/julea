@@ -42,6 +42,12 @@ struct J_db_iterator_helper
 };
 typedef struct J_db_iterator_helper J_db_iterator_helper;
 
+GQuark
+j_frontend_db_error_quark(void)
+{
+	return g_quark_from_static_string("j-frontend-db-error-quark");
+}
+
 static gboolean
 j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
@@ -325,7 +331,7 @@ j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 		goto _error;
 	return TRUE;
 _error:
-	bson_destroy(&helper->bson);
+	j_bson_destroy(&helper->bson);
 error2:
 	g_slice_free(J_db_iterator_helper, helper);
 	return FALSE;

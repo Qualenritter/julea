@@ -32,22 +32,29 @@
 #include <julea-internal.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
+#include <core/jbson-wrapper.h>
 
 JDBSelector*
 j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
-	gboolean ret;
+	JDBType_value val;
 	JDBSelector* selector = NULL;
-	j_goto_error_frontend(mode >= _J_DB_SELECTOR_MODE_COUNT, JULEA_FRONTEND_ERROR_SELECTOR_MODE_INVALID, mode);
+	if (mode >= _J_DB_SELECTOR_MODE_COUNT)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_MODE_INVALID, "mode invalid");
+		goto _error;
+	}
 	selector = g_slice_new(JDBSelector);
 	selector->ref_count = 1;
 	selector->mode = mode;
 	selector->bson_count = 0;
 	bson_init(&selector->bson);
 	selector->schema = j_db_schema_ref(schema, error);
-	j_goto_error_subcommand(!selector->schema);
-	ret = bson_append_int32(&selector->bson, "_mode", -1, mode);
-	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
+	if (!selector->schema)
+		goto _error;
+	val.val_uint32 = mode;
+	if (!j_bson_append_value(&selector->bson, "_mode", J_DB_TYPE_UINT32, &val, error))
+		goto _error;
 	return selector;
 _error:
 	j_db_selector_unref(selector);
@@ -56,7 +63,11 @@ _error:
 JDBSelector*
 j_db_selector_ref(JDBSelector* selector, GError** error)
 {
-	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
+	if (!selector)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
+		goto _error;
+	}
 	g_atomic_int_inc(&selector->ref_count);
 	return selector;
 _error:
@@ -78,60 +89,67 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	char buf[20];
 	bson_t bson;
 	JDBType type;
-	gboolean ret;
-	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	j_goto_error_frontend(operator>= _J_DB_SELECTOR_OPERATOR_COUNT, JULEA_FRONTEND_ERROR_OPERATOR_INVALID, "");
-	j_goto_error_frontend(selector->bson_count + 1 > 500, JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX, 500);
-	ret = j_db_schema_get_field(selector->schema, name, &type, error);
-	j_goto_error_subcommand(!ret);
+	JDBType_value val;
+	if (!selector)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
+		goto _error;
+	}
+	if (operator>= _J_DB_SELECTOR_OPERATOR_COUNT)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_OPERATOR_INVALID, "operator invalid");
+		goto _error;
+	}
+	if (selector->bson_count + 1 > 500)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
+		goto _error;
+	}
+	if (!j_db_schema_get_field(selector->schema, name, &type, error))
+		goto _error;
 	sprintf(buf, "%d", selector->bson_count);
-	bson_append_document_begin(&selector->bson, buf, -1, &bson);
-	ret = bson_append_utf8(&bson, "_name", -1, name, -1);
-	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
-	ret = bson_append_int32(&bson, "_operator", -1, operator);
-	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "");
+	if (!j_bson_append_document_begin(&selector->bson, buf, &bson, error))
+		goto _error;
+	val.val_string = name;
+	if (!j_bson_append_value(&bson, "_name", J_DB_TYPE_STRING, &val, error))
+		goto _error;
+	val.val_uint32 = operator;
+	if (!j_bson_append_value(&bson, "_operator", J_DB_TYPE_UINT32, &val, error))
+		goto _error;
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
-		ret = bson_append_int32(&bson, "_value", -1, *(gint32 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "SINT32");
+		val.val_sint32 = *(gint32 const*)value;
 		break;
 	case J_DB_TYPE_UINT32:
-		ret = bson_append_int32(&bson, "_value", -1, *(guint32 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "UINT32");
+		val.val_uint32 = *(guint32 const*)value;
 		break;
 	case J_DB_TYPE_FLOAT32:
-		ret = bson_append_double(&bson, "_value", -1, *(gfloat const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "FLOAT32");
+		val.val_float32 = *(gfloat const*)value;
 		break;
 	case J_DB_TYPE_SINT64:
-		ret = bson_append_int64(&bson, "_value", -1, *(gint64 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "SINT64");
+		val.val_sint64 = *(gint64 const*)value;
 		break;
 	case J_DB_TYPE_UINT64:
-		ret = bson_append_int64(&bson, "_value", -1, *(guint64 const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "UINT64");
+		val.val_sint64 = *(gint64 const*)value;
 		break;
 	case J_DB_TYPE_FLOAT64:
-		ret = bson_append_double(&bson, "_value", -1, *(gdouble const*)value);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "FLOAT64");
+		val.val_float64 = *(gdouble const*)value;
 		break;
 	case J_DB_TYPE_STRING:
-		ret = bson_append_utf8(&bson, "_value", -1, value, -1);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "STRING");
+		val.val_string = value;
 		break;
 	case J_DB_TYPE_BLOB:
-		if (value)
-			ret = bson_append_binary(&bson, "_value", -1, BSON_SUBTYPE_BINARY, value, length);
-		else
-			ret = bson_append_null(&bson, "_value", -1);
-		j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "BLOB");
+		val.val_blob = value;
+		val.val_blob_length = length;
 		break;
 	case _J_DB_TYPE_COUNT:
-	default:
-		j_goto_error_frontend(TRUE, JULEA_FRONTEND_ERROR_DB_TYPE_INVALID, "");
+	default:;
 	}
-	bson_append_document_end(&selector->bson, &bson);
+	if (!j_bson_append_value(&bson, "_value", type, &val, error))
+		goto _error;
+	if (!j_bson_append_document_end(&selector->bson, &bson, error))
+		goto _error;
 	selector->bson_count++;
 	return TRUE;
 _error:
@@ -141,15 +159,29 @@ gboolean
 j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
 	char buf[20];
-	gboolean ret;
-	j_goto_error_frontend(!selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	j_goto_error_frontend(!sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	j_goto_error_frontend(selector == sub_selector, JULEA_FRONTEND_ERROR_SELECTOR_EQUAL, "");
-	j_goto_error_frontend(!sub_selector->bson_count, JULEA_FRONTEND_ERROR_SELECTOR_EMPTY, "");
-	j_goto_error_frontend(selector->bson_count + sub_selector->bson_count > 500, JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX, 500);
+	if (!selector || !sub_selector)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
+		goto _error;
+	}
+	if (selector == sub_selector)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_MUST_NOT_EQUAL, "selector must not equal subselector");
+		goto _error;
+	}
+	if (!!sub_selector->bson_count)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_EMPTY, "selector must not be emoty");
+		goto _error;
+	}
+	if (selector->bson_count + sub_selector->bson_count > 500)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
+		goto _error;
+	}
 	sprintf(buf, "%d", selector->bson_count);
-	ret = bson_append_document(&selector->bson, buf, -1, &sub_selector->bson);
-	j_goto_error_frontend(!ret, JULEA_FRONTEND_ERROR_BSON_APPEND_FAILED, "DOCUMENT");
+	if (!j_bson_append_document(&selector->bson, buf, &sub_selector->bson, error))
+		goto _error;
 	selector->bson_count += sub_selector->bson_count;
 	return TRUE;
 _error:

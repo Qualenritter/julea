@@ -38,12 +38,12 @@ j_bson_error_quark(void)
 gboolean
 j_bson_iter_init(bson_iter_t* iter, const bson_t* bson, GError** error)
 {
-	if (bson == NULL)
+	if (!bson)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
 		return FALSE;
 	}
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
 		return FALSE;
@@ -59,9 +59,14 @@ j_bson_iter_init(bson_iter_t* iter, const bson_t* bson, GError** error)
 gboolean
 j_bson_iter_next(bson_iter_t* iter, gboolean* has_next, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
+		return FALSE;
+	}
+	if (!has_next)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_HAS_NEXT_NULL, "has_next must not be NULL");
 		return FALSE;
 	}
 	*has_next = bson_iter_next(iter);
@@ -71,9 +76,14 @@ j_bson_iter_next(bson_iter_t* iter, gboolean* has_next, GError** error)
 gboolean
 j_bson_iter_key_equals(bson_iter_t* iter, const char* key, gboolean* equals, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
+		return FALSE;
+	}
+	if (!equals)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_EQUALS_NULL, "equals must not be NULL");
 		return FALSE;
 	}
 	*equals = !g_strcmp0(bson_iter_key(iter), key);
@@ -83,7 +93,7 @@ j_bson_iter_key_equals(bson_iter_t* iter, const char* key, gboolean* equals, GEr
 const char*
 j_bson_iter_key(bson_iter_t* iter, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
 		return NULL;
@@ -94,6 +104,21 @@ j_bson_iter_key(bson_iter_t* iter, GError** error)
 gboolean
 j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value* value, GError** error)
 {
+	if (!bson)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!name)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NAME_NULL, "name must not be NULL");
+		return FALSE;
+	}
+	if (!value)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_VALUE_NULL, "value must not be NULL");
+		return FALSE;
+	}
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
@@ -174,9 +199,14 @@ j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value*
 gboolean
 j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
+		return FALSE;
+	}
+	if (!value)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_VALUE_NULL, "value must not be NULL");
 		return FALSE;
 	}
 	switch (type)
@@ -269,7 +299,7 @@ j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError*
 char*
 j_bson_as_json(const bson_t* bson, GError** error)
 {
-	if (bson == NULL)
+	if (!bson)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
 		return NULL;
@@ -286,9 +316,14 @@ j_bson_free_json(char* json)
 gboolean
 j_bson_iter_find(bson_iter_t* iter, const char* key, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
+		return FALSE;
+	}
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
 		return FALSE;
 	}
 	if (!bson_iter_find(iter, key))
@@ -300,14 +335,29 @@ j_bson_iter_find(bson_iter_t* iter, const char* key, GError** error)
 }
 
 gboolean
-j_bson_iter_recurse_array(bson_iter_t* iter, bson_iter_t* iter_child, GError** error)
+j_bson_iter_not_find(bson_iter_t* iter, const char* key, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
 		return FALSE;
 	}
-	if (iter_child == NULL)
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
+		return FALSE;
+	}
+	if (bson_iter_find(iter, key))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_FOUND, "bson iter should not find key");
+		return FALSE;
+	}
+	return TRUE;
+}
+gboolean
+j_bson_iter_recurse_array(bson_iter_t* iter, bson_iter_t* iter_child, GError** error)
+{
+	if (!iter || !iter_child)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
 		return FALSE;
@@ -328,12 +378,7 @@ j_bson_iter_recurse_array(bson_iter_t* iter, bson_iter_t* iter_child, GError** e
 gboolean
 j_bson_iter_recurse_document(bson_iter_t* iter, bson_iter_t* iter_child, GError** error)
 {
-	if (iter == NULL)
-	{
-		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
-		return FALSE;
-	}
-	if (iter_child == NULL)
+	if (!iter || !iter_child)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
 		return FALSE;
@@ -356,7 +401,7 @@ j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error)
 {
 	const uint8_t* data;
 	uint32_t length;
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
 		return FALSE;
@@ -377,9 +422,14 @@ j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error)
 gboolean
 j_bson_init_from_json(bson_t* bson, const char* json, GError** error)
 {
-	if (bson == NULL)
+	if (!bson)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!json)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_JSON_NULL, "json must not be NULL");
 		return FALSE;
 	}
 	if (!bson_init_from_json(bson, json, -1, NULL))
@@ -393,9 +443,14 @@ j_bson_init_from_json(bson_t* bson, const char* json, GError** error)
 gboolean
 j_bson_iter_type_db(bson_iter_t* iter, JDBType* type, GError** error)
 {
-	if (iter == NULL)
+	if (!iter)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_NULL, "bson iter must not be NULL");
+		return FALSE;
+	}
+	if (!type)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_TYPE_NULL, "type must not be NULL");
 		return FALSE;
 	}
 	switch (bson_iter_type(iter))
@@ -444,7 +499,7 @@ j_bson_iter_type_db(bson_iter_t* iter, JDBType* type, GError** error)
 gboolean
 j_bson_has_enough_keys(const bson_t* bson, guint32 min_keys, GError** error)
 {
-	if (bson == NULL)
+	if (!bson)
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
 		return FALSE;
@@ -462,4 +517,189 @@ j_bson_destroy(bson_t* bson)
 {
 	if (bson)
 		bson_destroy(bson);
+}
+
+gboolean
+j_bson_init(bson_t* bson, GError** error)
+{
+	if (!bson)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	bson_init(bson);
+	return TRUE;
+}
+gboolean
+j_bson_has_field(bson_t* bson, gchar const* name, gboolean* has_field, GError** error)
+{
+	if (!bson)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!has_field)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_HAS_FIELD_NULL, "has_field must not be NULL");
+		return FALSE;
+	}
+	*has_field = bson_has_field(bson, name);
+	return TRUE;
+}
+
+gboolean
+j_bson_count_keys(bson_t* bson, guint32* count, GError** error)
+{
+	if (!bson)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!count)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_COUNT_NULL, "count must not be NULL");
+		return FALSE;
+	}
+	*count = bson_count_keys(bson);
+	return TRUE;
+}
+
+gboolean
+j_bson_array_generate_key(guint32 index, const char** key, char* buf, guint buf_length, GError** error)
+{
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
+		return FALSE;
+	}
+	if (!buf)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_BUF_NULL, "buf must not be NULL");
+		return FALSE;
+	}
+	bson_uint32_to_string(index, key, buf, buf_length);
+	return TRUE;
+}
+gboolean
+j_bson_append_array(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
+{
+	if (!bson || !bson_child)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
+		return FALSE;
+	}
+	if (!bson_append_array(bson, key, -1, bson_child))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_ARRAY_FAILED, "bson append array failed");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+gboolean
+j_bson_append_array_begin(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
+{
+	if (!bson || !bson_child)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
+		return FALSE;
+	}
+	if (!bson_append_array_begin(bson, key, -1, bson_child))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_ARRAY_FAILED, "bson append array failed");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+gboolean
+j_bson_append_array_end(bson_t* bson, bson_t* bson_child, GError** error)
+{
+	if (!bson || !bson_child)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!bson_append_array_end(bson, bson_child))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_ARRAY_FAILED, "bson append array failed");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+
+gboolean
+j_bson_append_document(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
+{
+	if (!bson || !bson_child)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
+		return FALSE;
+	}
+	if (!bson_append_document(bson, key, -1, bson_child))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_DOCUMENT_FAILED, "bson append document failed");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+gboolean
+j_bson_append_document_begin(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
+{
+	if (!bson || !bson_child)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!key || !*key)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
+		return FALSE;
+	}
+	if (!bson_append_document_begin(bson, key, -1, bson_child))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_DOCUMENT_FAILED, "bson append document failed");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+gboolean
+j_bson_append_document_end(bson_t* bson, bson_t* bson_child, GError** error)
+{
+	if (!bson || !bson_child)
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_NULL, "bson must not be NULL");
+		return FALSE;
+	}
+	if (!bson_append_document_end(bson, bson_child))
+	{
+		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_BSON_APPEND_DOCUMENT_FAILED, "bson append document failed");
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
 }
