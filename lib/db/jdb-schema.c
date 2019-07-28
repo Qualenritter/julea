@@ -402,37 +402,61 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 			schema1_count = 0;
 			schema2_count = 0;
 			if (!j_bson_iter_init(&iter1, &schema1->bson, error))
+			{
 				goto _error;
+			}
 			while (TRUE)
 			{
 				if (!j_bson_iter_next(&iter1, &has_next, error))
+				{
 					goto _error;
+				}
 				if (!has_next)
+				{
 					break;
+				}
 				key = j_bson_iter_key(&iter1, error);
 				if (!key)
+				{
 					goto _error;
+				}
 				if (g_strcmp0(key, "_index"))
 				{
 					schema1_count++;
 					if (!j_bson_iter_init(&iter2, &schema2->bson, error))
+					{
 						goto _error;
+					}
 					ret = j_bson_iter_find(&iter2, key, NULL);
 					*equal = *equal && ret;
 					if (!*equal)
+					{
 						break;
+					}
 					if (!j_bson_iter_value(&iter1, J_DB_TYPE_UINT32, &val1, error))
+					{
 						goto _error;
+					}
 					if (!j_bson_iter_value(&iter2, J_DB_TYPE_UINT32, &val2, error))
+					{
 						goto _error;
+					}
 					*equal = *equal && val1.val_uint32 == val2.val_uint32;
 				}
 			}
 			if (!j_bson_iter_init(&iter2, &schema2->bson, error))
+			{
 				goto _error;
+			}
+			if (!j_bson_count_keys(&schema2->bson, &schema2_count, error))
+			{
+				goto _error;
+			}
 			ret = j_bson_iter_find(&iter2, "_index", NULL);
 			if (ret)
-				schema2_count++;
+			{
+				schema2_count--;
+			}
 			*equal = *equal && schema1_count == schema2_count;
 		}
 	}

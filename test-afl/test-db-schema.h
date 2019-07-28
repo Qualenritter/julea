@@ -122,17 +122,23 @@ event_schema_add_field(void)
 	ret_expected = ret_expected && random_values.var_type < _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_schema_field_type == _J_DB_TYPE_COUNT;
 	if (the_stored_schema)
+	{
 		ret_expected = ret_expected && !the_stored_schema->server_side;
+	}
 	if (random_values.invalid_switch % 2)
 	{
 		ret_expected = FALSE;
 		ret = j_db_schema_add_field(the_stored_schema, NULL, random_values.var_type, &error);
 	}
 	else
+	{
 		ret = j_db_schema_add_field(the_stored_schema, varname_strbuf, random_values.var_type, &error);
+	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	if (ret)
+	{
 		the_schema_field_type = random_values.var_type;
+	}
 }
 static void
 event_schema_get_field(void)
@@ -266,11 +272,17 @@ event_schema_create(void)
 		ret_expected = the_stored_schema != NULL;
 		k = 0;
 		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+		{
 			if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
+			{
 				k++;
+			}
+		}
 		ret_expected = ret_expected && k > 0;
 		if (the_stored_schema)
+		{
 			ret_expected = ret_expected && !the_stored_schema->server_side;
+		}
 		ret = j_db_schema_create(the_stored_schema, batch, &error);
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
@@ -347,7 +359,9 @@ event_schema_delete(void)
 	case 0:
 		ret_expected = the_stored_schema != NULL;
 		if (the_stored_schema)
+		{
 			ret_expected = ret_expected && the_stored_schema->server_side;
+		}
 		ret = j_db_schema_delete(the_stored_schema, batch, &error);
 		ret = j_batch_execute(batch) && ret;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
