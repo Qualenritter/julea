@@ -124,7 +124,7 @@ event_selector_add_field(void)
 		{
 		case J_DB_TYPE_SINT32:
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint32, 4, & error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -132,7 +132,7 @@ event_selector_add_field(void)
 			break;
 		case J_DB_TYPE_UINT32:
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint32, 4, & error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -140,7 +140,7 @@ event_selector_add_field(void)
 			break;
 		case J_DB_TYPE_FLOAT32:
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float32, 4, & error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -148,7 +148,7 @@ event_selector_add_field(void)
 			break;
 		case J_DB_TYPE_SINT64:
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint64, 8, & error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -156,7 +156,7 @@ event_selector_add_field(void)
 			break;
 		case J_DB_TYPE_UINT64:
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint64, 8, & error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -164,7 +164,7 @@ event_selector_add_field(void)
 			break;
 		case J_DB_TYPE_FLOAT64:
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float64, 8, & error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -174,7 +174,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_BLOB:
 			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
-			if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 				ret_expected = FALSE;
 			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 			if (ret)
@@ -208,7 +208,7 @@ event_selector_add_selector(void)
 		ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
 		ret_expected = ret_expected && random_values.selector_selector != random_values.selector;
 		ret = j_db_selector_add_selector(the_stored_selector, stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector], &error);
-		if (error && error->domain == JULEA_FRONTEND_ERROR && error->code == JULEA_FRONTEND_ERROR_SELECTOR_TOO_COMPLEX)
+		if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			ret_expected = FALSE;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)

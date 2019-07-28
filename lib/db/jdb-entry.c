@@ -48,7 +48,8 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 		goto _error;
 	entry->ref_count = 1;
 	entry->schema = j_db_schema_ref(schema, error);
-	j_goto_error_subcommand(!entry->schema);
+	if (!entry->schema)
+		goto _error;
 	return entry;
 _error:
 	j_db_entry_unref(entry);
@@ -93,8 +94,8 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
 		goto _error;
 	}
-	ret = j_db_schema_get_field(entry->schema, name, &type, error);
-	j_goto_error_subcommand(!ret);
+	if (!j_db_schema_get_field(entry->schema, name, &type, error))
+		goto _error;
 	if (!j_bson_has_field(&entry->bson, name, &ret, error))
 		goto _error;
 	if (ret)
@@ -141,7 +142,6 @@ _error:
 gboolean
 j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
-	gint ret;
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
@@ -152,8 +152,8 @@ j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
 		goto _error;
 	}
-	ret = j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error);
-	j_goto_error_subcommand(!ret);
+	if (!j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error))
+		goto _error;
 	return TRUE;
 _error:
 	return FALSE;
@@ -161,7 +161,6 @@ _error:
 gboolean
 j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
-	gint ret;
 	bson_t* bson;
 	if (!entry)
 	{
@@ -173,10 +172,19 @@ j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
 		goto _error;
 	}
+	if (!selector)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
+		goto _error;
+	}
 	bson = j_db_selector_get_bson(selector);
-	j_goto_error_frontend(!bson, JULEA_FRONTEND_ERROR_SELECTOR_NULL, "");
-	ret = j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error);
-	j_goto_error_subcommand(!ret);
+	if (!bson)
+	{
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
+		goto _error;
+	}
+	if (!j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error))
+		goto _error;
 	return TRUE;
 _error:
 	return FALSE;
@@ -184,7 +192,6 @@ _error:
 gboolean
 j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
-	gint ret;
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
@@ -195,8 +202,8 @@ j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
 		goto _error;
 	}
-	ret = j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error);
-	j_goto_error_subcommand(!ret);
+	if (!j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error))
+		goto _error;
 	return TRUE;
 _error:
 	return FALSE;

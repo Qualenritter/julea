@@ -52,6 +52,5 @@
 #include <core/joperation.h>
 #include <core/jsemantics.h>
 #include <core/jstatistics.h>
-#include <core/jerror.h>
 
 #endif
