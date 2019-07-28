@@ -17,8 +17,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pkill julea-benchmark
-pkill julea-test*
+pkill julea-test
 pkill julea-server
 pkill afl-fuzz
 pkill afl-cov
-
+pkill julea-test-afl-db-client

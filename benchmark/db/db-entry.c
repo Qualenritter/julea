@@ -275,4 +275,8 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 		sprintf(testname, "/db/%d/entry/free", n);
 		j_benchmark_run(testname, benchmark_db_entry_free);
 	}
+	// j_db_entry_set_field n variables
+	// j_db_entry_insert 5,50,500 variables, n entrys
+	// j_db_entry_update 5,50,500 variables, n entrys
+	// j_db_entry_delete 5,50,500 variables, n entrys
 }
