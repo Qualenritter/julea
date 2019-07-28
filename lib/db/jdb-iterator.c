@@ -111,7 +111,6 @@ j_db_iterator_unref(JDBIterator* iterator)
 gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
-	guint ret = TRUE;
 	if (!iterator)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
@@ -125,15 +124,13 @@ j_db_iterator_next(JDBIterator* iterator, GError** error)
 	if (iterator->bson_valid)
 		j_bson_destroy(&iterator->bson);
 	if (!j_db_internal_iterate(iterator->iterator, &iterator->bson, error))
-		goto _error;
+		goto _error2;
 	iterator->bson_valid = TRUE;
 	return TRUE;
+_error2:
+	iterator->valid = FALSE;
+	iterator->bson_valid = FALSE;
 _error:
-	if (!ret)
-	{
-		iterator->valid = FALSE;
-		iterator->bson_valid = FALSE;
-	}
 	return FALSE;
 }
 gboolean

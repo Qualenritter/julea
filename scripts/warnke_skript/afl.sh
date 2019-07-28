@@ -60,7 +60,7 @@ function julea_run(){
 		if [ "${asan}" == "asan" ]
 		then
 			export AFL_USE_ASAN=1
-			export ASAN_OPTIONS=abort_on_error=1,symbolize=0
+			export ASAN_OPTIONS=fast_unwind_on_malloc=0,abort_on_error=1
 			name="${name}-asan"
 		fi
 		echo compiler $compiler
