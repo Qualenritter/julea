@@ -513,13 +513,13 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 			benchmark_db_schema_delete_executed = NULL;
 		}
 		{
-			//create n schema at once
+			//create n schema at once in a batch
 			sprintf(testname, "/db/%d/schema/create-batch", n);
 			j_benchmark_run(testname, benchmark_db_schema_create_batch);
-			//get n schema at once
+			//get n schema at once in a batch
 			sprintf(testname, "/db/%d/schema/get-batch", n);
 			j_benchmark_run(testname, benchmark_db_schema_get_batch);
-			//delete n schema at once
+			//delete n schema at once in a batch
 			sprintf(testname, "/db/%d/schema/delete-batch", n);
 			j_benchmark_run(testname, benchmark_db_schema_delete_batch);
 			g_free(benchmark_db_schema_create_executed);
