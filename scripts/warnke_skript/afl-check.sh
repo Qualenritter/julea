@@ -79,7 +79,7 @@ do
 		echo "valid $f $g"
 		exit 1
 	fi
-	mv log/x log/$j-${programname}-$g.tmp-file
+	mv log/x log/$j-${programname}-$g-$i.tmp-file
 done
 done
 done
