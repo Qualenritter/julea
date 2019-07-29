@@ -24,6 +24,7 @@
 
 static gdouble target_time = 0;
 static guint n = 0;
+static guint n2 = 0;
 //
 static BenchmarkResult* benchmark_db_entry_new_executed = NULL; /*execute only once*/
 static BenchmarkResult* benchmark_db_entry_free_executed = NULL; /*execute only once*/

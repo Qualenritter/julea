@@ -169,7 +169,7 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_MUST_NOT_EQUAL, "selector must not equal subselector");
 		goto _error;
 	}
-	if (!!sub_selector->bson_count)
+	if (!sub_selector->bson_count)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_EMPTY, "selector must not be emoty");
 		goto _error;
