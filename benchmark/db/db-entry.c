@@ -56,26 +56,24 @@ benchmark_db_entry_ref(BenchmarkResult* result)
 	CHECK_ERROR(!schema);
 	entry = j_db_entry_new(schema, ERROR_PARAM);
 	CHECK_ERROR(!entry);
-start:
-	m += batch_count;
-	j_benchmark_timer_start();
-	for (i = 0; i < batch_count; i++)
+	while (m == 0 || elapsed_ref < target_time || elapsed_unref < target_time)
 	{
-		entry2 = j_db_entry_ref(entry, ERROR_PARAM);
-		CHECK_ERROR(!entry2);
-		ret = entry != entry2;
-		CHECK_ERROR(ret);
-	}
-	elapsed_ref += j_benchmark_timer_elapsed();
-	j_benchmark_timer_start();
-	for (i = 0; i < batch_count; i++)
-	{
-		j_db_entry_unref(entry);
-	}
-	elapsed_unref += j_benchmark_timer_elapsed();
-	if (elapsed_ref < target_time || elapsed_unref < target_time)
-	{
-		goto start;
+		m += batch_count;
+		j_benchmark_timer_start();
+		for (i = 0; i < batch_count; i++)
+		{
+			entry2 = j_db_entry_ref(entry, ERROR_PARAM);
+			CHECK_ERROR(!entry2);
+			ret = entry != entry2;
+			CHECK_ERROR(ret);
+		}
+		elapsed_ref += j_benchmark_timer_elapsed();
+		j_benchmark_timer_start();
+		for (i = 0; i < batch_count; i++)
+		{
+			j_db_entry_unref(entry);
+		}
+		elapsed_unref += j_benchmark_timer_elapsed();
 	}
 	j_db_entry_unref(entry);
 	j_db_schema_unref(schema);
@@ -121,24 +119,22 @@ benchmark_db_entry_new(BenchmarkResult* result)
 	entry_array = g_new(JDBEntry*, batch_count);
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
-start:
-	m += batch_count;
-	j_benchmark_timer_start();
-	for (i = 0; i < batch_count; i++)
+	while (m == 0 || elapsed_new < target_time || elapsed_free < target_time)
 	{
-		entry_array[i] = j_db_entry_new(schema, ERROR_PARAM);
-		CHECK_ERROR(!entry_array[i]);
-	}
-	elapsed_new += j_benchmark_timer_elapsed();
-	j_benchmark_timer_start();
-	for (i = 0; i < batch_count; i++)
-	{
-		j_db_entry_unref(entry_array[i]);
-	}
-	elapsed_free += j_benchmark_timer_elapsed();
-	if (elapsed_new < target_time || elapsed_free < target_time)
-	{
-		goto start;
+		m += batch_count;
+		j_benchmark_timer_start();
+		for (i = 0; i < batch_count; i++)
+		{
+			entry_array[i] = j_db_entry_new(schema, ERROR_PARAM);
+			CHECK_ERROR(!entry_array[i]);
+		}
+		elapsed_new += j_benchmark_timer_elapsed();
+		j_benchmark_timer_start();
+		for (i = 0; i < batch_count; i++)
+		{
+			j_db_entry_unref(entry_array[i]);
+		}
+		elapsed_free += j_benchmark_timer_elapsed();
 	}
 	g_free(entry_array);
 	j_db_schema_unref(schema);
@@ -161,6 +157,47 @@ benchmark_db_entry_free(BenchmarkResult* result)
 	}
 	result->elapsed_time = benchmark_db_entry_free_executed->elapsed_time;
 	result->operations = benchmark_db_entry_free_executed->operations;
+}
+static void
+benchmark_db_entry_set_field(BenchmarkResult* result)
+{
+	GError* error = NULL;
+	gboolean ret;
+	const char* namespace = "namespace";
+	const char* name = "name";
+	JDBEntry* entry;
+	JDBSchema* schema;
+	guint i;
+	char varname[50];
+	guint m = 0;
+	gdouble elapsed = 0;
+	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
+	CHECK_ERROR(!schema);
+	for (i = 0; i < n; i++)
+	{
+		sprintf(varname, "varname_%d", i);
+		ret = j_db_schema_add_field(schema, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+	}
+	while (m == 0 || elapsed < target_time)
+	{
+		m++;
+		entry = j_db_entry_new(schema, ERROR_PARAM);
+		CHECK_ERROR(!entry);
+		j_benchmark_timer_start();
+		for (i = 0; i < n; i++)
+		{
+			sprintf(varname, "varname_%d", i);
+			ret = j_db_entry_set_field(entry, varname, &i, 4, ERROR_PARAM);
+			CHECK_ERROR(!ret);
+		}
+		elapsed += j_benchmark_timer_elapsed();
+		j_db_entry_unref(entry);
+	}
+	j_db_schema_unref(schema);
+	result->elapsed_time = elapsed;
+	result->operations = n * m;
+	g_free(entry);
 }
 static void
 _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
@@ -275,7 +312,11 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 		sprintf(testname, "/db/%d/entry/free", n);
 		j_benchmark_run(testname, benchmark_db_entry_free);
 	}
-	// j_db_entry_set_field n variables
+	{
+		// j_db_entry_set_field n variables
+		sprintf(testname, "/db/%d/entry/set_field", n);
+		j_benchmark_run(testname, benchmark_db_entry_set_field);
+	}
 	// j_db_entry_insert 5,50,500 variables, n entrys
 	// j_db_entry_update 5,50,500 variables, n entrys
 	// j_db_entry_delete 5,50,500 variables, n entrys
