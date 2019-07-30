@@ -71,8 +71,8 @@ struct JTrace
 	guint function_depth;
 
 	/**
-	 * Function stack. Index 0 is the topmost function, Index stack->len is the current function
-	 * Elements have type JTraceStack
+	 * Function stack within the current thread. Index (0) is the topmost function, Index (stack->len - 1) is the current function.
+	 * Elements have Type JTraceStack
 	 **/
 	GArray* stack;
 
