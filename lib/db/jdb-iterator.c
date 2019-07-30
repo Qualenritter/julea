@@ -41,6 +41,7 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	guint ret2 = FALSE;
 	JBatch* batch;
 	JDBIterator* iterator = NULL;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -69,6 +70,7 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	if (!ret)
 		goto _error;
 	iterator->valid = TRUE;
+	j_trace_leave(G_STRFUNC);
 	return iterator;
 _error:
 	if (ret2)
@@ -79,24 +81,29 @@ _error:
 		}
 	}
 	j_db_iterator_unref(iterator);
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 JDBIterator*
 j_db_iterator_ref(JDBIterator* iterator, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!iterator)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
 		goto _error;
 	}
 	g_atomic_int_inc(&iterator->ref_count);
+	j_trace_leave(G_STRFUNC);
 	return iterator;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 void
 j_db_iterator_unref(JDBIterator* iterator)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (iterator && g_atomic_int_dec_and_test(&iterator->ref_count))
 	{
 		while (iterator->valid)
@@ -107,10 +114,12 @@ j_db_iterator_unref(JDBIterator* iterator)
 			j_bson_destroy(&iterator->bson);
 		g_slice_free(JDBIterator, iterator);
 	}
+	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!iterator)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
@@ -126,11 +135,13 @@ j_db_iterator_next(JDBIterator* iterator, GError** error)
 	if (!j_db_internal_iterate(iterator->iterator, &iterator->bson, error))
 		goto _error2;
 	iterator->bson_valid = TRUE;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error2:
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
@@ -138,6 +149,7 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 {
 	JDBType_value val;
 	bson_iter_t iter;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!iterator)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
@@ -220,7 +232,9 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }

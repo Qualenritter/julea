@@ -39,6 +39,7 @@ j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
 	JDBType_value val;
 	JDBSelector* selector = NULL;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (mode >= _J_DB_SELECTOR_MODE_COUNT)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_MODE_INVALID, "mode invalid");
@@ -55,33 +56,40 @@ j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 	val.val_uint32 = mode;
 	if (!j_bson_append_value(&selector->bson, "_mode", J_DB_TYPE_UINT32, &val, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return selector;
 _error:
 	j_db_selector_unref(selector);
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 JDBSelector*
 j_db_selector_ref(JDBSelector* selector, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!selector)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
 		goto _error;
 	}
 	g_atomic_int_inc(&selector->ref_count);
+	j_trace_leave(G_STRFUNC);
 	return selector;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 void
 j_db_selector_unref(JDBSelector* selector)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (selector && g_atomic_int_dec_and_test(&selector->ref_count))
 	{
 		j_db_schema_unref(selector->schema);
 		bson_destroy(&selector->bson);
 		g_slice_free(JDBSelector, selector);
 	}
+	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
@@ -90,6 +98,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	bson_t bson;
 	JDBType type;
 	JDBType_value val;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!selector)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
@@ -151,14 +160,17 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	if (!j_bson_append_document_end(&selector->bson, &bson, error))
 		goto _error;
 	selector->bson_count++;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
 	char buf[20];
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!selector || !sub_selector)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
@@ -183,8 +195,10 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 	if (!j_bson_append_document(&selector->bson, buf, &sub_selector->bson, error))
 		goto _error;
 	selector->bson_count += sub_selector->bson_count;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 

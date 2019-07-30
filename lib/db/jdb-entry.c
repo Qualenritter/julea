@@ -38,6 +38,7 @@ JDBEntry*
 j_db_entry_new(JDBSchema* schema, GError** error)
 {
 	JDBEntry* entry = NULL;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -50,33 +51,40 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 	entry->schema = j_db_schema_ref(schema, error);
 	if (!entry->schema)
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return entry;
 _error:
 	j_db_entry_unref(entry);
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 JDBEntry*
 j_db_entry_ref(JDBEntry* entry, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
 		goto _error;
 	}
 	g_atomic_int_inc(&entry->ref_count);
+	j_trace_leave(G_STRFUNC);
 	return entry;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 void
 j_db_entry_unref(JDBEntry* entry)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (entry && g_atomic_int_dec_and_test(&entry->ref_count))
 	{
 		j_db_schema_unref(entry->schema);
 		j_bson_destroy(&entry->bson);
 		g_slice_free(JDBEntry, entry);
 	}
+	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error)
@@ -84,6 +92,7 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 	JDBType type;
 	gboolean ret;
 	JDBType_value val;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
@@ -135,13 +144,16 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 	}
 	if (!j_bson_append_value(&entry->bson, name, type, &val, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
@@ -154,14 +166,17 @@ j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 	}
 	if (!j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	bson_t* bson;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
@@ -185,13 +200,16 @@ j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 	}
 	if (!j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!entry)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
@@ -204,7 +222,9 @@ j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 	}
 	if (!j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }

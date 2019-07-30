@@ -38,6 +38,7 @@ JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
 	JDBSchema* schema = NULL;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!namespace)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_NAMESPACE_NULL, "namespace must not be NULL");
@@ -56,27 +57,32 @@ j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 	schema->ref_count = 1;
 	schema->server_side = FALSE;
 	bson_init(&schema->bson);
+	j_trace_leave(G_STRFUNC);
 	return schema;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 JDBSchema*
 j_db_schema_ref(JDBSchema* schema, GError** error)
 {
-
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
 		goto _error;
 	}
 	g_atomic_int_inc(&schema->ref_count);
+	j_trace_leave(G_STRFUNC);
 	return schema;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 void
 j_db_schema_unref(JDBSchema* schema)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (schema && g_atomic_int_dec_and_test(&schema->ref_count))
 	{
 		g_free(schema->namespace);
@@ -85,12 +91,14 @@ j_db_schema_unref(JDBSchema* schema)
 			bson_destroy(&schema->bson);
 		g_slice_free(JDBSchema, schema);
 	}
+	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError** error)
 {
 	JDBType_value val;
 	bson_iter_t iter;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -124,8 +132,10 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	val.val_uint32 = type;
 	if (!j_bson_append_value(&schema->bson, name, J_DB_TYPE_UINT32, &val, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
@@ -133,6 +143,7 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 {
 	JDBType_value val;
 	bson_iter_t iter;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -160,8 +171,10 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 	if (!j_bson_iter_value(&iter, J_DB_TYPE_UINT32, &val, error))
 		goto _error;
 	*type = val.val_uint32;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 guint32
@@ -172,6 +185,7 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	guint i;
 	JDBType_value val;
 	const char* key;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -218,11 +232,13 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	}
 	(*names)[i] = NULL;
 	(*types)[i] = _J_DB_TYPE_COUNT;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	/*TODO free names*/
 	/*TODO free types*/
 _error2:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
@@ -236,6 +252,7 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	const char* key;
 	char buf[20];
 	gchar const** name;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -280,13 +297,16 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	if (!j_bson_append_array_end(&schema->bson_index, &bson, error))
 		goto _error;
 	schema->bson_index_count++;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -315,13 +335,16 @@ j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 	schema->server_side = TRUE;
 	if (!j_db_internal_schema_create(schema->namespace, schema->name, &schema->bson, batch, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -346,13 +369,16 @@ j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error)
 	schema->bson_initialized = TRUE;
 	if (!j_db_internal_schema_get(schema->namespace, schema->name, &schema->bson, batch, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error)
 {
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -365,8 +391,10 @@ j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error)
 	}
 	if (!j_db_internal_schema_delete(schema->namespace, schema->name, batch, error))
 		goto _error;
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 
@@ -382,6 +410,7 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 	gint ret;
 	gboolean has_next;
 	const char* key;
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema1 || !schema2)
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
@@ -460,7 +489,9 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 			*equal = *equal && schema1_count == schema2_count;
 		}
 	}
+	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
