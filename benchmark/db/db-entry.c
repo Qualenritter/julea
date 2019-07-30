@@ -336,9 +336,9 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 					CHECK_ERROR(!ret);
 					g_free(iter_ptr);
 				}
-				ret = j_db_iterator_next(iterator, NULL);
-				CHECK_ERROR(ret);
 			}
+			ret = j_db_iterator_next(iterator, NULL);
+			CHECK_ERROR(ret);
 			j_db_iterator_unref(iterator);
 			elapsed_iterator_all += j_benchmark_timer_elapsed();
 		}
@@ -546,13 +546,13 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 	{
 		switch (i)
 		{
-		case 2:
+		case 0:
 			n2 = 5;
 			break;
 		case 1:
 			n2 = 50;
 			break;
-		case 0:
+		case 2:
 			n2 = 500;
 			break;
 		default:
@@ -573,6 +573,10 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			benchmark_db_entry_update_executed = NULL;
 			g_free(benchmark_db_entry_delete_executed);
 			benchmark_db_entry_delete_executed = NULL;
+			g_free(benchmark_db_iterator_single_executed);
+			benchmark_db_iterator_single_executed = NULL;
+			g_free(benchmark_db_iterator_all_executed);
+			benchmark_db_iterator_all_executed = NULL;
 		}
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
@@ -584,9 +588,9 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			// j_db_entry_delete 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/delete-batch", n, n2);
 			j_benchmark_run(testname, benchmark_db_entry_delete_batch);
-			sprintf(testname, "/db/%d/%d/iteartor/single", n, n2);
+			sprintf(testname, "/db/%d/%d/iterator/single", n, n2);
 			j_benchmark_run(testname, benchmark_db_iterator_single);
-			sprintf(testname, "/db/%d/%d/iteartor/all", n, n2);
+			sprintf(testname, "/db/%d/%d/iterator/all", n, n2);
 			j_benchmark_run(testname, benchmark_db_iterator_all);
 			g_free(benchmark_db_entry_insert_executed);
 			benchmark_db_entry_insert_executed = NULL;
