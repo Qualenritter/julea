@@ -85,6 +85,8 @@ gboolean j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer 
  * Save the entry in the backend.
  * All variables defined in the schema, which are not explicitily set, are initialized to NULL.
  *
+ * The entry must not be modified until the batch is executed.
+ *
  * \param[in] entry the entry to save
  * \param[in] batch the batch to append this operation to
  * \pre entry != NULL
@@ -97,6 +99,9 @@ gboolean j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error);
 /**
  * Replayes all entrys with the given entry in the backend where the selector matches.
  * All variables defined in the schema, which are not explicitily set, are initialized to NULL.
+ *
+ * The entry must not be modified until the batch is executed.
+ * The selector must not be modified until the batch is executed.
  *
  * \param[in] entry the entry defining the final values of all matched entrys
  * \param[in] selector the selector defines which entrys should be modifies
@@ -113,6 +118,9 @@ gboolean j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch
 /**
  * Delete the entry from the backend.
  * All variables defined in the schema, which are not explicitily set, are initialized to NULL.
+ *
+ * The entry must not be modified until the batch is executed.
+ * The selector must not be modified until the batch is executed.
  *
  * \param[in] entry specifies the schema to use
  * \param[in] selector the selector defines what should be deleted

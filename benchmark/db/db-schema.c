@@ -490,28 +490,52 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 	char testname[500];
 	target_time = _target_time;
 	n = _n;
+	if (n < 500)
+	{
+		//more than 500 fields in a schema is not supported by backend
+		//add n fields to a schema
+		sprintf(testname, "/db/%d/schema/add_field", n);
+		j_benchmark_run(testname, benchmark_db_schema_add_field);
+		//get all n different fields from a schema
+		sprintf(testname, "/db/%d/schema/get_field", n);
+		j_benchmark_run(testname, benchmark_db_schema_get_field);
+		//get all n fields at once from a schema
+		sprintf(testname, "/db/%d/schema/get_fields", n);
+		j_benchmark_run(testname, benchmark_db_schema_get_fields);
+		//compare schema containing n variables
+		sprintf(testname, "/db/%d/schema/equals", n);
+		j_benchmark_run(testname, benchmark_db_schema_equals);
+		g_free(benchmark_db_schema_add_field_executed);
+		benchmark_db_schema_add_field_executed = NULL;
+		g_free(benchmark_db_schema_get_field_executed);
+		benchmark_db_schema_get_field_executed = NULL;
+		g_free(benchmark_db_schema_get_fields_executed);
+		benchmark_db_schema_get_fields_executed = NULL;
+		g_free(benchmark_db_schema_equals_executed);
+		benchmark_db_schema_equals_executed = NULL;
+	}
+	if (n <= 1000)
+	{
+		//not using batches with more than 1000 same functions does not make sense
+		//create n schema at once
+		sprintf(testname, "/db/%d/schema/create", n);
+		j_benchmark_run(testname, benchmark_db_schema_create);
+		//get n schema at once
+		sprintf(testname, "/db/%d/schema/get", n);
+		j_benchmark_run(testname, benchmark_db_schema_get);
+		//delete n schema at once
+		sprintf(testname, "/db/%d/schema/delete", n);
+		j_benchmark_run(testname, benchmark_db_schema_delete);
+		g_free(benchmark_db_schema_create_executed);
+		benchmark_db_schema_create_executed = NULL;
+		g_free(benchmark_db_schema_get_executed);
+		benchmark_db_schema_get_executed = NULL;
+		g_free(benchmark_db_schema_delete_executed);
+		benchmark_db_schema_delete_executed = NULL;
+	}
 	if (n <= 100000)
 	{
 		//tests with more than 100000 schema does not make sense
-		if (n <= 1000)
-		{
-			//not using batches with more than 1000 same functions does not make sense
-			//create n schema at once
-			sprintf(testname, "/db/%d/schema/create", n);
-			j_benchmark_run(testname, benchmark_db_schema_create);
-			//get n schema at once
-			sprintf(testname, "/db/%d/schema/get", n);
-			j_benchmark_run(testname, benchmark_db_schema_get);
-			//delete n schema at once
-			sprintf(testname, "/db/%d/schema/delete", n);
-			j_benchmark_run(testname, benchmark_db_schema_delete);
-			g_free(benchmark_db_schema_create_executed);
-			benchmark_db_schema_create_executed = NULL;
-			g_free(benchmark_db_schema_get_executed);
-			benchmark_db_schema_get_executed = NULL;
-			g_free(benchmark_db_schema_delete_executed);
-			benchmark_db_schema_delete_executed = NULL;
-		}
 		{
 			//create n schema at once in a batch
 			sprintf(testname, "/db/%d/schema/create-batch", n);
@@ -529,43 +553,21 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 			g_free(benchmark_db_schema_delete_executed);
 			benchmark_db_schema_delete_executed = NULL;
 		}
-		{
-			//ref schema
-			sprintf(testname, "/db/%d/schema/ref", n);
-			j_benchmark_run(testname, benchmark_db_schema_ref);
-			//unref, but not free schema
-			sprintf(testname, "/db/%d/schema/unref", n);
-			j_benchmark_run(testname, benchmark_db_schema_unref);
-		}
-		{
-			//create empty schema
-			sprintf(testname, "/db/%d/schema/new", n);
-			j_benchmark_run(testname, benchmark_db_schema_new);
-			//free empty schema
-			sprintf(testname, "/db/%d/schema/free", n);
-			j_benchmark_run(testname, benchmark_db_schema_free);
-		}
-		{
-			//add n fields to a schema
-			sprintf(testname, "/db/%d/schema/add_field", n);
-			j_benchmark_run(testname, benchmark_db_schema_add_field);
-			//get all n different fields from a schema
-			sprintf(testname, "/db/%d/schema/get_field", n);
-			j_benchmark_run(testname, benchmark_db_schema_get_field);
-			//get all n fields at once from a schema
-			sprintf(testname, "/db/%d/schema/get_fields", n);
-			j_benchmark_run(testname, benchmark_db_schema_get_fields);
-			//compare schema containing n variables
-			sprintf(testname, "/db/%d/schema/equals", n);
-			j_benchmark_run(testname, benchmark_db_schema_equals);
-			g_free(benchmark_db_schema_add_field_executed);
-			benchmark_db_schema_add_field_executed = NULL;
-			g_free(benchmark_db_schema_get_field_executed);
-			benchmark_db_schema_get_field_executed = NULL;
-			g_free(benchmark_db_schema_get_fields_executed);
-			benchmark_db_schema_get_fields_executed = NULL;
-			g_free(benchmark_db_schema_equals_executed);
-			benchmark_db_schema_equals_executed = NULL;
-		}
+	}
+	{
+		//ref schema
+		sprintf(testname, "/db/%d/schema/ref", n);
+		j_benchmark_run(testname, benchmark_db_schema_ref);
+		//unref, but not free schema
+		sprintf(testname, "/db/%d/schema/unref", n);
+		j_benchmark_run(testname, benchmark_db_schema_unref);
+	}
+	{
+		//create empty schema
+		sprintf(testname, "/db/%d/schema/new", n);
+		j_benchmark_run(testname, benchmark_db_schema_new);
+		//free empty schema
+		sprintf(testname, "/db/%d/schema/free", n);
+		j_benchmark_run(testname, benchmark_db_schema_free);
 	}
 }
