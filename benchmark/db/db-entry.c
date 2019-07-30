@@ -35,6 +35,8 @@ static BenchmarkResult* benchmark_db_entry_unref_executed = NULL; /*execute only
 static BenchmarkResult* benchmark_db_entry_insert_executed = NULL; /*execute multiple benchmarks together*/
 static BenchmarkResult* benchmark_db_entry_update_executed = NULL; /*execute multiple benchmarks together*/
 static BenchmarkResult* benchmark_db_entry_delete_executed = NULL; /*execute multiple benchmarks together*/
+static BenchmarkResult* benchmark_db_iterator_single_executed = NULL; /*execute multiple benchmarks together*/
+static BenchmarkResult* benchmark_db_iterator_all_executed = NULL; /*execute multiple benchmarks together*/
 //
 static void
 benchmark_db_entry_ref(BenchmarkResult* result)
@@ -208,20 +210,28 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 {
 	GError* error = NULL;
 	gboolean ret;
+	gpointer iter_ptr;
+	JDBType iter_type;
+	guint64 iter_length;
 	const char* namespace = "namespace";
 	const char* name = "name";
 	JDBEntry** entry;
 	JDBSelector** selector;
 	JDBSchema* schema;
+	JDBIterator* iterator;
 	guint i;
 	guint j;
 	char varname[50];
 	guint m = 0;
 	guint m2 = 0;
+	guint m3 = 0;
+	guint m4 = 0;
 	g_autoptr(JBatch) batch = NULL;
-	gdouble elapsed_insert = 0;
-	gdouble elapsed_update = 0;
-	gdouble elapsed_delete = 0;
+	gdouble elapsed_entry_insert = 0;
+	gdouble elapsed_entry_update = 0;
+	gdouble elapsed_entry_delete = 0;
+	gdouble elapsed_iterator_single = 0;
+	gdouble elapsed_iterator_all = 0;
 	g_autoptr(JSemantics) semantics = NULL;
 	if (benchmark_db_entry_insert_executed)
 	{
@@ -233,7 +243,7 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	batch = j_batch_new(semantics);
 	entry = g_new(JDBEntry*, n);
 	selector = g_new(JDBSelector*, n);
-	while (m == 0 || elapsed_insert < target_time || elapsed_delete < target_time)
+	while (m == 0 || elapsed_entry_insert < target_time || elapsed_entry_delete < target_time)
 	{
 		schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 		CHECK_ERROR(!schema);
@@ -248,6 +258,7 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 		ret = j_batch_execute(batch);
 		CHECK_ERROR(!ret);
 		m++;
+		//insert
 		j_benchmark_timer_start();
 		for (j = 0; j < n; j++)
 		{
@@ -276,10 +287,65 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 		{
 			j_db_entry_unref(entry[j]);
 		}
-		elapsed_insert += j_benchmark_timer_elapsed();
-		while (m2 == 0 || elapsed_update < target_time)
+		elapsed_entry_insert += j_benchmark_timer_elapsed();
+		//selector single
+		while (m3 == 0 || elapsed_iterator_single < target_time)
+		{
+			m3++;
+			j_benchmark_timer_start();
+			for (j = 0; j < n; j++)
+			{
+				selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
+				CHECK_ERROR(!selector);
+				ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
+				CHECK_ERROR(!ret);
+				iterator = j_db_iterator_new(schema, selector[j], ERROR_PARAM);
+				CHECK_ERROR(!iterator);
+				ret = j_db_iterator_next(iterator, ERROR_PARAM);
+				CHECK_ERROR(!ret);
+				for (i = 0; i < n2; i++)
+				{
+					sprintf(varname, "varname_%d", i);
+					ret = j_db_iterator_get_field(iterator, varname, &iter_type, &iter_ptr, &iter_length, ERROR_PARAM);
+					CHECK_ERROR(!ret);
+					g_free(iter_ptr);
+				}
+				ret = j_db_iterator_next(iterator, NULL);
+				CHECK_ERROR(ret);
+				j_db_iterator_unref(iterator);
+				j_db_selector_unref(selector[j]);
+			}
+			elapsed_iterator_single += j_benchmark_timer_elapsed();
+		}
+		//selector all
+		while (m4 == 0 || elapsed_iterator_all < target_time)
+		{
+			m3++;
+			m4++;
+			j_benchmark_timer_start();
+			iterator = j_db_iterator_new(schema, NULL, ERROR_PARAM);
+			CHECK_ERROR(!iterator);
+			for (j = 0; j < n; j++)
+			{
+				ret = j_db_iterator_next(iterator, ERROR_PARAM);
+				CHECK_ERROR(!ret);
+				for (i = 0; i < n2; i++)
+				{
+					sprintf(varname, "varname_%d", i);
+					ret = j_db_iterator_get_field(iterator, varname, &iter_type, &iter_ptr, &iter_length, ERROR_PARAM);
+					CHECK_ERROR(!ret);
+					g_free(iter_ptr);
+				}
+				ret = j_db_iterator_next(iterator, NULL);
+				CHECK_ERROR(ret);
+			}
+			j_db_iterator_unref(iterator);
+			elapsed_iterator_all += j_benchmark_timer_elapsed();
+		}
+		while (m2 == 0 || elapsed_entry_update < target_time)
 		{
 			m2++;
+			//update
 			j_benchmark_timer_start();
 			for (j = 0; j < n; j++)
 			{
@@ -314,8 +380,9 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 				j_db_entry_unref(entry[j]);
 				j_db_selector_unref(selector[j]);
 			}
-			elapsed_update += j_benchmark_timer_elapsed();
+			elapsed_entry_update += j_benchmark_timer_elapsed();
 		}
+		//delete
 		j_benchmark_timer_start();
 		for (j = 0; j < n; j++)
 		{
@@ -344,7 +411,7 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 			j_db_entry_unref(entry[j]);
 			j_db_selector_unref(selector[j]);
 		}
-		elapsed_delete += j_benchmark_timer_elapsed();
+		elapsed_entry_delete += j_benchmark_timer_elapsed();
 		ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
 		CHECK_ERROR(!ret);
 		ret = j_batch_execute(batch);
@@ -352,14 +419,20 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 		j_db_schema_unref(schema);
 	}
 	benchmark_db_entry_insert_executed = g_new(BenchmarkResult, 1);
-	benchmark_db_entry_insert_executed->elapsed_time = elapsed_insert;
+	benchmark_db_entry_insert_executed->elapsed_time = elapsed_entry_insert;
 	benchmark_db_entry_insert_executed->operations = n * m;
 	benchmark_db_entry_update_executed = g_new(BenchmarkResult, 1);
-	benchmark_db_entry_update_executed->elapsed_time = elapsed_update;
+	benchmark_db_entry_update_executed->elapsed_time = elapsed_entry_update;
 	benchmark_db_entry_update_executed->operations = n * m2;
 	benchmark_db_entry_delete_executed = g_new(BenchmarkResult, 1);
-	benchmark_db_entry_delete_executed->elapsed_time = elapsed_delete;
+	benchmark_db_entry_delete_executed->elapsed_time = elapsed_entry_delete;
 	benchmark_db_entry_delete_executed->operations = n * m;
+	benchmark_db_iterator_single_executed = g_new(BenchmarkResult, 1);
+	benchmark_db_iterator_single_executed->elapsed_time = elapsed_iterator_single;
+	benchmark_db_iterator_single_executed->operations = n * m3;
+	benchmark_db_iterator_all_executed = g_new(BenchmarkResult, 1);
+	benchmark_db_iterator_all_executed->elapsed_time = elapsed_iterator_all;
+	benchmark_db_iterator_all_executed->operations = n * m4;
 	result->elapsed_time = benchmark_db_entry_insert_executed->elapsed_time;
 	result->operations = benchmark_db_entry_insert_executed->operations;
 	g_free(entry);
@@ -416,6 +489,28 @@ static void
 benchmark_db_entry_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_db_entry_delete(result, TRUE);
+}
+static void
+benchmark_db_iterator_single(BenchmarkResult* result)
+{
+	BenchmarkResult b;
+	if (!benchmark_db_iterator_single_executed)
+	{
+		_benchmark_db_entry_insert(&b, TRUE);
+	}
+	result->elapsed_time = benchmark_db_iterator_single_executed->elapsed_time;
+	result->operations = benchmark_db_iterator_single_executed->operations;
+}
+static void
+benchmark_db_iterator_all(BenchmarkResult* result)
+{
+	BenchmarkResult b;
+	if (!benchmark_db_iterator_all_executed)
+	{
+		_benchmark_db_entry_insert(&b, TRUE);
+	}
+	result->elapsed_time = benchmark_db_iterator_all_executed->elapsed_time;
+	result->operations = benchmark_db_iterator_all_executed->operations;
 }
 void
 benchmark_db_entry(gdouble _target_time, guint _n)
@@ -489,12 +584,20 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			// j_db_entry_delete 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/delete-batch", n, n2);
 			j_benchmark_run(testname, benchmark_db_entry_delete_batch);
+			sprintf(testname, "/db/%d/%d/iteartor/single", n, n2);
+			j_benchmark_run(testname, benchmark_db_iterator_single);
+			sprintf(testname, "/db/%d/%d/iteartor/all", n, n2);
+			j_benchmark_run(testname, benchmark_db_iterator_all);
 			g_free(benchmark_db_entry_insert_executed);
 			benchmark_db_entry_insert_executed = NULL;
 			g_free(benchmark_db_entry_update_executed);
 			benchmark_db_entry_update_executed = NULL;
 			g_free(benchmark_db_entry_delete_executed);
 			benchmark_db_entry_delete_executed = NULL;
+			g_free(benchmark_db_iterator_single_executed);
+			benchmark_db_iterator_single_executed = NULL;
+			g_free(benchmark_db_iterator_all_executed);
+			benchmark_db_iterator_all_executed = NULL;
 		}
 	}
 }
