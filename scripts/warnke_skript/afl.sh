@@ -86,6 +86,7 @@ function julea_run(){
 		export AFL_HARDEN=1
 		export PATH=~/afl:$PATH
 		export AFL_SKIP_CPUFREQ=1
+		export J_TRACE=debug
 		mkdir -p ${afl_path}/cov/fuzzer${index}/src/julea/
 		cp -r build-${name} ${afl_path}/cov/fuzzer${index}/src/julea/
 		for (( i=0; i < ${servercount}; i++ ))

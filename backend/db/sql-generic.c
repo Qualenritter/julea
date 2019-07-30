@@ -211,11 +211,15 @@ deleteCachePrepared(gchar const* namespace, gchar const* name)
 	JSqlCacheNames* cacheNames = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (!cacheNamespaces)
-		return;
+		goto _error;
 	cacheNames = g_hash_table_lookup(cacheNamespaces->namespaces, namespace);
 	if (!cacheNames)
-		return;
+		goto _error;
 	g_hash_table_remove(cacheNames->names, name);
+	j_trace_leave(G_STRFUNC);
+	return;
+_error:
+	j_trace_leave(G_STRFUNC);
 }
 static gboolean
 init_sql(void)

@@ -17,6 +17,7 @@ mkdir -p ${basepath}
 	export G_DEBUG=resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
+	export J_TRACE=debug
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
@@ -31,5 +32,6 @@ mkdir -p ${basepath}
 	export G_DEBUG=resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
+	export J_TRACE=debug
 	./scripts/test.sh
 )

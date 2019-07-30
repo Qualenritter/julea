@@ -30,6 +30,7 @@ rm -rf /mnt2/julea/*
 (
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	export J_TRACE=debug
 	./build-gcc-benchmark/tools/julea-config --user \
 		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
 		  --db-servers="$(hostname)" \
@@ -41,6 +42,7 @@ mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 (
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	export J_TRACE=debug
 	./build-gcc-benchmark/tools/julea-config --user \
 		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
 		  --db-servers="$(hostname)" \
@@ -66,6 +68,7 @@ sleep 2
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
+	export J_TRACE=debug
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x 2>&1
@@ -89,6 +92,7 @@ sleep 2
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
+	export J_TRACE=debug
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../log/x 2>&1
@@ -108,6 +112,7 @@ sleep 2
 	cd benchmark_values/debug
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
+	export J_TRACE=debug
 	../../build-gcc-benchmark-debug/benchmark/julea-benchmark
 )
 sleep 2

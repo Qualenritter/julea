@@ -25,6 +25,8 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 
+#include <stdlib.h>
+
 #ifdef HAVE_OTF
 #include <otf.h>
 #endif
@@ -39,6 +41,12 @@
  *
  * @{
  **/
+
+struct JTraceStack
+{
+	char* name;
+};
+typedef struct JTraceStack JTraceStack;
 
 /**
  * A trace.
@@ -62,6 +70,12 @@ struct JTrace
 	 **/
 	guint function_depth;
 
+	/**
+	 * Function stack. Index 0 is the topmost function, Index stack->len is the current function
+	 * Elements have type JTraceStack
+	 **/
+	GArray* stack;
+
 #ifdef HAVE_OTF
 	/**
 	 * OTF-specific structure.
@@ -72,8 +86,7 @@ struct JTrace
 		 * Thread's process ID.
 		 **/
 		guint32 process_id;
-	}
-	otf;
+	} otf;
 #endif
 
 	/**
@@ -87,9 +100,10 @@ struct JTrace
  */
 enum JTraceFlags
 {
-	J_TRACE_OFF     = 0,
-	J_TRACE_ECHO    = 1 << 0,
-	J_TRACE_OTF     = 1 << 1
+	J_TRACE_OFF = 0,
+	J_TRACE_ECHO = 1 << 0,
+	J_TRACE_OTF = 1 << 1,
+	J_TRACE_DEBUG = 1 << 2,
 };
 
 typedef enum JTraceFlags JTraceFlags;
@@ -117,9 +131,8 @@ static GHashTable* otf_counter_table = NULL;
 G_LOCK_DEFINE_STATIC(j_trace_otf);
 #endif
 
-static
-void
-j_trace_thread_default_free (gpointer data)
+static void
+j_trace_thread_default_free(gpointer data)
 {
 	JTrace* trace = data;
 
@@ -141,9 +154,8 @@ G_LOCK_DEFINE_STATIC(j_trace_echo);
  * \param trace     A trace.
  * \param timestamp A timestamp.
  **/
-static
-void
-j_trace_echo_printerr (JTrace* trace, guint64 timestamp)
+static void
+j_trace_echo_printerr(JTrace* trace, guint64 timestamp)
 {
 	guint i;
 
@@ -168,9 +180,8 @@ j_trace_echo_printerr (JTrace* trace, guint64 timestamp)
  *
  * \return A time stamp in microseconds.
  **/
-static
-guint64
-j_trace_get_time (void)
+static guint64
+j_trace_get_time(void)
 {
 	GTimeVal timeval;
 	guint64 timestamp;
@@ -193,33 +204,32 @@ j_trace_get_time (void)
  *
  * \return A name.
  **/
-static
-gchar const*
-j_trace_file_operation_name (JTraceFileOperation op)
+static gchar const*
+j_trace_file_operation_name(JTraceFileOperation op)
 {
 	switch (op)
 	{
-		case J_TRACE_FILE_CLOSE:
-			return "close";
-		case J_TRACE_FILE_CREATE:
-			return "create";
-		case J_TRACE_FILE_DELETE:
-			return "delete";
-		case J_TRACE_FILE_OPEN:
-			return "open";
-		case J_TRACE_FILE_READ:
-			return "read";
-		case J_TRACE_FILE_SEEK:
-			return "seek";
-		case J_TRACE_FILE_STATUS:
-			return "status";
-		case J_TRACE_FILE_SYNC:
-			return "sync";
-		case J_TRACE_FILE_WRITE:
-			return "write";
-		default:
-			g_warn_if_reached();
-			return NULL;
+	case J_TRACE_FILE_CLOSE:
+		return "close";
+	case J_TRACE_FILE_CREATE:
+		return "create";
+	case J_TRACE_FILE_DELETE:
+		return "delete";
+	case J_TRACE_FILE_OPEN:
+		return "open";
+	case J_TRACE_FILE_READ:
+		return "read";
+	case J_TRACE_FILE_SEEK:
+		return "seek";
+	case J_TRACE_FILE_STATUS:
+		return "status";
+	case J_TRACE_FILE_SYNC:
+		return "sync";
+	case J_TRACE_FILE_WRITE:
+		return "write";
+	default:
+		g_warn_if_reached();
+		return NULL;
 	}
 }
 
@@ -232,9 +242,8 @@ j_trace_file_operation_name (JTraceFileOperation op)
  *
  * \return TRUE if the function should be traced, FALSE otherwise.
  **/
-static
-gboolean
-j_trace_function_check (gchar const* name)
+static gboolean
+j_trace_function_check(gchar const* name)
 {
 	if (j_trace_function_patterns != NULL)
 	{
@@ -268,7 +277,7 @@ j_trace_function_check (gchar const* name)
  * \param name A trace name.
  **/
 void
-j_trace_init (gchar const* name)
+j_trace_init(gchar const* name)
 {
 	gchar const* j_trace;
 	gchar const* j_trace_function;
@@ -298,6 +307,10 @@ j_trace_init (gchar const* name)
 			else if (g_strcmp0(p[i], "otf") == 0)
 			{
 				j_trace_flags |= J_TRACE_OTF;
+			}
+			else if (g_strcmp0(p[i], "debug") == 0)
+			{
+				j_trace_flags |= J_TRACE_DEBUG;
 			}
 		}
 	}
@@ -356,7 +369,7 @@ j_trace_init (gchar const* name)
  * \endcode
  **/
 void
-j_trace_fini (void)
+j_trace_fini(void)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -406,7 +419,7 @@ j_trace_fini (void)
  * \return The thread-default trace.
  **/
 JTrace*
-j_trace_get_thread_default (void)
+j_trace_get_thread_default(void)
 {
 	JTrace* trace;
 
@@ -432,7 +445,7 @@ j_trace_get_thread_default (void)
  * \return A new trace. Should be freed with j_trace_unref().
  **/
 JTrace*
-j_trace_new (GThread* thread)
+j_trace_new(GThread* thread)
 {
 	JTrace* trace;
 
@@ -455,6 +468,11 @@ j_trace_new (GThread* thread)
 		/* FIXME use name? */
 		thread_id = g_atomic_int_add(&j_trace_thread_id, 1);
 		trace->thread_name = g_strdup_printf("Thread %d", thread_id);
+	}
+
+	if (j_trace_flags & J_TRACE_DEBUG)
+	{
+		trace->stack = g_array_new(FALSE, FALSE, sizeof(JTraceStack));
 	}
 
 #ifdef HAVE_OTF
@@ -486,7 +504,7 @@ j_trace_new (GThread* thread)
  * \return #trace.
  **/
 JTrace*
-j_trace_ref (JTrace* trace)
+j_trace_ref(JTrace* trace)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -510,7 +528,7 @@ j_trace_ref (JTrace* trace)
  * \param trace A trace.
  **/
 void
-j_trace_unref (JTrace* trace)
+j_trace_unref(JTrace* trace)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -521,6 +539,18 @@ j_trace_unref (JTrace* trace)
 
 	if (g_atomic_int_dec_and_test(&(trace->ref_count)))
 	{
+		if (j_trace_flags & J_TRACE_DEBUG)
+		{
+			guint i;
+			if (trace->stack->len != 0)
+			{
+				for(i=0;i<trace->stack->len;i++){
+					g_debug("trace error: did not leave function (%s)", g_array_index(trace->stack, JTraceStack, i).name);
+				}
+				abort();
+			}
+			g_array_unref(trace->stack);
+		}
 #ifdef HAVE_OTF
 		if (j_trace_flags & J_TRACE_OTF)
 		{
@@ -543,7 +573,7 @@ j_trace_unref (JTrace* trace)
  * \param name  A function name.
  **/
 void
-j_trace_enter (gchar const* name, gchar const* format, ...)
+j_trace_enter(gchar const* name, gchar const* format, ...)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -588,6 +618,13 @@ j_trace_enter (gchar const* name, gchar const* format, ...)
 		G_UNLOCK(j_trace_echo);
 	}
 
+	if (j_trace_flags & J_TRACE_DEBUG)
+	{
+		struct JTraceStack stack;
+		stack.name = g_strdup(name);
+		g_array_append_val(trace->stack, stack);
+	}
+
 #ifdef HAVE_OTF
 	if (j_trace_flags & J_TRACE_OTF)
 	{
@@ -628,7 +665,7 @@ j_trace_enter (gchar const* name, gchar const* format, ...)
  * \param name  A function name.
  **/
 void
-j_trace_leave (gchar const* name)
+j_trace_leave(gchar const* name)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -664,6 +701,24 @@ j_trace_leave (gchar const* name)
 		G_UNLOCK(j_trace_echo);
 	}
 
+	if (j_trace_flags & J_TRACE_DEBUG)
+	{
+		char* name_enter;
+		if (trace->stack->len == 0)
+		{
+			g_debug("trace error: nothing entered, but leaving (%s)", name);
+			abort();
+		}
+		name_enter = g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).name;
+		if (g_strcmp0(name_enter, name))
+		{
+			g_debug("trace error: entered (%s), but leaved (%s)", name_enter, name);
+			abort();
+		}
+		g_free(name_enter);
+		g_array_set_size(trace->stack, trace->stack->len - 1);
+	}
+
 #ifdef HAVE_OTF
 	if (j_trace_flags & J_TRACE_OTF)
 	{
@@ -694,7 +749,7 @@ j_trace_leave (gchar const* name)
  * \param op    A file operation.
  **/
 void
-j_trace_file_begin (gchar const* path, JTraceFileOperation op)
+j_trace_file_begin(gchar const* path, JTraceFileOperation op)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -759,7 +814,7 @@ j_trace_file_begin (gchar const* path, JTraceFileOperation op)
  * \param offset An offset.
  **/
 void
-j_trace_file_end (gchar const* path, JTraceFileOperation op, guint64 length, guint64 offset)
+j_trace_file_end(gchar const* path, JTraceFileOperation op, guint64 length, guint64 offset)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -796,37 +851,37 @@ j_trace_file_end (gchar const* path, JTraceFileOperation op, guint64 length, gui
 
 		switch (op)
 		{
-			case J_TRACE_FILE_CLOSE:
-				otf_op = OTF_FILEOP_CLOSE;
-				break;
-			case J_TRACE_FILE_CREATE:
-				otf_op = OTF_FILEOP_OTHER;
-				break;
-			case J_TRACE_FILE_DELETE:
-				otf_op = OTF_FILEOP_UNLINK;
-				break;
-			case J_TRACE_FILE_OPEN:
-				otf_op = OTF_FILEOP_OPEN;
-				break;
-			case J_TRACE_FILE_READ:
-				otf_op = OTF_FILEOP_READ;
-				break;
-			case J_TRACE_FILE_SEEK:
-				otf_op = OTF_FILEOP_SEEK;
-				break;
-			case J_TRACE_FILE_STATUS:
-				otf_op = OTF_FILEOP_OTHER;
-				break;
-			case J_TRACE_FILE_SYNC:
-				otf_op = OTF_FILEOP_SYNC;
-				break;
-			case J_TRACE_FILE_WRITE:
-				otf_op = OTF_FILEOP_WRITE;
-				break;
-			default:
-				otf_op = OTF_FILEOP_OTHER;
-				g_warn_if_reached();
-				break;
+		case J_TRACE_FILE_CLOSE:
+			otf_op = OTF_FILEOP_CLOSE;
+			break;
+		case J_TRACE_FILE_CREATE:
+			otf_op = OTF_FILEOP_OTHER;
+			break;
+		case J_TRACE_FILE_DELETE:
+			otf_op = OTF_FILEOP_UNLINK;
+			break;
+		case J_TRACE_FILE_OPEN:
+			otf_op = OTF_FILEOP_OPEN;
+			break;
+		case J_TRACE_FILE_READ:
+			otf_op = OTF_FILEOP_READ;
+			break;
+		case J_TRACE_FILE_SEEK:
+			otf_op = OTF_FILEOP_SEEK;
+			break;
+		case J_TRACE_FILE_STATUS:
+			otf_op = OTF_FILEOP_OTHER;
+			break;
+		case J_TRACE_FILE_SYNC:
+			otf_op = OTF_FILEOP_SYNC;
+			break;
+		case J_TRACE_FILE_WRITE:
+			otf_op = OTF_FILEOP_WRITE;
+			break;
+		default:
+			otf_op = OTF_FILEOP_OTHER;
+			g_warn_if_reached();
+			break;
 		}
 
 		G_LOCK(j_trace_otf);
@@ -853,7 +908,7 @@ j_trace_file_end (gchar const* path, JTraceFileOperation op, guint64 length, gui
  * \param counter_value A counter value.
  **/
 void
-j_trace_counter (gchar const* name, guint64 counter_value)
+j_trace_counter(gchar const* name, guint64 counter_value)
 {
 	JTrace* trace;
 	guint64 timestamp;
