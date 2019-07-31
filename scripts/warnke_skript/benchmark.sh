@@ -68,7 +68,7 @@ sleep 2
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
-	export J_BENCHMARK_TARGET=0.0001;
+	export J_BENCHMARK_TARGET=0.001
 	export J_TRACE=timer
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
@@ -93,7 +93,7 @@ sleep 2
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
-	export J_BENCHMARK_TARGET=0.0001;
+	export J_BENCHMARK_TARGET=0.001
 	export J_TRACE=timer
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
@@ -114,7 +114,7 @@ sleep 2
 	cd benchmark_values/debug
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	export J_BENCHMARK_TARGET=1;
+	export J_BENCHMARK_TARGET=1
 	export J_TRACE=timer
 	../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x3
 )
