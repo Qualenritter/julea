@@ -40,7 +40,7 @@ j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 	JDBType_value val;
 	JDBSelector* selector = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (mode >= _J_DB_SELECTOR_MODE_COUNT)
+	if (G_UNLIKELY(mode >= _J_DB_SELECTOR_MODE_COUNT))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_MODE_INVALID, "mode invalid");
 		goto _error;
@@ -51,11 +51,15 @@ j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 	selector->bson_count = 0;
 	bson_init(&selector->bson);
 	selector->schema = j_db_schema_ref(schema, error);
-	if (!selector->schema)
+	if (G_UNLIKELY(!selector->schema))
+	{
 		goto _error;
+	}
 	val.val_uint32 = mode;
-	if (!j_bson_append_value(&selector->bson, "_mode", J_DB_TYPE_UINT32, &val, error))
+	if (G_UNLIKELY(!j_bson_append_value(&selector->bson, "_mode", J_DB_TYPE_UINT32, &val, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return selector;
 _error:
@@ -67,7 +71,7 @@ JDBSelector*
 j_db_selector_ref(JDBSelector* selector, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!selector)
+	if (G_UNLIKELY(!selector))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
 		goto _error;
@@ -99,32 +103,40 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	JDBType type;
 	JDBType_value val;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!selector)
+	if (G_UNLIKELY(!selector))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
 		goto _error;
 	}
-	if (operator>= _J_DB_SELECTOR_OPERATOR_COUNT)
+	if (G_UNLIKELY(operator>= _J_DB_SELECTOR_OPERATOR_COUNT))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_OPERATOR_INVALID, "operator invalid");
 		goto _error;
 	}
-	if (selector->bson_count + 1 > 500)
+	if (G_UNLIKELY(selector->bson_count + 1 > 500))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
 		goto _error;
 	}
-	if (!j_db_schema_get_field(selector->schema, name, &type, error))
+	if (G_UNLIKELY(!j_db_schema_get_field(selector->schema, name, &type, error)))
+	{
 		goto _error;
+	}
 	sprintf(buf, "%d", selector->bson_count);
-	if (!j_bson_append_document_begin(&selector->bson, buf, &bson, error))
+	if (G_UNLIKELY(!j_bson_append_document_begin(&selector->bson, buf, &bson, error)))
+	{
 		goto _error;
+	}
 	val.val_string = name;
-	if (!j_bson_append_value(&bson, "_name", J_DB_TYPE_STRING, &val, error))
+	if (G_UNLIKELY(!j_bson_append_value(&bson, "_name", J_DB_TYPE_STRING, &val, error)))
+	{
 		goto _error;
+	}
 	val.val_uint32 = operator;
-	if (!j_bson_append_value(&bson, "_operator", J_DB_TYPE_UINT32, &val, error))
+	if (G_UNLIKELY(!j_bson_append_value(&bson, "_operator", J_DB_TYPE_UINT32, &val, error)))
+	{
 		goto _error;
+	}
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
@@ -155,10 +167,14 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}
-	if (!j_bson_append_value(&bson, "_value", type, &val, error))
+	if (G_UNLIKELY(!j_bson_append_value(&bson, "_value", type, &val, error)))
+	{
 		goto _error;
-	if (!j_bson_append_document_end(&selector->bson, &bson, error))
+	}
+	if (G_UNLIKELY(!j_bson_append_document_end(&selector->bson, &bson, error)))
+	{
 		goto _error;
+	}
 	selector->bson_count++;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
@@ -171,29 +187,31 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 {
 	char buf[20];
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!selector || !sub_selector)
+	if (G_UNLIKELY(!selector || !sub_selector))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
 		goto _error;
 	}
-	if (selector == sub_selector)
+	if (G_UNLIKELY(selector == sub_selector))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_MUST_NOT_EQUAL, "selector must not equal subselector");
 		goto _error;
 	}
-	if (!sub_selector->bson_count)
+	if (G_UNLIKELY(!sub_selector->bson_count))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_EMPTY, "selector must not be emoty");
 		goto _error;
 	}
-	if (selector->bson_count + sub_selector->bson_count > 500)
+	if (G_UNLIKELY(selector->bson_count + sub_selector->bson_count > 500))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
 		goto _error;
 	}
 	sprintf(buf, "%d", selector->bson_count);
-	if (!j_bson_append_document(&selector->bson, buf, &sub_selector->bson, error))
+	if (G_UNLIKELY(!j_bson_append_document(&selector->bson, buf, &sub_selector->bson, error)))
+	{
 		goto _error;
+	}
 	selector->bson_count += sub_selector->bson_count;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;

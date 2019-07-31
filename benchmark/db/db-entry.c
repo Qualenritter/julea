@@ -517,6 +517,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 {
 	guint i;
 	char testname[500];
+	char prefix[50];
 	target_time = _target_time;
 	n = _n;
 	{
@@ -542,6 +543,8 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 		sprintf(testname, "/db/%d/entry/set_field", n);
 		j_benchmark_run(testname, benchmark_db_entry_set_field);
 	}
+	sprintf(prefix, "n=%d", n);
+	j_trace_flush(prefix);
 	for (i = 0; i < 3; i++)
 	{
 		switch (i)
@@ -603,5 +606,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
+		sprintf(prefix, "n=%d#n2=%d", n, n2);
+		j_trace_flush(prefix);
 	}
 }

@@ -291,7 +291,7 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	JOperation* op;
 	JBackendOperation* data;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!iterator)
+	if (G_UNLIKELY(!iterator))
 	{
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NULL, "iterator not set");
 		goto _error;
@@ -329,24 +329,30 @@ j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 	memset(&zerobson, 0, sizeof(bson_t));
 	if (!helper->initialized)
 	{
-		if (!memcmp(&helper->bson, &zerobson, sizeof(bson_t)))
+		if (G_UNLIKELY(!memcmp(&helper->bson, &zerobson, sizeof(bson_t))))
 		{
 			g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_INVALID, "iterator invalid");
 			goto error2;
 		}
-		if (!j_bson_iter_init(&helper->iter, &helper->bson, error))
+		if (G_UNLIKELY(!j_bson_iter_init(&helper->iter, &helper->bson, error)))
+		{
 			goto _error;
+		}
 		helper->initialized = TRUE;
 	}
-	if (!j_bson_iter_next(&helper->iter, &has_next, error))
+	if (G_UNLIKELY(!j_bson_iter_next(&helper->iter, &has_next, error)))
+	{
 		goto _error;
-	if (!has_next)
+	}
+	if (G_UNLIKELY(!has_next))
 	{
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no more elements");
 		goto _error;
 	}
-	if (!j_bson_iter_copy_document(&helper->iter, metadata, error))
+	if (G_UNLIKELY(!j_bson_iter_copy_document(&helper->iter, metadata, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:

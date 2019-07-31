@@ -39,17 +39,17 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 {
 	JDBEntry* entry = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!schema)
+	if (G_UNLIKELY(!schema))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
 		goto _error;
 	}
 	entry = g_slice_new(JDBEntry);
-	if (!j_bson_init(&entry->bson, error))
+	if (G_UNLIKELY(!j_bson_init(&entry->bson, error)))
 		goto _error;
 	entry->ref_count = 1;
 	entry->schema = j_db_schema_ref(schema, error);
-	if (!entry->schema)
+	if (G_UNLIKELY(!entry->schema))
 		goto _error;
 	j_trace_leave(G_STRFUNC);
 	return entry;
@@ -62,7 +62,7 @@ JDBEntry*
 j_db_entry_ref(JDBEntry* entry, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!entry)
+	if (G_UNLIKELY(!entry))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
 		goto _error;
@@ -93,21 +93,25 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 	gboolean ret;
 	JDBType_value val;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!entry)
+	if (G_UNLIKELY(!entry))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
 		goto _error;
 	}
-	if (!name)
+	if (G_UNLIKELY(!name))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
 		goto _error;
 	}
-	if (!j_db_schema_get_field(entry->schema, name, &type, error))
+	if (G_UNLIKELY(!j_db_schema_get_field(entry->schema, name, &type, error)))
+	{
 		goto _error;
-	if (!j_bson_has_field(&entry->bson, name, &ret, error))
+	}
+	if (G_UNLIKELY(!j_bson_has_field(&entry->bson, name, &ret, error)))
+	{
 		goto _error;
-	if (ret)
+	}
+	if (G_UNLIKELY(ret))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_ALREADY_SET, "variable value must not be set more than once");
 		goto _error;
@@ -142,8 +146,10 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}
-	if (!j_bson_append_value(&entry->bson, name, type, &val, error))
+	if (G_UNLIKELY(!j_bson_append_value(&entry->bson, name, type, &val, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -154,18 +160,20 @@ gboolean
 j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!entry)
+	if (G_UNLIKELY(!entry))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
 		goto _error;
 	}
-	if (!batch)
+	if (G_UNLIKELY(!batch))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
 		goto _error;
 	}
-	if (!j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error))
+	if (G_UNLIKELY(!j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -177,29 +185,31 @@ j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 {
 	bson_t* bson;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!entry)
+	if (G_UNLIKELY(!entry))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
 		goto _error;
 	}
-	if (!batch)
+	if (G_UNLIKELY(!batch))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
 		goto _error;
 	}
-	if (!selector)
+	if (G_UNLIKELY(!selector))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
 		goto _error;
 	}
 	bson = j_db_selector_get_bson(selector);
-	if (!bson)
+	if (G_UNLIKELY(!bson))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
 		goto _error;
 	}
-	if (!j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error))
+	if (G_UNLIKELY(!j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -210,17 +220,17 @@ gboolean
 j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!entry)
+	if (G_UNLIKELY(!entry))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
 		goto _error;
 	}
-	if (!batch)
+	if (G_UNLIKELY(!batch))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
 		goto _error;
 	}
-	if (!j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error))
+	if (G_UNLIKELY(!j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error)))
 		goto _error;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;

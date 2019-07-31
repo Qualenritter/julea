@@ -42,20 +42,24 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	JBatch* batch;
 	JDBIterator* iterator = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!schema)
+	if (G_UNLIKELY(!schema))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
 		goto _error;
 	}
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
-	if (!iterator->schema)
+	if (G_UNLIKELY(!iterator->schema))
+	{
 		goto _error;
+	}
 	if (selector)
 	{
 		iterator->selector = j_db_selector_ref(selector, error);
-		if (!iterator->selector)
+		if (G_UNLIKELY(!iterator->selector))
+		{
 			goto _error;
+		}
 	}
 	else
 		iterator->selector = NULL;
@@ -67,8 +71,10 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	ret2 = j_db_internal_query(schema->namespace, schema->name, j_db_selector_get_bson(selector), &iterator->iterator, batch, error);
 	ret = ret2 && j_batch_execute(batch);
 	j_batch_unref(batch);
-	if (!ret)
+	if (G_UNLIKELY(!ret))
+	{
 		goto _error;
+	}
 	iterator->valid = TRUE;
 	j_trace_leave(G_STRFUNC);
 	return iterator;
@@ -88,7 +94,7 @@ JDBIterator*
 j_db_iterator_ref(JDBIterator* iterator, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!iterator)
+	if (G_UNLIKELY(!iterator))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
 		goto _error;
@@ -120,20 +126,24 @@ gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!iterator)
+	if (G_UNLIKELY(!iterator))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
 		goto _error;
 	}
-	if (!iterator->valid)
+	if (G_UNLIKELY(!iterator->valid))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "iterator no more elements");
 		goto _error;
 	}
 	if (iterator->bson_valid)
+	{
 		j_bson_destroy(&iterator->bson);
-	if (!j_db_internal_iterate(iterator->iterator, &iterator->bson, error))
+	}
+	if (G_UNLIKELY(!j_db_internal_iterate(iterator->iterator, &iterator->bson, error)))
+	{
 		goto _error2;
+	}
 	iterator->bson_valid = TRUE;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
@@ -150,44 +160,52 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	JDBType_value val;
 	bson_iter_t iter;
 	j_trace_enter(G_STRFUNC, NULL);
-	if (!iterator)
+	if (G_UNLIKELY(!iterator))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
 		goto _error;
 	}
-	if (!iterator->bson_valid)
+	if (G_UNLIKELY(!iterator->bson_valid))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NOT_INITIALIZED, "iterator must be initialized");
 		goto _error;
 	}
-	if (!name)
+	if (G_UNLIKELY(!name))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
 		goto _error;
 	}
-	if (!type)
+	if (G_UNLIKELY(!type))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_NULL, "type must not be NULL");
 		goto _error;
 	}
-	if (!value)
+	if (G_UNLIKELY(!value))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VALUE_NULL, "value must not be NULL");
 		goto _error;
 	}
-	if (!length)
+	if (G_UNLIKELY(!length))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_LENGTH_NULL, "length must not be NULL");
 		goto _error;
 	}
-	if (!j_db_schema_get_field(iterator->schema, name, type, error))
+	if (G_UNLIKELY(!j_db_schema_get_field(iterator->schema, name, type, error)))
+	{
 		goto _error;
-	if (!j_bson_iter_init(&iter, &iterator->bson, error))
+	}
+	if (G_UNLIKELY(!j_bson_iter_init(&iter, &iterator->bson, error)))
+	{
 		goto _error;
-	if (!j_bson_iter_find(&iter, name, error))
+	}
+	if (G_UNLIKELY(!j_bson_iter_find(&iter, name, error)))
+	{
 		goto _error;
-	if (!j_bson_iter_value(&iter, *type, &val, error))
+	}
+	if (G_UNLIKELY(!j_bson_iter_value(&iter, *type, &val, error)))
+	{
 		goto _error;
+	}
 	switch (*type)
 	{
 	case J_DB_TYPE_SINT32:

@@ -48,6 +48,13 @@ struct JTraceStack
 };
 typedef struct JTraceStack JTraceStack;
 
+struct JTraceTimer
+{
+	GTimer* timer;
+	double elapsed;
+};
+typedef struct JTraceTimer JTraceTimer;
+
 /**
  * A trace.
  * Usually one trace per thread is used.
@@ -75,6 +82,11 @@ struct JTrace
 	 * Elements have Type JTraceStack
 	 **/
 	GArray* stack;
+
+	/**
+	 * key represents the full function-stack, value is of type JTraceTimer
+	 **/
+	GHashTable* timer;
 
 #ifdef HAVE_OTF
 	/**
@@ -104,6 +116,7 @@ enum JTraceFlags
 	J_TRACE_ECHO = 1 << 0,
 	J_TRACE_OTF = 1 << 1,
 	J_TRACE_DEBUG = 1 << 2,
+	J_TRACE_TIMER = 1 << 3
 };
 
 typedef enum JTraceFlags JTraceFlags;
@@ -130,6 +143,13 @@ static GHashTable* otf_counter_table = NULL;
 
 G_LOCK_DEFINE_STATIC(j_trace_otf);
 #endif
+
+static void
+j_trace_timer_free_func(gpointer data)
+{
+	JTraceTimer* timer = data;
+	g_slice_free(JTraceTimer, timer);
+}
 
 static void
 j_trace_thread_default_free(gpointer data)
@@ -312,6 +332,11 @@ j_trace_init(gchar const* name)
 			{
 				j_trace_flags |= J_TRACE_DEBUG;
 			}
+			else if (g_strcmp0(p[i], "timer") == 0)
+			{
+				j_trace_flags |= J_TRACE_DEBUG;
+				j_trace_flags |= J_TRACE_TIMER;
+			}
 		}
 	}
 
@@ -375,6 +400,8 @@ j_trace_fini(void)
 	{
 		return;
 	}
+
+	j_trace_flush("");
 
 #ifdef HAVE_OTF
 	if (j_trace_flags & J_TRACE_OTF)
@@ -475,6 +502,11 @@ j_trace_new(GThread* thread)
 		trace->stack = g_array_new(FALSE, FALSE, sizeof(JTraceStack));
 	}
 
+	if (j_trace_flags & J_TRACE_TIMER)
+	{
+		trace->timer = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, j_trace_timer_free_func);
+	}
+
 #ifdef HAVE_OTF
 	if (j_trace_flags & J_TRACE_OTF)
 	{
@@ -544,12 +576,18 @@ j_trace_unref(JTrace* trace)
 			guint i;
 			if (trace->stack->len != 0)
 			{
-				for(i=0;i<trace->stack->len;i++){
-					g_debug("trace error: did not leave function (%s)", g_array_index(trace->stack, JTraceStack, i).name);
+				for (i = 0; i < trace->stack->len; i++)
+				{
+					g_debug("trace-error: did not leave function (%s)", g_array_index(trace->stack, JTraceStack, i).name);
 				}
 				abort();
 			}
 			g_array_unref(trace->stack);
+		}
+
+		if (j_trace_flags & J_TRACE_TIMER)
+		{
+			g_hash_table_unref(trace->timer);
 		}
 #ifdef HAVE_OTF
 		if (j_trace_flags & J_TRACE_OTF)
@@ -623,6 +661,32 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 		struct JTraceStack stack;
 		stack.name = g_strdup(name);
 		g_array_append_val(trace->stack, stack);
+	}
+
+	if (j_trace_flags & J_TRACE_TIMER)
+	{
+		guint i;
+		GString* key;
+		struct JTraceTimer* timer;
+		key = g_string_new("main");
+		for (i = 0; i < trace->stack->len; i++)
+		{
+			g_string_append(key, "-");
+			g_string_append(key, g_array_index(trace->stack, JTraceStack, i).name);
+		}
+		timer = g_hash_table_lookup(trace->timer, key->str);
+		if (timer)
+		{
+			g_string_free(key, TRUE);
+		}
+		else
+		{
+			timer = g_slice_new(JTraceTimer);
+			timer->elapsed = 0;
+			g_hash_table_insert(trace->timer, key->str, timer);
+			g_string_free(key, FALSE);
+		}
+		timer->timer = g_timer_new();
 	}
 
 #ifdef HAVE_OTF
@@ -701,18 +765,35 @@ j_trace_leave(gchar const* name)
 		G_UNLOCK(j_trace_echo);
 	}
 
+	if (j_trace_flags & J_TRACE_TIMER)
+	{
+		guint i;
+		GString* key;
+		struct JTraceTimer* timer;
+		key = g_string_new("main");
+		for (i = 0; i < trace->stack->len; i++)
+		{
+			g_string_append(key, "-");
+			g_string_append(key, g_array_index(trace->stack, JTraceStack, i).name);
+		}
+		timer = g_hash_table_lookup(trace->timer, key->str);
+		timer->elapsed += g_timer_elapsed(timer->timer, NULL);
+		g_timer_destroy(timer->timer);
+		g_string_free(key, TRUE);
+	}
+
 	if (j_trace_flags & J_TRACE_DEBUG)
 	{
 		char* name_enter;
 		if (trace->stack->len == 0)
 		{
-			g_debug("trace error: nothing entered, but leaving (%s)", name);
+			g_debug("trace-error: nothing entered, but leaving (%s)", name);
 			abort();
 		}
 		name_enter = g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).name;
 		if (g_strcmp0(name_enter, name))
 		{
-			g_debug("trace error: entered (%s), but leaved (%s)", name_enter, name);
+			g_debug("trace-error: entered (%s), but leaved (%s)", name_enter, name);
 			abort();
 		}
 		g_free(name_enter);
@@ -736,6 +817,37 @@ j_trace_leave(gchar const* name)
 		OTF_Writer_writeLeave(otf_writer, timestamp, function_id, trace->otf.process_id, 0);
 	}
 #endif
+}
+
+/**
+ * flush all measured data to file
+ **/
+void
+j_trace_flush(const char* prefix)
+{
+	JTrace* trace;
+	GHashTableIter iter;
+	gpointer key;
+	gpointer value;
+	if (j_trace_flags == J_TRACE_OFF)
+	{
+		return;
+	}
+
+	trace = j_trace_get_thread_default();
+
+	if (j_trace_flags & J_TRACE_TIMER)
+	{
+		g_hash_table_iter_init(&iter, trace->timer);
+		while (g_hash_table_iter_next(&iter, &key, &value))
+		{
+			if (((JTraceTimer*)value)->elapsed > 0)
+			{
+				g_debug("trace-timer: %f, %s-%s", ((JTraceTimer*)value)->elapsed, prefix, (char*)key);
+				((JTraceTimer*)value)->elapsed = 0;
+			}
+		}
+	}
 }
 
 /**

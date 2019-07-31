@@ -22,7 +22,7 @@
 
 #include "db.h"
 #ifdef JULEA_DEBUG
-static gdouble target_time = 0.001;
+static gdouble target_time = 1;
 #else
 static gdouble target_time = 60;
 #endif
@@ -30,8 +30,11 @@ static gdouble target_time = 60;
 static void
 exec_tests(guint n)
 {
+	char prefix[50];
 	benchmark_db_schema(target_time, n);
 	benchmark_db_entry(target_time, n);
+	sprintf(prefix, "n=%d", n);
+	j_trace_flush(prefix);
 }
 static void
 exec_tree(guint depth, gfloat min, gfloat max)
