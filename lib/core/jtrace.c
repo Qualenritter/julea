@@ -42,18 +42,20 @@
  * @{
  **/
 
-struct JTraceStack
-{
-	char* name;
-};
-typedef struct JTraceStack JTraceStack;
-
 struct JTraceTimer
 {
 	GTimer* timer;
 	double elapsed;
+	double elapsed_child;
 };
 typedef struct JTraceTimer JTraceTimer;
+
+struct JTraceStack
+{
+	char* name;
+	JTraceTimer* timer; //this does NOT increase ref_count - due to the structure it is always just a 'quick' link, which is valid as long as required
+};
+typedef struct JTraceStack JTraceStack;
 
 /**
  * A trace.
@@ -683,10 +685,12 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 		{
 			timer = g_slice_new(JTraceTimer);
 			timer->elapsed = 0;
+			timer->elapsed_child = 0;
 			g_hash_table_insert(trace->timer, key->str, timer);
 			g_string_free(key, FALSE);
 		}
 		timer->timer = g_timer_new();
+		g_array_index(trace->stack, JTraceStack, i).timer = timer;
 	}
 
 #ifdef HAVE_OTF
@@ -767,19 +771,16 @@ j_trace_leave(gchar const* name)
 
 	if (j_trace_flags & J_TRACE_TIMER)
 	{
-		guint i;
-		GString* key;
 		struct JTraceTimer* timer;
-		key = g_string_new("main");
-		for (i = 0; i < trace->stack->len; i++)
-		{
-			g_string_append(key, "-");
-			g_string_append(key, g_array_index(trace->stack, JTraceStack, i).name);
-		}
-		timer = g_hash_table_lookup(trace->timer, key->str);
+		struct JTraceTimer* timer_parent;
+		timer = g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).timer;
 		timer->elapsed += g_timer_elapsed(timer->timer, NULL);
 		g_timer_destroy(timer->timer);
-		g_string_free(key, TRUE);
+		if (trace->stack->len > 1)
+		{
+			timer_parent = g_array_index(trace->stack, JTraceStack, trace->stack->len - 2).timer;
+			timer_parent->elapsed_child += timer->elapsed;
+		}
 	}
 
 	if (j_trace_flags & J_TRACE_DEBUG)
@@ -843,7 +844,7 @@ j_trace_flush(const char* prefix)
 		{
 			if (((JTraceTimer*)value)->elapsed > 0)
 			{
-				g_debug("trace-timer: %s, %f, %s", prefix,((JTraceTimer*)value)->elapsed, (char*)key);
+				g_debug("trace-timer: %s, %f, %f, %s", prefix, ((JTraceTimer*)value)->elapsed - ((JTraceTimer*)value)->elapsed_child, ((JTraceTimer*)value)->elapsed, (char*)key);
 				((JTraceTimer*)value)->elapsed = 0;
 			}
 		}
