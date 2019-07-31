@@ -53,10 +53,12 @@ benchmark_db_entry_ref(BenchmarkResult* result)
 	guint m = 0;
 	gdouble elapsed_ref = 0;
 	gdouble elapsed_unref = 0;
+	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_entry_ref_executed)
 	{
 		result->elapsed_time = benchmark_db_entry_ref_executed->elapsed_time;
 		result->operations = benchmark_db_entry_ref_executed->operations;
+		j_trace_leave(G_STRFUNC);
 		return;
 	}
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
@@ -92,17 +94,20 @@ benchmark_db_entry_ref(BenchmarkResult* result)
 	benchmark_db_entry_unref_executed->operations = n * m;
 	result->elapsed_time = benchmark_db_entry_ref_executed->elapsed_time;
 	result->operations = benchmark_db_entry_ref_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_unref(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_entry_unref_executed)
 	{
 		benchmark_db_entry_ref(&b);
 	}
 	result->elapsed_time = benchmark_db_entry_unref_executed->elapsed_time;
 	result->operations = benchmark_db_entry_unref_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_new(BenchmarkResult* result)
@@ -117,10 +122,12 @@ benchmark_db_entry_new(BenchmarkResult* result)
 	guint m = 0;
 	gdouble elapsed_new = 0;
 	gdouble elapsed_free = 0;
+	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_entry_new_executed)
 	{
 		result->elapsed_time = benchmark_db_entry_new_executed->elapsed_time;
 		result->operations = benchmark_db_entry_new_executed->operations;
+		j_trace_leave(G_STRFUNC);
 		return;
 	}
 	entry_array = g_new(JDBEntry*, batch_count);
@@ -153,17 +160,20 @@ benchmark_db_entry_new(BenchmarkResult* result)
 	benchmark_db_entry_free_executed->operations = n * m;
 	result->elapsed_time = benchmark_db_entry_new_executed->elapsed_time;
 	result->operations = benchmark_db_entry_new_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_free(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_entry_free_executed)
 	{
 		benchmark_db_entry_new(&b);
 	}
 	result->elapsed_time = benchmark_db_entry_free_executed->elapsed_time;
 	result->operations = benchmark_db_entry_free_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_set_field(BenchmarkResult* result)
@@ -178,6 +188,7 @@ benchmark_db_entry_set_field(BenchmarkResult* result)
 	char varname[50];
 	guint m = 0;
 	gdouble elapsed = 0;
+	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
 	for (i = 0; i < n; i++)
@@ -204,6 +215,7 @@ benchmark_db_entry_set_field(BenchmarkResult* result)
 	j_db_schema_unref(schema);
 	result->elapsed_time = elapsed;
 	result->operations = n * m;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
@@ -233,10 +245,12 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	gdouble elapsed_iterator_single = 0;
 	gdouble elapsed_iterator_all = 0;
 	g_autoptr(JSemantics) semantics = NULL;
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (benchmark_db_entry_insert_executed)
 	{
 		result->elapsed_time = benchmark_db_entry_insert_executed->elapsed_time;
 		result->operations = benchmark_db_entry_insert_executed->operations;
+		j_trace_leave(G_STRFUNC);
 		return;
 	}
 	semantics = j_benchmark_get_semantics();
@@ -437,80 +451,101 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	result->operations = benchmark_db_entry_insert_executed->operations;
 	g_free(entry);
 	g_free(selector);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_insert(BenchmarkResult* result)
 {
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	_benchmark_db_entry_insert(result, FALSE);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_insert_batch(BenchmarkResult* result)
 {
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	_benchmark_db_entry_insert(result, TRUE);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 _benchmark_db_entry_update(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_entry_update_executed)
 	{
 		_benchmark_db_entry_insert(&b, use_batch);
 	}
 	result->elapsed_time = benchmark_db_entry_update_executed->elapsed_time;
 	result->operations = benchmark_db_entry_update_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_update(BenchmarkResult* result)
 {
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	_benchmark_db_entry_update(result, FALSE);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_update_batch(BenchmarkResult* result)
 {
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	_benchmark_db_entry_update(result, TRUE);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 _benchmark_db_entry_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_entry_delete_executed)
 	{
 		_benchmark_db_entry_insert(&b, use_batch);
 	}
 	result->elapsed_time = benchmark_db_entry_delete_executed->elapsed_time;
 	result->operations = benchmark_db_entry_delete_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_delete(BenchmarkResult* result)
 {
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	_benchmark_db_entry_delete(result, FALSE);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_delete_batch(BenchmarkResult* result)
 {
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	_benchmark_db_entry_delete(result, TRUE);
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_iterator_single(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_iterator_single_executed)
 	{
 		_benchmark_db_entry_insert(&b, TRUE);
 	}
 	result->elapsed_time = benchmark_db_iterator_single_executed->elapsed_time;
 	result->operations = benchmark_db_iterator_single_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_iterator_all(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_iterator_all_executed)
 	{
 		_benchmark_db_entry_insert(&b, TRUE);
 	}
 	result->elapsed_time = benchmark_db_iterator_all_executed->elapsed_time;
 	result->operations = benchmark_db_iterator_all_executed->operations;
+	j_trace_leave(G_STRFUNC);
 }
 void
 benchmark_db_entry(gdouble _target_time, guint _n)
@@ -518,8 +553,9 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 	guint i;
 	char testname[500];
 	char prefix[50];
-	target_time = _target_time;
 	n = _n;
+	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	target_time = _target_time;
 	{
 		//ref schema
 		sprintf(testname, "/db/%d/entry/ref", n);
@@ -543,8 +579,6 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 		sprintf(testname, "/db/%d/entry/set_field", n);
 		j_benchmark_run(testname, benchmark_db_entry_set_field);
 	}
-	sprintf(prefix, "n=%d", n);
-	j_trace_flush(prefix);
 	for (i = 0; i < 3; i++)
 	{
 		switch (i)
@@ -606,7 +640,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		sprintf(prefix, "n=%d#n2=%d", n, n2);
-		j_trace_flush(prefix);
+		sprintf(prefix, "", n, n2);
 	}
+	j_trace_leave(G_STRFUNC);
 }

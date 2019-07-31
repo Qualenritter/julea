@@ -44,9 +44,11 @@
 
 struct JTraceTimer
 {
+	guint id;
 	GTimer* timer;
 	gdouble elapsed;
 	gdouble elapsed_child;
+	struct JTraceTimer* parent;
 };
 typedef struct JTraceTimer JTraceTimer;
 
@@ -118,7 +120,8 @@ enum JTraceFlags
 	J_TRACE_ECHO = 1 << 0,
 	J_TRACE_OTF = 1 << 1,
 	J_TRACE_DEBUG = 1 << 2,
-	J_TRACE_TIMER = 1 << 3
+	J_TRACE_TIMER = 1 << 3,
+	J_TRACE_TIMER_SQL = 1 << 4
 };
 
 typedef enum JTraceFlags JTraceFlags;
@@ -338,6 +341,12 @@ j_trace_init(gchar const* name)
 			{
 				j_trace_flags |= J_TRACE_DEBUG;
 				j_trace_flags |= J_TRACE_TIMER;
+			}
+			else if (g_strcmp0(p[i], "sqltimer") == 0)
+			{
+				j_trace_flags |= J_TRACE_DEBUG;
+				j_trace_flags |= J_TRACE_TIMER;
+				j_trace_flags |= J_TRACE_TIMER_SQL;
 			}
 		}
 	}
@@ -676,6 +685,15 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 			g_string_append(key, "-");
 			g_string_append(key, g_array_index(trace->stack, JTraceStack, i).name);
 		}
+		if (format != NULL)
+		{
+			g_autofree gchar* arguments = NULL;
+			if (!strstr(format, "%p") && !strstr(format, "%s"))
+			{
+				arguments = g_strdup_vprintf(format, args);
+				g_string_append(key, arguments);
+			}
+		}
 		timer = g_hash_table_lookup(trace->timer, key->str);
 		if (timer)
 		{
@@ -685,9 +703,15 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 		{
 			timer = g_slice_new(JTraceTimer);
 			timer->elapsed = 0;
+			timer->parent = NULL;
+			timer->id = g_hash_table_size(trace->timer);
 			timer->elapsed_child = 0;
 			g_hash_table_insert(trace->timer, key->str, timer);
 			g_string_free(key, FALSE);
+			if (trace->stack->len > 1)
+			{
+				timer->parent = g_array_index(trace->stack, JTraceStack, trace->stack->len - 2).timer;
+			}
 		}
 		timer->timer = g_timer_new();
 		g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).timer = timer;
@@ -839,16 +863,47 @@ j_trace_flush(const char* prefix)
 
 	trace = j_trace_get_thread_default();
 
-	if (j_trace_flags & J_TRACE_TIMER)
+	if ((j_trace_flags & J_TRACE_TIMER) && (!(j_trace_flags & J_TRACE_TIMER_SQL)))
 	{
+		JTraceTimer* timer_val;
 		g_hash_table_iter_init(&iter, trace->timer);
 		while (g_hash_table_iter_next(&iter, &key, &value))
 		{
-			if (((JTraceTimer*)value)->elapsed > 0)
+			timer_val = value;
+			if (timer_val->elapsed > 0)
 			{
-				g_debug("trace-timer: %s, %f, %f, %s", prefix, ((JTraceTimer*)value)->elapsed - ((JTraceTimer*)value)->elapsed_child, ((JTraceTimer*)value)->elapsed, (char*)key);
-				((JTraceTimer*)value)->elapsed = 0;
-				((JTraceTimer*)value)->elapsed_child = 0;
+				g_debug("trace-timer: %s, %f, %f, %s", prefix, timer_val->elapsed - timer_val->elapsed_child, timer_val->elapsed, (char*)key);
+				timer_val->elapsed = 0;
+				timer_val->elapsed_child = 0;
+			}
+		}
+	}
+	if (j_trace_flags & J_TRACE_TIMER_SQL)
+	{
+		JTraceTimer* timer_val;
+		JTraceTimer* timer_val_root;
+		g_hash_table_iter_init(&iter, trace->timer);
+		g_debug("CREATE TABLE IF NOT EXISTS benchmark (id INTEGER, parent_id INTEGER, root_id INTEGER, prefix TEXT, elapsed DOUBLE, elapsed_no_child DOUBLE, function_name TEXT);");
+		while (g_hash_table_iter_next(&iter, &key, &value))
+		{
+			timer_val = value;
+			timer_val_root = timer_val;
+			while (timer_val_root->parent)
+			{
+				timer_val_root = timer_val_root->parent;
+			}
+			if (timer_val->elapsed > 0)
+			{
+				g_debug("INSERT INTO benchmark (id,parent_id,root_id,prefix,elapsed,elapsed_no_child,function_name) VALUES (%d, %d, %d, \"%s\", %f, %f, \"%s\");",
+					timer_val->id,
+					timer_val->parent ? timer_val->parent->id : timer_val->id,
+					timer_val_root->id,
+					prefix,
+					timer_val->elapsed,
+					timer_val->elapsed - timer_val->elapsed_child,
+					(char*)key);
+				timer_val->elapsed = 0;
+				timer_val->elapsed_child = 0;
 			}
 		}
 	}

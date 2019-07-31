@@ -29,8 +29,7 @@ exec_tests(guint n)
 	char prefix[50];
 	benchmark_db_schema(target_time, n);
 	benchmark_db_entry(target_time, n);
-	sprintf(prefix, "n=%d", n);
-	j_trace_flush(prefix);
+	j_trace_flush("");
 }
 static void
 exec_tree(guint depth, gfloat min, gfloat max)
