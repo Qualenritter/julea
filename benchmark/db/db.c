@@ -21,11 +21,7 @@
  **/
 
 #include "db.h"
-#ifdef JULEA_DEBUG
-static gdouble target_time = 1;
-#else
-static gdouble target_time = 60;
-#endif
+static gdouble target_time = 30.0;
 
 static void
 exec_tests(guint n)
@@ -71,6 +67,20 @@ exec_tree1(guint depth, gfloat min, gfloat max)
 void
 benchmark_db(void)
 {
+	const char* target_str;
+	int ret;
+	double target = 0.0;
+	target_str = g_getenv("J_BENCHMARK_TARGET");
+	if (target_str)
+	{
+		g_debug("J_BENCHMARK_TARGET %s", target_str);
+		ret = sscanf(target_str, "%lf", &target);
+		if (ret == 1)
+		{
+			g_debug("J_BENCHMARK_TARGET %s %f", target_str, target);
+			target_time = target;
+		}
+	}
 #ifdef JULEA_DEBUG
 	exec_tree1(0, 1, 5);
 #else

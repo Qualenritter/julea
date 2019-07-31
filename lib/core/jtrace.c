@@ -45,8 +45,8 @@
 struct JTraceTimer
 {
 	GTimer* timer;
-	double elapsed;
-	double elapsed_child;
+	gdouble elapsed;
+	gdouble elapsed_child;
 };
 typedef struct JTraceTimer JTraceTimer;
 
@@ -690,7 +690,7 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 			g_string_free(key, FALSE);
 		}
 		timer->timer = g_timer_new();
-		g_array_index(trace->stack, JTraceStack, i).timer = timer;
+		g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).timer = timer;
 	}
 
 #ifdef HAVE_OTF
@@ -773,13 +773,15 @@ j_trace_leave(gchar const* name)
 	{
 		struct JTraceTimer* timer;
 		struct JTraceTimer* timer_parent;
+		gdouble elapsed;
 		timer = g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).timer;
-		timer->elapsed += g_timer_elapsed(timer->timer, NULL);
+		elapsed = g_timer_elapsed(timer->timer, NULL);
+		timer->elapsed += elapsed;
 		g_timer_destroy(timer->timer);
 		if (trace->stack->len > 1)
 		{
 			timer_parent = g_array_index(trace->stack, JTraceStack, trace->stack->len - 2).timer;
-			timer_parent->elapsed_child += timer->elapsed;
+			timer_parent->elapsed_child += elapsed;
 		}
 	}
 
@@ -846,6 +848,7 @@ j_trace_flush(const char* prefix)
 			{
 				g_debug("trace-timer: %s, %f, %f, %s", prefix, ((JTraceTimer*)value)->elapsed - ((JTraceTimer*)value)->elapsed_child, ((JTraceTimer*)value)->elapsed, (char*)key);
 				((JTraceTimer*)value)->elapsed = 0;
+				((JTraceTimer*)value)->elapsed_child = 0;
 			}
 		}
 	}

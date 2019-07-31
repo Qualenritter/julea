@@ -63,7 +63,7 @@ benchmark_db_entry_ref(BenchmarkResult* result)
 	CHECK_ERROR(!schema);
 	entry = j_db_entry_new(schema, ERROR_PARAM);
 	CHECK_ERROR(!entry);
-	while (m == 0 || elapsed_ref < target_time || elapsed_unref < target_time)
+	while (m == 0 || (elapsed_ref < target_time && elapsed_unref < target_time))
 	{
 		m += batch_count;
 		j_benchmark_timer_start();
@@ -126,7 +126,7 @@ benchmark_db_entry_new(BenchmarkResult* result)
 	entry_array = g_new(JDBEntry*, batch_count);
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
-	while (m == 0 || elapsed_new < target_time || elapsed_free < target_time)
+	while (m == 0 || (elapsed_new < target_time && elapsed_free < target_time))
 	{
 		m += batch_count;
 		j_benchmark_timer_start();
@@ -243,7 +243,7 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	batch = j_batch_new(semantics);
 	entry = g_new(JDBEntry*, n);
 	selector = g_new(JDBSelector*, n);
-	while (m == 0 || elapsed_entry_insert < target_time || elapsed_entry_delete < target_time)
+	while (m == 0 || (elapsed_entry_insert < target_time && elapsed_entry_delete < target_time))
 	{
 		schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 		CHECK_ERROR(!schema);

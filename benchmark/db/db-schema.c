@@ -151,7 +151,7 @@ start:
 		CHECK_ERROR(!ret);
 	}
 	elapsed_delete += j_benchmark_timer_elapsed();
-	if (elapsed_create < target_time || elapsed_delete < target_time)
+	if (elapsed_create < target_time && elapsed_delete < target_time)
 	{
 		goto start;
 	}
@@ -263,7 +263,7 @@ start:
 		j_db_schema_unref(schema);
 	}
 	elapsed_unref += j_benchmark_timer_elapsed();
-	if (elapsed_ref < target_time || elapsed_unref < target_time)
+	if (elapsed_ref < target_time && elapsed_unref < target_time)
 	{
 		goto start;
 	}
@@ -322,7 +322,7 @@ start:
 		j_db_schema_unref(schema_array[i]);
 	}
 	elapsed_free += j_benchmark_timer_elapsed();
-	if (elapsed_new < target_time || elapsed_free < target_time)
+	if (elapsed_new < target_time && elapsed_free < target_time)
 	{
 		goto start;
 	}
