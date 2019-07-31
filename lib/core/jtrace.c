@@ -843,7 +843,7 @@ j_trace_flush(const char* prefix)
 		{
 			if (((JTraceTimer*)value)->elapsed > 0)
 			{
-				g_debug("trace-timer: %f, %s-%s", ((JTraceTimer*)value)->elapsed, prefix, (char*)key);
+				g_debug("trace-timer: %s, %f, %s", prefix,((JTraceTimer*)value)->elapsed, (char*)key);
 				((JTraceTimer*)value)->elapsed = 0;
 			}
 		}
