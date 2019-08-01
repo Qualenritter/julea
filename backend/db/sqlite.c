@@ -225,19 +225,25 @@ j_sql_exec(const char* sql, GError** error)
 	sqlite3_stmt* stmt;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_prepare(sql, &stmt, error)))
+	{
 		goto _error;
+	}
 	if (G_UNLIKELY(sqlite3_step(stmt) != SQLITE_DONE))
 	{
 		g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_sql_finalize(stmt, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	if (G_UNLIKELY(!j_sql_finalize(stmt, NULL)))
+	{
 		goto _error2;
+	}
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 _error2:
@@ -278,14 +284,20 @@ j_sql_step_and_reset_check_done(void* _stmt, GError** error)
 	gboolean sql_found;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step(_stmt, &sql_found, error)))
+	{
 		goto _error;
+	}
 	if (G_UNLIKELY(!j_sql_reset(_stmt, error)))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	if (G_UNLIKELY(!j_sql_reset(_stmt, NULL)))
+	{
 		goto _error2;
+	}
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 _error2:
@@ -306,17 +318,25 @@ backend_init(gchar const* path)
 		dirname = g_path_get_dirname(path);
 		g_mkdir_with_parents(dirname, 0700);
 		if (G_UNLIKELY(sqlite3_open(path, &backend_db) != SQLITE_OK))
+		{
 			goto _error;
+		}
 	}
 	else
 	{
 		if (G_UNLIKELY(sqlite3_open(":memory:", &backend_db) != SQLITE_OK))
+		{
 			goto _error;
+		}
 	}
 	if (G_UNLIKELY(!j_sql_exec("PRAGMA foreign_keys = ON", NULL)))
+	{
 		goto _error;
+	}
 	if (G_UNLIKELY(!init_sql()))
+	{
 		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return (backend_db != NULL);
 _error:

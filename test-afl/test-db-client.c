@@ -305,12 +305,14 @@ main(int argc, char* argv[])
 		goto loop;
 	cleanup:
 		for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
+		{
 			for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 			{
 				random_values.namespace = i;
 				random_values.name = j;
 				event_schema_delete_helper();
 			}
+		}
 	}
 fini:
 	return 0;

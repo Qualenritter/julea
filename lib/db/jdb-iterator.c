@@ -62,7 +62,9 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 		}
 	}
 	else
+	{
 		iterator->selector = NULL;
+	}
 	iterator->iterator = NULL;
 	iterator->ref_count = 1;
 	iterator->valid = FALSE;
@@ -113,11 +115,15 @@ j_db_iterator_unref(JDBIterator* iterator)
 	if (iterator && g_atomic_int_dec_and_test(&iterator->ref_count))
 	{
 		while (iterator->valid)
+		{
 			j_db_iterator_next(iterator, NULL);
+		}
 		j_db_schema_unref(iterator->schema);
 		j_db_selector_unref(iterator->selector);
 		if (iterator->bson_valid)
+		{
 			j_bson_destroy(&iterator->bson);
+		}
 		g_slice_free(JDBIterator, iterator);
 	}
 	j_trace_leave(G_STRFUNC);

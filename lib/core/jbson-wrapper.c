@@ -608,7 +608,9 @@ j_bson_destroy(bson_t* bson)
 {
 	j_trace_enter(G_STRFUNC, NULL);
 	if (bson)
+	{
 		bson_destroy(bson);
+	}
 	j_trace_leave(G_STRFUNC);
 }
 

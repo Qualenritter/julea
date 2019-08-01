@@ -84,6 +84,8 @@ benchmark_db(void)
 #else
 	guint i;
 	for (i = 0; i < 7; i++)
+	{
 		exec_tree1(i, 1, 1000000);
+	}
 #endif
 }

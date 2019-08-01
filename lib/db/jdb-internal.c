@@ -63,7 +63,9 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	GError* error = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (db_backend == NULL || JULEA_TEST_MOCKUP)
+	{
 		message = j_message_new(type, 0);
+	}
 	iter_send = j_list_iterator_new(operations);
 	while (j_list_iterator_next(iter_send))
 	{
@@ -79,9 +81,13 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 					ret;
 			}
 			if (data->out_param[data->out_param_count - 1].ptr && error)
+			{
 				*((void**)data->out_param[data->out_param_count - 1].ptr) = g_error_copy(error);
+			}
 			else
+			{
 				ret = data->backend_func(db_backend, batch, data) && ret;
+			}
 		}
 		else
 		{
@@ -93,9 +99,13 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 		if (data != NULL)
 		{
 			if (!error)
+			{
 				ret = db_backend->db.backend_batch_execute(batch, NULL) && ret;
+			}
 			else
+			{
 				g_error_free(error);
+			}
 		}
 	}
 	else
@@ -120,7 +130,9 @@ j_backend_db_func_free(gpointer _data)
 {
 	JBackendOperation* data = _data;
 	if (data)
+	{
 		g_slice_free(JBackendOperation, data);
+	}
 }
 
 static gboolean

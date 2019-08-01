@@ -87,7 +87,9 @@ j_db_schema_unref(JDBSchema* schema)
 		g_free(schema->namespace);
 		g_free(schema->name);
 		if (schema->bson_initialized)
+		{
 			bson_destroy(&schema->bson);
+		}
 		g_slice_free(JDBSchema, schema);
 	}
 	j_trace_leave(G_STRFUNC);
@@ -172,11 +174,17 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
+	{
 		goto _error;
+	}
 	if (G_UNLIKELY(!j_bson_iter_find(&iter, name, error)))
+	{
 		goto _error;
+	}
 	if (G_UNLIKELY(!j_bson_iter_value(&iter, J_DB_TYPE_UINT32, &val, error)))
+	{
 		goto _error;
+	}
 	*type = val.val_uint32;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;

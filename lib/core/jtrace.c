@@ -983,8 +983,6 @@ j_trace_file_begin(gchar const* path, JTraceFileOperation op)
 		OTF_Writer_writeBeginFileOperation(otf_writer, timestamp, trace->otf.process_id, 1, 0);
 	}
 #endif
-
-	return;
 }
 
 /**

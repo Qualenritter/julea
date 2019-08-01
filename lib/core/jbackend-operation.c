@@ -270,7 +270,9 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 			case J_BACKEND_OPERATION_PARAM_TYPE_BSON:
 				ret = bson_init_static(&element->bson, j_message_get_n(message, len), len) && ret;
 				if (element->ptr)
+				{
 					bson_copy_to(&element->bson, element->ptr);
+				}
 				break;
 			case J_BACKEND_OPERATION_PARAM_TYPE_ERROR:
 				error = (GError**)element->ptr;
