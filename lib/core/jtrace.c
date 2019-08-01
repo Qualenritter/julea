@@ -55,6 +55,7 @@ typedef struct JTraceTimer JTraceTimer;
 struct JTraceStack
 {
 	char* name;
+	char* name_format;
 	JTraceTimer* timer; //this does NOT increase ref_count - due to the structure it is always just a 'quick' link, which is valid as long as required
 };
 typedef struct JTraceStack JTraceStack;
@@ -670,7 +671,20 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 	if (j_trace_flags & J_TRACE_DEBUG)
 	{
 		struct JTraceStack stack;
+		GString* key;
+		key = g_string_new(name);
+		if (format != NULL)
+		{
+			g_autofree gchar* arguments = NULL;
+			if (!strstr(format, "%p") && !strstr(format, "%s"))
+			{
+				arguments = g_strdup_vprintf(format, args);
+				g_string_append(key, arguments);
+			}
+		}
+		stack.name_format = g_strdup(key->str);
 		stack.name = g_strdup(name);
+		g_string_free(key, TRUE);
 		g_array_append_val(trace->stack, stack);
 	}
 
@@ -683,7 +697,7 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 		for (i = 0; i < trace->stack->len; i++)
 		{
 			g_string_append(key, "-");
-			g_string_append(key, g_array_index(trace->stack, JTraceStack, i).name);
+			g_string_append(key, g_array_index(trace->stack, JTraceStack, i).name_format);
 		}
 		if (format != NULL)
 		{
@@ -824,6 +838,7 @@ j_trace_leave(gchar const* name)
 			abort();
 		}
 		g_free(name_enter);
+		g_free(g_array_index(trace->stack, JTraceStack, trace->stack->len - 1).name_format);
 		g_array_set_size(trace->stack, trace->stack->len - 1);
 	}
 

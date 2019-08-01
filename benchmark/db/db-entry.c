@@ -552,7 +552,6 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 {
 	guint i;
 	char testname[500];
-	char prefix[50];
 	n = _n;
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;
@@ -615,6 +614,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
+		if (n <= 50000)
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch", n, n2);
@@ -640,7 +640,6 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		sprintf(prefix, "", n, n2);
 	}
 	j_trace_leave(G_STRFUNC);
 }

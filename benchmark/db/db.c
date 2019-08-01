@@ -26,7 +26,6 @@ static gdouble target_time = 30.0;
 static void
 exec_tests(guint n)
 {
-	char prefix[50];
 	benchmark_db_schema(target_time, n);
 	benchmark_db_entry(target_time, n);
 	j_trace_flush("");
