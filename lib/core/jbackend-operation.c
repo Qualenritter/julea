@@ -126,8 +126,8 @@ j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, 
 	JBackendOperationParam* element;
 	guint i;
 	guint len = 0;
-	gint error_message_len;
-	gint error_domain_len;
+	guint error_message_len;
+	guint error_domain_len;
 	guint tmp;
 	GError** error;
 	j_trace_enter(G_STRFUNC, NULL);
@@ -247,9 +247,9 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 	JBackendOperationParam* element;
 	guint i;
 	guint len;
-	gint error_code;
-	gint error_message_len;
-	gint error_domain_len;
+	guint error_code;
+	guint error_message_len;
+	guint error_domain_len;
 	GQuark error_quark;
 	GError** error;
 	gboolean ret = TRUE;
@@ -324,8 +324,8 @@ j_backend_operation_from_message_static(JMessage* message, JBackendOperationPara
 	JBackendOperationParam* element;
 	guint i;
 	guint len;
-	gint error_message_len;
-	gint error_domain_len;
+	guint error_message_len;
+	guint error_domain_len;
 	gboolean ret = TRUE;
 	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)

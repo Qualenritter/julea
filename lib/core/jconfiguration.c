@@ -29,8 +29,6 @@
 
 #include <jconfiguration.h>
 
-#include <julea-internal.h>
-
 /**
  * \defgroup JConfiguration Configuration
  *
@@ -181,7 +179,7 @@ j_configuration_new (void)
 			}
 			else
 			{
-				J_CRITICAL("Can not open configuration file %s.", env_path);
+				g_critical("Can not open configuration file %s.", env_path);
 			}
 
 			/* If we do not find the configuration file, stop searching. */

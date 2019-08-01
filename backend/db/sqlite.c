@@ -24,7 +24,6 @@
 #include <sqlite3.h>
 
 #include <julea.h>
-#include <julea-internal.h>
 #include <julea-db.h>
 
 #include <core/jbson-wrapper.h>
@@ -334,7 +333,7 @@ backend_fini(void)
 }
 static JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_DB,
-	.component = J_BACKEND_COMPONENT_CLIENT | J_BACKEND_COMPONENT_SERVER,
+	.component = J_BACKEND_COMPONENT_SERVER,
 	.db = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,

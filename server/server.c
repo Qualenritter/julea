@@ -29,7 +29,8 @@
 #include <string.h>
 
 #include <julea.h>
-#include <julea-internal.h>
+
+#include <jtrace-internal.h>
 
 static JStatistics* jd_statistics;
 
@@ -109,6 +110,8 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 #endif
 		JBackendOperation backend_operation;
 		JSemantics* semantics;
+		JSemanticsSafety safety;
+		gboolean message_matched = FALSE;
 		guint i;
 #ifndef MOCKUP_COMPILES
 		operation_count = j_message_get_count(message);
@@ -597,59 +600,62 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 			{
 				gsize key_len;
 
-				key_len = strlen(key) + 1;
-
-				j_message_add_operation(reply, 4 + len + key_len);
-				j_message_append_4(reply, &len);
-				j_message_append_n(reply, value, len);
-				j_message_append_string(reply, key);
-			}
-
-			j_message_add_operation(reply, 4);
-			j_message_append_4(reply, &zero);
-
-			j_message_send(reply, connection);
-		}
-		break;
-		case J_MESSAGE_DB_SCHEMA_CREATE:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
-			first = FALSE;
-			// fallthrough
-		case J_MESSAGE_DB_SCHEMA_GET:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
-			first = FALSE;
-			// fallthrough
-		case J_MESSAGE_DB_SCHEMA_DELETE:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
-			first = FALSE;
-			// fallthrough
-		case J_MESSAGE_DB_INSERT:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_insert, sizeof(JBackendOperation));
-			first = FALSE;
-			// fallthrough
-		case J_MESSAGE_DB_UPDATE:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_update, sizeof(JBackendOperation));
-			first = FALSE;
-			// fallthrough
-		case J_MESSAGE_DB_DELETE:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_delete, sizeof(JBackendOperation));
-			first = FALSE;
-			// fallthrough
-		case J_MESSAGE_DB_QUERY:
-			if (first)
-				memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
-			first = FALSE;
-			{
-				g_autoptr(JMessage) reply = NULL;
-				g_autoptr(GError) error = NULL;
-				gpointer batch = NULL;
-				gint ret;
+					j_message_send(reply, connection);
+				}
+				break;
+			case J_MESSAGE_DB_SCHEMA_CREATE:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				// fallthrough
+			case J_MESSAGE_DB_SCHEMA_GET:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				// fallthrough
+			case J_MESSAGE_DB_SCHEMA_DELETE:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				// fallthrough
+			case J_MESSAGE_DB_INSERT:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_insert, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				// fallthrough
+			case J_MESSAGE_DB_UPDATE:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_update, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				// fallthrough
+			case J_MESSAGE_DB_DELETE:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_delete, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				// fallthrough
+			case J_MESSAGE_DB_QUERY:
+				if (!message_matched)
+				{
+					memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
+					message_matched = TRUE;
+				}
+				{
+					g_autoptr(JMessage) reply = NULL;
+					g_autoptr(GError) error = NULL;
+					gpointer batch = NULL;
+					gint ret;
 
 				reply = j_message_new_reply(message);
 
@@ -823,18 +829,14 @@ main(int argc, char** argv)
 	g_autoptr(GSocketService) socket_service = NULL;
 	gchar const* object_backend;
 	gchar const* object_component;
-	gchar const* object_path;
+	g_autofree gchar* object_path = NULL;
 	gchar const* kv_backend;
 	gchar const* kv_component;
-	gchar const* kv_path;
+	g_autofree gchar* kv_path = NULL;
 	gchar const* db_backend;
 	gchar const* db_component;
-	gchar const* db_path;
-#ifdef JULEA_DEBUG
-	g_autofree gchar* object_path_port = NULL;
-	g_autofree gchar* kv_path_port = NULL;
-	g_autofree gchar* db_path_port = NULL;
-#endif
+	g_autofree gchar* db_path = NULL;
+	g_autofree gchar* port_str = NULL;
 
 	GOptionEntry entries[] = {
 		{ "daemon", 0, 0, G_OPTION_ARG_NONE, &opt_daemon, "Run as daemon", NULL },
@@ -890,33 +892,25 @@ main(int argc, char** argv)
 		return 1;
 	}
 
+	port_str = g_strdup_printf("%d", opt_port);
+
 	object_backend = j_configuration_get_object_backend(jd_configuration);
 	object_component = j_configuration_get_object_component(jd_configuration);
-	object_path = j_configuration_get_object_path(jd_configuration);
+	object_path = j_helper_str_replace(j_configuration_get_object_path(jd_configuration), "{PORT}", port_str);
 
 	kv_backend = j_configuration_get_kv_backend(jd_configuration);
 	kv_component = j_configuration_get_kv_component(jd_configuration);
-	kv_path = j_configuration_get_kv_path(jd_configuration);
+	kv_path = j_helper_str_replace(j_configuration_get_kv_path(jd_configuration), "{PORT}", port_str);
 
 	db_backend = j_configuration_get_db_backend(jd_configuration);
 	db_component = j_configuration_get_db_component(jd_configuration);
-	db_path = j_configuration_get_db_path(jd_configuration);
-
-#ifdef JULEA_DEBUG
-	object_path_port = g_strdup_printf("%s/%d", object_path, opt_port);
-	kv_path_port = g_strdup_printf("%s/%d", kv_path, opt_port);
-	db_path_port = g_strdup_printf("%s/%d", db_path, opt_port);
-
-	object_path = object_path_port;
-	kv_path = kv_path_port;
-	db_path = db_path_port;
-#endif
+	db_path = j_helper_str_replace(j_configuration_get_db_path(jd_configuration), "{PORT}", port_str);
 
 	if (j_backend_load_server(object_backend, object_component, J_BACKEND_TYPE_OBJECT, &object_module, &jd_object_backend))
 	{
 		if (jd_object_backend == NULL || !j_backend_object_init(jd_object_backend, object_path))
 		{
-			J_CRITICAL("Could not initialize object backend %s.\n", object_backend);
+			g_critical("Could not initialize object backend %s.\n", object_backend);
 			return 1;
 		}
 	}
@@ -925,7 +919,7 @@ main(int argc, char** argv)
 	{
 		if (jd_kv_backend == NULL || !j_backend_kv_init(jd_kv_backend, kv_path))
 		{
-			J_CRITICAL("Could not initialize kv backend %s.\n", kv_backend);
+			g_critical("Could not initialize kv backend %s.\n", kv_backend);
 			return 1;
 		}
 	}
@@ -934,7 +928,7 @@ main(int argc, char** argv)
 	{
 		if (jd_db_backend == NULL || !j_backend_db_init(jd_db_backend, db_path))
 		{
-			J_CRITICAL("Could not initialize db backend %s.\n", db_backend);
+			g_critical("Could not initialize db backend %s.\n", db_backend);
 			return 1;
 		}
 	}
