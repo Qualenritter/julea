@@ -31,7 +31,7 @@
 #include <db/jdb-internal.h>
 
 #include <julea.h>
-#include <julea-internal.h>
+#include <jtrace-internal.h>
 #include <core/jbson-wrapper.h>
 
 struct J_db_iterator_helper

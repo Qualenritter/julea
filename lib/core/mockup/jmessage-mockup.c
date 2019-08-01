@@ -32,7 +32,6 @@
 #include <sys/stat.h>
 #include <julea.h>
 #include <db/jdb-internal.h>
-#include <julea-internal.h>
 #include <core/jmessage.h>
 #include "../../../test-afl/afl.h"
 #if (JULEA_TEST_MOCKUP == 0)
@@ -63,7 +62,7 @@
 	{                                                    \
 		if (val)                                     \
 		{                                            \
-			J_CRITICAL("assertion failed%d", 0); \
+			g_critical("assertion failed%d", 0); \
 			abort();                             \
 		}                                            \
 	} while (0)
@@ -313,26 +312,26 @@ j_message_mockup_get_type(JMessage const* message)
 guint32
 j_message_mockup_get_count(JMessage const* message)
 {
-	J_CRITICAL("mockup not implemented%d", 0);
+	g_critical("mockup not implemented%d", 0);
 	abort();
 }
 gboolean
 j_message_mockup_read(JMessage* message, GInputStream* stream)
 {
-	J_CRITICAL("mockup not implemented%d", 0);
+	g_critical("mockup not implemented%d", 0);
 	abort();
 }
 gboolean
 j_message_mockup_write(JMessage* message, GOutputStream* stream)
 {
-	J_CRITICAL("mockup not implemented%d", 0);
+	g_critical("mockup not implemented%d", 0);
 	abort();
 }
 
 void
 j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size)
 {
-	J_CRITICAL("mockup not implemented%d", 0);
+	g_critical("mockup not implemented%d", 0);
 	abort();
 }
 

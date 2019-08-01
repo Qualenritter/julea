@@ -25,7 +25,6 @@
 #include <sys/stat.h>
 #include <julea.h>
 #include <db/jdb-internal.h>
-#include <julea-internal.h>
 #include <julea-db.h>
 #include "afl.h"
 
@@ -1057,23 +1056,23 @@ test_db_backend_exec(void)
 	switch (event)
 	{
 	case AFL_EVENT_DB_SCHEMA_CREATE:
-		J_DEBUG("AFL_EVENT_DB_SCHEMA_CREATE %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_SCHEMA_CREATE %s %s", namespace_strbuf, name_strbuf);
 		event_schema_get();
 		event_schema_create();
 		event_schema_get();
 		break;
 	case AFL_EVENT_DB_SCHEMA_GET:
-		J_DEBUG("AFL_EVENT_DB_SCHEMA_GET %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_SCHEMA_GET %s %s", namespace_strbuf, name_strbuf);
 		event_schema_get();
 		break;
 	case AFL_EVENT_DB_SCHEMA_DELETE:
-		J_DEBUG("AFL_EVENT_DB_SCHEMA_DELETE %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_SCHEMA_DELETE %s %s", namespace_strbuf, name_strbuf);
 		event_schema_get();
 		event_schema_delete();
 		event_schema_get();
 		break;
 	case AFL_EVENT_DB_INSERT:
-		J_DEBUG("AFL_EVENT_DB_INSERT %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_INSERT %s %s", namespace_strbuf, name_strbuf);
 		random_values.values.existent = 1;
 		tmp = random_values.values.value_index % (AFL_LIMIT_SCHEMA_VALUES);
 		event_query_all();
@@ -1085,19 +1084,19 @@ test_db_backend_exec(void)
 		event_query_all();
 		break;
 	case AFL_EVENT_DB_UPDATE:
-		J_DEBUG("AFL_EVENT_DB_UPDATE %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_UPDATE %s %s", namespace_strbuf, name_strbuf);
 		event_query_all();
 		event_update();
 		event_query_all();
 		break;
 	case AFL_EVENT_DB_DELETE:
-		J_DEBUG("AFL_EVENT_DB_DELETE %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_DELETE %s %s", namespace_strbuf, name_strbuf);
 		event_query_all();
 		event_delete();
 		event_query_all();
 		break;
 	case AFL_EVENT_DB_QUERY_ALL:
-		J_DEBUG("AFL_EVENT_DB_QUERY_ALL %s %s", namespace_strbuf, name_strbuf);
+		g_debug("AFL_EVENT_DB_QUERY_ALL %s %s", namespace_strbuf, name_strbuf);
 		event_query_all();
 		event_query_single();
 		break;

@@ -30,9 +30,9 @@
 #include <julea-db.h>
 #include <julea.h>
 #include "benchmark.h"
-#include <julea-internal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <jtrace-internal.h>
 
 #ifdef JULEA_DEBUG
 #define ERROR_PARAM &error
@@ -41,12 +41,12 @@
 	{                                                                        \
 		if (error)                                                       \
 		{                                                                \
-			J_DEBUG("ERROR (%d) (%s)", error->code, error->message); \
+			g_debug("ERROR (%d) (%s)", error->code, error->message); \
 			abort();                                                 \
 		}                                                                \
 		if (_ret_)                                                       \
 		{                                                                \
-			J_DEBUG("ret was %d", _ret_);                            \
+			g_debug("ret was %d", _ret_);                            \
 			abort();                                                 \
 		}                                                                \
 	} while (0)

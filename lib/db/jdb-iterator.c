@@ -29,9 +29,9 @@
 #include <bson.h>
 
 #include <julea.h>
-#include <julea-internal.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
+#include <jtrace-internal.h>
 #include <core/jbson-wrapper.h>
 
 JDBIterator*

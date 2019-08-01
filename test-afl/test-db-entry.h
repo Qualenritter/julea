@@ -25,7 +25,7 @@ event_entry_new(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
-	J_DEBUG("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	g_debug("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	j_db_entry_unref(the_stored_entry);
 	the_stored_entry_field_set = 0;
 	switch (random_values.invalid_switch % 2)
@@ -51,7 +51,7 @@ event_entry_ref(void)
 	GError* error = NULL;
 	JDBEntry* ptr = NULL;
 	gint ref_count;
-	J_DEBUG("AFL_EVENT_DB_ENTRY_REF %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	g_debug("AFL_EVENT_DB_ENTRY_REF %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	if (the_stored_entry)
 	{
 		ref_count = the_stored_entry->ref_count;
@@ -75,7 +75,7 @@ event_entry_set_field(void)
 	guint ret;
 	guint ret_expected;
 	JDBType type;
-	J_DEBUG("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	g_debug("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	ret_expected = the_stored_entry != NULL;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
@@ -180,7 +180,7 @@ event_entry_insert(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
-	J_DEBUG("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	g_debug("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = the_stored_entry != NULL;
 	ret_expected = ret_expected && the_stored_schema->server_side;
@@ -212,7 +212,7 @@ event_entry_update(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
-	J_DEBUG("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	g_debug("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = the_stored_entry != NULL;
 	ret_expected = ret_expected && the_stored_entry_field_set;
@@ -252,7 +252,7 @@ event_entry_delete(void)
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
-	J_DEBUG("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	g_debug("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = the_stored_entry != NULL;
 	ret_expected = ret_expected && the_stored_schema->server_side;

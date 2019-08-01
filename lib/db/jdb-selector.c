@@ -29,10 +29,10 @@
 #include <bson.h>
 
 #include <julea.h>
-#include <julea-internal.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
 #include <core/jbson-wrapper.h>
+#include <jtrace-internal.h>
 
 JDBSelector*
 j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)

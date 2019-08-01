@@ -24,6 +24,7 @@
 #include <sqlite3.h>
 
 #include <julea.h>
+#include <jtrace-internal.h>
 #include <julea-db.h>
 
 #include <core/jbson-wrapper.h>

@@ -29,11 +29,10 @@
 #include <bson.h>
 
 #include <julea.h>
-#include <julea-internal.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
 #include <core/jbson-wrapper.h>
-
+#include <jtrace-internal.h>
 JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {

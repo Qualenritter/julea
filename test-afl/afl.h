@@ -24,7 +24,7 @@
 		char* json = NULL;                       \
 		if (bson)                                \
 			json = bson_as_json(bson, NULL); \
-		J_DEBUG("json = %s", json);              \
+		g_debug("json = %s", json);              \
 		bson_free((void*)json);                  \
 	} while (0)
 #define J_AFL_DEBUG_ERROR(ret, ret_expected, error)                                  \
@@ -32,16 +32,16 @@
 	{                                                                            \
 		if (error)                                                           \
 		{                                                                    \
-			J_DEBUG("ERROR (%d) (%s)", error->code, error->message);     \
+			g_debug("ERROR (%d) (%s)", error->code, error->message);     \
 		}                                                                    \
 		if ((ret) != (ret_expected))                                         \
 		{                                                                    \
-			J_DEBUG("not expected %d != %d", (ret), (ret_expected));     \
+			g_debug("not expected %d != %d", (ret), (ret_expected));     \
 			MYABORT();                                                   \
 		}                                                                    \
 		if ((ret) != ((error) == NULL))                                      \
 		{                                                                    \
-			J_DEBUG("not initialized %d != %d", (ret), (error) == NULL); \
+			g_debug("not initialized %d != %d", (ret), (error) == NULL); \
 			MYABORT();                                                   \
 		}                                                                    \
 		if (error)                                                           \
@@ -55,11 +55,11 @@
 	{                                                                            \
 		if (error)                                                           \
 		{                                                                    \
-			J_DEBUG("ERROR (%d) (%s)", (error)->code, (error)->message); \
+			g_debug("ERROR (%d) (%s)", (error)->code, (error)->message); \
 		}                                                                    \
 		if ((ret) != ((error) == NULL))                                      \
 		{                                                                    \
-			J_DEBUG("not initialized %d != %d", (ret), (error) == NULL); \
+			g_debug("not initialized %d != %d", (ret), (error) == NULL); \
 			MYABORT();                                                   \
 		}                                                                    \
 		if (error)                                                           \
@@ -90,7 +90,7 @@
 #define MYABORT()                       \
 	do                              \
 	{                               \
-		J_DEBUG("abort %d", 0); \
+		g_debug("abort %d", 0); \
 		g_assert_not_reached();                \
 	} while (0)
 #define MYABORT_IF(val)                         \
@@ -98,7 +98,7 @@
 	{                                       \
 		if (val)                        \
 		{                               \
-			J_DEBUG("abort %d", 0); \
+			g_debug("abort %d", 0); \
 			g_assert_not_reached();                \
 		}                               \
 	} while (0)
@@ -106,7 +106,7 @@
 #define MYABORT()                       \
 	do                              \
 	{                               \
-		J_DEBUG("abort %d", 0); \
+		g_debug("abort %d", 0); \
 		abort();                \
 	} while (0)
 #define MYABORT_IF(val)                         \
@@ -114,7 +114,7 @@
 	{                                       \
 		if (val)                        \
 		{                               \
-			J_DEBUG("abort %d", 0); \
+			g_debug("abort %d", 0); \
 			abort();                \
 		}                               \
 	} while (0)

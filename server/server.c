@@ -77,7 +77,6 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 #ifndef MOCKUP_COMPILES
 	JMessageType message_type;
 #endif
-	gboolean first = TRUE;
 #ifndef MOCKUP_COMPILES
 	(void)service;
 	(void)source_object;
@@ -110,7 +109,6 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 #endif
 		JBackendOperation backend_operation;
 		JSemantics* semantics;
-		JSemanticsSafety safety;
 		gboolean message_matched = FALSE;
 		guint i;
 #ifndef MOCKUP_COMPILES
@@ -600,62 +598,73 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 			{
 				gsize key_len;
 
-					j_message_send(reply, connection);
-				}
-				break;
-			case J_MESSAGE_DB_SCHEMA_CREATE:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				// fallthrough
-			case J_MESSAGE_DB_SCHEMA_GET:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				// fallthrough
-			case J_MESSAGE_DB_SCHEMA_DELETE:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				// fallthrough
-			case J_MESSAGE_DB_INSERT:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_insert, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				// fallthrough
-			case J_MESSAGE_DB_UPDATE:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_update, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				// fallthrough
-			case J_MESSAGE_DB_DELETE:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_delete, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				// fallthrough
-			case J_MESSAGE_DB_QUERY:
-				if (!message_matched)
-				{
-					memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
-					message_matched = TRUE;
-				}
-				{
-					g_autoptr(JMessage) reply = NULL;
-					g_autoptr(GError) error = NULL;
-					gpointer batch = NULL;
-					gint ret;
+				key_len = strlen(key) + 1;
+
+				j_message_add_operation(reply, 4 + len + key_len);
+				j_message_append_4(reply, &len);
+				j_message_append_n(reply, value, len);
+				j_message_append_string(reply, key);
+			}
+
+			j_message_add_operation(reply, 4);
+			j_message_append_4(reply, &zero);
+
+			j_message_send(reply, connection);
+		}
+		break;
+		case J_MESSAGE_DB_SCHEMA_CREATE:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			// fallthrough
+		case J_MESSAGE_DB_SCHEMA_GET:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			// fallthrough
+		case J_MESSAGE_DB_SCHEMA_DELETE:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			// fallthrough
+		case J_MESSAGE_DB_INSERT:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_insert, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			// fallthrough
+		case J_MESSAGE_DB_UPDATE:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_update, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			// fallthrough
+		case J_MESSAGE_DB_DELETE:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_delete, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			// fallthrough
+		case J_MESSAGE_DB_QUERY:
+			if (!message_matched)
+			{
+				memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
+				message_matched = TRUE;
+			}
+			{
+				g_autoptr(JMessage) reply = NULL;
+				g_autoptr(GError) error = NULL;
+				gpointer batch = NULL;
+				gint ret;
 
 				reply = j_message_new_reply(message);
 
@@ -724,7 +733,7 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 
 				j_message_send(reply, connection);
 
-				first = TRUE;
+				message_matched = FALSE;
 			}
 			break;
 		default:

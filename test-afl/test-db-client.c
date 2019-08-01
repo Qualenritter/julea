@@ -26,7 +26,6 @@
 #include <julea.h>
 #include <julea-db.h>
 #include <db/jdb-internal.h>
-#include <julea-internal.h>
 #include "afl.h"
 
 //configure here->
