@@ -53,8 +53,7 @@ j_sql_prepare(const char* sql, void* _stmt, GError** error)
 {
 	sqlite3_stmt** stmt = _stmt;
 	j_trace_enter(G_STRFUNC, NULL);
-	if
-		G_UNLIKELY((sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
+	if(G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 		{
 			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
@@ -354,7 +353,7 @@ backend_fini(void)
 }
 static JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_DB,
-	.component = J_BACKEND_COMPONENT_SERVER,
+	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.db = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,
