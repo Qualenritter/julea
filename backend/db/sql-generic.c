@@ -1209,7 +1209,8 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	JSqlIterator* iterator = NULL;
 	bson_iter_t iter;
 	guint index;
-	guint i, j;
+	guint i;
+	guint j;
 	const char* tmp_string;
 	gboolean has_next;
 	bson_t schema;

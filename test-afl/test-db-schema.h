@@ -178,7 +178,9 @@ event_schema_get_field(void)
 static void
 event_schema_get_fields(void)
 {
-	guint i, j, k;
+	guint i;
+	guint j;
+	guint k;
 	gboolean found;
 	gboolean ret;
 	JDBType* types;
@@ -253,7 +255,8 @@ event_schema_add_index(void)
 static void
 event_schema_create(void)
 {
-	guint k, j;
+	guint k;
+	guint j;
 	JDBSchema* schema = NULL;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);

@@ -1049,7 +1049,9 @@ test_db_backend_create_base_test_files(const char* path)
 static void
 test_db_backend_init(void)
 {
-	guint i, j, k;
+	guint i;
+	guint j;
+	guint k;
 	for (i = 0; i < AFL_LIMIT_SCHEMA_STRING_VALUES; i++)
 	{
 		sprintf(&namespace_varvalues_string_const[i][0], AFL_STRING_CONST_FORMAT, i);
@@ -1132,7 +1134,8 @@ test_db_backend_exec(void)
 static void
 test_db_backend_cleanup(void)
 {
-	guint i, j;
+	guint i;
+	guint j;
 	for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
 	{
 		for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)

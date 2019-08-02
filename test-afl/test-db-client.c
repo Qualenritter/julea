@@ -154,7 +154,9 @@ main(int argc, char* argv[])
 {
 	FILE* file;
 	JDBAflEvent event;
-	guint i, j, k;
+	guint i;
+	guint j;
+	guint k;
 	if (argc > 1)
 	{
 		char filename[50 + strlen(argv[1])];
