@@ -212,7 +212,7 @@ mv gnuplot.plot progress-$y.plot
 done
 
 find . -size  0 -print0 |xargs -0 rm --
-rm *.csv tmp *.plot
+rm tmp *.plot
 
 pdfunite progress-* progress.pdf
 rm progress-*.pdf

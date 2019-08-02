@@ -625,7 +625,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		if (n <= 50000)
+		if ((n2 == 500 && n <= 50000) || (n2 == 50 && n <= 300000) || (n2 == 5 && n <= 3000000))
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch", n, n2);
