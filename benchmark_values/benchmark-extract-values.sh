@@ -2,12 +2,14 @@ folders=$(find -type d \
 | grep -v "^.$" \
 | sort \
 | grep -v "debug" \
+| grep -v "warnke-01" \
+| grep -v "warnke-02" \
+| grep -v "warnke-03" \
 )
 
 n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 #/db/scheme_1/write/db
-rm *.csv
-rm tmp
+rm *.csv tmp *.plot *.pdf
 for f in ${folders}
 do
 	for x in $(cat "$f/benchmark_values" | sed "s-.*/db/--g" | sed "s-:.*--g" | sed "s-^[^/]*/--g" | sort -n | uniq)
@@ -48,7 +50,7 @@ do
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-schema-backend.pdf'
-set title '$f-graph-schema-backend' noenhanced
+set title 'graph-schema-backend' noenhanced
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -75,7 +77,7 @@ do
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-schema-client-field.pdf'
-set title '$f-graph-schema-client-field' noenhanced
+set title 'graph-schema-client-field' noenhanced
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -83,7 +85,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set xlabel "#Schema" noenhanced
+set xlabel "#Fields" noenhanced
 set ylabel "operation/second" noenhanced
 plot	'$f-schema-add-field.csv' using 1:2 with lines title "add-field"	,\
 	'$f-schema-get-field.csv' using 1:2 with lines title "get-field"	,\
@@ -100,7 +102,7 @@ do
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-schema-client-memory.pdf'
-set title '$f-graph-schema-client-memory' noenhanced
+set title 'graph-schema-client-memory' noenhanced
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -108,7 +110,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set xlabel "#Schema" noenhanced
+set xlabel "#Nothing" noenhanced
 set ylabel "operation/second" noenhanced
 plot	'$f-schema-new.csv' using 1:2 with lines title "new"		,\
 	'$f-schema-ref.csv' using 1:2 with lines title "ref"		,\
@@ -131,7 +133,7 @@ fi
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-entry${n2}.pdf'
-set title '$f-graph-entry${n2}' noenhanced
+set title 'graph-entry${n2}' noenhanced
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -161,7 +163,7 @@ do
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-entry-client-memory.pdf'
-set title '$f-graph-entry-client-memory' noenhanced
+set title 'graph-entry-client-memory' noenhanced
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -169,7 +171,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set xlabel "#Entry" noenhanced
+set xlabel "#Nothing" noenhanced
 set ylabel "operation/second" noenhanced
 plot	'$f-entry-new.csv' using 1:2 with lines title "new"	,\
 	'$f-entry-ref.csv' using 1:2 with lines title "ref"	,\
@@ -194,7 +196,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set xlabel "#Entry" noenhanced
+set xlabel "#Elements" noenhanced
 set ylabel "operation/second" noenhanced
 EOF
 str=""
@@ -209,6 +211,15 @@ cat gnuplot.plot | gnuplot
 mv gnuplot.plot progress-$y.plot
 done
 
-rm tmp
 find . -size  0 -print0 |xargs -0 rm --
+rm *.csv tmp *.plot
+
+pdfunite progress-* progress.pdf
+rm progress-*.pdf
+
+for f in ${folders}
+do
+	pdfunite $f-*.pdf $f.pdf
+	rm $f-*.pdf
+done
 
