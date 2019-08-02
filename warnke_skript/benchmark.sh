@@ -71,7 +71,7 @@ sleep 2
 	export J_BENCHMARK_TARGET=0.001
 	export J_TRACE=sqltimer
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
-		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
+		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x1 2>&1
 	r=$?
 	if [ $r -ne 0 ]; then
@@ -97,7 +97,7 @@ sleep 2
 	export J_BENCHMARK_TARGET=0.001
 	export J_TRACE=sqltimer
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
-		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/share/glib-2.0/valgrind/glib.supp \
+		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../log/x2 2>&1
 	r=$?
 	if [ $r -ne 0 ]; then
