@@ -1,7 +1,6 @@
 /*
  * JULEA - Flexible storage framework
  * Copyright (C) 2017-2019 Michael Kuhn
- * Copyright (C) 2019 Benjamin Warnke
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -61,7 +60,7 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 	gchar* tpath = NULL;
 	gchar const* type_str = NULL;
 
-	switch (type)
+	switch(type)
 	{
 	case J_BACKEND_TYPE_OBJECT:
 		type_str = "object";
@@ -121,7 +120,16 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 
 	if (type == J_BACKEND_TYPE_OBJECT)
 	{
-		if (tmp_backend->object.backend_init == NULL || tmp_backend->object.backend_fini == NULL || tmp_backend->object.backend_create == NULL || tmp_backend->object.backend_delete == NULL || tmp_backend->object.backend_open == NULL || tmp_backend->object.backend_close == NULL || tmp_backend->object.backend_status == NULL || tmp_backend->object.backend_sync == NULL || tmp_backend->object.backend_read == NULL || tmp_backend->object.backend_write == NULL)
+		if (tmp_backend->object.backend_init == NULL
+		    || tmp_backend->object.backend_fini == NULL
+		    || tmp_backend->object.backend_create == NULL
+		    || tmp_backend->object.backend_delete == NULL
+		    || tmp_backend->object.backend_open == NULL
+		    || tmp_backend->object.backend_close == NULL
+		    || tmp_backend->object.backend_status == NULL
+		    || tmp_backend->object.backend_sync == NULL
+		    || tmp_backend->object.backend_read == NULL
+		    || tmp_backend->object.backend_write == NULL)
 		{
 			goto error;
 		}
@@ -129,7 +137,16 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 
 	if (type == J_BACKEND_TYPE_KV)
 	{
-		if (tmp_backend->kv.backend_init == NULL || tmp_backend->kv.backend_fini == NULL || tmp_backend->kv.backend_batch_start == NULL || tmp_backend->kv.backend_batch_execute == NULL || tmp_backend->kv.backend_put == NULL || tmp_backend->kv.backend_delete == NULL || tmp_backend->kv.backend_get == NULL || tmp_backend->kv.backend_get_all == NULL || tmp_backend->kv.backend_get_by_prefix == NULL || tmp_backend->kv.backend_iterate == NULL)
+		if (tmp_backend->kv.backend_init == NULL
+		    || tmp_backend->kv.backend_fini == NULL
+		    || tmp_backend->kv.backend_batch_start == NULL
+		    || tmp_backend->kv.backend_batch_execute == NULL
+		    || tmp_backend->kv.backend_put == NULL
+		    || tmp_backend->kv.backend_delete == NULL
+		    || tmp_backend->kv.backend_get == NULL
+		    || tmp_backend->kv.backend_get_all == NULL
+		    || tmp_backend->kv.backend_get_by_prefix == NULL
+		    || tmp_backend->kv.backend_iterate == NULL)
 		{
 			goto error;
 		}
@@ -137,7 +154,18 @@ j_backend_load(gchar const* name, JBackendComponent component, JBackendType type
 
 	if (type == J_BACKEND_TYPE_DB)
 	{
-		if (tmp_backend->db.backend_init == NULL || tmp_backend->db.backend_fini == NULL || tmp_backend->db.backend_batch_start == NULL || tmp_backend->db.backend_batch_execute == NULL || tmp_backend->db.backend_schema_create == NULL || tmp_backend->db.backend_schema_get == NULL || tmp_backend->db.backend_schema_delete == NULL || tmp_backend->db.backend_insert == NULL || tmp_backend->db.backend_update == NULL || tmp_backend->db.backend_delete == NULL || tmp_backend->db.backend_query == NULL || tmp_backend->db.backend_iterate == NULL)
+		if (tmp_backend->db.backend_init == NULL
+		    || tmp_backend->db.backend_fini == NULL
+		    || tmp_backend->db.backend_batch_start == NULL
+		    || tmp_backend->db.backend_batch_execute == NULL
+		    || tmp_backend->db.backend_schema_create == NULL
+		    || tmp_backend->db.backend_schema_get == NULL
+		    || tmp_backend->db.backend_schema_delete == NULL
+		    || tmp_backend->db.backend_insert == NULL
+		    || tmp_backend->db.backend_update == NULL
+		    || tmp_backend->db.backend_delete == NULL
+		    || tmp_backend->db.backend_query == NULL
+		    || tmp_backend->db.backend_iterate == NULL)
 		{
 			goto error;
 		}
@@ -159,7 +187,7 @@ error:
 }
 
 gboolean
-j_backend_load_client(gchar const* name, gchar const* component, JBackendType type, GModule** module, JBackend** backend)
+j_backend_load_client (gchar const* name, gchar const* component, JBackendType type, GModule** module, JBackend** backend)
 {
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(component != NULL, FALSE);
@@ -181,7 +209,7 @@ j_backend_load_client(gchar const* name, gchar const* component, JBackendType ty
 }
 
 gboolean
-j_backend_load_server(gchar const* name, gchar const* component, JBackendType type, GModule** module, JBackend** backend)
+j_backend_load_server (gchar const* name, gchar const* component, JBackendType type, GModule** module, JBackend** backend)
 {
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(component != NULL, FALSE);
@@ -203,7 +231,7 @@ j_backend_load_server(gchar const* name, gchar const* component, JBackendType ty
 }
 
 gboolean
-j_backend_object_init(JBackend* backend, gchar const* path)
+j_backend_object_init (JBackend* backend, gchar const* path)
 {
 	gboolean ret;
 
@@ -219,7 +247,7 @@ j_backend_object_init(JBackend* backend, gchar const* path)
 }
 
 void
-j_backend_object_fini(JBackend* backend)
+j_backend_object_fini (JBackend* backend)
 {
 	g_return_if_fail(backend != NULL);
 	g_return_if_fail(backend->type == J_BACKEND_TYPE_OBJECT);
@@ -230,7 +258,7 @@ j_backend_object_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_object_create(JBackend* backend, gchar const* namespace, gchar const* path, gpointer* data)
+j_backend_object_create (JBackend* backend, gchar const* namespace, gchar const* path, gpointer* data)
 {
 	gboolean ret;
 
@@ -248,7 +276,7 @@ j_backend_object_create(JBackend* backend, gchar const* namespace, gchar const* 
 }
 
 gboolean
-j_backend_object_open(JBackend* backend, gchar const* namespace, gchar const* path, gpointer* data)
+j_backend_object_open (JBackend* backend, gchar const* namespace, gchar const* path, gpointer* data)
 {
 	gboolean ret;
 
@@ -266,7 +294,7 @@ j_backend_object_open(JBackend* backend, gchar const* namespace, gchar const* pa
 }
 
 gboolean
-j_backend_object_delete(JBackend* backend, gpointer data)
+j_backend_object_delete (JBackend* backend, gpointer data)
 {
 	gboolean ret;
 
@@ -282,7 +310,7 @@ j_backend_object_delete(JBackend* backend, gpointer data)
 }
 
 gboolean
-j_backend_object_close(JBackend* backend, gpointer data)
+j_backend_object_close (JBackend* backend, gpointer data)
 {
 	gboolean ret;
 
@@ -298,7 +326,7 @@ j_backend_object_close(JBackend* backend, gpointer data)
 }
 
 gboolean
-j_backend_object_status(JBackend* backend, gpointer data, gint64* modification_time, guint64* size)
+j_backend_object_status (JBackend* backend, gpointer data, gint64* modification_time, guint64* size)
 {
 	gboolean ret;
 
@@ -316,7 +344,7 @@ j_backend_object_status(JBackend* backend, gpointer data, gint64* modification_t
 }
 
 gboolean
-j_backend_object_sync(JBackend* backend, gpointer data)
+j_backend_object_sync (JBackend* backend, gpointer data)
 {
 	gboolean ret;
 
@@ -332,7 +360,7 @@ j_backend_object_sync(JBackend* backend, gpointer data)
 }
 
 gboolean
-j_backend_object_read(JBackend* backend, gpointer data, gpointer buffer, guint64 length, guint64 offset, guint64* bytes_read)
+j_backend_object_read (JBackend* backend, gpointer data, gpointer buffer, guint64 length, guint64 offset, guint64* bytes_read)
 {
 	gboolean ret;
 
@@ -350,7 +378,7 @@ j_backend_object_read(JBackend* backend, gpointer data, gpointer buffer, guint64
 }
 
 gboolean
-j_backend_object_write(JBackend* backend, gpointer data, gconstpointer buffer, guint64 length, guint64 offset, guint64* bytes_written)
+j_backend_object_write (JBackend* backend, gpointer data, gconstpointer buffer, guint64 length, guint64 offset, guint64* bytes_written)
 {
 	gboolean ret;
 
@@ -368,7 +396,7 @@ j_backend_object_write(JBackend* backend, gpointer data, gconstpointer buffer, g
 }
 
 gboolean
-j_backend_kv_init(JBackend* backend, gchar const* path)
+j_backend_kv_init (JBackend* backend, gchar const* path)
 {
 	gboolean ret;
 
@@ -384,7 +412,7 @@ j_backend_kv_init(JBackend* backend, gchar const* path)
 }
 
 void
-j_backend_kv_fini(JBackend* backend)
+j_backend_kv_fini (JBackend* backend)
 {
 	g_return_if_fail(backend != NULL);
 	g_return_if_fail(backend->type == J_BACKEND_TYPE_KV);
@@ -395,7 +423,7 @@ j_backend_kv_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_kv_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch)
+j_backend_kv_batch_start (JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch)
 {
 	gboolean ret;
 
@@ -412,7 +440,7 @@ j_backend_kv_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSa
 }
 
 gboolean
-j_backend_kv_batch_execute(JBackend* backend, gpointer batch)
+j_backend_kv_batch_execute (JBackend* backend, gpointer batch)
 {
 	gboolean ret;
 
@@ -428,7 +456,7 @@ j_backend_kv_batch_execute(JBackend* backend, gpointer batch)
 }
 
 gboolean
-j_backend_kv_put(JBackend* backend, gpointer batch, gchar const* key, gconstpointer value, guint32 value_len)
+j_backend_kv_put (JBackend* backend, gpointer batch, gchar const* key, gconstpointer value, guint32 value_len)
 {
 	gboolean ret;
 
@@ -446,7 +474,7 @@ j_backend_kv_put(JBackend* backend, gpointer batch, gchar const* key, gconstpoin
 }
 
 gboolean
-j_backend_kv_delete(JBackend* backend, gpointer batch, gchar const* key)
+j_backend_kv_delete (JBackend* backend, gpointer batch, gchar const* key)
 {
 	gboolean ret;
 
@@ -463,7 +491,7 @@ j_backend_kv_delete(JBackend* backend, gpointer batch, gchar const* key)
 }
 
 gboolean
-j_backend_kv_get(JBackend* backend, gpointer batch, gchar const* key, gpointer* value, guint32* value_len)
+j_backend_kv_get (JBackend* backend, gpointer batch, gchar const* key, gpointer* value, guint32* value_len)
 {
 	gboolean ret;
 
@@ -482,7 +510,7 @@ j_backend_kv_get(JBackend* backend, gpointer batch, gchar const* key, gpointer* 
 }
 
 gboolean
-j_backend_kv_get_all(JBackend* backend, gchar const* namespace, gpointer* iterator)
+j_backend_kv_get_all (JBackend* backend, gchar const* namespace, gpointer* iterator)
 {
 	gboolean ret;
 
@@ -499,7 +527,7 @@ j_backend_kv_get_all(JBackend* backend, gchar const* namespace, gpointer* iterat
 }
 
 gboolean
-j_backend_kv_get_by_prefix(JBackend* backend, gchar const* namespace, gchar const* prefix, gpointer* iterator)
+j_backend_kv_get_by_prefix (JBackend* backend, gchar const* namespace, gchar const* prefix, gpointer* iterator)
 {
 	gboolean ret;
 
@@ -516,7 +544,7 @@ j_backend_kv_get_by_prefix(JBackend* backend, gchar const* namespace, gchar cons
 	return ret;
 }
 gboolean
-j_backend_kv_iterate(JBackend* backend, gpointer iterator, gchar const** key, gconstpointer* value, guint32* value_len)
+j_backend_kv_iterate (JBackend* backend, gpointer iterator, gchar const** key, gconstpointer* value, guint32* value_len)
 {
 	gboolean ret;
 
@@ -535,7 +563,7 @@ j_backend_kv_iterate(JBackend* backend, gpointer iterator, gchar const** key, gc
 }
 
 gboolean
-j_backend_db_init(JBackend* backend, gchar const* path)
+j_backend_db_init (JBackend* backend, gchar const* path)
 {
 	gboolean ret;
 
@@ -551,7 +579,7 @@ j_backend_db_init(JBackend* backend, gchar const* path)
 }
 
 void
-j_backend_db_fini(JBackend* backend)
+j_backend_db_fini (JBackend* backend)
 {
 	g_return_if_fail(backend != NULL);
 	g_return_if_fail(backend->type == J_BACKEND_TYPE_DB);
@@ -562,7 +590,7 @@ j_backend_db_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch, GError** error)
+j_backend_db_batch_start (JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch, GError** error)
 {
 	gboolean ret;
 
@@ -577,7 +605,7 @@ j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSa
 }
 
 gboolean
-j_backend_db_batch_execute(JBackend* backend, gpointer batch, GError** error)
+j_backend_db_batch_execute (JBackend* backend, gpointer batch, GError** error)
 {
 	gboolean ret;
 
@@ -592,7 +620,7 @@ j_backend_db_batch_execute(JBackend* backend, gpointer batch, GError** error)
 }
 
 gboolean
-j_backend_db_schema_create(JBackend* backend, gpointer batch, gchar const* name, bson_t const* schema, GError** error)
+j_backend_db_schema_create (JBackend* backend, gpointer batch, gchar const* name, bson_t const* schema, GError** error)
 {
 	gboolean ret;
 
@@ -607,7 +635,7 @@ j_backend_db_schema_create(JBackend* backend, gpointer batch, gchar const* name,
 }
 
 gboolean
-j_backend_db_schema_get(JBackend* backend, gpointer batch, gchar const* name, bson_t* schema, GError** error)
+j_backend_db_schema_get (JBackend* backend, gpointer batch, gchar const* name, bson_t* schema, GError** error)
 {
 	gboolean ret;
 
@@ -622,7 +650,7 @@ j_backend_db_schema_get(JBackend* backend, gpointer batch, gchar const* name, bs
 }
 
 gboolean
-j_backend_db_schema_delete(JBackend* backend, gpointer batch, gchar const* name, GError** error)
+j_backend_db_schema_delete (JBackend* backend, gpointer batch, gchar const* name, GError** error)
 {
 	gboolean ret;
 
@@ -637,7 +665,7 @@ j_backend_db_schema_delete(JBackend* backend, gpointer batch, gchar const* name,
 }
 
 gboolean
-j_backend_db_insert(JBackend* backend, gpointer batch, gchar const* name, bson_t const* metadata, GError** error)
+j_backend_db_insert (JBackend* backend, gpointer batch, gchar const* name, bson_t const* metadata, GError** error)
 {
 	gboolean ret;
 
@@ -652,7 +680,7 @@ j_backend_db_insert(JBackend* backend, gpointer batch, gchar const* name, bson_t
 }
 
 gboolean
-j_backend_db_update(JBackend* backend, gpointer batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
+j_backend_db_update (JBackend* backend, gpointer batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
 	gboolean ret;
 
@@ -667,7 +695,7 @@ j_backend_db_update(JBackend* backend, gpointer batch, gchar const* name, bson_t
 }
 
 gboolean
-j_backend_db_delete(JBackend* backend, gpointer batch, gchar const* name, bson_t const* selector, GError** error)
+j_backend_db_delete (JBackend* backend, gpointer batch, gchar const* name, bson_t const* selector, GError** error)
 {
 	gboolean ret;
 
@@ -682,7 +710,7 @@ j_backend_db_delete(JBackend* backend, gpointer batch, gchar const* name, bson_t
 }
 
 gboolean
-j_backend_db_query(JBackend* backend, gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
+j_backend_db_query (JBackend* backend, gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	gboolean ret;
 
@@ -697,7 +725,7 @@ j_backend_db_query(JBackend* backend, gpointer batch, gchar const* name, bson_t 
 }
 
 gboolean
-j_backend_db_iterate(JBackend* backend, gpointer iterator, bson_t* metadata, GError** error)
+j_backend_db_iterate (JBackend* backend, gpointer iterator, bson_t* metadata, GError** error)
 {
 	gboolean ret;
 

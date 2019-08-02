@@ -39,43 +39,44 @@
  **/
 
 gboolean
-j_backend_operation_unwrap_db_schema_create(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_schema_create (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	return j_backend_db_schema_create(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
 gboolean
-j_backend_operation_unwrap_db_schema_get(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_schema_get (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	return j_backend_db_schema_get(backend, batch, data->in_param[1].ptr, data->out_param[0].ptr, data->out_param[1].ptr);
 }
 
 gboolean
-j_backend_operation_unwrap_db_schema_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_schema_delete (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	return j_backend_db_schema_delete(backend, batch, data->in_param[1].ptr, data->out_param[0].ptr);
 }
 
 gboolean
-j_backend_operation_unwrap_db_insert(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_insert (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	return j_backend_db_insert(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
 gboolean
-j_backend_operation_unwrap_db_update(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_update (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	return j_backend_db_update(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->in_param[3].ptr, data->out_param[0].ptr);
 }
 
 gboolean
-j_backend_operation_unwrap_db_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_delete (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	return j_backend_db_delete(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
+// FIXME clean up
 gboolean
-j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_query (JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	GError** error;
 	gboolean ret;

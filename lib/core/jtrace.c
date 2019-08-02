@@ -150,15 +150,17 @@ static GHashTable* otf_counter_table = NULL;
 G_LOCK_DEFINE_STATIC(j_trace_otf);
 #endif
 
-static void
-j_trace_timer_free_func(gpointer data)
+static
+void
+j_trace_timer_free_func (gpointer data)
 {
 	JTraceTimer* timer = data;
 	g_slice_free(JTraceTimer, timer);
 }
 
-static void
-j_trace_thread_default_free(gpointer data)
+static
+void
+j_trace_thread_default_free (gpointer data)
 {
 	JTrace* trace = data;
 
@@ -180,8 +182,9 @@ G_LOCK_DEFINE_STATIC(j_trace_echo);
  * \param trace     A trace.
  * \param timestamp A timestamp.
  **/
-static void
-j_trace_echo_printerr(JTrace* trace, guint64 timestamp)
+static
+void
+j_trace_echo_printerr (JTrace* trace, guint64 timestamp)
 {
 	guint i;
 
@@ -206,8 +209,9 @@ j_trace_echo_printerr(JTrace* trace, guint64 timestamp)
  *
  * \return A time stamp in microseconds.
  **/
-static guint64
-j_trace_get_time(void)
+static
+guint64
+j_trace_get_time (void)
 {
 	GTimeVal timeval;
 	guint64 timestamp;
@@ -230,8 +234,9 @@ j_trace_get_time(void)
  *
  * \return A name.
  **/
-static gchar const*
-j_trace_file_operation_name(JTraceFileOperation op)
+static
+gchar const*
+j_trace_file_operation_name (JTraceFileOperation op)
 {
 	switch (op)
 	{
@@ -268,8 +273,9 @@ j_trace_file_operation_name(JTraceFileOperation op)
  *
  * \return TRUE if the function should be traced, FALSE otherwise.
  **/
-static gboolean
-j_trace_function_check(gchar const* name)
+static
+gboolean
+j_trace_function_check (gchar const* name)
 {
 	if (j_trace_function_patterns != NULL)
 	{

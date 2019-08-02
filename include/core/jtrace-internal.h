@@ -50,23 +50,23 @@ struct JTrace;
 
 typedef struct JTrace JTrace;
 
-void j_trace_init(gchar const*);
-void j_trace_flush(const char*);
-void j_trace_fini(void);
+void j_trace_init (gchar const*);
+void j_trace_flush (const char*);
+void j_trace_fini (void);
 
-JTrace* j_trace_get_thread_default(void);
+JTrace* j_trace_get_thread_default (void);
 
-JTrace* j_trace_new(GThread*);
-JTrace* j_trace_ref(JTrace*);
-void j_trace_unref(JTrace*);
+JTrace* j_trace_new (GThread*);
+JTrace* j_trace_ref (JTrace*);
+void j_trace_unref (JTrace*);
 
-void j_trace_enter(gchar const*, gchar const*, ...) G_GNUC_PRINTF(2, 3);
-void j_trace_leave(gchar const*);
+void j_trace_enter (gchar const*, gchar const*, ...) G_GNUC_PRINTF(2, 3);
+void j_trace_leave (gchar const*);
 
-void j_trace_file_begin(gchar const*, JTraceFileOperation);
-void j_trace_file_end(gchar const*, JTraceFileOperation, guint64, guint64);
+void j_trace_file_begin (gchar const*, JTraceFileOperation);
+void j_trace_file_end (gchar const*, JTraceFileOperation, guint64, guint64);
 
-void j_trace_counter(gchar const*, guint64);
+void j_trace_counter (gchar const*, guint64);
 
 G_END_DECLS
 
