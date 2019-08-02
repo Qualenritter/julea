@@ -145,17 +145,15 @@ static GHashTable* otf_counter_table = NULL;
 G_LOCK_DEFINE_STATIC(j_trace_otf);
 #endif
 
-static
-void
-j_trace_timer_free_func (gpointer data)
+static void
+j_trace_timer_free_func(gpointer data)
 {
 	JTraceTimer* timer = data;
 	g_slice_free(JTraceTimer, timer);
 }
 
-static
-void
-j_trace_thread_default_free (gpointer data)
+static void
+j_trace_thread_default_free(gpointer data)
 {
 	JTrace* trace = data;
 
@@ -177,9 +175,8 @@ G_LOCK_DEFINE_STATIC(j_trace_echo);
  * \param trace     A trace.
  * \param timestamp A timestamp.
  **/
-static
-void
-j_trace_echo_printerr (JTrace* trace, guint64 timestamp)
+static void
+j_trace_echo_printerr(JTrace* trace, guint64 timestamp)
 {
 	guint i;
 
@@ -204,9 +201,8 @@ j_trace_echo_printerr (JTrace* trace, guint64 timestamp)
  *
  * \return A time stamp in microseconds.
  **/
-static
-guint64
-j_trace_get_time (void)
+static guint64
+j_trace_get_time(void)
 {
 	GTimeVal timeval;
 	guint64 timestamp;
@@ -229,9 +225,8 @@ j_trace_get_time (void)
  *
  * \return A name.
  **/
-static
-gchar const*
-j_trace_file_operation_name (JTraceFileOperation op)
+static gchar const*
+j_trace_file_operation_name(JTraceFileOperation op)
 {
 	switch (op)
 	{
@@ -268,9 +263,8 @@ j_trace_file_operation_name (JTraceFileOperation op)
  *
  * \return TRUE if the function should be traced, FALSE otherwise.
  **/
-static
-gboolean
-j_trace_function_check (gchar const* name)
+static gboolean
+j_trace_function_check(gchar const* name)
 {
 	if (j_trace_function_patterns != NULL)
 	{
@@ -304,7 +298,7 @@ j_trace_function_check (gchar const* name)
  * \param name A trace name.
  **/
 void
-j_trace_init (gchar const* name)
+j_trace_init(gchar const* name)
 {
 	gchar const* j_trace;
 	gchar const* j_trace_function;
@@ -406,7 +400,7 @@ j_trace_init (gchar const* name)
  * \endcode
  **/
 void
-j_trace_fini (void)
+j_trace_fini(void)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -458,7 +452,7 @@ j_trace_fini (void)
  * \return The thread-default trace.
  **/
 JTrace*
-j_trace_get_thread_default (void)
+j_trace_get_thread_default(void)
 {
 	JTrace* trace;
 
@@ -484,7 +478,7 @@ j_trace_get_thread_default (void)
  * \return A new trace. Should be freed with j_trace_unref().
  **/
 JTrace*
-j_trace_new (GThread* thread)
+j_trace_new(GThread* thread)
 {
 	JTrace* trace;
 
@@ -548,7 +542,7 @@ j_trace_new (GThread* thread)
  * \return #trace.
  **/
 JTrace*
-j_trace_ref (JTrace* trace)
+j_trace_ref(JTrace* trace)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -572,7 +566,7 @@ j_trace_ref (JTrace* trace)
  * \param trace A trace.
  **/
 void
-j_trace_unref (JTrace* trace)
+j_trace_unref(JTrace* trace)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -623,7 +617,7 @@ j_trace_unref (JTrace* trace)
  * \param name  A function name.
  **/
 void
-j_trace_enter (gchar const* name, gchar const* format, ...)
+j_trace_enter(gchar const* name, gchar const* format, ...)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -771,7 +765,7 @@ j_trace_enter (gchar const* name, gchar const* format, ...)
  * \param name  A function name.
  **/
 void
-j_trace_leave (gchar const* name)
+j_trace_leave(gchar const* name)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -881,7 +875,7 @@ j_trace_flush(const char* prefix)
 			timer_val = value;
 			if (timer_val->elapsed > 0)
 			{
-				g_debug("trace-timer: %s, %f, %f, %s", prefix, timer_val->elapsed - timer_val->elapsed_child, timer_val->elapsed, (char*)key);
+				g_message("trace-timer: %s, %f, %f, %s", prefix, timer_val->elapsed - timer_val->elapsed_child, timer_val->elapsed, (char*)key);
 				timer_val->elapsed = 0;
 				timer_val->elapsed_child = 0;
 			}
@@ -892,7 +886,7 @@ j_trace_flush(const char* prefix)
 		JTraceTimer* timer_val;
 		JTraceTimer* timer_val_root;
 		g_hash_table_iter_init(&iter, trace->timer);
-		g_debug("CREATE TABLE IF NOT EXISTS benchmark (id INTEGER, parent_id INTEGER, root_id INTEGER, prefix TEXT, elapsed DOUBLE, elapsed_no_child DOUBLE, function_name TEXT);");
+		g_message("CREATE TABLE IF NOT EXISTS benchmark (id INTEGER, parent_id INTEGER, root_id INTEGER, prefix TEXT, elapsed DOUBLE, elapsed_no_child DOUBLE, function_name TEXT);");
 		while (g_hash_table_iter_next(&iter, &key, &value))
 		{
 			timer_val = value;
@@ -903,7 +897,7 @@ j_trace_flush(const char* prefix)
 			}
 			if (timer_val->elapsed > 0)
 			{
-				g_debug("INSERT INTO benchmark (id,parent_id,root_id,prefix,elapsed,elapsed_no_child,function_name) VALUES (%d, %d, %d, \"%s\", %f, %f, \"%s\");",
+				g_message("INSERT INTO benchmark (id,parent_id,root_id,prefix,elapsed,elapsed_no_child,function_name) VALUES (%d, %d, %d, \"%s\", %f, %f, \"%s\");",
 					timer_val->id,
 					timer_val->parent ? timer_val->parent->id : timer_val->id,
 					timer_val_root->id,
@@ -929,7 +923,7 @@ j_trace_flush(const char* prefix)
  * \param op    A file operation.
  **/
 void
-j_trace_file_begin (gchar const* path, JTraceFileOperation op)
+j_trace_file_begin(gchar const* path, JTraceFileOperation op)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -992,7 +986,7 @@ j_trace_file_begin (gchar const* path, JTraceFileOperation op)
  * \param offset An offset.
  **/
 void
-j_trace_file_end (gchar const* path, JTraceFileOperation op, guint64 length, guint64 offset)
+j_trace_file_end(gchar const* path, JTraceFileOperation op, guint64 length, guint64 offset)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -1086,7 +1080,7 @@ j_trace_file_end (gchar const* path, JTraceFileOperation op, guint64 length, gui
  * \param counter_value A counter value.
  **/
 void
-j_trace_counter (gchar const* name, guint64 counter_value)
+j_trace_counter(gchar const* name, guint64 counter_value)
 {
 	JTrace* trace;
 	guint64 timestamp;
