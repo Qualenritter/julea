@@ -73,11 +73,6 @@ struct JTrace
 	gchar* thread_name;
 
 	/**
-	 * Name of the thread function.
-	 **/
-	gchar* function_name;
-
-	/**
 	 * Function depth within the current thread.
 	 **/
 	guint function_depth;
@@ -309,7 +304,7 @@ j_trace_function_check (gchar const* name)
  * \param name A trace name.
  **/
 void
-j_trace_init(gchar const* name)
+j_trace_init (gchar const* name)
 {
 	gchar const* j_trace;
 	gchar const* j_trace_function;
@@ -411,7 +406,7 @@ j_trace_init(gchar const* name)
  * \endcode
  **/
 void
-j_trace_fini(void)
+j_trace_fini (void)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -463,7 +458,7 @@ j_trace_fini(void)
  * \return The thread-default trace.
  **/
 JTrace*
-j_trace_get_thread_default(void)
+j_trace_get_thread_default (void)
 {
 	JTrace* trace;
 
@@ -489,7 +484,7 @@ j_trace_get_thread_default(void)
  * \return A new trace. Should be freed with j_trace_unref().
  **/
 JTrace*
-j_trace_new(GThread* thread)
+j_trace_new (GThread* thread)
 {
 	JTrace* trace;
 
@@ -553,7 +548,7 @@ j_trace_new(GThread* thread)
  * \return #trace.
  **/
 JTrace*
-j_trace_ref(JTrace* trace)
+j_trace_ref (JTrace* trace)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -577,7 +572,7 @@ j_trace_ref(JTrace* trace)
  * \param trace A trace.
  **/
 void
-j_trace_unref(JTrace* trace)
+j_trace_unref (JTrace* trace)
 {
 	if (j_trace_flags == J_TRACE_OFF)
 	{
@@ -628,7 +623,7 @@ j_trace_unref(JTrace* trace)
  * \param name  A function name.
  **/
 void
-j_trace_enter(gchar const* name, gchar const* format, ...)
+j_trace_enter (gchar const* name, gchar const* format, ...)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -776,7 +771,7 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
  * \param name  A function name.
  **/
 void
-j_trace_leave(gchar const* name)
+j_trace_leave (gchar const* name)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -791,12 +786,6 @@ j_trace_leave(gchar const* name)
 	trace = j_trace_get_thread_default();
 
 	if (!j_trace_function_check(name))
-	{
-		return;
-	}
-
-	/* FIXME */
-	if (trace->function_depth == 0)
 	{
 		return;
 	}
@@ -940,7 +929,7 @@ j_trace_flush(const char* prefix)
  * \param op    A file operation.
  **/
 void
-j_trace_file_begin(gchar const* path, JTraceFileOperation op)
+j_trace_file_begin (gchar const* path, JTraceFileOperation op)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -1003,7 +992,7 @@ j_trace_file_begin(gchar const* path, JTraceFileOperation op)
  * \param offset An offset.
  **/
 void
-j_trace_file_end(gchar const* path, JTraceFileOperation op, guint64 length, guint64 offset)
+j_trace_file_end (gchar const* path, JTraceFileOperation op, guint64 length, guint64 offset)
 {
 	JTrace* trace;
 	guint64 timestamp;
@@ -1097,7 +1086,7 @@ j_trace_file_end(gchar const* path, JTraceFileOperation op, guint64 length, guin
  * \param counter_value A counter value.
  **/
 void
-j_trace_counter(gchar const* name, guint64 counter_value)
+j_trace_counter (gchar const* name, guint64 counter_value)
 {
 	JTrace* trace;
 	guint64 timestamp;

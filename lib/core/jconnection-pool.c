@@ -343,7 +343,7 @@ j_connection_pool_push_kv (guint index, GSocketConnection* connection)
 }
 
 GSocketConnection*
-j_connection_pool_pop_db(guint index)
+j_connection_pool_pop_db (guint index)
 {
 	if (!JULEA_TEST_MOCKUP)
 	{
@@ -365,7 +365,7 @@ j_connection_pool_pop_db(guint index)
 }
 
 void
-j_connection_pool_push_db(guint index, GSocketConnection* connection)
+j_connection_pool_push_db (guint index, GSocketConnection* connection)
 {
 	if (!JULEA_TEST_MOCKUP)
 	{
