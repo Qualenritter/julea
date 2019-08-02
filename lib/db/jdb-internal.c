@@ -61,6 +61,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	JBackend* db_backend = j_db_backend();
 	gpointer batch = NULL;
 	GError* error = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (db_backend == NULL || JULEA_TEST_MOCKUP)
 	{
@@ -145,6 +146,7 @@ j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t co
 {
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
@@ -171,6 +173,7 @@ j_db_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* sche
 {
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_schema_get, sizeof(JBackendOperation));
@@ -197,6 +200,7 @@ j_db_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* b
 {
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_schema_delete, sizeof(JBackendOperation));
@@ -222,6 +226,7 @@ j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* me
 {
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_insert, sizeof(JBackendOperation));
@@ -248,6 +253,7 @@ j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* se
 {
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_update, sizeof(JBackendOperation));
@@ -275,6 +281,7 @@ j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* se
 {
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_delete, sizeof(JBackendOperation));
@@ -302,6 +309,7 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	J_db_iterator_helper* helper;
 	JOperation* op;
 	JBackendOperation* data;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!iterator))
 	{
@@ -337,6 +345,7 @@ j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 	J_db_iterator_helper* helper = iterator;
 	gboolean has_next;
 	bson_t zerobson;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	memset(&zerobson, 0, sizeof(bson_t));
 	if (!helper->initialized)

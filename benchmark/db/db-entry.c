@@ -53,6 +53,7 @@ benchmark_db_entry_ref(BenchmarkResult* result)
 	guint m = 0;
 	gdouble elapsed_ref = 0;
 	gdouble elapsed_unref = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_entry_ref_executed)
 	{
@@ -100,6 +101,7 @@ static void
 benchmark_db_entry_unref(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_entry_unref_executed)
 	{
@@ -122,6 +124,7 @@ benchmark_db_entry_new(BenchmarkResult* result)
 	guint m = 0;
 	gdouble elapsed_new = 0;
 	gdouble elapsed_free = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_entry_new_executed)
 	{
@@ -166,6 +169,7 @@ static void
 benchmark_db_entry_free(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_entry_free_executed)
 	{
@@ -188,6 +192,7 @@ benchmark_db_entry_set_field(BenchmarkResult* result)
 	char varname[50];
 	guint m = 0;
 	gdouble elapsed = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
@@ -245,6 +250,7 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch)
 	gdouble elapsed_iterator_single = 0;
 	gdouble elapsed_iterator_all = 0;
 	g_autoptr(JSemantics) semantics = NULL;
+
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (benchmark_db_entry_insert_executed)
 	{
@@ -471,6 +477,7 @@ static void
 _benchmark_db_entry_update(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_entry_update_executed)
 	{
@@ -498,6 +505,7 @@ static void
 _benchmark_db_entry_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_entry_delete_executed)
 	{
@@ -525,6 +533,7 @@ static void
 benchmark_db_iterator_single(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_iterator_single_executed)
 	{
@@ -538,6 +547,7 @@ static void
 benchmark_db_iterator_all(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", n, n2);
 	if (!benchmark_db_iterator_all_executed)
 	{
@@ -553,6 +563,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 	guint i;
 	char testname[500];
 	n = _n;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;
 	{

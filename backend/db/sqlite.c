@@ -35,6 +35,7 @@ static gboolean
 j_sql_finalize(void* _stmt, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(sqlite3_finalize(stmt) != SQLITE_OK))
 	{
@@ -52,12 +53,13 @@ static gboolean
 j_sql_prepare(const char* sql, void* _stmt, GError** error)
 {
 	sqlite3_stmt** stmt = _stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if(G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
-		{
-			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
-			goto _error;
-		}
+	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
+	{
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
+		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -70,6 +72,7 @@ static gboolean
 j_sql_bind_null(void* _stmt, guint idx, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(sqlite3_bind_null(stmt, idx) != SQLITE_OK))
 	{
@@ -87,6 +90,7 @@ static gboolean
 j_sql_column(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	switch (type)
 	{
@@ -131,6 +135,7 @@ static gboolean
 j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	switch (type)
 	{
@@ -205,6 +210,7 @@ static gboolean
 j_sql_reset(void* _stmt, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(sqlite3_reset(stmt) != SQLITE_OK))
 	{
@@ -222,6 +228,7 @@ static gboolean
 j_sql_exec(const char* sql, GError** error)
 {
 	sqlite3_stmt* stmt;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_prepare(sql, &stmt, error)))
 	{
@@ -255,6 +262,7 @@ j_sql_step(void* _stmt, gboolean* found, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
 	guint ret;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	ret = sqlite3_step(stmt);
 	*found = ret == SQLITE_ROW;
@@ -281,6 +289,7 @@ static gboolean
 j_sql_step_and_reset_check_done(void* _stmt, GError** error)
 {
 	gboolean sql_found;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step(_stmt, &sql_found, error)))
 	{
@@ -310,6 +319,7 @@ static gboolean
 backend_init(gchar const* path)
 {
 	g_autofree gchar* dirname = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	g_return_val_if_fail(path != NULL, FALSE);
 	if (strncmp("memory", path, 5))
@@ -346,6 +356,7 @@ _error:
 static void
 backend_fini(void)
 {
+
 	j_trace_enter(G_STRFUNC, NULL);
 	fini_sql();
 	sqlite3_close(backend_db);

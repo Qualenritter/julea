@@ -39,6 +39,7 @@ j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
 	JDBTypeValue val;
 	JDBSelector* selector = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(mode >= _J_DB_SELECTOR_MODE_COUNT))
 	{
@@ -102,6 +103,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	bson_t bson;
 	JDBType type;
 	JDBTypeValue val;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!selector))
 	{
@@ -186,6 +188,7 @@ gboolean
 j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
 	char buf[20];
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!selector || !sub_selector))
 	{

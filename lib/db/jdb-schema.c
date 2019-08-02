@@ -37,6 +37,7 @@ JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
 	JDBSchema* schema = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!namespace))
 	{
@@ -99,6 +100,7 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 {
 	JDBTypeValue val;
 	bson_iter_t iter;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
 	{
@@ -152,6 +154,7 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 {
 	JDBTypeValue val;
 	bson_iter_t iter;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
 	{
@@ -200,6 +203,7 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	guint i;
 	JDBTypeValue val;
 	const char* key;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
 	{
@@ -275,6 +279,7 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	const char* key;
 	char buf[20];
 	gchar const** name;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
 	{
@@ -453,6 +458,7 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 	gint ret;
 	gboolean has_next;
 	const char* key;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema1 || !schema2))
 	{

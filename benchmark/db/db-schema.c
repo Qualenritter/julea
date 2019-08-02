@@ -56,6 +56,7 @@ _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch)
 	gdouble elapsed_create = 0;
 	gdouble elapsed_get = 0;
 	gdouble elapsed_delete = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_schema_create_executed)
 	{
@@ -193,6 +194,7 @@ static void
 _benchmark_db_schema_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_delete_executed)
 	{
@@ -220,6 +222,7 @@ static void
 _benchmark_db_schema_get(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_get_executed)
 	{
@@ -257,6 +260,7 @@ benchmark_db_schema_ref(BenchmarkResult* result)
 	guint m = 0;
 	gdouble elapsed_ref = 0;
 	gdouble elapsed_unref = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_schema_ref_executed)
 	{
@@ -303,6 +307,7 @@ static void
 benchmark_db_schema_unref(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_unref_executed)
 	{
@@ -324,6 +329,7 @@ benchmark_db_schema_new(BenchmarkResult* result)
 	guint m = 0;
 	gdouble elapsed_new = 0;
 	gdouble elapsed_free = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_schema_new_executed)
 	{
@@ -367,6 +373,7 @@ static void
 benchmark_db_schema_free(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_free_executed)
 	{
@@ -399,6 +406,7 @@ benchmark_db_schema_add_field(BenchmarkResult* result)
 	gdouble elapsed_get_field = 0;
 	gdouble elapsed_get_fields = 0;
 	gdouble elapsed_equals = 0;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (benchmark_db_schema_add_field_executed)
 	{
@@ -487,6 +495,7 @@ static void
 benchmark_db_schema_get_field(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_get_field_executed)
 	{
@@ -500,6 +509,7 @@ static void
 benchmark_db_schema_get_fields(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_get_fields_executed)
 	{
@@ -513,6 +523,7 @@ static void
 benchmark_db_schema_equals(BenchmarkResult* result)
 {
 	BenchmarkResult b;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	if (!benchmark_db_schema_equals_executed)
 	{
@@ -527,6 +538,7 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 {
 	char testname[500];
 	n = _n;
+
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;
 	if (n < 500)

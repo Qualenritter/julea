@@ -74,6 +74,7 @@ static void
 freeJSqlIterator(gpointer ptr)
 {
 	JSqlIterator* iter = ptr;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (ptr)
 	{
@@ -88,6 +89,7 @@ static void
 freeJSqlCacheNamespaces(void* ptr)
 {
 	JSqlCacheNamespaces* p = ptr;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (ptr)
 	{
@@ -103,6 +105,7 @@ static void
 freeJSqlCacheNames(void* ptr)
 {
 	JSqlCacheNames* p = ptr;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (ptr)
 	{
@@ -118,6 +121,7 @@ static void
 freeJSqlCacheSQLQueries(void* ptr)
 {
 	JSqlCacheSQLQueries* p = ptr;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (ptr)
 	{
@@ -133,6 +137,7 @@ static void
 freeJSqlCacheSQLPrepared(void* ptr)
 {
 	JSqlCacheSQLPrepared* p = ptr;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (ptr)
 	{
@@ -162,6 +167,7 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query, 
 	JSqlCacheNames* cacheNames = NULL;
 	JSqlCacheSQLQueries* cacheQueries = NULL;
 	JSqlCacheSQLPrepared* cachePrepared = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (!cacheNamespaces)
 	{
@@ -210,6 +216,7 @@ static void
 deleteCachePrepared(gchar const* namespace, gchar const* name)
 {
 	JSqlCacheNames* cacheNames = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!cacheNamespaces))
 	{
@@ -230,6 +237,7 @@ static gboolean
 init_sql(void)
 {
 	GError* error = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_exec(
 		    "CREATE TABLE IF NOT EXISTS schema_structure ("
@@ -276,6 +284,7 @@ _error:
 static void
 fini_sql(void)
 {
+
 	j_trace_enter(G_STRFUNC, NULL);
 	freeJSqlCacheNamespaces(cacheNamespaces);
 	j_sql_finalize(stmt_schema_structure_create, NULL);
@@ -290,6 +299,7 @@ static gboolean
 backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch, GError** error)
 {
 	JSqlBatch* batch = *_batch = g_slice_new(JSqlBatch);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!namespace))
 	{
@@ -310,6 +320,7 @@ static gboolean
 backend_batch_execute(gpointer batch, GError** error)
 {
 	(void)error;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	g_slice_free(JSqlBatch, batch);
 	j_trace_leave(G_STRFUNC);
@@ -333,6 +344,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	char* json = NULL;
 	const char* tmp_string;
 	GString* sql = g_string_new(NULL);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
@@ -548,6 +560,7 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 	guint found = FALSE;
 	gboolean sql_found;
 	const char* json = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!name))
 	{
@@ -623,6 +636,7 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	JDBTypeValue value;
 	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
@@ -692,6 +706,7 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 	guint index;
 	guint count = 0;
 	JDBTypeValue value;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < prepared->variables_count; i++)
 	{
@@ -761,6 +776,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 	const char* tmp_string;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
@@ -885,6 +901,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 	const char* tmp_string;
 	JDBTypeValue value;
 	bson_iter_t iterchild;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	g_string_append(sql, "( ");
 	while (TRUE)
@@ -1020,6 +1037,7 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* va
 	JDBType type;
 	gboolean has_next;
 	gboolean equals;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	while (TRUE)
 	{
@@ -1104,6 +1122,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	iteratorOut->name = g_strdup(name);
 	iteratorOut->index = 0;
 	iteratorOut->arr = g_array_new(FALSE, FALSE, sizeof(guint64));
+
 	j_trace_enter(G_STRFUNC, NULL);
 	g_string_append_printf(sql, "SELECT DISTINCT _id FROM %s_%s", batch->namespace, name);
 	if (selector && j_bson_has_enough_keys(selector, 2, NULL))
@@ -1216,6 +1235,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	bson_t schema;
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
@@ -1407,6 +1427,7 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 	guint j;
 	JDBTypeValue value;
 	JSqlCacheSQLPrepared* prepared = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
@@ -1491,6 +1512,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	gboolean has_next;
 	GHashTable* variables_type = NULL;
 	GString* sql = g_string_new(NULL);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!name))
 	{
@@ -1645,6 +1667,7 @@ backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 	gboolean sql_found;
 	JSqlCacheSQLPrepared* prepared = _iterator;
 	gboolean found = FALSE;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step(prepared->stmt, &sql_found, error)))
 	{

@@ -38,6 +38,7 @@ JDBEntry*
 j_db_entry_new(JDBSchema* schema, GError** error)
 {
 	JDBEntry* entry = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
 	{
@@ -96,6 +97,7 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 	JDBType type;
 	gboolean ret;
 	JDBTypeValue val;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!entry))
 	{
@@ -188,6 +190,7 @@ gboolean
 j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	bson_t* bson;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!entry))
 	{

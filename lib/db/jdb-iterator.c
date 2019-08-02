@@ -41,6 +41,7 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	guint ret2 = FALSE;
 	JBatch* batch;
 	JDBIterator* iterator = NULL;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
 	{
@@ -165,6 +166,7 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 {
 	JDBTypeValue val;
 	bson_iter_t iter;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!iterator))
 	{

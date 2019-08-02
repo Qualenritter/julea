@@ -472,6 +472,7 @@ j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error)
 {
 	const uint8_t* data;
 	uint32_t length;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!iter))
 	{
