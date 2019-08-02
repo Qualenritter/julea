@@ -9,6 +9,7 @@ folders=$(find -type d \
 | grep -v "warnke-05" \
 | grep -v "warnke-06" \
 )
+
 n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 #/db/scheme_1/write/db
 rm *.csv
@@ -50,7 +51,6 @@ done
 #set terminal pngcairo size 800,400 enhanced crop
 for f in ${folders}
 do
-f2=$(echo $f| sed "s-./--g")
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-schema-backend.pdf'
@@ -78,7 +78,6 @@ done
 
 for f in ${folders}
 do
-f2=$(echo $f| sed "s-./--g")
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-schema-client-field.pdf'
@@ -104,7 +103,6 @@ done
 
 for f in ${folders}
 do
-f2=$(echo $f| sed "s-./--g")
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-schema-client-memory.pdf'
@@ -166,7 +164,6 @@ done
 
 for f in ${folders}
 do
-f2=$(echo $f| sed "s-./--g")
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-entry-client-memory.pdf'
@@ -188,6 +185,35 @@ EOF
 cat gnuplot.plot | gnuplot
 mv gnuplot.plot $f-graph-entry-client-memory.plot
 done
-rm gnuplot.plot
+
+for t in $(cat tmp)
+do
+y=$(echo $t | sed "s,/,-,g" | sed "s,_,-,g")
+cat > gnuplot.plot << EOF
+set terminal pdf
+set output 'progress-$y.pdf'
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+str=""
+for f in ${folders}
+do
+	x=$(echo $f | sed "s/.*warnke-//g" | sed "s/-.*//g")
+	str="${str}, '$f-$y.csv' using 1:2 with lines title \"${x:0:5}\""
+done
+str="plot${str:1}"
+echo $str >> gnuplot.plot
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot progress-$y.plot
+done
+
 rm tmp
 find . -size  0 -print0 |xargs -0 rm --
+
