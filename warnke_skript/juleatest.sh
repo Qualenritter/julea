@@ -1,5 +1,5 @@
 #!/bin/bash
-./scripts/warnke_skript/kill.sh
+./warnke_skript/kill.sh
 rm -rf build
 ./waf.sh configure --debug
 ./waf.sh build

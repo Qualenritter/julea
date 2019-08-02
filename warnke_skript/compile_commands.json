@@ -21,6 +21,6 @@
       "-c", 
       "-o/src/julea/build/backend/db/sql-generic.c.21.o"
     ], 
-    "file": "../backend/db/sql-generic.c"
+    "file": "backend/db/sql-generic.c"
   }
 ]

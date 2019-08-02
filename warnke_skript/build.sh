@@ -21,8 +21,8 @@ afl_path="afl"
 tmp_path="/mnt2/julea"
 log_path="log"
 rm -rf prefix* build* ~/.config/julea/* log ${tmp_path}/*
-./scripts/warnke_skript/kill.sh
-./scripts/warnke_skript/format.sh
+./warnke_skript/kill.sh
+./warnke_skript/format.sh
 mkdir -p ${log_path}
 function julea_compile(){
 	(

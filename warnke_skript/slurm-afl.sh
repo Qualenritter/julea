@@ -16,4 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-./scripts/warnke_skript/build.sh "/home/warnke/afl/"
+#SBATCH -J ${name}
+#SBATCH --output=${name}-slurm.out
+#SBATCH --partition=west
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+./warnke_skript/afl.sh $(($RANDOM * 100))
