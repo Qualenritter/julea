@@ -38,10 +38,14 @@ do
 			then
 				x=0
 			fi
-			echo "$n,$x" >> $f-$(echo $t | sed "s,/,-,g" | sed "s,_,-,g").csv
+			if [[ "$x" -ne 0 ]]
+			then
+				echo "$n,$x" >> $f-$(echo $t | sed "s,/,-,g" | sed "s,_,-,g").csv
+			fi
 		done
 	done
 done
+
 
 #set terminal pngcairo size 800,400 enhanced crop
 for f in ${folders}
@@ -70,6 +74,8 @@ EOF
 cat gnuplot.plot | gnuplot
 mv gnuplot.plot $f-graph-schema-backend.plot
 done
+
+
 for f in ${folders}
 do
 f2=$(echo $f| sed "s-./--g")
@@ -83,7 +89,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [100:*]
+set yrange [100000:*]
 set xlabel "#Schema" noenhanced
 set ylabel "operation/second" noenhanced
 plot	'$f-schema-add-field.csv' using 1:2 with lines title "add-field"	,\
@@ -94,6 +100,8 @@ EOF
 cat gnuplot.plot | gnuplot
 mv gnuplot.plot $f-graph-schema-client-field.plot
 done
+
+
 for f in ${folders}
 do
 f2=$(echo $f| sed "s-./--g")
@@ -107,7 +115,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [100:*]
+set yrange [1000000:*]
 set xlabel "#Schema" noenhanced
 set ylabel "operation/second" noenhanced
 plot	'$f-schema-new.csv' using 1:2 with lines title "new"		,\
@@ -118,12 +126,16 @@ EOF
 cat gnuplot.plot | gnuplot
 mv gnuplot.plot $f-graph-schema-client-memory.plot
 done
+
+
 for f in ${folders}
 do
-f2=$(echo $f| sed "s-./--g")
-for csv_name in $(find . -name "${f2}*.csv-*")
+for n2 in $(cat tmp | sed "s-/.*--g")
 do
-n2=$(echo ${csv_name} | sed "s/.*-//g")
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
 cat > gnuplot.plot << EOF
 set terminal pdf
 set output '$f-graph-entry${n2}.pdf'
@@ -144,12 +156,14 @@ plot	'$f-${n2}-entry-insert.csv' using 1:2 with lines title "insert"			,\
 	'$f-${n2}-entry-update-batch.csv' using 1:2 with lines title "update-batch"	,\
 	'$f-${n2}-entry-delete-batch.csv' using 1:2 with lines title "delete-batch"	,\
 	'$f-${n2}-iterator-single.csv' using 1:2 with lines title "iterator-single"	,\
-	'$f-${n2}-iterator-al.csv' using 1:2 with lines title "iterator-all"
+	'$f-${n2}-iterator-all.csv' using 1:2 with lines title "iterator-all"
 EOF
 cat gnuplot.plot | gnuplot
 mv gnuplot.plot $f-graph-entry${n2}.plot
 done
 done
+
+
 for f in ${folders}
 do
 f2=$(echo $f| sed "s-./--g")
@@ -163,7 +177,7 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set yrange [100:*]
+set yrange [1000000:*]
 set xlabel "#Entry" noenhanced
 set ylabel "operation/second" noenhanced
 plot	'$f-entry-new.csv' using 1:2 with lines title "new"	,\
