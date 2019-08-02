@@ -74,7 +74,6 @@ j_backend_operation_unwrap_db_delete(JBackend* backend, gpointer batch, JBackend
 	return j_backend_db_delete(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
-// FIXME clean up
 gboolean
 j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
@@ -86,6 +85,7 @@ j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendO
 	const char* key;
 	bson_t* bson = data->out_param[0].ptr;
 	bson_t* tmp;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	bson_init(bson);
 	ret = j_backend_db_query(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, &iter, data->out_param[1].ptr);
@@ -119,7 +119,6 @@ _error:
 	return FALSE;
 }
 
-// FIXME clean up
 gboolean
 j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
@@ -130,6 +129,7 @@ j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, 
 	guint error_domain_len;
 	guint tmp;
 	GError** error;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)
 	{
@@ -240,7 +240,6 @@ j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, 
 *this function is called only on the client side of the backend
  * the return value of this function is the same as the return value of the original function call
 */
-// FIXME clean up
 gboolean
 j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
@@ -253,6 +252,7 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 	GQuark error_quark;
 	GError** error;
 	gboolean ret = TRUE;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)
 	{
@@ -316,10 +316,9 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 }
 
 /*
-*this function is called server side. This assumes 'message' is valid as long as the returned array is used
+ * this function is called server side. This assumes 'message' is valid as long as the returned array is used
  * the return value of this function is the same as the return value of the original function call
-*/
-// FIXME clean up
+ */
 gboolean
 j_backend_operation_from_message_static(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
@@ -329,6 +328,7 @@ j_backend_operation_from_message_static(JMessage* message, JBackendOperationPara
 	guint error_message_len;
 	guint error_domain_len;
 	gboolean ret = TRUE;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)
 	{
