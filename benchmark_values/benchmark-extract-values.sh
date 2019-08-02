@@ -1,53 +1,44 @@
 folders=$(find -type d \
 | grep -v "^.$" \
 | sort \
+| grep -v "debug" \
 | grep -v "warnke-01" \
+| grep -v "warnke-02" \
+| grep -v "warnke-03" \
+| grep -v "warnke-04" \
+| grep -v "warnke-05" \
+| grep -v "warnke-06" \
 )
 n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 #/db/scheme_1/write/db
-rm *.csv*
-for f in ${folders}; do
+rm *.csv
+rm tmp
+for f in ${folders}
+do
+	for x in $(cat "$f/benchmark_values" | sed "s-.*/db/--g" | sed "s-:.*--g" | sed "s-^[^/]*/--g" | sort -n | uniq)
+	do
+		echo $x >> tmp
+	done
+done
+cat tmp | sort | uniq > tmp2
+mv tmp2 tmp
 
+for f in ${folders}
+do
+	for t in $(cat tmp)
+	do
+		echo "0,0" >> $f-$(echo $t | sed "s,/,-,g" | sed "s,_,-,g").csv
+	done
 	for n in $(cat "$f/benchmark_values" | sed "s-.*/db/--g" | sed "s-/.*--g" | sort -n | uniq)
 	do
-		csv_name=$(echo $f | sed "s/$/-schema.csv/g")
-		val_schema_c=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/create:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_o=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/get:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_d=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/delete:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_cb=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/create-batch:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_ob=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/get-batch:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_db=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/delete-batch:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_fa=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/add_field:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_fg=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/get_field:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_fga=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/get_fields:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		val_schema_e=$(cat "$f/benchmark_values" | grep "/db/${n}/schema/equals:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-		if [ -z "$val_schema_c" ]; then val_schema_c=0; fi
-		if [ -z "$val_schema_o" ]; then val_schema_o=0; fi
-		if [ -z "$val_schema_d" ]; then val_schema_d=0; fi
-		if [ -z "$val_schema_cb" ]; then val_schema_cb=0; fi
-		if [ -z "$val_schema_ob" ]; then val_schema_ob=0; fi
-		if [ -z "$val_schema_db" ]; then val_schema_db=0; fi
-		if [ -z "$val_schema_a" ]; then val_schema_a=0; fi
-		if [ -z "$val_schema_g" ]; then val_schema_g=0; fi
-		if [ -z "$val_schema_ga" ]; then val_schema_ga=0; fi
-		if [ -z "$val_schema_e" ]; then val_schema_e=0; fi
-		echo "$n,$val_schema_c,$val_schema_o,$val_schema_d,$val_schema_cb,$val_schema_ob,$val_schema_db,$val_schema_a,$val_schema_g,$val_schema_ga,$val_schema_e" >> ${csv_name}
-		for n2 in $(cat "$f/benchmark_values" | sed "s-.*/db/${n}/--g" | sed "s-/.*--g" | sort -n | uniq)
+		for t in $(cat tmp)
 		do
-			csv_name=$(echo $f | sed "s/$/-entry.csv/g")
-			val_entry_i=$(cat "$f/benchmark_values" | grep "/db/${n}/${n2}/entry/insert:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-			val_entry_ib=$(cat "$f/benchmark_values" | grep "/db/${n}/${n2}/entry/insert-batch:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-			val_entry_u=$(cat "$f/benchmark_values" | grep "/db/${n}/${n2}/entry/update:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-			val_entry_ub=$(cat "$f/benchmark_values" | grep "/db/${n}/${n2}/entry/update-batch:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-			val_entry_d=$(cat "$f/benchmark_values" | grep "/db/${n}/${n2}/entry/delete:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-			val_entry_db=$(cat "$f/benchmark_values" | grep "/db/${n}/${n2}/entry/delete-batch:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
-			if [ -z "$val_entry_i" ]; then val_entry_i=0; fi
-			if [ -z "$val_entry_ib" ]; then val_entry_ib=0; fi
-			if [ -z "$val_entry_u" ]; then val_entry_u=0; fi
-			if [ -z "$val_entry_ub" ]; then val_entry_ub=0; fi
-			if [ -z "$val_entry_d" ]; then val_entry_d=0; fi
-			if [ -z "$val_entry_db" ]; then val_entry_db=0; fi
-			echo "$n,$val_entry_i,$val_entry_ib,$val_entry_u,$val_entry_ub,$val_entry_d,$val_entry_db" >> ${csv_name}-$n2
+			x=$(cat "$f/benchmark_values" | grep "/db/${n}/$t:" | sed -e "s/.*(//g" | sed -e "s-/.*--g")
+			if [ -z "$x" ]
+			then
+				x=0
+			fi
+			echo "$n,$x" >> $f-$(echo $t | sed "s,/,-,g" | sed "s,_,-,g").csv
 		done
 	done
 done
@@ -69,25 +60,22 @@ set key right outside
 set yrange [100:*]
 set xlabel "#Schema" noenhanced
 set ylabel "operation/second" noenhanced
+plot	'$f-schema-create.csv' using 1:2 with lines title "create"		,\
+	'$f-schema-get.csv' using 1:2 with lines title "get"			,\
+	'$f-schema-delete.csv' using 1:2 with lines title "delete"		,\
+	'$f-schema-create-batch.csv' using 1:2 with lines title "create-batch"	,\
+	'$f-schema-get-batch.csv' using 1:2 with lines title "get-batch"	,\
+	'$f-schema-delete-batch.csv' using 1:2 with lines title "delete-batch"
 EOF
-str=""
-csv_name=$(echo $f | sed "s/$/-schema.csv/g")
-str="${str}, '${csv_name}' using 1:2 with lines title \"create-no-batch\""
-str="${str}, '${csv_name}' using 1:3 with lines title \"update-no-batch\""
-str="${str}, '${csv_name}' using 1:4 with lines title \"delete-no-batch\""
-str="${str}, '${csv_name}' using 1:5 with lines title \"create-batch\""
-str="${str}, '${csv_name}' using 1:6 with lines title \"update-batch\""
-str="${str}, '${csv_name}' using 1:7 with lines title \"delete-batch\""
-str="plot${str:1}"
-echo $str >> gnuplot.plot
 cat gnuplot.plot | gnuplot
+mv gnuplot.plot $f-graph-schema-backend.plot
 done
 for f in ${folders}
 do
 f2=$(echo $f| sed "s-./--g")
 cat > gnuplot.plot << EOF
 set terminal pdf
-set output '$f-graph-schema-client.pdf'
+set output '$f-graph-schema-client-field.pdf'
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -98,19 +86,41 @@ set key right outside
 set yrange [100:*]
 set xlabel "#Schema" noenhanced
 set ylabel "operation/second" noenhanced
+plot	'$f-schema-add-field.csv' using 1:2 with lines title "add-field"	,\
+	'$f-schema-get-field.csv' using 1:2 with lines title "get-field"	,\
+	'$f-schema-get-fields.csv' using 1:2 with lines title "get-fields"	,\
+	'$f-schema-equals.csv' using 1:2 with lines title "equals"
 EOF
-str=""
-csv_name=$(echo $f | sed "s/$/-schema.csv/g")
-str="${str}, '${csv_name}' using 1:8 with lines title \"add-field\""
-str="${str}, '${csv_name}' using 1:9 with lines title \"get-field\""
-str="${str}, '${csv_name}' using 1:10 with lines title \"get-all-fields\""
-str="${str}, '${csv_name}' using 1:11 with lines title \"equals\""
-str="plot${str:1}"
-echo $str >> gnuplot.plot
 cat gnuplot.plot | gnuplot
+mv gnuplot.plot $f-graph-schema-client-field.plot
 done
 for f in ${folders}
 do
+f2=$(echo $f| sed "s-./--g")
+cat > gnuplot.plot << EOF
+set terminal pdf
+set output '$f-graph-schema-client-memory.pdf'
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set yrange [100:*]
+set xlabel "#Schema" noenhanced
+set ylabel "operation/second" noenhanced
+plot	'$f-schema-new.csv' using 1:2 with lines title "new"		,\
+	'$f-schema-ref.csv' using 1:2 with lines title "ref"		,\
+	'$f-schema-unref.csv' using 1:2 with lines title "unref"	,\
+	'$f-schema-free.csv' using 1:2 with lines title "free"
+EOF
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot $f-graph-schema-client-memory.plot
+done
+for f in ${folders}
+do
+f2=$(echo $f| sed "s-./--g")
 for csv_name in $(find . -name "${f2}*.csv-*")
 do
 n2=$(echo ${csv_name} | sed "s/.*-//g")
@@ -127,17 +137,43 @@ set key right outside
 set yrange [100:*]
 set xlabel "#Entry" noenhanced
 set ylabel "operation/second" noenhanced
+plot	'$f-${n2}-entry-insert.csv' using 1:2 with lines title "insert"			,\
+	'$f-${n2}-entry-update.csv' using 1:2 with lines title "update"			,\
+	'$f-${n2}-entry-delete.csv' using 1:2 with lines title "delete"			,\
+	'$f-${n2}-entry-insert-batch.csv' using 1:2 with lines title "insert-batch"	,\
+	'$f-${n2}-entry-update-batch.csv' using 1:2 with lines title "update-batch"	,\
+	'$f-${n2}-entry-delete-batch.csv' using 1:2 with lines title "delete-batch"	,\
+	'$f-${n2}-iterator-single.csv' using 1:2 with lines title "iterator-single"	,\
+	'$f-${n2}-iterator-al.csv' using 1:2 with lines title "iterator-all"
 EOF
-str=""
-str="${str}, '${csv_name}' using 1:2 with lines title \"$n2-insert-no-batch\""
-str="${str}, '${csv_name}' using 1:4 with lines title \"$n2-update-no-batch\""
-str="${str}, '${csv_name}' using 1:6 with lines title \"$n2-delete-no-batch\""
-str="${str}, '${csv_name}' using 1:3 with lines title \"$n2-insert-batch\""
-str="${str}, '${csv_name}' using 1:5 with lines title \"$n2-update-batch\""
-str="${str}, '${csv_name}' using 1:7 with lines title \"$n2-delete-batch\""
-str="plot${str:1}"
-echo $str >> gnuplot.plot
 cat gnuplot.plot | gnuplot
+mv gnuplot.plot $f-graph-entry${n2}.plot
 done
+done
+for f in ${folders}
+do
+f2=$(echo $f| sed "s-./--g")
+cat > gnuplot.plot << EOF
+set terminal pdf
+set output '$f-graph-entry-client-memory.pdf'
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set yrange [100:*]
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+plot	'$f-entry-new.csv' using 1:2 with lines title "new"	,\
+	'$f-entry-ref.csv' using 1:2 with lines title "ref"	,\
+	'$f-entry-unref.csv' using 1:2 with lines title "unref"	,\
+	'$f-entry-free.csv' using 1:2 with lines title "free"
+EOF
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot $f-graph-entry-client-memory.plot
 done
 rm gnuplot.plot
+rm tmp
+find . -size  0 -print0 |xargs -0 rm --
