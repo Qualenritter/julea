@@ -38,7 +38,9 @@ event_iterator_new(void)
 	case 1: //selector NULL - is allowed - should get everything
 		ret_expected = the_stored_schema != NULL;
 		if (the_stored_schema)
+		{
 			ret_expected = ret_expected && the_stored_schema->server_side;
+		}
 		the_stored_iterator = j_db_iterator_new(the_stored_schema, NULL, &error);
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
@@ -46,7 +48,9 @@ event_iterator_new(void)
 	case 0: //success
 		ret_expected = the_stored_schema != NULL;
 		if (the_stored_schema)
+		{
 			ret_expected = ret_expected && the_stored_schema->server_side;
+		}
 		the_stored_iterator = j_db_iterator_new(the_stored_schema, the_stored_selector, &error);
 		ret = the_stored_iterator != NULL;
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
@@ -160,7 +164,9 @@ event_iterator_next(void)
 		}
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)
+		{
 			the_stored_iterator_next_count++;
+		}
 		if (!ret)
 		{
 			ret = j_db_iterator_next(the_stored_iterator, &error);
@@ -211,7 +217,9 @@ event_iterator_get_field(void)
 	case 0:
 		ret = j_db_iterator_get_field(the_stored_iterator, varname_strbuf, &type, &value, &length, &error);
 		if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_ITERATOR_NOT_INITIALIZED)
+		{
 			ret_expected = FALSE;
+		}
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)
 		{
@@ -224,5 +232,7 @@ event_iterator_get_field(void)
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 	if (value)
+	{
 		g_free(value);
+	}
 }

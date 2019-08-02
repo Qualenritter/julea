@@ -202,8 +202,12 @@ event_schema_get_fields(void)
 	case 0:
 		k = 0;
 		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+		{
 			if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
+			{
 				k++;
+			}
+		}
 		ret_expected = ret_expected && k > 0;
 		ret = j_db_schema_get_all_fields(the_stored_schema, &names, &types, &error);
 		if (ret_expected && ret)

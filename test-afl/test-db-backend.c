@@ -450,7 +450,9 @@ event_query_single(void)
 						MYABORT_IF(g_strcmp0((const char*)binary, namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]]));
 					}
 					else
+					{
 						MYABORT_IF(bson_iter_type(&iter) != BSON_TYPE_NULL);
+					}
 					break;
 				case _J_DB_TYPE_COUNT:
 				default: //LCOV_EXCL_LINE
@@ -633,7 +635,9 @@ event_insert(void)
 	else
 	{
 		if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
+		{
 			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = 1;
+		}
 	}
 	if (metadata)
 	{
@@ -761,9 +765,13 @@ event_update(void)
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		if (ret)
+		{
 			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = random_values.values.value_count;
+		}
 		else if (namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index])
+		{
 			namespace_varvalues_valid[random_values.namespace][random_values.name][random_values.values.value_index] = 1;
+		}
 	}
 	if (selector)
 	{
@@ -837,7 +845,9 @@ event_schema_get(void)
 		}
 	}
 	if (ret)
+	{
 		bson_destroy(&bson);
+	}
 }
 static void
 event_schema_delete(void)
@@ -871,7 +881,9 @@ event_schema_delete(void)
 	{
 		MYABORT_IF(!ret);
 		if (namespace_bson[random_values.namespace][random_values.name])
+		{
 			bson_destroy(namespace_bson[random_values.namespace][random_values.name]);
+		}
 		namespace_bson[random_values.namespace][random_values.name] = NULL;
 		namespace_exist[random_values.namespace][random_values.name] = FALSE;
 	}
@@ -952,11 +964,15 @@ event_schema_create(void)
 	random_values.schema_create.duplicate_variables = random_values.schema_create.duplicate_variables % 2;
 	random_values.schema_create.variable_count = random_values.schema_create.variable_count % AFL_LIMIT_SCHEMA_VARIABLES;
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
+	{
 		random_values.schema_create.variable_types[i] = random_values.schema_create.variable_types[i] % _J_DB_TYPE_COUNT;
+	}
 	bson = bson_new();
 	ret_expected = random_values.schema_create.variable_count > 0;
 	if (random_values.schema_create.variable_types[0] == J_DB_TYPE_BLOB)
+	{
 		random_values.schema_create.variable_types[0] = J_DB_TYPE_UINT32;
+	}
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
 	{
 		sprintf(varname_strbuf, AFL_VARNAME_FORMAT, i);
@@ -979,7 +995,9 @@ event_schema_create(void)
 	if (namespace_exist[random_values.namespace][random_values.name])
 	{
 		if (bson)
+		{
 			bson_destroy(bson);
+		}
 	}
 	else
 	{
@@ -989,14 +1007,20 @@ event_schema_create(void)
 			namespace_bson[random_values.namespace][random_values.name] = bson;
 			namespace_varcount[random_values.namespace][random_values.name] = random_values.schema_create.variable_count;
 			for (i = 0; i < random_values.schema_create.variable_count; i++)
+			{
 				namespace_vartypes[random_values.namespace][random_values.name][i] = random_values.schema_create.variable_types[i];
+			}
 			for (i = 0; i < AFL_LIMIT_SCHEMA_VALUES; i++)
+			{
 				namespace_varvalues_valid[random_values.namespace][random_values.name][i] = 0;
+			}
 		}
 		else
 		{
 			if (bson)
+			{
 				bson_destroy(bson);
+			}
 		}
 	}
 }
@@ -1114,7 +1138,9 @@ test_db_backend_cleanup(void)
 		for (j = 0; j < AFL_LIMIT_SCHEMA_NAME; j++)
 		{
 			if (namespace_bson[i][j])
+			{
 				bson_destroy(namespace_bson[i][j]);
+			}
 			namespace_bson[i][j] = NULL;
 		}
 	}
