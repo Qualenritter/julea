@@ -71,7 +71,7 @@ typedef struct JConnectionPool JConnectionPool;
 static JConnectionPool* j_connection_pool = NULL;
 
 void
-j_connection_pool_init (JConfiguration* configuration)
+j_connection_pool_init(JConfiguration* configuration)
 {
 	JConnectionPool* pool;
 
@@ -113,7 +113,7 @@ j_connection_pool_init (JConfiguration* configuration)
 }
 
 void
-j_connection_pool_fini (void)
+j_connection_pool_fini(void)
 {
 	JConnectionPool* pool;
 
@@ -174,9 +174,8 @@ j_connection_pool_fini (void)
 	j_trace_leave(G_STRFUNC);
 }
 
-static
-GSocketConnection*
-j_connection_pool_pop_internal (GAsyncQueue* queue, guint* count, gchar const* server)
+static GSocketConnection*
+j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* server)
 {
 	GSocketConnection* connection;
 
@@ -267,9 +266,8 @@ end:
 	return connection;
 }
 
-static
-void
-j_connection_pool_push_internal (GAsyncQueue* queue, GSocketConnection* connection)
+static void
+j_connection_pool_push_internal(GAsyncQueue* queue, GSocketConnection* connection)
 {
 	g_return_if_fail(queue != NULL);
 	g_return_if_fail(connection != NULL);
@@ -282,7 +280,7 @@ j_connection_pool_push_internal (GAsyncQueue* queue, GSocketConnection* connecti
 }
 
 GSocketConnection*
-j_connection_pool_pop_object (guint index)
+j_connection_pool_pop_object(guint index)
 {
 	GSocketConnection* connection;
 
@@ -299,7 +297,7 @@ j_connection_pool_pop_object (guint index)
 }
 
 void
-j_connection_pool_push_object (guint index, GSocketConnection* connection)
+j_connection_pool_push_object(guint index, GSocketConnection* connection)
 {
 	g_return_if_fail(j_connection_pool != NULL);
 	g_return_if_fail(index < j_connection_pool->object_len);
@@ -313,7 +311,7 @@ j_connection_pool_push_object (guint index, GSocketConnection* connection)
 }
 
 GSocketConnection*
-j_connection_pool_pop_kv (guint index)
+j_connection_pool_pop_kv(guint index)
 {
 	GSocketConnection* connection;
 
@@ -330,7 +328,7 @@ j_connection_pool_pop_kv (guint index)
 }
 
 void
-j_connection_pool_push_kv (guint index, GSocketConnection* connection)
+j_connection_pool_push_kv(guint index, GSocketConnection* connection)
 {
 	g_return_if_fail(j_connection_pool != NULL);
 	g_return_if_fail(index < j_connection_pool->kv_len);
@@ -344,7 +342,7 @@ j_connection_pool_push_kv (guint index, GSocketConnection* connection)
 }
 
 GSocketConnection*
-j_connection_pool_pop_db (guint index)
+j_connection_pool_pop_db(guint index)
 {
 	if (!JULEA_TEST_MOCKUP)
 	{
@@ -361,14 +359,12 @@ j_connection_pool_pop_db (guint index)
 
 		return connection;
 	}
-	else
-	{
-		return (void*)TRUE;
-	}
+
+	return (void*)TRUE;
 }
 
 void
-j_connection_pool_push_db (guint index, GSocketConnection* connection)
+j_connection_pool_push_db(guint index, GSocketConnection* connection)
 {
 	if (!JULEA_TEST_MOCKUP)
 	{

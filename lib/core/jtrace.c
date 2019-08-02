@@ -307,6 +307,9 @@ j_trace_init(gchar const* name)
 {
 	gchar const* j_trace;
 	gchar const* j_trace_function;
+	g_auto(GStrv) p = NULL;
+	guint i;
+	guint l;
 
 	g_return_if_fail(name != NULL);
 	g_return_if_fail(j_trace_flags == J_TRACE_OFF);
@@ -315,40 +318,34 @@ j_trace_init(gchar const* name)
 	{
 		return;
 	}
-	else
+
+	p = g_strsplit(j_trace, ",", 0);
+	l = g_strv_length(p);
+
+	for (i = 0; i < l; i++)
 	{
-		g_auto(GStrv) p = NULL;
-		guint i;
-		guint l;
-
-		p = g_strsplit(j_trace, ",", 0);
-		l = g_strv_length(p);
-
-		for (i = 0; i < l; i++)
+		if (g_strcmp0(p[i], "echo") == 0)
 		{
-			if (g_strcmp0(p[i], "echo") == 0)
-			{
-				j_trace_flags |= J_TRACE_ECHO;
-			}
-			else if (g_strcmp0(p[i], "otf") == 0)
-			{
-				j_trace_flags |= J_TRACE_OTF;
-			}
-			else if (g_strcmp0(p[i], "debug") == 0)
-			{
-				j_trace_flags |= J_TRACE_DEBUG;
-			}
-			else if (g_strcmp0(p[i], "timer") == 0)
-			{
-				j_trace_flags |= J_TRACE_DEBUG;
-				j_trace_flags |= J_TRACE_TIMER;
-			}
-			else if (g_strcmp0(p[i], "sqltimer") == 0)
-			{
-				j_trace_flags |= J_TRACE_DEBUG;
-				j_trace_flags |= J_TRACE_TIMER;
-				j_trace_flags |= J_TRACE_TIMER_SQL;
-			}
+			j_trace_flags |= J_TRACE_ECHO;
+		}
+		else if (g_strcmp0(p[i], "otf") == 0)
+		{
+			j_trace_flags |= J_TRACE_OTF;
+		}
+		else if (g_strcmp0(p[i], "debug") == 0)
+		{
+			j_trace_flags |= J_TRACE_DEBUG;
+		}
+		else if (g_strcmp0(p[i], "timer") == 0)
+		{
+			j_trace_flags |= J_TRACE_DEBUG;
+			j_trace_flags |= J_TRACE_TIMER;
+		}
+		else if (g_strcmp0(p[i], "sqltimer") == 0)
+		{
+			j_trace_flags |= J_TRACE_DEBUG;
+			j_trace_flags |= J_TRACE_TIMER;
+			j_trace_flags |= J_TRACE_TIMER_SQL;
 		}
 	}
 

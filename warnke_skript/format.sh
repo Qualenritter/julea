@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 cd warnke_skript
-./run-clang-tidy.py -fix -header-filter='.*' -checks="readability-braces-around-statements"
+./run-clang-tidy.py -fix -header-filter='.*' -checks="readability-braces-around-statements,readability-else-after-return"
 cd ..
 
 for f in $(git diff --name-only HEAD | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
