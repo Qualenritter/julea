@@ -83,5 +83,6 @@ do
 done
 done
 done
+	mv $f log/$j.input-file
 	j=$(($j + 1))
 done

@@ -1,0 +1,26 @@
+[
+  {
+    "directory": "/src/julea/build", 
+    "arguments": [
+      "/usr/bin/gcc", 
+      "-std=c11", 
+      "-Wpedantic", 
+      "-Wall", 
+      "-Wextra", 
+      "-Iinclude", 
+      "-I../include", 
+      "-Iinclude/core", 
+      "-I../include/core", 
+      "-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/include/glib-2.0", 
+      "-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-y4kalfnkzahoclmqcqcpwvxzw4nepwsi/lib/glib-2.0/include", 
+      "-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pcre-8.42-yupgernpm6rywenufbupwypikx4b5xec/include", 
+      "-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libmongoc-1.9.5-a37k6hbsbanjkqibnmcc3letw7wshirg/include/libbson-1.0", 
+      "-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/sqlite-3.26.0-bj4bz5sekpkuvg327y6zszili72sjuib/include", 
+      "-include../backend/db/sqlite.c", 
+      "../backend/db/sql-generic.c", 
+      "-c", 
+      "-o/src/julea/build/backend/db/sql-generic.c.21.o"
+    ], 
+    "file": "../backend/db/sql-generic.c"
+  }
+]
