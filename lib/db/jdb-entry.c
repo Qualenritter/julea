@@ -95,7 +95,7 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 {
 	JDBType type;
 	gboolean ret;
-	JDBType_value val;
+	JDBTypeValue val;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!entry))
 	{

@@ -329,7 +329,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	gboolean equals;
 	guint counter = 0;
 	gboolean found_index = FALSE;
-	JDBType_value value;
+	JDBTypeValue value;
 	char* json = NULL;
 	const char* tmp_string;
 	GString* sql = g_string_new(NULL);
@@ -543,7 +543,7 @@ _error2:
 static gboolean
 backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error)
 {
-	JDBType_value value;
+	JDBTypeValue value;
 	JSqlBatch* batch = _batch;
 	guint found = FALSE;
 	gboolean sql_found;
@@ -620,7 +620,7 @@ _error2:
 static gboolean
 backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 {
-	JDBType_value value;
+	JDBTypeValue value;
 	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
 	j_trace_enter(G_STRFUNC, NULL);
@@ -691,7 +691,7 @@ insert_helper(JSqlCacheSQLPrepared* prepared, bson_iter_t* iter, GError** error)
 	gboolean has_next;
 	guint index;
 	guint count = 0;
-	JDBType_value value;
+	JDBTypeValue value;
 	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < prepared->variables_count; i++)
 	{
@@ -883,7 +883,7 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 	JDBSelectorOperator op;
 	gboolean first = TRUE;
 	const char* tmp_string;
-	JDBType_value value;
+	JDBTypeValue value;
 	bson_iter_t iterchild;
 	j_trace_enter(G_STRFUNC, NULL);
 	g_string_append(sql, "( ");
@@ -1016,7 +1016,7 @@ static gboolean
 bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* variables_count, GError** error)
 {
 	bson_iter_t iterchild;
-	JDBType_value value;
+	JDBTypeValue value;
 	JDBType type;
 	gboolean has_next;
 	gboolean equals;
@@ -1091,7 +1091,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	JDBSelectorMode mode_child;
 	JSqlBatch* batch = _batch;
 	gboolean sql_found;
-	JDBType_value value;
+	JDBTypeValue value;
 	guint count = 0;
 	bson_iter_t iter;
 	guint variables_count;
@@ -1205,7 +1205,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	JSqlBatch* batch = _batch;
 	guint count;
 	JDBType type;
-	JDBType_value value;
+	JDBTypeValue value;
 	JSqlIterator* iterator = NULL;
 	bson_iter_t iter;
 	guint index;
@@ -1405,7 +1405,7 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 	JSqlBatch* batch = _batch;
 	JSqlIterator* iterator = NULL;
 	guint j;
-	JDBType_value value;
+	JDBTypeValue value;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
@@ -1484,7 +1484,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	bson_iter_t iter;
 	guint variables_count;
 	guint variables_count2;
-	JDBType_value value;
+	JDBTypeValue value;
 	const char* tmp_string;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GHashTable* variables_index = NULL;
@@ -1640,7 +1640,7 @@ backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 {
 	const char* name;
 	guint i;
-	JDBType_value value;
+	JDBTypeValue value;
 	JDBType type;
 	gboolean sql_found;
 	JSqlCacheSQLPrepared* prepared = _iterator;

@@ -97,7 +97,7 @@ j_db_schema_unref(JDBSchema* schema)
 gboolean
 j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError** error)
 {
-	JDBType_value val;
+	JDBTypeValue val;
 	bson_iter_t iter;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
@@ -150,7 +150,7 @@ _error:
 gboolean
 j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GError** error)
 {
-	JDBType_value val;
+	JDBTypeValue val;
 	bson_iter_t iter;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
@@ -198,7 +198,7 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	bson_iter_t iter;
 	guint count;
 	guint i;
-	JDBType_value val;
+	JDBTypeValue val;
 	const char* key;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!schema))
@@ -271,7 +271,7 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	/*TODO check indexed column already exist*/
 	guint i;
 	bson_t bson;
-	JDBType_value val;
+	JDBTypeValue val;
 	const char* key;
 	char buf[20];
 	gchar const** name;
@@ -448,8 +448,8 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 	guint schema2_count;
 	bson_iter_t iter1;
 	bson_iter_t iter2;
-	JDBType_value val1;
-	JDBType_value val2;
+	JDBTypeValue val1;
+	JDBTypeValue val2;
 	gint ret;
 	gboolean has_next;
 	const char* key;

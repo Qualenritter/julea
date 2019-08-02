@@ -39,7 +39,7 @@
 G_BEGIN_DECLS
 
 #define J_BACKEND_DB_ERROR j_backend_db_error_quark()
-#define J_SQL_ERROR j_sql_error_quark()
+#define J_BACKEND_SQL_ERROR j_backend_sql_error_quark()
 
 enum JBackendDBError
 {
@@ -68,14 +68,14 @@ typedef enum JBackendDBError JBackendDBError;
 
 enum JSQLError
 {
-	J_SQL_ERROR_BIND,
-	J_SQL_ERROR_CONSTRAINT,
-	J_SQL_ERROR_FINALIZE,
-	J_SQL_ERROR_INVALID_TYPE,
-	J_SQL_ERROR_PREPARE,
-	J_SQL_ERROR_RESET,
-	J_SQL_ERROR_STEP,
-	_J_SQL_ERROR_COUNT
+	J_BACKEND_SQL_ERROR_BIND,
+	J_BACKEND_SQL_ERROR_CONSTRAINT,
+	J_BACKEND_SQL_ERROR_FINALIZE,
+	J_BACKEND_SQL_ERROR_INVALID_TYPE,
+	J_BACKEND_SQL_ERROR_PREPARE,
+	J_BACKEND_SQL_ERROR_RESET,
+	J_BACKEND_SQL_ERROR_STEP,
+	_J_BACKEND_SQL_ERROR_COUNT
 };
 
 typedef enum JSQLError JSQLError;
@@ -347,7 +347,7 @@ struct JBackend
 typedef struct JBackend JBackend;
 
 GQuark j_backend_db_error_quark(void);
-GQuark j_sql_error_quark(void);
+GQuark j_backend_sql_error_quark(void);
 
 JBackend* backend_info(void);
 

@@ -122,7 +122,7 @@ _error:
 }
 
 gboolean
-j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value* value, GError** error)
+j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBTypeValue* value, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!bson))
@@ -222,7 +222,7 @@ _error:
 }
 
 gboolean
-j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError** error)
+j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBTypeValue* value, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!iter))

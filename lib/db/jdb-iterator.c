@@ -163,7 +163,7 @@ _error:
 gboolean
 j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error)
 {
-	JDBType_value val;
+	JDBTypeValue val;
 	bson_iter_t iter;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!iterator))

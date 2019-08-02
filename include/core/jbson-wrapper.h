@@ -73,7 +73,7 @@ gboolean j_bson_append_array_end(bson_t* bson, bson_t* bson_child, GError** erro
 gboolean j_bson_append_document_begin(bson_t* bson, const char* key, bson_t* bson_child, GError** error);
 gboolean j_bson_append_document(bson_t* bson, const char* key, bson_t* bson_child, GError** error);
 gboolean j_bson_append_document_end(bson_t* bson, bson_t* bson_child, GError** error);
-gboolean j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBType_value* value, GError** error);
+gboolean j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBTypeValue* value, GError** error);
 gboolean j_bson_array_generate_key(guint32 index, const char** key, char* buf, guint buf_length, GError** error);
 gboolean j_bson_count_keys(bson_t* bson, guint32* count, GError** error);
 gboolean j_bson_has_enough_keys(const bson_t* bson, guint32 min_keys, GError** error);
@@ -89,7 +89,7 @@ gboolean j_bson_iter_not_find(bson_iter_t* iter, const char* key, GError** error
 gboolean j_bson_iter_recurse_array(bson_iter_t* iter, bson_iter_t* iter_child, GError** error);
 gboolean j_bson_iter_recurse_document(bson_iter_t* iter, bson_iter_t* iter_child, GError** error);
 gboolean j_bson_iter_type_db(bson_iter_t* iter, JDBType* type, GError** error);
-gboolean j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBType_value* value, GError** error);
+gboolean j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBTypeValue* value, GError** error);
 void j_bson_destroy(bson_t* bson);
 void j_bson_free_json(char* json);
 #endif

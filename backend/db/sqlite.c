@@ -38,7 +38,7 @@ j_sql_finalize(void* _stmt, GError** error)
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(sqlite3_finalize(stmt) != SQLITE_OK))
 	{
-		g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_FINALIZE, "sql finalize failed error was '%s'", sqlite3_errmsg(backend_db));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_FINALIZE, "sql finalize failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
 	j_trace_leave(G_STRFUNC);
@@ -55,7 +55,7 @@ j_sql_prepare(const char* sql, void* _stmt, GError** error)
 	j_trace_enter(G_STRFUNC, NULL);
 	if(G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 	j_trace_leave(G_STRFUNC);
@@ -73,7 +73,7 @@ j_sql_bind_null(void* _stmt, guint idx, GError** error)
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(sqlite3_bind_null(stmt, idx) != SQLITE_OK))
 	{
-		g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
 	j_trace_leave(G_STRFUNC);
@@ -84,7 +84,7 @@ _error:
 }
 
 static gboolean
-j_sql_column(void* _stmt, guint idx, JDBType type, JDBType_value* value, GError** error)
+j_sql_column(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
 	j_trace_enter(G_STRFUNC, NULL);
@@ -117,7 +117,7 @@ j_sql_column(void* _stmt, guint idx, JDBType type, JDBType_value* value, GError*
 		break;
 	case _J_DB_TYPE_COUNT:
 	default:
-		g_set_error_literal(error, J_SQL_ERROR, J_SQL_ERROR_INVALID_TYPE, "sql invalid type");
+		g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
 		goto _error;
 	}
 	j_trace_leave(G_STRFUNC);
@@ -128,7 +128,7 @@ _error:
 }
 
 static gboolean
-j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBType_value* value, GError** error)
+j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	sqlite3_stmt* stmt = _stmt;
 	j_trace_enter(G_STRFUNC, NULL);
@@ -137,62 +137,62 @@ j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBType_value* value, GEr
 	case J_DB_TYPE_SINT32:
 		if (G_UNLIKELY(sqlite3_bind_int64(stmt, idx, value->val_sint32) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_UINT32:
 		if (G_UNLIKELY(sqlite3_bind_int64(stmt, idx, value->val_uint32) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_SINT64:
 		if (G_UNLIKELY(sqlite3_bind_int64(stmt, idx, value->val_sint64) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_UINT64:
 		if (G_UNLIKELY(sqlite3_bind_int64(stmt, idx, value->val_uint64) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_FLOAT32:
 		if (G_UNLIKELY(sqlite3_bind_double(stmt, idx, value->val_float32) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_FLOAT64:
 		if (G_UNLIKELY(sqlite3_bind_double(stmt, idx, value->val_float64) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_STRING:
 		if (G_UNLIKELY(sqlite3_bind_text(stmt, idx, value->val_string, -1, NULL) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case J_DB_TYPE_BLOB:
 		if (G_UNLIKELY(sqlite3_bind_blob(stmt, idx, value->val_blob, value->val_blob_length, NULL) != SQLITE_OK))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		break;
 	case _J_DB_TYPE_COUNT:
 	default:
-		g_set_error_literal(error, J_SQL_ERROR, J_SQL_ERROR_INVALID_TYPE, "sql invalid type");
+		g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
 		goto _error;
 	}
 	j_trace_leave(G_STRFUNC);
@@ -208,7 +208,7 @@ j_sql_reset(void* _stmt, GError** error)
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(sqlite3_reset(stmt) != SQLITE_OK))
 	{
-		g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_RESET, "sql reset failed error was '%s'", sqlite3_errmsg(backend_db));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_RESET, "sql reset failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
 	j_trace_leave(G_STRFUNC);
@@ -229,7 +229,7 @@ j_sql_exec(const char* sql, GError** error)
 	}
 	if (G_UNLIKELY(sqlite3_step(stmt) != SQLITE_DONE))
 	{
-		g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_sql_finalize(stmt, error)))
@@ -262,12 +262,12 @@ j_sql_step(void* _stmt, gboolean* found, GError** error)
 	{
 		if (G_UNLIKELY(ret == SQLITE_CONSTRAINT))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_CONSTRAINT, "sql constraint failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_CONSTRAINT, "sql constraint failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 		else if (G_UNLIKELY(ret != SQLITE_DONE))
 		{
-			g_set_error(error, J_SQL_ERROR, J_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
 	}

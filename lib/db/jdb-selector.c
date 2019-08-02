@@ -37,7 +37,7 @@
 JDBSelector*
 j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
-	JDBType_value val;
+	JDBTypeValue val;
 	JDBSelector* selector = NULL;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(mode >= _J_DB_SELECTOR_MODE_COUNT))
@@ -101,7 +101,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	char buf[20];
 	bson_t bson;
 	JDBType type;
-	JDBType_value val;
+	JDBTypeValue val;
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!selector))
 	{

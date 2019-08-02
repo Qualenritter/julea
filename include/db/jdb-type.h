@@ -73,7 +73,7 @@ enum JFrontendDBError
 
 typedef enum JFrontendDBError JFrontendDBError;
 
-union JDBType_value
+union JDBTypeValue
 {
 	guint32 val_uint32;
 	gint32 val_sint32;
@@ -89,7 +89,7 @@ union JDBType_value
 	};
 };
 
-typedef union JDBType_value JDBType_value;
+typedef union JDBTypeValue JDBTypeValue;
 
 #define J_FRONTEND_DB_ERROR j_frontend_db_error_quark()
 
