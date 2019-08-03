@@ -358,8 +358,10 @@ def configure(ctx):
 			'-Wuninitialized',
 			'-Wwrite-strings'
 		])
+		check_and_add_flags(ctx, '-fstack-protector-all')
 		check_and_add_flags(ctx, '-fno-omit-frame-pointer')
 		check_and_add_flags(ctx, '-ggdb')
+		check_and_add_flags(ctx, '-D_FORTIFY_SOURCE=2')
 
 		ctx.define('G_DISABLE_DEPRECATED', 1)
 		ctx.define('GLIB_VERSION_MIN_REQUIRED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)

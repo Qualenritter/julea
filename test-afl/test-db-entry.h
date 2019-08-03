@@ -42,24 +42,17 @@ event_entry_ref(void)
 	JDBEntry* ptr = NULL;
 	gint ref_count;
 	g_debug("AFL_EVENT_DB_ENTRY_REF %d %d %d", random_values.namespace, random_values.name, random_values.entry);
-	if (the_stored_entry)
-	{
-		ref_count = the_stored_entry->ref_count;
-		G_DEBUG_HERE();
-		ptr = j_db_entry_ref(the_stored_entry, &error);
-		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
-		MYABORT_IF(ptr != the_stored_entry);
-		MYABORT_IF(the_stored_entry->ref_count != ref_count + 1);
-		G_DEBUG_HERE();
-		j_db_entry_unref(the_stored_entry);
-		MYABORT_IF(the_stored_entry->ref_count != ref_count);
-	}
-	else
-	{
-		G_DEBUG_HERE();
-		ptr = j_db_entry_ref(the_stored_entry, &error);
-		J_AFL_DEBUG_ERROR(ptr != NULL, FALSE, error);
-	}
+	if (!the_stored_entry)
+		return;
+	ref_count = the_stored_entry->ref_count;
+	G_DEBUG_HERE();
+	ptr = j_db_entry_ref(the_stored_entry, &error);
+	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
+	MYABORT_IF(ptr != the_stored_entry);
+	MYABORT_IF(the_stored_entry->ref_count != ref_count + 1);
+	G_DEBUG_HERE();
+	j_db_entry_unref(the_stored_entry);
+	MYABORT_IF(the_stored_entry->ref_count != ref_count);
 }
 static void
 event_entry_set_field(void)
@@ -76,16 +69,8 @@ event_entry_set_field(void)
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	type = random_values.var_type;
 	ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
-	if (the_stored_entry)
-	{
-		G_DEBUG_HERE();
-		ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, &type, &error);
-	}
-	else
-	{
-		G_DEBUG_HERE();
-		ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-	}
+	G_DEBUG_HERE();
+	ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, &type, &error);
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	ret_expected = ret_expected && !(the_stored_entry_field_set & (1 << random_values.var_name));
 	switch (type)

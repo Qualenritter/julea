@@ -29,7 +29,7 @@ event_selector_new(void)
 	the_stored_selector = NULL;
 	the_stored_selector_field_count = 0;
 	g_debug("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
-	random_values.selector_mode = random_values.selector_mode % (_J_DB_SELECTOR_MODE_COUNT + 1);
+	random_values.selector_mode = random_values.selector_mode % _J_DB_SELECTOR_MODE_COUNT;
 	if (!the_stored_schema)
 		return;
 	ret_expected = TRUE;
@@ -64,14 +64,14 @@ event_selector_add_field(void)
 	guint ret;
 	guint ret_expected;
 	JDBType type;
-	JDBSelectorOperator operator= random_values.selector_operator %(_J_DB_SELECTOR_OPERATOR_COUNT + 1);
+	JDBSelectorOperator operator= random_values.selector_operator % _J_DB_SELECTOR_OPERATOR_COUNT;
 	g_debug("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_selector)
 		return;
 	ret_expected = TRUE;
 	ret_expected = ret_expected && operator<_J_DB_SELECTOR_OPERATOR_COUNT;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
-	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
+	random_values.var_type = random_values.var_type % _J_DB_TYPE_COUNT;
 	switch (random_values.invalid_switch % 2)
 	{
 	case 1: //not existing varname

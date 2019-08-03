@@ -62,6 +62,8 @@ function julea_run(){
 			export AFL_USE_ASAN=1
 			export ASAN_OPTIONS=symbolize=0,abort_on_error=1
 			name="${name}-asan"
+		else
+			export AFL_HARDEN=1
 		fi
 		echo compiler $compiler
 		echo flags $flags
@@ -83,10 +85,8 @@ function julea_run(){
 		export JULEA_CONFIG=~/.config/julea/julea${index}
 		export GCOV_PREFIX=${afl_path}/cov/fuzzer${index}
 		export AFL_DONT_OPTIMIZE=1
-		export AFL_HARDEN=1
 		export PATH=~/afl:$PATH
 		export AFL_SKIP_CPUFREQ=1
-		export J_TRACE=debug
 		mkdir -p ${afl_path}/cov/fuzzer${index}/src/julea/
 		cp -r build-${name} ${afl_path}/cov/fuzzer${index}/src/julea/
 		for (( i=0; i < ${servercount}; i++ ))
@@ -115,6 +115,7 @@ function julea_run(){
 			echo "cat $a | ./build-${name}/test-afl/${programname}"
 			      cat $a | ./build-${name}/test-afl/${programname}
 		done
+		export J_TRACE=debug
 		if [ "${asan}" != "asan" ]
 		then
 			#asan not first in library list - first ist afl - all asan tests will fail

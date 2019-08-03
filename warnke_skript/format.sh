@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+./waf.sh configure
+./waf.sh build --debug
 cd warnke_skript
 ./run-clang-tidy.py -fix -header-filter='.*,-dependencies' -checks="readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration" -j12
 cd ..
