@@ -54,7 +54,7 @@ j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 	schema->namespace = g_strdup(namespace);
 	schema->name = g_strdup(name);
 	schema->variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-	schema->index = g_array_new(FALSE, FALSE, sizeof(GHashTable*));
+	schema->index = g_array_new(FALSE, FALSE, sizeof(JDBSchemaIndex));
 	schema->bson_initialized = FALSE;
 	schema->bson_index_initialized = FALSE;
 	schema->ref_count = 1;
@@ -96,13 +96,17 @@ j_db_schema_unref(JDBSchema* schema)
 		g_hash_table_unref(schema->variables);
 		for (i = 0; i < schema->index->len; i++)
 		{
-			index = g_array_index(schema->index, JDBSchemaIndex*, i);
+			index = &g_array_index(schema->index, JDBSchemaIndex, i);
 			g_hash_table_unref(index->variables);
 		}
 		g_array_unref(schema->index);
 		if (schema->bson_initialized)
 		{
 			bson_destroy(&schema->bson);
+		}
+		if (schema->bson_index_initialized)
+		{
+			bson_destroy(&schema->bson_index);
 		}
 		g_slice_free(JDBSchema, schema);
 	}
@@ -330,7 +334,7 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 			goto _error;
 		}
 		index.variable_count++;
-		g_hash_table_add(index.variables, *name);
+		g_hash_table_add(index.variables, g_strdup(*name));
 		name++;
 		i++;
 	}
@@ -339,7 +343,7 @@ _not_equal:
 	i++;
 	if (i <= schema->index->len)
 	{
-		index_tmp = g_array_index(schema->index, GHashTable*, i - 1);
+		index_tmp = &g_array_index(schema->index, JDBSchemaIndex, i - 1);
 		if (index.variable_count != index_tmp->variable_count)
 		{
 			goto _not_equal;

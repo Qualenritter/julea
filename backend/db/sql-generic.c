@@ -768,6 +768,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 {
 	JSqlBatch* batch = _batch;
 	gboolean has_next;
+	gboolean equals;
 	guint i;
 	bson_iter_t iter;
 	bson_t schema;
@@ -828,6 +829,14 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 			if (!has_next)
 			{
 				break;
+			}
+			if (G_UNLIKELY(!j_bson_iter_key_equals(&iter, "_index", &equals, error)))
+			{
+				goto _error;
+			}
+			if (equals)
+			{
+				continue;
 			}
 			if (prepared->variables_count)
 			{
@@ -1221,6 +1230,7 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 {
 	JSqlBatch* batch = _batch;
 	guint count;
+	gboolean equals;
 	JDBType type;
 	JDBTypeValue value;
 	JSqlIterator* iterator = NULL;
@@ -1292,6 +1302,14 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 			if (!has_next)
 			{
 				break;
+			}
+			if (G_UNLIKELY(!j_bson_iter_key_equals(&iter, "_index", &equals, error)))
+			{
+				goto _error;
+			}
+			if (equals)
+			{
+				continue;
 			}
 			if (prepared->variables_count)
 			{
@@ -1501,6 +1519,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	gboolean schema_initialized = FALSE;
 	JSqlBatch* batch = _batch;
 	bson_iter_t iter;
+	gboolean equals;
 	guint variables_count;
 	guint variables_count2;
 	JDBTypeValue value;
@@ -1548,6 +1567,14 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		if (!has_next)
 		{
 			break;
+		}
+		if (G_UNLIKELY(!j_bson_iter_key_equals(&iter, "_index", &equals, error)))
+		{
+			goto _error;
+		}
+		if (equals)
+		{
+			continue;
 		}
 		if (G_UNLIKELY(!j_bson_iter_value(&iter, J_DB_TYPE_UINT32, &value, error)))
 		{
