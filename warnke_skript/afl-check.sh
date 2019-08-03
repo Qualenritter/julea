@@ -25,30 +25,20 @@ i=300
 (export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --db-servers="$(hostname)" \
-  --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
-  --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/kv${i}" \
-  --db-backend=sqlite --db-component=client --db-path="/mnt2/julea/db${i}")
+  --object-backend=posix --object-component=client --object-path="/mnt2/julea/client-object${i}" \
+  --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/client-kv${i}" \
+  --db-backend=sqlite --db-component=client --db-path="/mnt2/julea/client-db${i}")
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
 i=301
 (export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
   --object-servers="$(hostname):13000" --kv-servers="$(hostname):13000" \
   --db-servers="$(hostname):13000" \
-  --object-backend=posix --object-component=client --object-path="/mnt2/julea/object${i}" \
-  --kv-backend=sqlite --kv-component=client --kv-path="/mnt2/julea/kv${i}" \
-  --db-backend=sqlite --db-component=client --db-path="/mnt2/julea/db${i}")
+  --object-backend=posix --object-component=server --object-path="/mnt2/julea/server-object${i}" \
+  --kv-backend=sqlite --kv-component=server --kv-path="/mnt2/julea/server-kv${i}" \
+  --db-backend=sqlite --db-component=server --db-path="/mnt2/julea/server-db${i}")
 mv ~/.config/julea/julea ~/.config/julea/julea${i}
 
 j=0
-
-(
-	export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH
-	export JULEA_CONFIG=~/.config/julea/julea301
-	export ASAN_OPTIONS=fast_unwind_on_malloc=0
-	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
-	export G_MESSAGES_DEBUG=all
-	export G_SLICE=always-malloc
-	./build-gcc-asan/server/julea-server --port=13000
-)&
 
 while true
 do
@@ -62,18 +52,33 @@ for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
 do
 for i in 300 301
 do
+
+if [ "$g" == "gcc-asan-mockup" ]; then
+	if [ "$i" == "301" ]; then
+		continue
+	fi
+fi
+
 	rm -rf /mnt2/julea/*
 	(
+		echo ${programname} > log/x
+		echo $g >> log/x
+		echo $i >> log/x
+		cat ~/.config/julea/julea${i} >> log/x
 		export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
 		export ASAN_OPTIONS=fast_unwind_on_malloc=0
 		export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 		export G_MESSAGES_DEBUG=all
 		export G_SLICE=always-malloc
-		echo ${programname} > log/x
+		./build-gcc-asan/server/julea-server --port=13000 &
+		server_pid=$!
+		export J_TRACE=debug
 		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
 			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
-			./build-${g}/test-afl/${programname} >> log/x 2>&1)
+			./build-${g}/test-afl/${programname}
+		kill -9 ${server_pid}
+	)  >> log/x 2>&1
 	r=$?
 	if [ $r -eq 0 ]; then
 		echo "invalid $f $g"

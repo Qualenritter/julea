@@ -75,16 +75,16 @@ function julea_run(){
 			--kv-servers="${servers}"     --kv-backend=sqlite    --kv-component="${component}"     --kv-path="${tmp_path}/kv${index}" \
 			--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path="memory"
 		eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
-		export G_SLICE=always-malloc
-		export G_DEBUG=fatal-warnings,gc-friendly,resident-modules
 		export AFL_NO_UI=1
 		export AFL_NO_AFFINITY=1
 		export AFL_SKIP_CRASHES=1
+		export AFL_DONT_OPTIMIZE=1
+		export AFL_SKIP_CPUFREQ=1
+		export G_SLICE=always-malloc
+		export G_DEBUG=fatal-warnings,gc-friendly,resident-modules
 		export JULEA_CONFIG=~/.config/julea/julea${index}
 		export GCOV_PREFIX=${afl_path}/cov/fuzzer${index}
-		export AFL_DONT_OPTIMIZE=1
 		export PATH=~/afl:$PATH
-		export AFL_SKIP_CPUFREQ=1
 		mkdir -p ${afl_path}/cov/fuzzer${index}/src/julea/
 		cp -r build-${name} ${afl_path}/cov/fuzzer${index}/src/julea/
 		for (( i=0; i < ${servercount}; i++ ))
