@@ -16,9 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-files=""
-files="${files} $(ls afl/out/*/crashes/* | grep -v README | shuf)"
-files="${files} $(ls afl/start-files/* | grep -v README )"
 ./warnke_skript/format.sh
 mkdir -p log
 rm -rf /mnt2/julea/* *.tmp-file
@@ -53,8 +50,12 @@ j=0
 	./build-gcc-asan/server/julea-server --port=13000
 )&
 
+while true
+do
+files="$(ls afl/out/*/crashes/* | grep -v README | shuf)"
 for f in ${files}
 do
+
 for g in gcc-asan gcc-asan-mockup
 do
 for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
@@ -86,4 +87,6 @@ done
 done
 	mv $f log/$j.input-file
 	j=$(($j + 1))
+	break
+done
 done

@@ -202,8 +202,9 @@ event_selector_add_selector(void)
 	random_values.selector_selector = random_values.selector_selector % AFL_LIMIT_SELECTOR;
 	if (!the_stored_selector)
 		return;
+	if (!stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector])
+		return;
 	ret_expected = TRUE;
-	ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector] != NULL);
 	ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
 	ret_expected = ret_expected && random_values.selector_selector != random_values.selector;
 	G_DEBUG_HERE();

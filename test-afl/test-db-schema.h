@@ -107,10 +107,11 @@ event_schema_add_field(void)
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	if (!the_stored_schema)
 		return;
+	if (the_stored_schema->server_side)
+		return;
 	ret_expected = TRUE;
 	ret_expected = ret_expected && random_values.var_type < _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_schema_field_type == _J_DB_TYPE_COUNT;
-	ret_expected = ret_expected && !the_stored_schema->server_side;
 	G_DEBUG_HERE();
 	ret = j_db_schema_add_field(the_stored_schema, varname_strbuf, random_values.var_type, &error);
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);

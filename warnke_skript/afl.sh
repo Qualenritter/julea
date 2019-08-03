@@ -62,8 +62,6 @@ function julea_run(){
 			export AFL_USE_ASAN=1
 			export ASAN_OPTIONS=symbolize=0,abort_on_error=1
 			name="${name}-asan"
-		else
-			export AFL_HARDEN=1
 		fi
 		echo compiler $compiler
 		echo flags $flags
@@ -173,6 +171,7 @@ i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup" "" "$i" "-m none -t 100
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-clang-fast" "--testmockup --debug" "" "$i" "-m none -t 10000 -M" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
 sleep 0.5s
+
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --debug" "" "$i" "-m none -t 10000 -S" "1" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
