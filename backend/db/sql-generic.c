@@ -298,21 +298,14 @@ backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _
 {
 	JSqlBatch* batch = *_batch = g_slice_new(JSqlBatch);
 
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	(void)error;
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!namespace))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAMESPACE_NULL, "namespace not set");
-		goto _error;
-	}
 	batch->namespace = namespace;
 	(void)safety;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
-_error:
-	g_slice_free(JSqlBatch, batch);
-	*_batch = NULL;
-	j_trace_leave(G_STRFUNC);
-	return FALSE;
 }
 static gboolean
 backend_batch_execute(gpointer batch, GError** error)
@@ -343,24 +336,13 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	const char* tmp_string;
 	GString* sql = g_string_new(NULL);
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(schema != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_SCHEMA_NULL, "schema not set");
 		goto _error;
 	}
 	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", batch->namespace, name);
@@ -559,17 +541,10 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 	gboolean sql_found;
 	const char* json = NULL;
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
-		goto _error;
-	}
 	value.val_string = batch->namespace;
 	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_get, 1, J_DB_TYPE_STRING, &value, error)))
 	{
@@ -635,19 +610,12 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
 		goto _error;
 	}
 	deleteCachePrepared(batch->namespace, name);
@@ -776,24 +744,13 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(metadata != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!metadata))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_METADATA_NULL, "metadata not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_bson_has_enough_keys(metadata, 1, error)))
@@ -1244,33 +1201,18 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	gboolean schema_initialized = FALSE;
 	JSqlCacheSQLPrepared* prepared = NULL;
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(metadata != NULL, FALSE);
+	g_return_val_if_fail(selector != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
 		goto _error;
 	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!selector))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_SELECTOR_NULL, "selector not set");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_bson_has_enough_keys(selector, 2, error)))
 	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!metadata))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_METADATA_NULL, "metadata not set");
 		goto _error;
 	}
 	prepared = getCachePrepared(batch->namespace, name, "update", error);
@@ -1444,19 +1386,12 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 	JDBTypeValue value;
 	JSqlCacheSQLPrepared* prepared = NULL;
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
 	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
 		goto _error;
 	}
 	if (G_UNLIKELY(!_backend_query(batch, name, selector, (gpointer*)&iterator, error)))
@@ -1530,17 +1465,10 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	GHashTable* variables_type = NULL;
 	GString* sql = g_string_new(NULL);
 
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_NAME_NULL, "name not set");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_BATCH_NULL, "batch not set");
-		goto _error;
-	}
 	variables_index = g_hash_table_new_full(g_direct_hash, NULL, NULL, g_free);
 	variables_type = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 	g_string_append(sql, "SELECT ");

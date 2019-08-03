@@ -39,17 +39,11 @@ j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
 	JDBSchema* schema = NULL;
 
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	(void)error;
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!namespace))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_NAMESPACE_NULL, "namespace must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_NAME_NULL, "name must not be NULL");
-		goto _error;
-	}
 	schema = g_slice_new(JDBSchema);
 	schema->namespace = g_strdup(namespace);
 	schema->name = g_strdup(name);
@@ -62,25 +56,17 @@ j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 	bson_init(&schema->bson);
 	j_trace_leave(G_STRFUNC);
 	return schema;
-_error:
-	j_trace_leave(G_STRFUNC);
-	return NULL;
 }
 JDBSchema*
 j_db_schema_ref(JDBSchema* schema, GError** error)
 {
+	g_return_val_if_fail(schema != NULL, FALSE);
+	(void)error;
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
 	g_atomic_int_inc(&schema->ref_count);
 	j_trace_leave(G_STRFUNC);
 	return schema;
-_error:
-	j_trace_leave(G_STRFUNC);
-	return NULL;
 }
 void
 j_db_schema_unref(JDBSchema* schema)
@@ -118,27 +104,12 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	JDBTypeValue val;
 	bson_iter_t iter;
 
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(type < _J_DB_TYPE_COUNT, FALSE);
+	g_return_val_if_fail(!schema->server_side, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(type >= _J_DB_TYPE_COUNT))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_INVALID, "db type invalid");
-		goto _error;
-	}
-	if (G_UNLIKELY(schema->server_side))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_SERVER, "schema must not be modified after it is applied");
-		goto _error;
-	}
 	if (!schema->bson_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_init(&schema->bson, error)))
@@ -173,27 +144,13 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 	JDBTypeValue val;
 	bson_iter_t iter;
 
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(type != NULL, FALSE);
+	g_return_val_if_fail(g_strcmp0(name, "_index"), FALSE);
+	g_return_val_if_fail(schema->bson_initialized, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!type))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_NULL, "type must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!schema->bson_initialized || !g_strcmp0(name, "_index")))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NOT_FOUND, "variable not found");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
 	{
 		goto _error;
@@ -222,27 +179,12 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	JDBTypeValue val;
 	const char* key;
 
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(names != NULL, FALSE);
+	g_return_val_if_fail(types != NULL, FALSE);
+	g_return_val_if_fail(schema->bson_initialized, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error2;
-	}
-	if (G_UNLIKELY(!names))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error2;
-	}
-	if (G_UNLIKELY(!types))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_NULL, "type must not be NULL");
-		goto _error2;
-	}
-	if (G_UNLIKELY(!schema->bson_initialized))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NOT_FOUND, "variable not found");
-		goto _error;
-	}
 	*names = NULL;
 	*types = NULL;
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
@@ -282,7 +224,6 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 _error:
 	/*TODO free names*/
 	/*TODO free types*/
-_error2:
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
@@ -298,22 +239,12 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	char buf[20];
 	gchar const** name;
 
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(names != NULL, FALSE);
+	g_return_val_if_fail(*names != NULL, FALSE);
+	g_return_val_if_fail(!schema->server_side, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!names || !*names))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(schema->server_side))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_SERVER, "schema must not be modified after it is applied");
-		goto _error;
-	}
 	if (!schema->bson_index_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_init(&schema->bson_index, error)))
@@ -401,27 +332,12 @@ _error:
 gboolean
 j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 {
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(!schema->server_side, FALSE);
+	g_return_val_if_fail(schema->bson_initialized, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(schema->server_side))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_SERVER, "schema must not be created multiple times");
-		goto _error;
-	}
-	if (G_UNLIKELY(!schema->bson_initialized))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NOT_INITIALIZED, "schema must not be empty");
-		goto _error;
-	}
 	if (schema->bson_index_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_append_array(&schema->bson, "_index", &schema->bson_index, error)))
@@ -443,27 +359,12 @@ _error:
 gboolean
 j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error)
 {
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(!schema->server_side, FALSE);
+	g_return_val_if_fail(!schema->bson_initialized, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(schema->server_side))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_SERVER, "schema already synchronized with server");
-		goto _error;
-	}
-	if (G_UNLIKELY(schema->bson_initialized))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_INITIALIZED, "schema must be empty");
-		goto _error;
-	}
 	schema->server_side = TRUE;
 	schema->bson_initialized = TRUE;
 	if (G_UNLIKELY(!j_db_internal_schema_get(schema->namespace, schema->name, &schema->bson, batch, error)))
@@ -479,17 +380,10 @@ _error:
 gboolean
 j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error)
 {
+	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_db_internal_schema_delete(schema->namespace, schema->name, batch, error)))
 	{
 		goto _error;
@@ -514,12 +408,10 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 	gboolean has_next;
 	const char* key;
 
+	g_return_val_if_fail(schema1 != NULL, FALSE);
+	g_return_val_if_fail(schema2 != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema1 || !schema2))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
 	if (schema1 == schema2)
 	{
 		*equal = TRUE;

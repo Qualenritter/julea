@@ -46,7 +46,7 @@ j=0
 	export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea301
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
-	export G_DEBUG=resident-modules,gc-friendly
+	export GDEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
 	./build-gcc-asan/server/julea-server --port=13000
@@ -65,7 +65,7 @@ do
 		export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
 		export ASAN_OPTIONS=fast_unwind_on_malloc=0
-		export G_DEBUG=resident-modules,gc-friendly
+		export GDEBUG=fatal-warnings,resident-modules,gc-friendly
 		export G_MESSAGES_DEBUG=all
 		export G_SLICE=always-malloc
 		echo ${programname} > log/x

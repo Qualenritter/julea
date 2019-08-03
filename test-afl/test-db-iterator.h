@@ -105,13 +105,6 @@ event_iterator_next(void)
 			{
 				switch (error->code)
 				{
-				case J_BACKEND_DB_ERROR_BATCH_NULL:
-				case J_BACKEND_DB_ERROR_NAME_NULL:
-				case J_BACKEND_DB_ERROR_SCHEMA_NULL:
-				case J_BACKEND_DB_ERROR_NAMESPACE_NULL:
-				case J_BACKEND_DB_ERROR_SELECTOR_NULL:
-				case J_BACKEND_DB_ERROR_METADATA_NULL:
-				case J_BACKEND_DB_ERROR_ITERATOR_NULL:
 				case J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 					ret_expected = FALSE;
 					break;
@@ -132,21 +125,9 @@ event_iterator_next(void)
 				switch (error->code)
 				{
 				case J_FRONTEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS:
-				case J_FRONTEND_DB_ERROR_SCHEMA_NULL:
-				case J_FRONTEND_DB_ERROR_ENTRY_NULL:
-				case J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL:
-				case J_FRONTEND_DB_ERROR_BATCH_NULL:
-				case J_FRONTEND_DB_ERROR_ITERATOR_NULL:
-				case J_FRONTEND_DB_ERROR_TYPE_NULL:
-				case J_FRONTEND_DB_ERROR_VALUE_NULL:
-				case J_FRONTEND_DB_ERROR_LENGTH_NULL:
-				case J_FRONTEND_DB_ERROR_SELECTOR_NULL:
-				case J_FRONTEND_DB_ERROR_NAMESPACE_NULL:
-				case J_FRONTEND_DB_ERROR_NAME_NULL:
 					ret_expected = FALSE;
 					break;
 				case J_FRONTEND_DB_ERROR_VARIABLE_ALREADY_SET:
-				case J_FRONTEND_DB_ERROR_ITERATOR_NOT_INITIALIZED:
 				case J_FRONTEND_DB_ERROR_SCHEMA_NOT_INITIALIZED:
 				case J_FRONTEND_DB_ERROR_MODE_INVALID:
 				case J_FRONTEND_DB_ERROR_SCHEMA_INITIALIZED:
@@ -192,6 +173,7 @@ event_iterator_get_field(void)
 	ret_expected = the_stored_iterator != NULL;
 	ret_expected = ret_expected && the_schema_field_type != _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_stored_iterator_next_count;
+	ret_expected = ret_expected && the_stored_iterator->bson_valid;
 	switch (random_values.invalid_switch % 6)
 	{
 	case 5: //iterator null
@@ -216,10 +198,6 @@ event_iterator_get_field(void)
 		break;
 	case 0:
 		ret = j_db_iterator_get_field(the_stored_iterator, varname_strbuf, &type, &value, &length, &error);
-		if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_ITERATOR_NOT_INITIALIZED)
-		{
-			ret_expected = FALSE;
-		}
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 		if (ret)
 		{

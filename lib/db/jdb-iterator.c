@@ -42,12 +42,9 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	JBatch* batch;
 	JDBIterator* iterator = NULL;
 
+	g_return_val_if_fail(schema != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
 	if (G_UNLIKELY(!iterator->schema))
@@ -96,18 +93,13 @@ _error:
 JDBIterator*
 j_db_iterator_ref(JDBIterator* iterator, GError** error)
 {
+	g_return_val_if_fail(iterator != NULL, FALSE);
+	(void)error;
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!iterator))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
-		goto _error;
-	}
 	g_atomic_int_inc(&iterator->ref_count);
 	j_trace_leave(G_STRFUNC);
 	return iterator;
-_error:
-	j_trace_leave(G_STRFUNC);
-	return NULL;
 }
 void
 j_db_iterator_unref(JDBIterator* iterator)
@@ -132,32 +124,24 @@ j_db_iterator_unref(JDBIterator* iterator)
 gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
+	g_return_val_if_fail(iterator != NULL, FALSE);
+	g_return_val_if_fail(iterator->valid, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!iterator))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!iterator->valid))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "iterator no more elements");
-		goto _error;
-	}
 	if (iterator->bson_valid)
 	{
 		j_bson_destroy(&iterator->bson);
 	}
 	if (G_UNLIKELY(!j_db_internal_iterate(iterator->iterator, &iterator->bson, error)))
 	{
-		goto _error2;
+		goto _error;
 	}
 	iterator->bson_valid = TRUE;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
-_error2:
+_error:
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
-_error:
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
@@ -167,37 +151,14 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	JDBTypeValue val;
 	bson_iter_t iter;
 
+	g_return_val_if_fail(iterator != NULL, FALSE);
+	g_return_val_if_fail(iterator->bson_valid, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+	g_return_val_if_fail(type != NULL, FALSE);
+	g_return_val_if_fail(value != NULL, FALSE);
+	g_return_val_if_fail(length != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!iterator))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NULL, "iterator must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!iterator->bson_valid))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ITERATOR_NOT_INITIALIZED, "iterator must be initialized");
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!type))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_TYPE_NULL, "type must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!value))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VALUE_NULL, "value must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!length))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_LENGTH_NULL, "length must not be NULL");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_db_schema_get_field(iterator->schema, name, type, error)))
 	{
 		goto _error;

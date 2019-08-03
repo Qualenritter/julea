@@ -14,7 +14,7 @@ rm -rf ${basepath}
 mkdir -p ${basepath}
 (
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
-	export G_DEBUG=resident-modules,gc-friendly
+	export GDEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
 	export J_TRACE=debug
@@ -29,7 +29,7 @@ rm -rf ${basepath}
 mkdir -p ${basepath}
 (
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
-	export G_DEBUG=resident-modules,gc-friendly
+	export GDEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
 	export J_TRACE=debug

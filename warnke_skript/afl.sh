@@ -76,7 +76,7 @@ function julea_run(){
 			--db-servers="${servers}"    --db-backend=sqlite   --db-component="${component}"    --db-path="memory"
 		eval "mv ~/.config/julea/julea ~/.config/julea/julea${index}"
 		export G_SLICE=always-malloc
-		export G_DEBUG=gc-friendly,resident-modules
+		export GDEBUG=fatal-warnings,gc-friendly,resident-modules
 		export AFL_NO_UI=1
 		export AFL_NO_AFFINITY=1
 		export AFL_SKIP_CRASHES=1

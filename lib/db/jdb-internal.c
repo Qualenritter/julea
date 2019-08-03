@@ -310,12 +310,9 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	JOperation* op;
 	JBackendOperation* data;
 
+	g_return_val_if_fail(iterator != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!iterator))
-	{
-		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NULL, "iterator not set");
-		goto _error;
-	}
 	helper = g_slice_new(J_db_iterator_helper);
 	helper->initialized = FALSE;
 	memset(&helper->bson, 0, sizeof(bson_t));
@@ -335,9 +332,6 @@ j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* sel
 	j_batch_add(batch, op);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
-_error:
-	j_trace_leave(G_STRFUNC);
-	return FALSE;
 }
 gboolean
 j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)

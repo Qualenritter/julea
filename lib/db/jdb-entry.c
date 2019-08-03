@@ -39,12 +39,9 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 {
 	JDBEntry* entry = NULL;
 
+	g_return_val_if_fail(schema != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!schema))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SCHEMA_NULL, "schema must not be NULL");
-		goto _error;
-	}
 	entry = g_slice_new(JDBEntry);
 	if (G_UNLIKELY(!j_bson_init(&entry->bson, error)))
 	{
@@ -66,18 +63,13 @@ _error:
 JDBEntry*
 j_db_entry_ref(JDBEntry* entry, GError** error)
 {
+	g_return_val_if_fail(entry != NULL, FALSE);
+	(void)error;
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!entry))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
-		goto _error;
-	}
 	g_atomic_int_inc(&entry->ref_count);
 	j_trace_leave(G_STRFUNC);
 	return entry;
-_error:
-	j_trace_leave(G_STRFUNC);
-	return NULL;
 }
 void
 j_db_entry_unref(JDBEntry* entry)
@@ -98,17 +90,10 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 	gboolean ret;
 	JDBTypeValue val;
 
+	g_return_val_if_fail(entry != NULL, FALSE);
+	g_return_val_if_fail(name != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!entry))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!name))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NAME_NULL, "variable name must not be NULL");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_db_schema_get_field(entry->schema, name, &type, error)))
 	{
 		goto _error;
@@ -165,17 +150,10 @@ _error:
 gboolean
 j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
+	g_return_val_if_fail(entry != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!entry))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_db_internal_insert(entry->schema->namespace, entry->schema->name, &entry->bson, batch, error)))
 	{
 		goto _error;
@@ -191,26 +169,16 @@ j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 {
 	bson_t* bson;
 
+	g_return_val_if_fail(entry != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(selector != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!entry))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!selector))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
-		goto _error;
-	}
 	bson = j_db_selector_get_bson(selector);
+
 	if (G_UNLIKELY(!bson))
 	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_NULL, "selector must not be NULL");
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_EMPTY, "selector must not be empty");
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_db_internal_update(entry->schema->namespace, entry->schema->name, bson, &entry->bson, batch, error)))
@@ -226,17 +194,10 @@ _error:
 gboolean
 j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
+	g_return_val_if_fail(entry != NULL, FALSE);
+	g_return_val_if_fail(batch != NULL, FALSE);
+
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!entry))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_ENTRY_NULL, "entry must not be NULL");
-		goto _error;
-	}
-	if (G_UNLIKELY(!batch))
-	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_BATCH_NULL, "batch must not be NULL");
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error)))
 	{
 		goto _error;
