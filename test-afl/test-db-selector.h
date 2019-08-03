@@ -181,7 +181,6 @@ event_selector_add_field(void)
 			}
 			break;
 		case _J_DB_TYPE_COUNT:
-			ret = FALSE;
 			MYABORT_IF(ret_expected);
 			break;
 		default: //LCOV_EXCL_LINE

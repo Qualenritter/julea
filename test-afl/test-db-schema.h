@@ -132,6 +132,8 @@ event_schema_get_field(void)
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	if (!the_stored_schema)
 		return;
+	if (!the_stored_schema->bson_initialized)
+		return;
 	ret_expected = TRUE;
 	ret_expected = ret_expected && the_schema_field_type < _J_DB_TYPE_COUNT;
 	G_DEBUG_HERE();

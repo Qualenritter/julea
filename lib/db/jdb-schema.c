@@ -245,6 +245,7 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	g_return_val_if_fail(!schema->server_side, FALSE);
 
 	j_trace_enter(G_STRFUNC, NULL);
+	index.variables = NULL;
 	if (!schema->bson_index_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_init(&schema->bson_index, error)))

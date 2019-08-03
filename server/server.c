@@ -658,7 +658,6 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 			if (!message_matched)
 			{
 				memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
-				message_matched = TRUE;
 			}
 			{
 				g_autoptr(JMessage) reply = NULL;
@@ -732,8 +731,6 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 				}
 
 				j_message_send(reply, connection);
-
-				message_matched = FALSE;
 			}
 			break;
 		default:

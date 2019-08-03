@@ -367,8 +367,8 @@ event_query_single(void)
 		}
 		else
 		{
-			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected;
 			ret_expected = FALSE;
+			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected;
 		}
 	}
 	else
@@ -551,8 +551,8 @@ event_delete(void)
 		}
 		else
 		{
-			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected; //row does not exist before
 			ret_expected = FALSE;
+			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected; //row does not exist before
 		}
 	}
 	else
@@ -693,8 +693,8 @@ event_update(void)
 		}
 		else
 		{
-			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected; //update a definetly not existing row
 			ret_expected = FALSE;
+			ret_expected = build_selector_single(0, AFL_LIMIT_SCHEMA_VALUES) && ret_expected; //update a definetly not existing row
 		}
 	}
 	else

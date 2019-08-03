@@ -23,7 +23,7 @@
 #include "db.h"
 
 static gdouble target_time = 0;
-static guint n = 0;
+static guint global_n = 0;
 //
 static BenchmarkResult* benchmark_db_schema_new_executed = NULL; /*execute only once*/
 static BenchmarkResult* benchmark_db_schema_free_executed = NULL; /*execute only once*/
@@ -41,7 +41,7 @@ static BenchmarkResult* benchmark_db_schema_get_executed = NULL; /*execute multi
 static BenchmarkResult* benchmark_db_schema_delete_executed = NULL; /*execute multiple benchmarks together*/
 //
 static void
-_benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch)
+_benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch, const guint n)
 {
 	JDBSchema** schema_array = NULL;
 	GError* error = NULL;
@@ -67,7 +67,7 @@ _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch)
 	}
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
-	schema_array = g_new(JDBSchema*, n);
+	schema_array = g_new0(JDBSchema*, n);
 	for (i = 0; i < n; i++)
 	{
 		sprintf(name, "name%d", i);
@@ -179,15 +179,15 @@ start:
 static void
 benchmark_db_schema_create(BenchmarkResult* result)
 {
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
-	_benchmark_db_schema_create(result, FALSE);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
+	_benchmark_db_schema_create(result, FALSE, global_n);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_schema_create_batch(BenchmarkResult* result)
 {
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
-	_benchmark_db_schema_create(result, TRUE);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
+	_benchmark_db_schema_create(result, TRUE, global_n);
 	j_trace_leave(G_STRFUNC);
 }
 static void
@@ -195,10 +195,10 @@ _benchmark_db_schema_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_delete_executed)
 	{
-		_benchmark_db_schema_create(&b, use_batch);
+		_benchmark_db_schema_create(&b, use_batch, global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_delete_executed->elapsed_time;
 	result->operations = benchmark_db_schema_delete_executed->operations;
@@ -207,14 +207,14 @@ _benchmark_db_schema_delete(BenchmarkResult* result, gboolean use_batch)
 static void
 benchmark_db_schema_delete(BenchmarkResult* result)
 {
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	_benchmark_db_schema_delete(result, FALSE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_schema_delete_batch(BenchmarkResult* result)
 {
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	_benchmark_db_schema_delete(result, TRUE);
 	j_trace_leave(G_STRFUNC);
 }
@@ -223,10 +223,10 @@ _benchmark_db_schema_get(BenchmarkResult* result, gboolean use_batch)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_get_executed)
 	{
-		_benchmark_db_schema_create(&b, use_batch);
+		_benchmark_db_schema_create(&b, use_batch, global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_get_executed->elapsed_time;
 	result->operations = benchmark_db_schema_get_executed->operations;
@@ -235,14 +235,14 @@ _benchmark_db_schema_get(BenchmarkResult* result, gboolean use_batch)
 static void
 benchmark_db_schema_get(BenchmarkResult* result)
 {
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	_benchmark_db_schema_get(result, FALSE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_schema_get_batch(BenchmarkResult* result)
 {
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	_benchmark_db_schema_get(result, TRUE);
 	j_trace_leave(G_STRFUNC);
 }
@@ -261,7 +261,7 @@ benchmark_db_schema_ref(BenchmarkResult* result)
 	gdouble elapsed_ref = 0;
 	gdouble elapsed_unref = 0;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, NULL);
 	if (benchmark_db_schema_ref_executed)
 	{
 		result->elapsed_time = benchmark_db_schema_ref_executed->elapsed_time;
@@ -295,10 +295,10 @@ start:
 	j_db_schema_unref(schema);
 	benchmark_db_schema_ref_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_schema_ref_executed->elapsed_time = elapsed_ref;
-	benchmark_db_schema_ref_executed->operations = n * m;
+	benchmark_db_schema_ref_executed->operations = m;
 	benchmark_db_schema_unref_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_schema_unref_executed->elapsed_time = elapsed_unref;
-	benchmark_db_schema_unref_executed->operations = n * m;
+	benchmark_db_schema_unref_executed->operations = m;
 	result->elapsed_time = benchmark_db_schema_ref_executed->elapsed_time;
 	result->operations = benchmark_db_schema_ref_executed->operations;
 	j_trace_leave(G_STRFUNC);
@@ -308,7 +308,7 @@ benchmark_db_schema_unref(BenchmarkResult* result)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!benchmark_db_schema_unref_executed)
 	{
 		benchmark_db_schema_ref(&b);
@@ -330,7 +330,7 @@ benchmark_db_schema_new(BenchmarkResult* result)
 	gdouble elapsed_new = 0;
 	gdouble elapsed_free = 0;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, NULL);
 	if (benchmark_db_schema_new_executed)
 	{
 		result->elapsed_time = benchmark_db_schema_new_executed->elapsed_time;
@@ -361,10 +361,10 @@ start:
 	g_free(schema_array);
 	benchmark_db_schema_new_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_schema_new_executed->elapsed_time = elapsed_new;
-	benchmark_db_schema_new_executed->operations = n * m;
+	benchmark_db_schema_new_executed->operations = m;
 	benchmark_db_schema_free_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_schema_free_executed->elapsed_time = elapsed_free;
-	benchmark_db_schema_free_executed->operations = n * m;
+	benchmark_db_schema_free_executed->operations = m;
 	result->elapsed_time = benchmark_db_schema_new_executed->elapsed_time;
 	result->operations = benchmark_db_schema_new_executed->operations;
 	j_trace_leave(G_STRFUNC);
@@ -374,7 +374,7 @@ benchmark_db_schema_free(BenchmarkResult* result)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, NULL);
 	if (!benchmark_db_schema_free_executed)
 	{
 		benchmark_db_schema_new(&b);
@@ -384,7 +384,7 @@ benchmark_db_schema_free(BenchmarkResult* result)
 	j_trace_leave(G_STRFUNC);
 }
 static void
-benchmark_db_schema_add_field(BenchmarkResult* result)
+_benchmark_db_schema_add_field(BenchmarkResult* result, const guint n)
 {
 	gchar** names;
 	JDBType* types;
@@ -492,14 +492,19 @@ benchmark_db_schema_add_field(BenchmarkResult* result)
 	j_trace_leave(G_STRFUNC);
 }
 static void
+benchmark_db_schema_add_field(BenchmarkResult* result)
+{
+	_benchmark_db_schema_add_field(result,global_n);
+}
+static void
 benchmark_db_schema_get_field(BenchmarkResult* result)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_get_field_executed)
 	{
-		benchmark_db_schema_add_field(&b);
+		_benchmark_db_schema_add_field(&b,global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_get_field_executed->elapsed_time;
 	result->operations = benchmark_db_schema_get_field_executed->operations;
@@ -510,10 +515,10 @@ benchmark_db_schema_get_fields(BenchmarkResult* result)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_get_fields_executed)
 	{
-		benchmark_db_schema_add_field(&b);
+		_benchmark_db_schema_add_field(&b,global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_get_fields_executed->elapsed_time;
 	result->operations = benchmark_db_schema_get_fields_executed->operations;
@@ -524,10 +529,10 @@ benchmark_db_schema_equals(BenchmarkResult* result)
 {
 	BenchmarkResult b;
 
-	j_trace_enter(G_STRFUNC, "(n=%d)", n);
+	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_equals_executed)
 	{
-		benchmark_db_schema_add_field(&b);
+		_benchmark_db_schema_add_field(&b,global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_equals_executed->elapsed_time;
 	result->operations = benchmark_db_schema_equals_executed->operations;
@@ -537,7 +542,7 @@ void
 benchmark_db_schema(gdouble _target_time, guint _n)
 {
 	char testname[500];
-	n = _n;
+	const guint n = global_n = _n;
 
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;

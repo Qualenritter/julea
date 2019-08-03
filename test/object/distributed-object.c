@@ -25,9 +25,8 @@
 
 #include "test.h"
 
-static
-void
-test_object_new_free (void)
+static void
+test_object_new_free(void)
 {
 	guint const n = 100000;
 
@@ -42,9 +41,8 @@ test_object_new_free (void)
 	}
 }
 
-static
-void
-test_object_create_delete (void)
+static void
+test_object_create_delete(void)
 {
 	guint const n = 100;
 
@@ -56,7 +54,7 @@ test_object_create_delete (void)
 	{
 		g_autoptr(JDistribution) distribution = NULL;
 		g_autoptr(JDistributedObject) object = NULL;
-		g_autofree gchar* name = NULL;
+		gchar* name = NULL;
 
 		distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
 		name = g_strdup_printf("test-object-%u", i);
@@ -65,19 +63,19 @@ test_object_create_delete (void)
 
 		j_distributed_object_create(object, batch);
 		j_distributed_object_delete(object, batch);
+		g_free(name);
 	}
 
 	j_batch_execute(batch);
 }
 
-static
-void
-test_object_read_write (void)
+static void
+test_object_read_write(void)
 {
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDistribution) distribution = NULL;
 	g_autoptr(JDistributedObject) object = NULL;
-	g_autofree gchar* buffer = NULL;
+	gchar* buffer = NULL;
 	guint64 max_operation_size;
 	guint64 nbytes = 0;
 
@@ -136,16 +134,16 @@ test_object_read_write (void)
 
 	j_distributed_object_delete(object, batch);
 	j_batch_execute(batch);
+	g_free(buffer);
 }
 
-static
-void
-test_object_status (void)
+static void
+test_object_status(void)
 {
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDistribution) distribution = NULL;
 	g_autoptr(JDistributedObject) object = NULL;
-	g_autofree gchar* buffer = NULL;
+	gchar* buffer = NULL;
 	gint64 modification_time = 0;
 	guint64 nbytes = 0;
 	guint64 size = 0;
@@ -170,10 +168,11 @@ test_object_status (void)
 
 	j_distributed_object_delete(object, batch);
 	j_batch_execute(batch);
+	g_free(buffer);
 }
 
 void
-test_object_distributed_object (void)
+test_object_distributed_object(void)
 {
 	g_test_add_func("/object/distributed-object/new_free", test_object_new_free);
 	g_test_add_func("/object/distributed-object/create_delete", test_object_create_delete);

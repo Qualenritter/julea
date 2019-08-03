@@ -141,7 +141,6 @@ event_entry_set_field(void)
 		}
 		break;
 	case _J_DB_TYPE_COUNT:
-		ret = FALSE;
 		MYABORT_IF(ret_expected);
 		break;
 	default: //LCOV_EXCL_LINE
@@ -178,13 +177,12 @@ event_entry_update(void)
 	g_debug("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	if (!the_stored_entry)
 		return;
+	if(!the_stored_selector)return;
+	if(!j_db_selector_get_bson(the_stored_selector))return;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	ret_expected = TRUE;
 	ret_expected = ret_expected && the_stored_entry_field_set;
-	ret_expected = ret_expected && the_stored_selector;
 	ret_expected = ret_expected && the_stored_schema->server_side;
-	G_DEBUG_HERE();
-	ret_expected = ret_expected && j_db_selector_get_bson(the_stored_selector);
 	G_DEBUG_HERE();
 	ret = j_db_entry_update(the_stored_entry, the_stored_selector, batch, &error);
 	ret = j_batch_execute(batch) && ret;
