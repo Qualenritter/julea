@@ -33,6 +33,7 @@
 #include <julea-db.h>
 #include <core/jbson-wrapper.h>
 #include <jtrace-internal.h>
+
 JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
@@ -52,6 +53,8 @@ j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 	schema = g_slice_new(JDBSchema);
 	schema->namespace = g_strdup(namespace);
 	schema->name = g_strdup(name);
+	schema->variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	schema->index = g_array_new(FALSE, FALSE, sizeof(GHashTable*));
 	schema->bson_initialized = FALSE;
 	schema->bson_index_initialized = FALSE;
 	schema->ref_count = 1;
@@ -82,11 +85,21 @@ _error:
 void
 j_db_schema_unref(JDBSchema* schema)
 {
+	guint i;
+	JDBSchemaIndex* index;
+
 	j_trace_enter(G_STRFUNC, NULL);
 	if (schema && g_atomic_int_dec_and_test(&schema->ref_count))
 	{
 		g_free(schema->namespace);
 		g_free(schema->name);
+		g_hash_table_unref(schema->variables);
+		for (i = 0; i < schema->index->len; i++)
+		{
+			index = g_array_index(schema->index, JDBSchemaIndex*, i);
+			g_hash_table_unref(index->variables);
+		}
+		g_array_unref(schema->index);
 		if (schema->bson_initialized)
 		{
 			bson_destroy(&schema->bson);
@@ -143,6 +156,7 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	{
 		goto _error;
 	}
+	g_hash_table_insert(schema->variables, g_strdup(name), GINT_TO_POINTER(type));
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -271,8 +285,8 @@ _error2:
 gboolean
 j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 {
-	/*TODO prevent double insert same index*/
-	/*TODO check indexed column already exist*/
+	JDBSchemaIndex index;
+	JDBSchemaIndex* index_tmp;
 	guint i;
 	bson_t bson;
 	JDBTypeValue val;
@@ -302,10 +316,47 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 		{
 			goto _error;
 		}
-		schema->bson_index_count = 0;
 		schema->bson_index_initialized = TRUE;
 	}
-	if (G_UNLIKELY(!j_bson_array_generate_key(schema->bson_index_count, &key, buf, sizeof(buf), error)))
+	i = 0;
+	index.variable_count = 0;
+	name = names;
+	index.variables = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	while (*name)
+	{
+		if (G_UNLIKELY(!g_hash_table_lookup_extended(schema->variables, *name, NULL, NULL)))
+		{
+			g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_VARIABLE_NOT_FOUND, "variable not found");
+			goto _error;
+		}
+		index.variable_count++;
+		g_hash_table_add(index.variables, *name);
+		name++;
+		i++;
+	}
+	i = 0;
+_not_equal:
+	i++;
+	if (i <= schema->index->len)
+	{
+		index_tmp = g_array_index(schema->index, GHashTable*, i - 1);
+		if (index.variable_count != index_tmp->variable_count)
+		{
+			goto _not_equal;
+		}
+		name = names;
+		while (*name)
+		{
+			if (!g_hash_table_contains(index_tmp->variables, *name))
+			{
+				goto _not_equal;
+			}
+			name++;
+		}
+		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_DUPLICATE_INDEX, "duplicate index");
+		goto _error;
+	}
+	if (G_UNLIKELY(!j_bson_array_generate_key(schema->index->len, &key, buf, sizeof(buf), error)))
 	{
 		goto _error;
 	}
@@ -313,33 +364,33 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	{
 		goto _error;
 	}
-	i = 0;
 	name = names;
-	while (name)
+	while (*name)
 	{
-		if (*name)
+		if (G_UNLIKELY(!j_bson_array_generate_key(i, &key, buf, sizeof(buf), error)))
 		{
-			if (G_UNLIKELY(!j_bson_array_generate_key(i, &key, buf, sizeof(buf), error)))
-			{
-				goto _error;
-			}
-			val.val_string = *name;
-			if (G_UNLIKELY(!j_bson_append_value(&bson, key, J_DB_TYPE_STRING, &val, error)))
-			{
-				goto _error;
-			}
-			name++;
+			goto _error;
 		}
+		val.val_string = *name;
+		if (G_UNLIKELY(!j_bson_append_value(&bson, key, J_DB_TYPE_STRING, &val, error)))
+		{
+			goto _error;
+		}
+		name++;
 		i++;
 	}
 	if (G_UNLIKELY(!j_bson_append_array_end(&schema->bson_index, &bson, error)))
 	{
 		goto _error;
 	}
-	schema->bson_index_count++;
+	g_array_append_val(schema->index, index);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
+	if (index.variables)
+	{
+		g_hash_table_unref(index.variables);
+	}
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }

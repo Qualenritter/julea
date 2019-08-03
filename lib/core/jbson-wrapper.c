@@ -679,7 +679,7 @@ gboolean
 j_bson_array_generate_key(guint32 index, const char** key, char* buf, guint buf_length, GError** error)
 {
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!key || !*key))
+	if (G_UNLIKELY(!key))
 	{
 		g_set_error_literal(error, J_BSON_ERROR, J_BSON_ERROR_ITER_KEY_NULL, "key must not be NULL");
 		goto _error;
