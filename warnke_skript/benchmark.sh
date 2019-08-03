@@ -63,7 +63,7 @@ sleep 2
 	mkdir -p benchmark_values/debug
 	cd benchmark_values/debug
 	export G_MESSAGES_DEBUG=all
-	export GDEBUG=fatal-warnings,resident-modules,gc-friendly
+	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_SLICE=always-malloc
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
@@ -89,7 +89,7 @@ sleep 2
 	mkdir -p benchmark_values/debug
 	cd benchmark_values/debug
 	export G_MESSAGES_DEBUG=all
-	export GDEBUG=fatal-warnings,resident-modules,gc-friendly
+	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_SLICE=always-malloc
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH

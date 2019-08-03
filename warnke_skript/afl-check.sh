@@ -20,6 +20,7 @@ files=""
 files="${files} $(ls afl/out/*/crashes/* | grep -v README | shuf)"
 files="${files} $(ls afl/start-files/* | grep -v README )"
 ./warnke_skript/format.sh
+mkdir -p log
 rm -rf /mnt2/julea/* *.tmp-file
 (export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
 (export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
@@ -46,7 +47,7 @@ j=0
 	export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea301
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
-	export GDEBUG=fatal-warnings,resident-modules,gc-friendly
+	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
 	./build-gcc-asan/server/julea-server --port=13000
@@ -65,7 +66,7 @@ do
 		export LD_LIBRARY_PATH=prefix-${g}/lib/:$LD_LIBRARY_PATH
 		export JULEA_CONFIG=~/.config/julea/julea${i}
 		export ASAN_OPTIONS=fast_unwind_on_malloc=0
-		export GDEBUG=fatal-warnings,resident-modules,gc-friendly
+		export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 		export G_MESSAGES_DEBUG=all
 		export G_SLICE=always-malloc
 		echo ${programname} > log/x

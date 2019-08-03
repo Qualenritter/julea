@@ -306,6 +306,8 @@ j_trace_init(gchar const* name)
 	gchar const* j_trace;
 	gchar const* j_trace_function;
 
+	G_DEBUG_HERE();
+
 	g_return_if_fail(name != NULL);
 	g_return_if_fail(j_trace_flags == J_TRACE_OFF);
 

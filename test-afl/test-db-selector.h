@@ -23,30 +23,20 @@ static void
 event_selector_new(void)
 {
 	GError* error = NULL;
-	guint ret;
 	guint ret_expected;
+	G_DEBUG_HERE();
 	j_db_selector_unref(the_stored_selector);
 	the_stored_selector = NULL;
 	the_stored_selector_field_count = 0;
 	g_debug("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
 	random_values.selector_mode = random_values.selector_mode % (_J_DB_SELECTOR_MODE_COUNT + 1);
-	switch (random_values.invalid_switch % 2)
-	{
-	case 1: //schema NULL
-		the_stored_selector = j_db_selector_new(NULL, random_values.selector_mode, &error);
-		ret = the_stored_selector != NULL;
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0: //success
-		ret_expected = the_stored_schema != NULL;
-		ret_expected = ret_expected && (random_values.selector_mode != _J_DB_SELECTOR_MODE_COUNT);
-		the_stored_selector = j_db_selector_new(the_stored_schema, random_values.selector_mode, &error);
-		ret = the_stored_selector != NULL;
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
-	}
+	if (!the_stored_schema)
+		return;
+	ret_expected = TRUE;
+	ret_expected = ret_expected && (random_values.selector_mode != _J_DB_SELECTOR_MODE_COUNT);
+	G_DEBUG_HERE();
+	the_stored_selector = j_db_selector_new(the_stored_schema, random_values.selector_mode, &error);
+	J_AFL_DEBUG_ERROR(the_stored_selector != NULL, ret_expected, error);
 }
 static void
 event_selector_ref(void)
@@ -55,90 +45,50 @@ event_selector_ref(void)
 	JDBSelector* ptr = NULL;
 	gint ref_count;
 	g_debug("AFL_EVENT_DB_SELECTOR_REF %d %d", random_values.namespace, random_values.name);
-	if (the_stored_selector)
-	{
-		ref_count = the_stored_selector->ref_count;
-		ptr = j_db_selector_ref(the_stored_selector, &error);
-		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
-		MYABORT_IF(ptr != the_stored_selector);
-		MYABORT_IF(the_stored_selector->ref_count != ref_count + 1);
-		j_db_selector_unref(the_stored_selector);
-		MYABORT_IF(the_stored_selector->ref_count != ref_count);
-	}
-	else
-	{
-		ptr = j_db_selector_ref(NULL, &error);
-		J_AFL_DEBUG_ERROR(ptr != NULL, FALSE, error);
-	}
+	if (!the_stored_selector)
+		return;
+	ref_count = the_stored_selector->ref_count;
+	G_DEBUG_HERE();
+	ptr = j_db_selector_ref(the_stored_selector, &error);
+	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
+	MYABORT_IF(ptr != the_stored_selector);
+	MYABORT_IF(the_stored_selector->ref_count != ref_count + 1);
+	G_DEBUG_HERE();
+	j_db_selector_unref(the_stored_selector);
+	MYABORT_IF(the_stored_selector->ref_count != ref_count);
 }
 static void
 event_selector_add_field(void)
 {
-	//TODO test null value parameter
 	GError* error = NULL;
 	guint ret;
 	guint ret_expected;
 	JDBType type;
 	JDBSelectorOperator operator= random_values.selector_operator %(_J_DB_SELECTOR_OPERATOR_COUNT + 1);
 	g_debug("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
-	ret_expected = the_stored_selector != NULL;
+	if (!the_stored_selector)
+		return;
+	ret_expected = TRUE;
 	ret_expected = ret_expected && operator<_J_DB_SELECTOR_OPERATOR_COUNT;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
-	switch (random_values.invalid_switch % 5)
+	switch (random_values.invalid_switch % 2)
 	{
-	case 4: //not existing varname
-		if (the_stored_selector)
-		{
-			ret = j_db_schema_get_field(the_stored_selector->schema, "_not_existing_name_", &type, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, "_not_existing_name_", &type, &error);
-		}
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 3: //NULL varname
-		if (the_stored_selector)
-		{
-			ret = j_db_schema_get_field(the_stored_selector->schema, NULL, &type, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, NULL, &type, &error);
-		}
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 2: //NULL selector
-		ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1: //NULL type
-		if (the_stored_selector)
-		{
-			ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, NULL, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, varname_strbuf, NULL, &error);
-		}
+	case 1: //not existing varname
+		G_DEBUG_HERE();
+		ret = j_db_schema_get_field(the_stored_selector->schema, "_not_existing_name_", &type, &error);
 		J_AFL_DEBUG_ERROR(ret, FALSE, error);
 		break;
 	case 0:
 		type = random_values.var_type;
 		ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
-		if (the_stored_selector)
-		{
-			ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, &type, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-		}
+		G_DEBUG_HERE();
+		ret = j_db_schema_get_field(the_stored_selector->schema, varname_strbuf, &type, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected || ret, error);
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint32, 4, & error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -151,6 +101,7 @@ event_selector_add_field(void)
 			}
 			break;
 		case J_DB_TYPE_UINT32:
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint32, 4, & error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -163,6 +114,7 @@ event_selector_add_field(void)
 			}
 			break;
 		case J_DB_TYPE_FLOAT32:
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float32, 4, & error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -175,6 +127,7 @@ event_selector_add_field(void)
 			}
 			break;
 		case J_DB_TYPE_SINT64:
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint64, 8, & error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -187,6 +140,7 @@ event_selector_add_field(void)
 			}
 			break;
 		case J_DB_TYPE_UINT64:
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint64, 8, & error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -199,6 +153,7 @@ event_selector_add_field(void)
 			}
 			break;
 		case J_DB_TYPE_FLOAT64:
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float64, 8, & error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -213,6 +168,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_STRING:
 		case J_DB_TYPE_BLOB:
 			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
+			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
 			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
@@ -244,25 +200,21 @@ event_selector_add_selector(void)
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_SELECTOR_ADD_SELECTOR %d %d", random_values.namespace, random_values.name);
 	random_values.selector_selector = random_values.selector_selector % AFL_LIMIT_SELECTOR;
-	ret_expected = the_stored_selector != NULL;
-	switch (random_values.invalid_switch % 1)
+	if (!the_stored_selector)
+		return;
+	ret_expected = TRUE;
+	ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector] != NULL);
+	ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
+	ret_expected = ret_expected && random_values.selector_selector != random_values.selector;
+	G_DEBUG_HERE();
+	ret = j_db_selector_add_selector(the_stored_selector, stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector], &error);
+	if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
 	{
-	case 0:
-		ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector] != NULL);
-		ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
-		ret_expected = ret_expected && random_values.selector_selector != random_values.selector;
-		ret = j_db_selector_add_selector(the_stored_selector, stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector], &error);
-		if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
-		{
-			ret_expected = FALSE;
-		}
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		if (ret)
-		{
-			the_stored_selector_field_count += stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector_selector];
-		}
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
+		ret_expected = FALSE;
+	}
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	if (ret)
+	{
+		the_stored_selector_field_count += stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector_selector];
 	}
 }

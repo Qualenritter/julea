@@ -623,7 +623,6 @@ j_backend_db_schema_get(JBackend* backend, gpointer batch, gchar const* name, bs
 	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
-	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	j_trace_enter("backend_schema_get", "%p, %s, %p, %p", batch, name, (gpointer)schema, (gpointer)error);

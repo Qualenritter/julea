@@ -366,6 +366,7 @@ def configure(ctx):
 		ctx.define('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
 	else:
 		check_and_add_flags(ctx, '-O2')
+		ctx.define('G_DISABLE_CHECKS', 1)
 
 	ctx.define('G_LOG_USE_STRUCTURED', 1)
 

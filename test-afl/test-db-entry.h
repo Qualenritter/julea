@@ -23,27 +23,17 @@ static void
 event_entry_new(void)
 {
 	GError* error = NULL;
-	guint ret;
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	G_DEBUG_HERE();
 	j_db_entry_unref(the_stored_entry);
 	the_stored_entry_field_set = 0;
-	switch (random_values.invalid_switch % 2)
-	{
-	case 1: //schema NULL
-		the_stored_entry = j_db_entry_new(NULL, &error);
-		ret = the_stored_entry != NULL;
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0: //success
-		ret_expected = the_stored_schema != NULL;
-		the_stored_entry = j_db_entry_new(the_stored_schema, &error);
-		ret = the_stored_entry != NULL;
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
-	}
+	if (!the_stored_schema)
+		return;
+	ret_expected = TRUE;
+	G_DEBUG_HERE();
+	the_stored_entry = j_db_entry_new(the_stored_schema, &error);
+	J_AFL_DEBUG_ERROR(the_stored_entry != NULL, ret_expected, error);
 }
 static void
 event_entry_ref(void)
@@ -55,15 +45,18 @@ event_entry_ref(void)
 	if (the_stored_entry)
 	{
 		ref_count = the_stored_entry->ref_count;
+		G_DEBUG_HERE();
 		ptr = j_db_entry_ref(the_stored_entry, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 		MYABORT_IF(ptr != the_stored_entry);
 		MYABORT_IF(the_stored_entry->ref_count != ref_count + 1);
+		G_DEBUG_HERE();
 		j_db_entry_unref(the_stored_entry);
 		MYABORT_IF(the_stored_entry->ref_count != ref_count);
 	}
 	else
 	{
+		G_DEBUG_HERE();
 		ptr = j_db_entry_ref(the_stored_entry, &error);
 		J_AFL_DEBUG_ERROR(ptr != NULL, FALSE, error);
 	}
@@ -76,128 +69,95 @@ event_entry_set_field(void)
 	guint ret_expected;
 	JDBType type;
 	g_debug("AFL_EVENT_DB_ENTRY_SET_FIELD %d %d %d", random_values.namespace, random_values.name, random_values.entry);
-	ret_expected = the_stored_entry != NULL;
+	if (!the_stored_entry)
+		return;
+	ret_expected = TRUE;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
-	switch (random_values.invalid_switch % 5)
+	type = random_values.var_type;
+	ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
+	if (the_stored_entry)
 	{
-	case 4: //not existing varname
-		if (the_stored_entry != NULL)
-		{
-			ret = j_db_schema_get_field(the_stored_entry->schema, "_not_existing_name_", &type, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, "_not_existing_name_", &type, &error);
-		}
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 3: //NULL varname
-		if (the_stored_entry != NULL)
-		{
-			ret = j_db_schema_get_field(the_stored_entry->schema, NULL, &type, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, NULL, &type, &error);
-		}
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 2: //NULL entry
+		G_DEBUG_HERE();
+		ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, &type, &error);
+	}
+	else
+	{
+		G_DEBUG_HERE();
 		ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1: //NULL type
-		if (the_stored_entry != NULL)
-		{
-			ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, NULL, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, varname_strbuf, NULL, &error);
-		}
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0:
-		type = random_values.var_type;
-		ret_expected = ret_expected && (the_schema_field_type != _J_DB_TYPE_COUNT);
-		if (the_stored_entry)
-		{
-			ret = j_db_schema_get_field(the_stored_entry->schema, varname_strbuf, &type, &error);
-		}
-		else
-		{
-			ret = j_db_schema_get_field(NULL, varname_strbuf, &type, &error);
-		}
+	}
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	ret_expected = ret_expected && !(the_stored_entry_field_set & (1 << random_values.var_name));
+	switch (type)
+	{
+	case J_DB_TYPE_SINT32:
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_sint32, 4, &error);
 		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		ret_expected = ret_expected && !(the_stored_entry_field_set & (1 << random_values.var_name));
-		switch (type)
+		if (ret)
 		{
-		case J_DB_TYPE_SINT32:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_sint32, 4, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case J_DB_TYPE_UINT32:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_uint32, 4, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case J_DB_TYPE_FLOAT32:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_float32, 4, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case J_DB_TYPE_SINT64:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_sint64, 8, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case J_DB_TYPE_UINT64:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_uint64, 8, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case J_DB_TYPE_FLOAT64:
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_float64, 8, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case J_DB_TYPE_STRING:
-		case J_DB_TYPE_BLOB:
-			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
-			ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
-			}
-			break;
-		case _J_DB_TYPE_COUNT:
-			ret = FALSE;
-			MYABORT_IF(ret_expected);
-			break;
-		default: //LCOV_EXCL_LINE
-			MYABORT(); //LCOV_EXCL_LINE
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
 		}
+		break;
+	case J_DB_TYPE_UINT32:
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_uint32, 4, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
+		}
+		break;
+	case J_DB_TYPE_FLOAT32:
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_float32, 4, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
+		}
+		break;
+	case J_DB_TYPE_SINT64:
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_sint64, 8, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
+		}
+		break;
+	case J_DB_TYPE_UINT64:
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_uint64, 8, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
+		}
+		break;
+	case J_DB_TYPE_FLOAT64:
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, &random_values.var_value_float64, 8, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
+		}
+		break;
+	case J_DB_TYPE_STRING:
+	case J_DB_TYPE_BLOB:
+		sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
+		G_DEBUG_HERE();
+		ret = j_db_entry_set_field(the_stored_entry, varname_strbuf, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
+		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+		if (ret)
+		{
+			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
+		}
+		break;
+	case _J_DB_TYPE_COUNT:
+		ret = FALSE;
+		MYABORT_IF(ret_expected);
 		break;
 	default: //LCOV_EXCL_LINE
 		MYABORT(); //LCOV_EXCL_LINE
@@ -211,28 +171,16 @@ event_entry_insert(void)
 	guint ret;
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ENTRY_INSERT %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	if (!the_stored_entry)
+		return;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	ret_expected = the_stored_entry != NULL;
+	ret_expected = TRUE;
 	ret_expected = ret_expected && the_stored_schema->server_side;
 	ret_expected = ret_expected && the_stored_entry_field_set;
-	switch (random_values.invalid_switch % 3)
-	{
-	case 2: //NULL entry
-		ret = j_db_entry_insert(NULL, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1: //NULL batch
-		ret = j_db_entry_insert(the_stored_entry, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0:
-		ret = j_db_entry_insert(the_stored_entry, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
-	}
+	G_DEBUG_HERE();
+	ret = j_db_entry_insert(the_stored_entry, batch, &error);
+	ret = j_batch_execute(batch) && ret;
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	j_batch_unref(batch);
 }
 static void
@@ -243,38 +191,23 @@ event_entry_update(void)
 	guint ret;
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ENTRY_UPDATE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	if (!the_stored_entry)
+		return;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	ret_expected = the_stored_entry != NULL;
+	ret_expected = TRUE;
 	ret_expected = ret_expected && the_stored_entry_field_set;
 	ret_expected = ret_expected && the_stored_selector;
 	ret_expected = ret_expected && the_stored_schema->server_side;
+	G_DEBUG_HERE();
 	ret_expected = ret_expected && j_db_selector_get_bson(the_stored_selector);
-	switch (random_values.invalid_switch % 4)
+	G_DEBUG_HERE();
+	ret = j_db_entry_update(the_stored_entry, the_stored_selector, batch, &error);
+	ret = j_batch_execute(batch) && ret;
+	if (error && error->domain == J_BACKEND_DB_ERROR && error->code == J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
 	{
-	case 3: //null selector
-		ret = j_db_entry_update(the_stored_entry, NULL, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 2: //null entry
-		ret = j_db_entry_update(NULL, the_stored_selector, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1: //null batch
-		ret = j_db_entry_update(the_stored_entry, the_stored_selector, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0:
-		ret = j_db_entry_update(the_stored_entry, the_stored_selector, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		if (error && error->domain == J_BACKEND_DB_ERROR && error->code == J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
-		{
-			ret_expected = FALSE;
-		}
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
+		ret_expected = FALSE;
 	}
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	j_batch_unref(batch);
 }
 static void
@@ -285,30 +218,18 @@ event_entry_delete(void)
 	guint ret;
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ENTRY_DELETE %d %d %d", random_values.namespace, random_values.name, random_values.entry);
+	if (!the_stored_entry)
+		return;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	ret_expected = the_stored_entry != NULL;
+	ret_expected = TRUE;
 	ret_expected = ret_expected && the_stored_schema->server_side;
-	switch (random_values.invalid_switch % 3)
+	G_DEBUG_HERE();
+	ret = j_db_entry_delete(the_stored_entry, the_stored_selector, batch, &error);
+	ret = j_batch_execute(batch) && ret;
+	if (error && error->domain == J_BACKEND_DB_ERROR && error->code == J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
 	{
-	case 2: //null entry
-		ret = j_db_entry_delete(NULL, the_stored_selector, batch, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1: //null batch
-		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0:
-		ret = j_db_entry_delete(the_stored_entry, the_stored_selector, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		if (error && error->domain == J_BACKEND_DB_ERROR && error->code == J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
-		{
-			ret_expected = FALSE;
-		}
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
+		ret_expected = FALSE;
 	}
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	j_batch_unref(batch);
 }

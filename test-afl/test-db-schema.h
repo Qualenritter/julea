@@ -30,27 +30,32 @@ event_schema_delete_helper(void)
 	{
 		if (the_stored_schema->server_side)
 		{
+			G_DEBUG_HERE();
 			ret = j_db_schema_delete(the_stored_schema, batch, &error);
 			ret = j_batch_execute(batch) && ret;
 			J_AFL_DEBUG_ERROR(ret, TRUE, error);
 		}
+		G_DEBUG_HERE();
 		j_db_schema_unref(the_stored_schema);
 		the_stored_schema = NULL;
 	}
 	for (k = 0; k < AFL_LIMIT_ENTRY; k++)
 	{
+		G_DEBUG_HERE();
 		j_db_entry_unref(stored_entrys[random_values.namespace][random_values.name][k]);
 		stored_entrys[random_values.namespace][random_values.name][k] = NULL;
 		stored_entrys_field_set[random_values.namespace][random_values.name][k] = 0;
 	}
 	for (k = 0; k < AFL_LIMIT_SELECTOR; k++)
 	{
+		G_DEBUG_HERE();
 		j_db_selector_unref(stored_selectors[random_values.namespace][random_values.name][k]);
 		stored_selectors[random_values.namespace][random_values.name][k] = NULL;
 		stored_selectors_field_count[random_values.namespace][random_values.name][k] = 0;
 	}
 	for (k = 0; k < AFL_LIMIT_ITERATOR; k++)
 	{
+		G_DEBUG_HERE();
 		j_db_iterator_unref(stored_iterators[random_values.namespace][random_values.name][k]);
 		stored_iterators[random_values.namespace][random_values.name][k] = NULL;
 		stored_iterators_next_count[random_values.namespace][random_values.name][k] = 0;
@@ -68,23 +73,9 @@ event_schema_new(void)
 	event_schema_delete_helper();
 	sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, random_values.namespace);
 	sprintf(name_strbuf, AFL_NAME_FORMAT, random_values.name);
-	switch (random_values.invalid_switch % 3)
-	{
-	case 2:
-		the_stored_schema = j_db_schema_new(namespace_strbuf, NULL, &error);
-		J_AFL_DEBUG_ERROR(the_stored_schema != NULL, FALSE, error);
-		break;
-	case 1:
-		the_stored_schema = j_db_schema_new(NULL, name_strbuf, &error);
-		J_AFL_DEBUG_ERROR(the_stored_schema != NULL, FALSE, error);
-		break;
-	case 0:
-		the_stored_schema = j_db_schema_new(namespace_strbuf, name_strbuf, &error);
-		J_AFL_DEBUG_ERROR(the_stored_schema != NULL, TRUE, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
-	}
+	G_DEBUG_HERE();
+	the_stored_schema = j_db_schema_new(namespace_strbuf, name_strbuf, &error);
+	J_AFL_DEBUG_ERROR(the_stored_schema != NULL, TRUE, error);
 }
 static void
 event_schema_ref(void)
@@ -93,21 +84,17 @@ event_schema_ref(void)
 	JDBSchema* ptr = NULL;
 	gint ref_count;
 	g_debug("AFL_EVENT_DB_SCHEMA_REF %d %d", random_values.namespace, random_values.name);
-	if (the_stored_schema)
-	{
-		ref_count = the_stored_schema->ref_count;
-		ptr = j_db_schema_ref(the_stored_schema, &error);
-		J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
-		MYABORT_IF(ptr != the_stored_schema);
-		MYABORT_IF(the_stored_schema->ref_count != ref_count + 1);
-		j_db_schema_unref(the_stored_schema);
-		MYABORT_IF(the_stored_schema->ref_count != ref_count);
-	}
-	else
-	{
-		ptr = j_db_schema_ref(the_stored_schema, &error);
-		J_AFL_DEBUG_ERROR(ptr != NULL, FALSE, error);
-	}
+	if (!the_stored_schema)
+		return;
+	ref_count = the_stored_schema->ref_count;
+	G_DEBUG_HERE();
+	ptr = j_db_schema_ref(the_stored_schema, &error);
+	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
+	MYABORT_IF(ptr != the_stored_schema);
+	MYABORT_IF(the_stored_schema->ref_count != ref_count + 1);
+	G_DEBUG_HERE();
+	j_db_schema_unref(the_stored_schema);
+	MYABORT_IF(the_stored_schema->ref_count != ref_count);
 }
 static void
 event_schema_add_field(void)
@@ -118,22 +105,14 @@ event_schema_add_field(void)
 	g_debug("AFL_EVENT_DB_SCHEMA_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	random_values.var_type = random_values.var_type % (_J_DB_TYPE_COUNT + 1);
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
-	ret_expected = the_stored_schema != NULL;
+	if (!the_stored_schema)
+		return;
+	ret_expected = TRUE;
 	ret_expected = ret_expected && random_values.var_type < _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_schema_field_type == _J_DB_TYPE_COUNT;
-	if (the_stored_schema)
-	{
-		ret_expected = ret_expected && !the_stored_schema->server_side;
-	}
-	if (random_values.invalid_switch % 2)
-	{
-		ret_expected = FALSE;
-		ret = j_db_schema_add_field(the_stored_schema, NULL, random_values.var_type, &error);
-	}
-	else
-	{
-		ret = j_db_schema_add_field(the_stored_schema, varname_strbuf, random_values.var_type, &error);
-	}
+	ret_expected = ret_expected && !the_stored_schema->server_side;
+	G_DEBUG_HERE();
+	ret = j_db_schema_add_field(the_stored_schema, varname_strbuf, random_values.var_type, &error);
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	if (ret)
 	{
@@ -150,28 +129,16 @@ event_schema_get_field(void)
 	g_debug("AFL_EVENT_DB_SCHEMA_GET_FIELD %d %d", random_values.namespace, random_values.name);
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
-	ret_expected = the_stored_schema != NULL;
+	if (!the_stored_schema)
+		return;
+	ret_expected = TRUE;
 	ret_expected = ret_expected && the_schema_field_type < _J_DB_TYPE_COUNT;
-	switch (random_values.invalid_switch % 3)
+	G_DEBUG_HERE();
+	ret = j_db_schema_get_field(the_stored_schema, varname_strbuf, &type, &error);
+	if (ret_expected && ret)
 	{
-	case 2:
-		ret_expected = FALSE;
-		ret = j_db_schema_get_field(the_stored_schema, NULL, &type, &error);
-		break;
-	case 1:
-		ret_expected = FALSE;
-		ret = j_db_schema_get_field(the_stored_schema, varname_strbuf, NULL, &error);
-		break;
-	case 0:
-		ret = j_db_schema_get_field(the_stored_schema, varname_strbuf, &type, &error);
-		if (ret_expected && ret)
-		{
-			MYABORT_IF(ret != (the_schema_field_type != _J_DB_TYPE_COUNT));
-			MYABORT_IF(type != the_schema_field_type);
-		}
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
+		MYABORT_IF(ret != (the_schema_field_type != _J_DB_TYPE_COUNT));
+		MYABORT_IF(type != the_schema_field_type);
 	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 }
@@ -190,59 +157,47 @@ event_schema_get_fields(void)
 	GError* error = NULL;
 	gboolean ret_expected;
 	g_debug("AFL_EVENT_DB_SCHEMA_GET_FIELDS %d %d", random_values.namespace, random_values.name);
-	ret_expected = the_stored_schema != NULL;
-	switch (random_values.invalid_switch % 3)
+	if (!the_stored_schema)
+		return;
+	ret_expected = TRUE;
+	k = 0;
+	for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
 	{
-	case 2:
-		ret_expected = FALSE;
-		ret = j_db_schema_get_all_fields(the_stored_schema, NULL, &types, &error);
-		break;
-	case 1:
-		ret_expected = FALSE;
-		ret = j_db_schema_get_all_fields(the_stored_schema, &names, NULL, &error);
-		break;
-	case 0:
-		k = 0;
-		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+		if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
 		{
-			if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
-			{
-				k++;
-			}
+			k++;
 		}
-		ret_expected = ret_expected && k > 0;
-		ret = j_db_schema_get_all_fields(the_stored_schema, &names, &types, &error);
-		if (ret_expected && ret)
+	}
+	ret_expected = ret_expected && k > 0;
+	G_DEBUG_HERE();
+	ret = j_db_schema_get_all_fields(the_stored_schema, &names, &types, &error);
+	if (ret_expected && ret)
+	{
+		i = 0;
+		types_cur = types;
+		names_cur = names;
+		while (*names_cur)
 		{
-			i = 0;
-			types_cur = types;
-			names_cur = names;
-			while (*names_cur)
+			found = FALSE;
+			for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
 			{
-				found = FALSE;
-				for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+				sprintf(varname_strbuf, AFL_VARNAME_FORMAT, j);
+				if (!g_strcmp0(varname_strbuf, *names_cur))
 				{
-					sprintf(varname_strbuf, AFL_VARNAME_FORMAT, j);
-					if (!g_strcmp0(varname_strbuf, *names_cur))
-					{
-						found = TRUE;
-						break;
-					}
+					found = TRUE;
+					break;
 				}
-				MYABORT_IF(!found);
-				MYABORT_IF(*types_cur != schema_field_types[random_values.namespace][random_values.name][j]);
-				i++;
-				types_cur++;
-				names_cur++;
 			}
-			MYABORT_IF(*types_cur != _J_DB_TYPE_COUNT);
-			MYABORT_IF(i != k);
-			g_free(types);
-			g_strfreev(names);
+			MYABORT_IF(!found);
+			MYABORT_IF(*types_cur != schema_field_types[random_values.namespace][random_values.name][j]);
+			i++;
+			types_cur++;
+			names_cur++;
 		}
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
+		MYABORT_IF(*types_cur != _J_DB_TYPE_COUNT);
+		MYABORT_IF(i != k);
+		g_free(types);
+		g_strfreev(names);
 	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 }
@@ -263,40 +218,26 @@ event_schema_create(void)
 	gboolean ret;
 	gboolean ret_expected;
 	g_debug("AFL_EVENT_DB_SCHEMA_CREATE %d %d", random_values.namespace, random_values.name);
-	switch (random_values.invalid_switch % 3)
+	if (!the_stored_schema)
+		return;
+	if (!the_stored_schema->bson_initialized)
+		return;
+	ret_expected = TRUE;
+	k = 0;
+	for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
 	{
-	case 2: //batch null
-		ret_expected = the_stored_schema != NULL;
-		ret = j_db_schema_create(the_stored_schema, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1: //schema null
-		ret = j_db_schema_create(NULL, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0: //success
-		ret_expected = the_stored_schema != NULL;
-		k = 0;
-		for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
+		if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
 		{
-			if (schema_field_types[random_values.namespace][random_values.name][j] != _J_DB_TYPE_COUNT)
-			{
-				k++;
-			}
+			k++;
 		}
-		ret_expected = ret_expected && k > 0;
-		if (the_stored_schema)
-		{
-			ret_expected = ret_expected && !the_stored_schema->server_side;
-		}
-		ret = j_db_schema_create(the_stored_schema, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
 	}
+	ret_expected = ret_expected && k > 0;
+	ret_expected = ret_expected && !the_stored_schema->server_side;
+	G_DEBUG_HERE();
+	ret = j_db_schema_create(the_stored_schema, batch, &error);
+	ret = j_batch_execute(batch) && ret;
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	G_DEBUG_HERE();
 	j_db_schema_unref(schema);
 }
 static void
@@ -309,40 +250,25 @@ event_schema_get(void)
 	gboolean bool_tmp;
 	gboolean ret_expected;
 	g_debug("AFL_EVENT_DB_SCHEMA_GET %d %d", random_values.namespace, random_values.name);
-	if (the_stored_schema != NULL)
+	if (!the_stored_schema)
+		return;
+	ret_expected = the_stored_schema->server_side;
+	G_DEBUG_HERE();
+	schema = j_db_schema_new(the_stored_schema->namespace, the_stored_schema->name, &error);
+	J_AFL_DEBUG_ERROR(schema != NULL, TRUE, error);
+	G_DEBUG_HERE();
+	ret = j_db_schema_get(schema, batch, &error);
+	ret = j_batch_execute(batch) && ret;
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	if (ret)
 	{
-		switch (random_values.invalid_switch % 3)
-		{
-		case 2: //schema null
-			ret = j_db_schema_get(NULL, batch, &error);
-			ret = j_batch_execute(batch) && ret;
-			J_AFL_DEBUG_ERROR(ret, FALSE, error);
-			break;
-		case 1: //batch null
-			schema = j_db_schema_new(the_stored_schema->namespace, the_stored_schema->name, &error);
-			J_AFL_DEBUG_ERROR(schema != NULL, TRUE, error);
-			ret = j_db_schema_get(schema, NULL, &error);
-			J_AFL_DEBUG_ERROR(ret, FALSE, error);
-			break;
-		case 0: //success
-			ret_expected = the_stored_schema->server_side;
-			schema = j_db_schema_new(the_stored_schema->namespace, the_stored_schema->name, &error);
-			J_AFL_DEBUG_ERROR(schema != NULL, TRUE, error);
-			ret = j_db_schema_get(schema, batch, &error);
-			ret = j_batch_execute(batch) && ret;
-			J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-			if (ret)
-			{
-				ret = j_db_schema_equals(schema, the_stored_schema, &bool_tmp, &error);
-				J_AFL_DEBUG_ERROR(ret, TRUE, error);
-				MYABORT_IF(!bool_tmp);
-			}
-			break;
-		default: //LCOV_EXCL_LINE
-			MYABORT(); //LCOV_EXCL_LINE
-		}
-		j_db_schema_unref(schema);
+		G_DEBUG_HERE();
+		ret = j_db_schema_equals(schema, the_stored_schema, &bool_tmp, &error);
+		J_AFL_DEBUG_ERROR(ret, TRUE, error);
+		MYABORT_IF(!bool_tmp);
 	}
+	G_DEBUG_HERE();
+	j_db_schema_unref(schema);
 }
 static void
 event_schema_delete(void)
@@ -352,35 +278,20 @@ event_schema_delete(void)
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	g_debug("AFL_EVENT_DB_SCHEMA_DELETE %d %d", random_values.namespace, random_values.name);
-	switch (random_values.invalid_switch % 3)
+	if (!the_stored_schema)
+		return;
+	ret_expected = TRUE;
+	ret_expected = ret_expected && the_stored_schema->server_side;
+	G_DEBUG_HERE();
+	ret = j_db_schema_delete(the_stored_schema, batch, &error);
+	ret = j_batch_execute(batch) && ret;
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	if (ret)
 	{
-	case 2:
-		ret = j_db_schema_delete(NULL, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 1:
-		ret = j_db_schema_delete(the_stored_schema, NULL, &error);
-		J_AFL_DEBUG_ERROR(ret, FALSE, error);
-		break;
-	case 0:
-		ret_expected = the_stored_schema != NULL;
-		if (the_stored_schema)
-		{
-			ret_expected = ret_expected && the_stored_schema->server_side;
-		}
-		ret = j_db_schema_delete(the_stored_schema, batch, &error);
-		ret = j_batch_execute(batch) && ret;
-		J_AFL_DEBUG_ERROR(ret, ret_expected, error);
-		if (ret)
-		{
-			j_db_schema_unref(the_stored_schema);
-			the_stored_schema = NULL;
-			event_schema_delete_helper();
-		}
-		break;
-	default: //LCOV_EXCL_LINE
-		MYABORT(); //LCOV_EXCL_LINE
+		G_DEBUG_HERE();
+		j_db_schema_unref(the_stored_schema);
+		the_stored_schema = NULL;
+		event_schema_delete_helper();
 	}
 	event_schema_delete_helper();
 }
