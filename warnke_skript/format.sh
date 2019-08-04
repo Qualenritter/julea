@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-mkdir log
-scan-build ./waf.sh configure
-scan-build ./waf.sh build --debug
+mkdir -p log/scan-build
+scan-build -o log/scan-build ./waf.sh configure --debug
+scan-build -o log/scan-build ./waf.sh build
 cd warnke_skript
 ./run-clang-tidy.py -fix -header-filter='.*,-dependencies' -checks="readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration" -j12
 cd ..

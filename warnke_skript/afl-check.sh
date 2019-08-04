@@ -46,7 +46,7 @@ files="$(ls afl/out/*/crashes/* | grep -v README | shuf)"
 for f in ${files}
 do
 
-for g in gcc-asan gcc-asan-mockup
+for g in gcc-asan-mockup gcc-asan
 do
 for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
 do
@@ -71,13 +71,15 @@ fi
 		export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 		export G_MESSAGES_DEBUG=all
 		export G_SLICE=always-malloc
-		./build-gcc-asan/server/julea-server --port=13000 &
+		./build-gcc-asan/server/julea-server --port=13000 >> log/x 2>&1 &
 		server_pid=$!
 		export J_TRACE=debug
 		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
 			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 			./build-${g}/test-afl/${programname}
+		r=$?
 		kill -9 ${server_pid}
+		exit $r
 	)  >> log/x 2>&1
 	r=$?
 	if [ $r -eq 0 ]; then

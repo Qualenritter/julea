@@ -23,7 +23,7 @@ log_path="log"
 rm -rf prefix* build* ~/.config/julea/* log ${tmp_path}/*
 ./warnke_skript/kill.sh
 ./warnke_skript/format.sh
-mkdir -p ${log_path}
+mkdir -p ${log_path}/scan-build
 function julea_compile(){
 	(
 		compiler=$1
