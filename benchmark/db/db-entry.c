@@ -228,7 +228,7 @@ benchmark_db_entry_set_field(BenchmarkResult* result)
 	_benchmark_db_entry_set_field(result,global_n);
 }
 static void
-_benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean use_index, const guint n)
+_benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean use_index, const guint n,JSemanticsAtomicity atomicity)
 {
 	GError* error = NULL;
 	gboolean ret;
@@ -265,7 +265,8 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean
 		j_trace_leave(G_STRFUNC);
 		return;
 	}
-	semantics = j_benchmark_get_semantics();
+	semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+	j_semantics_set(semantics,J_SEMANTICS_ATOMICITY,atomicity)
 	batch = j_batch_new(semantics);
 	entry = g_new(JDBEntry*, n);
 	selector = g_new(JDBSelector*, n);
@@ -478,32 +479,39 @@ static void
 benchmark_db_entry_insert(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
-	_benchmark_db_entry_insert(result, FALSE, FALSE, global_n);
+	_benchmark_db_entry_insert(result, FALSE, FALSE, global_n,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_insert_batch(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
-	_benchmark_db_entry_insert(result, TRUE, FALSE, global_n);
+	_benchmark_db_entry_insert(result, TRUE, FALSE, global_n,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_insert_batch_index(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
-	_benchmark_db_entry_insert(result, TRUE, TRUE, global_n);
+	_benchmark_db_entry_insert(result, TRUE, TRUE, global_n,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
-_benchmark_db_entry_update(BenchmarkResult* result, gboolean use_batch, gboolean use_index)
+benchmark_db_entry_insert_batch_index_atomicity(BenchmarkResult* result)
+{
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
+	_benchmark_db_entry_insert(result, TRUE, TRUE, global_n,J_SEMANTICS_ATOMICITY_BATCH);
+	j_trace_leave(G_STRFUNC);
+}
+static void
+_benchmark_db_entry_update(BenchmarkResult* result, gboolean use_batch, gboolean use_index,JSemanticsAtomicity atomicity)
 {
 	BenchmarkResult b;
 
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
 	if (!benchmark_db_entry_update_executed)
 	{
-		_benchmark_db_entry_insert(&b, use_batch, use_index, global_n);
+		_benchmark_db_entry_insert(&b, use_batch, use_index, global_n,atomicity);
 	}
 	result->elapsed_time = benchmark_db_entry_update_executed->elapsed_time;
 	result->operations = benchmark_db_entry_update_executed->operations;
@@ -513,32 +521,39 @@ static void
 benchmark_db_entry_update(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
-	_benchmark_db_entry_update(result, FALSE, FALSE);
+	_benchmark_db_entry_update(result, FALSE, FALSE,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_update_batch(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n, global_n2);
-	_benchmark_db_entry_update(result, TRUE, FALSE);
+	_benchmark_db_entry_update(result, TRUE, FALSE,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_update_batch_index(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
-	_benchmark_db_entry_update(result, TRUE, TRUE);
+	_benchmark_db_entry_update(result, TRUE, TRUE,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
-_benchmark_db_entry_delete(BenchmarkResult* result, gboolean use_batch, gboolean use_index)
+benchmark_db_entry_update_batch_index_atomicity(BenchmarkResult* result)
+{
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
+	_benchmark_db_entry_update(result, TRUE, TRUE,J_SEMANTICS_ATOMICITY_BATCH);
+	j_trace_leave(G_STRFUNC);
+}
+static void
+_benchmark_db_entry_delete(BenchmarkResult* result, gboolean use_batch, gboolean use_index,JSemanticsAtomicity atomicity)
 {
 	BenchmarkResult b;
 
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
 	if (!benchmark_db_entry_delete_executed)
 	{
-		_benchmark_db_entry_insert(&b, use_batch, use_index, global_n);
+		_benchmark_db_entry_insert(&b, use_batch, use_index, global_n,atomicity);
 	}
 	result->elapsed_time = benchmark_db_entry_delete_executed->elapsed_time;
 	result->operations = benchmark_db_entry_delete_executed->operations;
@@ -548,21 +563,28 @@ static void
 benchmark_db_entry_delete(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
-	_benchmark_db_entry_delete(result, FALSE, FALSE);
+	_benchmark_db_entry_delete(result, FALSE, FALSE,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_delete_batch(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
-	_benchmark_db_entry_delete(result, TRUE, FALSE);
+	_benchmark_db_entry_delete(result, TRUE, FALSE,J_SEMANTICS_ATOMICITY_NONE);
 	j_trace_leave(G_STRFUNC);
 }
 static void
 benchmark_db_entry_delete_batch_index(BenchmarkResult* result)
 {
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
-	_benchmark_db_entry_delete(result, TRUE, TRUE);
+	_benchmark_db_entry_delete(result, TRUE, TRUE,J_SEMANTICS_ATOMICITY_NONE);
+	j_trace_leave(G_STRFUNC);
+}
+static void
+benchmark_db_entry_delete_batch_index_atomicity(BenchmarkResult* result)
+{
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
+	_benchmark_db_entry_delete(result, TRUE, TRUE,J_SEMANTICS_ATOMICITY_BATCH);
 	j_trace_leave(G_STRFUNC);
 }
 static void
@@ -573,7 +595,7 @@ benchmark_db_iterator_single(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
 	if (!benchmark_db_iterator_single_executed)
 	{
-		_benchmark_db_entry_insert(&b, TRUE, FALSE,global_n);
+		_benchmark_db_entry_insert(&b, TRUE, FALSE,global_n,J_SEMANTICS_ATOMICITY_NONE);
 	}
 	result->elapsed_time = benchmark_db_iterator_single_executed->elapsed_time;
 	result->operations = benchmark_db_iterator_single_executed->operations;
@@ -587,7 +609,21 @@ benchmark_db_iterator_single_index(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
 	if (!benchmark_db_iterator_single_executed)
 	{
-		_benchmark_db_entry_insert(&b, TRUE, TRUE,global_n);
+		_benchmark_db_entry_insert(&b, TRUE, TRUE,global_n,J_SEMANTICS_ATOMICITY_NONE);
+	}
+	result->elapsed_time = benchmark_db_iterator_single_executed->elapsed_time;
+	result->operations = benchmark_db_iterator_single_executed->operations;
+	j_trace_leave(G_STRFUNC);
+}
+static void
+benchmark_db_iterator_single_index_atomicity(BenchmarkResult* result)
+{
+	BenchmarkResult b;
+
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
+	if (!benchmark_db_iterator_single_executed)
+	{
+		_benchmark_db_entry_insert(&b, TRUE, TRUE,global_n,J_SEMANTICS_ATOMICITY_BATCH);
 	}
 	result->elapsed_time = benchmark_db_iterator_single_executed->elapsed_time;
 	result->operations = benchmark_db_iterator_single_executed->operations;
@@ -601,7 +637,7 @@ benchmark_db_iterator_all(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
 	if (!benchmark_db_iterator_all_executed)
 	{
-		_benchmark_db_entry_insert(&b, TRUE, FALSE,global_n);
+		_benchmark_db_entry_insert(&b, TRUE, FALSE,global_n,J_SEMANTICS_ATOMICITY_NONE);
 	}
 	result->elapsed_time = benchmark_db_iterator_all_executed->elapsed_time;
 	result->operations = benchmark_db_iterator_all_executed->operations;
@@ -615,7 +651,21 @@ benchmark_db_iterator_all_index(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
 	if (!benchmark_db_iterator_all_executed)
 	{
-		_benchmark_db_entry_insert(&b, TRUE, TRUE,global_n);
+		_benchmark_db_entry_insert(&b, TRUE, TRUE,global_n,J_SEMANTICS_ATOMICITY_NONE);
+	}
+	result->elapsed_time = benchmark_db_iterator_all_executed->elapsed_time;
+	result->operations = benchmark_db_iterator_all_executed->operations;
+	j_trace_leave(G_STRFUNC);
+}
+static void
+benchmark_db_iterator_all_index_atomicity(BenchmarkResult* result)
+{
+	BenchmarkResult b;
+
+	j_trace_enter(G_STRFUNC, "(n=%d-n2=%d)", global_n,global_n2);
+	if (!benchmark_db_iterator_all_executed)
+	{
+		_benchmark_db_entry_insert(&b, TRUE, TRUE,global_n,J_SEMANTICS_ATOMICITY_BATCH);
 	}
 	result->elapsed_time = benchmark_db_iterator_all_executed->elapsed_time;
 	result->operations = benchmark_db_iterator_all_executed->operations;
@@ -730,6 +780,32 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			j_benchmark_run(testname, benchmark_db_iterator_single_index);
 			sprintf(testname, "/db/%d/%d/iterator/all-index", n, global_n2);
 			j_benchmark_run(testname, benchmark_db_iterator_all_index);
+			g_free(benchmark_db_entry_insert_executed);
+			benchmark_db_entry_insert_executed = NULL;
+			g_free(benchmark_db_entry_update_executed);
+			benchmark_db_entry_update_executed = NULL;
+			g_free(benchmark_db_entry_delete_executed);
+			benchmark_db_entry_delete_executed = NULL;
+			g_free(benchmark_db_iterator_single_executed);
+			benchmark_db_iterator_single_executed = NULL;
+			g_free(benchmark_db_iterator_all_executed);
+			benchmark_db_iterator_all_executed = NULL;
+		}
+		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 150000) || (global_n2 == 5 && n <= 200000))
+		{
+			// j_db_entry_insert 5,50,500 variables, n entrys
+			sprintf(testname, "/db/%d/%d/entry/insert-batch-index-atomicity", n, global_n2);
+			j_benchmark_run(testname, benchmark_db_entry_insert_batch_index_atomicity);
+			// j_db_entry_update 5,50,500 variables, n entrys
+			sprintf(testname, "/db/%d/%d/entry/update-batch-index-atomicity", n, global_n2);
+			j_benchmark_run(testname, benchmark_db_entry_update_batch_index_atomicity);
+			// j_db_entry_delete 5,50,500 variables, n entrys
+			sprintf(testname, "/db/%d/%d/entry/delete-batch-index-atomicity", n, global_n2);
+			j_benchmark_run(testname, benchmark_db_entry_delete_batch_index_atomicity);
+			sprintf(testname, "/db/%d/%d/iterator/single-index-atomicity", n, global_n2);
+			j_benchmark_run(testname, benchmark_db_iterator_single_index_atomicity);
+			sprintf(testname, "/db/%d/%d/iterator/all-index-atomicity", n, global_n2);
+			j_benchmark_run(testname, benchmark_db_iterator_all_index_atomicity);
 			g_free(benchmark_db_entry_insert_executed);
 			benchmark_db_entry_insert_executed = NULL;
 			g_free(benchmark_db_entry_update_executed);
