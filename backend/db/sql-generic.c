@@ -294,7 +294,7 @@ fini_sql(void)
 	j_trace_leave(G_STRFUNC);
 }
 static gboolean
-backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _batch, GError** error)
+backend_batch_start(gchar const* namespace, JSemantics *semantics, gpointer* _batch, GError** error)
 {
 	JSqlBatch* batch = *_batch = g_slice_new(JSqlBatch);
 
@@ -303,7 +303,7 @@ backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* _
 
 	j_trace_enter(G_STRFUNC, NULL);
 	batch->namespace = namespace;
-	(void)safety;
+	(void)semantics;
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }

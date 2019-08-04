@@ -17,9 +17,9 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
-	export J_TRACE=debug
 	./build/server/julea-server &
 	server_pid=$!
+	export J_TRACE=debug
 	sleep 0.5s
 	./build/test/julea-test
 	echo "kill ${server_pid}"
@@ -32,6 +32,5 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
-	export J_TRACE=debug
 	./scripts/test.sh
 )

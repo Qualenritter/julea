@@ -137,7 +137,7 @@ struct JBackend
 			gboolean (*backend_init)(gchar const*);
 			void (*backend_fini)(void);
 
-			gboolean (*backend_batch_start)(gchar const* namespace, JSemanticsSafety safety, gpointer* batch, GError** error);
+			gboolean (*backend_batch_start)(gchar const* namespace, JSemantics* semantics, gpointer* batch, GError** error);
 			gboolean (*backend_batch_execute)(gpointer batch, GError** error);
 
 			/**
@@ -380,7 +380,7 @@ gboolean j_backend_kv_iterate(JBackend*, gpointer, gchar const**, gconstpointer*
 gboolean j_backend_db_init(JBackend*, gchar const*);
 void j_backend_db_fini(JBackend*);
 
-gboolean j_backend_db_batch_start(JBackend*, gchar const*, JSemanticsSafety, gpointer*, GError**);
+gboolean j_backend_db_batch_start(JBackend*, gchar const*, JSemantics*, gpointer*, GError**);
 gboolean j_backend_db_batch_execute(JBackend*, gpointer, GError**);
 
 gboolean j_backend_db_schema_create(JBackend*, gpointer, gchar const*, bson_t const*, GError**);

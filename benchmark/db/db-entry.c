@@ -689,7 +689,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 300000) || (global_n2 == 5 && n <= 200000))
+		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 150000) || (global_n2 == 5 && n <= 200000))
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch", n, global_n2);
@@ -715,7 +715,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 300000) || (global_n2 == 5 && n <= 200000))
+		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 150000) || (global_n2 == 5 && n <= 200000))
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch-index", n, global_n2);

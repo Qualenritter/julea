@@ -77,7 +77,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 			{
 				ret = db_backend->db.backend_batch_start( //
 					      data->in_param[0].ptr, //
-					      j_semantics_get(semantics, J_SEMANTICS_SAFETY), //
+					      semantics, //
 					      &batch, &error) &&
 					ret;
 			}

@@ -561,7 +561,7 @@ j_backend_db_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch, GError** error)
+j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemantics*semantics, gpointer* batch, GError** error)
 {
 	gboolean ret;
 
@@ -569,10 +569,11 @@ j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSa
 	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_DB, FALSE);
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail(semantics != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	j_trace_enter("backend_batch_start", "%s, %d, %p, %p", namespace, safety, (gpointer)batch, (gpointer)error);
-	ret = backend->db.backend_batch_start(namespace, safety, batch, error);
+	j_trace_enter("backend_batch_start", "%s, %p, %p, %p", namespace, (gpointer)semantics, (gpointer)batch, (gpointer)error);
+	ret = backend->db.backend_batch_start(namespace, semantics, batch, error);
 	j_trace_leave("backend_batch_start");
 
 	return ret;

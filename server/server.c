@@ -64,7 +64,7 @@ static gboolean
 jd_on_run(GThreadedSocketService* service, GSocketConnection* connection, GObject* source_object, gpointer user_data)
 #else
 gboolean
-db_server_message_exec(JMessageType message_type, JMessage* message, guint operation_count, JBackend* jd_db_backend, JSemanticsSafety safety, GSocketConnection* connection)
+db_server_message_exec(JMessageType message_type, JMessage* message, guint operation_count, JBackend* jd_db_backend, JSemantics*semantics, GSocketConnection* connection)
 #endif
 {
 	JMemoryChunk* memory_chunk = NULL;
@@ -103,18 +103,18 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 		gchar const* key;
 		gchar const* namespace;
 		gchar const* path;
-#ifndef MOCKUP_COMPILES
 		JSemanticsSafety safety;
+#ifndef MOCKUP_COMPILES
 		guint32 operation_count;
+		JSemantics* semantics;
 #endif
 		JBackendOperation backend_operation;
-		JSemantics* semantics;
 		gboolean message_matched = FALSE;
 		guint i;
 #ifndef MOCKUP_COMPILES
 		operation_count = j_message_get_count(message);
-#endif
 		semantics = j_message_get_semantics(message);
+#endif
 		safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
 		j_semantics_unref(semantics);
 #ifndef MOCKUP_COMPILES
@@ -685,7 +685,7 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 					j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
 				}
 
-				j_backend_db_batch_start(jd_db_backend, backend_operation.in_param[0].ptr, safety, &batch, &error);
+				j_backend_db_batch_start(jd_db_backend, backend_operation.in_param[0].ptr, semantics, &batch, &error);
 
 				for (i = 0; i < operation_count; i++)
 				{
