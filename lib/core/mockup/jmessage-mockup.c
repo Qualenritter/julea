@@ -163,7 +163,7 @@ j_message_mockup_new_reply(JMessage* message_input)
 	myabort(!message_input);
 	if (message_input->client_side)
 	{
-		semantics = j_semantics_new();
+		semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 		message = _j_message_mockup_new_reply(message_input);
 		message->client_side = FALSE;
 		operation_count = message_input->operation_count;

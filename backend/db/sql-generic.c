@@ -51,6 +51,7 @@ typedef struct JSqlCacheSQLPrepared JSqlCacheSQLPrepared;
 struct JSqlBatch
 {
 	const gchar* namespace;
+	JSemantics* semantics;
 };
 typedef struct JSqlBatch JSqlBatch;
 struct JSqlIterator
@@ -294,29 +295,102 @@ fini_sql(void)
 	j_trace_leave(G_STRFUNC);
 }
 static gboolean
-backend_batch_start(gchar const* namespace, JSemantics *semantics, gpointer* _batch, GError** error)
+_backend_batch_start(JSqlBatch* batch, GError** error)
 {
-	JSqlBatch* batch = *_batch = g_slice_new(JSqlBatch);
-
-	g_return_val_if_fail(namespace != NULL, FALSE);
-	(void)error;
-
 	j_trace_enter(G_STRFUNC, NULL);
-	batch->namespace = namespace;
-	(void)semantics;
+	(void)batch;
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
+	{
+		goto _error;
+	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
+_error:
+	j_trace_leave(G_STRFUNC);
+	return FALSE;
 }
 static gboolean
-backend_batch_execute(gpointer batch, GError** error)
+_backend_batch_execute(JSqlBatch* batch, GError** error)
 {
-	(void)error;
-
 	j_trace_enter(G_STRFUNC, NULL);
+	(void)batch;
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
+	{
+		goto _error;
+	}
+	j_trace_leave(G_STRFUNC);
+	return TRUE;
+_error:
+	j_trace_leave(G_STRFUNC);
+	return FALSE;
+}
+static gboolean
+backend_batch_abort(JSqlBatch* batch, GError** error)
+{
+	j_trace_enter(G_STRFUNC, NULL);
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
+	{
+		goto _error;
+	}
+	j_semantics_unref(batch->semantics);
 	g_slice_free(JSqlBatch, batch);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
+_error:
+	j_semantics_unref(batch->semantics);
+	g_slice_free(JSqlBatch, batch);
+	j_trace_leave(G_STRFUNC);
+	return FALSE;
 }
+
+static gboolean
+backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _batch, GError** error)
+{
+	JSqlBatch* batch;
+
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(semantics != NULL, FALSE);
+	g_return_val_if_fail(_batch != NULL, FALSE);
+
+	j_trace_enter(G_STRFUNC, NULL);
+	batch = *_batch = g_slice_new(JSqlBatch);
+	batch->namespace = namespace;
+	batch->semantics = j_semantics_ref(semantics);
+	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
+	{
+		goto _error;
+	}
+	j_trace_leave(G_STRFUNC);
+	return TRUE;
+_error:
+	j_semantics_unref(batch->semantics);
+	g_slice_free(JSqlBatch, batch);
+	j_trace_leave(G_STRFUNC);
+	return FALSE;
+}
+static gboolean
+backend_batch_execute(gpointer _batch, GError** error)
+{
+	JSqlBatch* batch = _batch;
+
+	g_return_val_if_fail(batch != NULL, FALSE);
+
+	j_trace_enter(G_STRFUNC, NULL);
+	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
+	{
+		goto _error;
+	}
+	j_semantics_unref(batch->semantics);
+	g_slice_free(JSqlBatch, batch);
+	j_trace_leave(G_STRFUNC);
+	return TRUE;
+_error:
+	j_semantics_unref(batch->semantics);
+	g_slice_free(JSqlBatch, batch);
+	j_trace_leave(G_STRFUNC);
+	return FALSE;
+}
+
 static gboolean
 backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, GError** error)
 {
@@ -341,7 +415,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	g_return_val_if_fail(schema != NULL, FALSE);
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
+	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
 	{
 		goto _error;
 	}
@@ -512,7 +586,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 			i++;
 		}
 	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
+	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
 	{
 		goto _error;
 	}
@@ -521,14 +595,6 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 _error:
 	j_bson_free_json(json);
 	g_string_free(sql, TRUE);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
-	{
-		goto _error2;
-	}
-	j_trace_leave(G_STRFUNC);
-	return FALSE;
-_error2:
-	/*something failed very hard*/
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
@@ -614,7 +680,7 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	g_return_val_if_fail(batch != NULL, FALSE);
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
+	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
 	{
 		goto _error;
 	}
@@ -642,23 +708,15 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	{
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
+	g_string_free(sql, TRUE);
+	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
 	{
 		goto _error;
 	}
-	g_string_free(sql, TRUE);
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	g_string_free(sql, TRUE);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
-	{
-		goto _error2;
-	}
-	j_trace_leave(G_STRFUNC);
-	return FALSE;
-_error2:
-	/*something failed very hard*/
 	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
@@ -749,10 +807,6 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 	g_return_val_if_fail(metadata != NULL, FALSE);
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
-	{
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_bson_has_enough_keys(metadata, 1, error)))
 	{
 		goto _error;
@@ -832,10 +886,6 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 	{
 		j_bson_destroy(&schema);
 	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
-	{
-		goto _error;
-	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -843,7 +893,7 @@ _error:
 	{
 		j_bson_destroy(&schema);
 	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
+	if (G_UNLIKELY(!backend_batch_abort(batch, NULL)))
 	{
 		goto _error2;
 	}
@@ -1207,10 +1257,6 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 	g_return_val_if_fail(selector != NULL, FALSE);
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
-	{
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_bson_has_enough_keys(selector, 2, error)))
 	{
 		goto _error;
@@ -1354,10 +1400,6 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		j_bson_destroy(&schema);
 	}
 	freeJSqlIterator(iterator);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
-	{
-		goto _error;
-	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
@@ -1366,7 +1408,7 @@ _error:
 		j_bson_destroy(&schema);
 	}
 	freeJSqlIterator(iterator);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
+	if (G_UNLIKELY(!backend_batch_abort(batch, NULL)))
 	{
 		goto _error2;
 	}
@@ -1390,10 +1432,6 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 	g_return_val_if_fail(batch != NULL, FALSE);
 
 	j_trace_enter(G_STRFUNC, NULL);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
-	{
-		goto _error;
-	}
 	if (G_UNLIKELY(!_backend_query(batch, name, selector, (gpointer*)&iterator, error)))
 	{
 		goto _error;
@@ -1427,15 +1465,11 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 		}
 	}
 	freeJSqlIterator(iterator);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
-	{
-		goto _error;
-	}
 	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	freeJSqlIterator(iterator);
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
+	if (G_UNLIKELY(!backend_batch_abort(batch, NULL)))
 	{
 		goto _error2;
 	}

@@ -16,13 +16,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-mkdir log
-scan-build ./waf.sh configure
-scan-build ./waf.sh build --debug
-cd warnke_skript
-./run-clang-tidy.py -fix -header-filter='.*,-dependencies' -checks="readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration" -j12
-cd ..
-
 for f in $(git diff --name-only HEAD | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
 	echo $f
 	clang-format -i $f
