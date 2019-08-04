@@ -28,7 +28,6 @@ exec_tests(guint n)
 {
 	benchmark_db_schema(target_time, n);
 	benchmark_db_entry(target_time, n);
-	j_trace_flush("");
 }
 static void
 exec_tree(guint depth, gfloat min, gfloat max)
@@ -81,6 +80,7 @@ benchmark_db(void)
 	}
 #ifdef JULEA_DEBUG
 	exec_tree1(0, 1, 5);
+	j_trace_flush("");
 #else
 	guint i;
 	for (i = 0; i < 7; i++)
