@@ -695,70 +695,58 @@ db_server_message_exec(JMessageType message_type, JMessage* message, guint opera
 				}
 				for (i = 0; i < operation_count; i++)
 				{
+					backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = NULL;
+					if (i)
+					{
+						j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
+					}
+					switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
+					{
+					case J_SEMANTICS_ATOMICITY_BATCH:
+						if (ret && !error)
+						{
+							//message must be read completly, and reply must answer all requests - but there should be no more executions in a failed 'J_SEMANTICS_ATOMICITY_BATCH'
+							ret = backend_operation.backend_func(jd_db_backend, batch, &backend_operation);
+						}
+						else
+						{
+							backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = g_error_copy(error);
+						}
+						break;
+					case J_SEMANTICS_ATOMICITY_OPERATION:
+					case J_SEMANTICS_ATOMICITY_NONE:
+						j_backend_db_batch_start(jd_db_backend, backend_operation.in_param[0].ptr, semantics, &batch, &error);
+						ret = backend_operation.backend_func(jd_db_backend, batch, &backend_operation);
+						break;
+					default:
+						g_warn_if_reached();
+					}
+					for (guint j = 0; j < backend_operation.out_param_count; j++)
+					{
+						if (ret && backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_BSON)
+						{
+							backend_operation.out_param[j].bson_initialized = TRUE;
+						}
+					}
 					switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
 					{
 					case J_SEMANTICS_ATOMICITY_BATCH:
 						break;
 					case J_SEMANTICS_ATOMICITY_OPERATION:
 					case J_SEMANTICS_ATOMICITY_NONE:
-						j_backend_db_batch_start(jd_db_backend, backend_operation.in_param[0].ptr, semantics, &batch, &error);
+						j_backend_db_batch_execute(jd_db_backend, batch, NULL);
+						if (error)
+						{
+							g_error_free(error);
+							error = NULL;
+						}
 						break;
 					default:
 						g_warn_if_reached();
 					}
-					if (i)
-					{
-						j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
-					}
-					if (error)
+					if (error && !backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr)
 					{
 						backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = g_error_copy(error);
-					}
-					else
-					{
-						switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
-						{
-						case J_SEMANTICS_ATOMICITY_BATCH:
-							if (ret)
-							{
-								//message must be read completly, and reply must answer all requests - but there should be no more executions in a failed 'J_SEMANTICS_ATOMICITY_BATCH'
-								ret = backend_operation.backend_func(jd_db_backend, batch, &backend_operation);
-							}
-							break;
-						case J_SEMANTICS_ATOMICITY_OPERATION:
-						case J_SEMANTICS_ATOMICITY_NONE:
-							ret = backend_operation.backend_func(jd_db_backend, batch, &backend_operation);
-							break;
-						default:
-							g_warn_if_reached();
-						}
-						for (guint j = 0; j < backend_operation.out_param_count; j++)
-						{
-							if (ret && backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_BSON)
-							{
-								backend_operation.out_param[j].bson_initialized = TRUE;
-							}
-						}
-						switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
-						{
-						case J_SEMANTICS_ATOMICITY_BATCH:
-							break;
-						case J_SEMANTICS_ATOMICITY_OPERATION:
-						case J_SEMANTICS_ATOMICITY_NONE:
-							j_backend_db_batch_execute(jd_db_backend, batch, NULL);
-							if (error)
-							{
-								g_error_free(error);
-								error = NULL;
-							}
-							break;
-						default:
-							g_warn_if_reached();
-						}
-						if (error)
-						{
-							backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = g_error_copy(error);
-						}
 					}
 					j_backend_operation_to_message(reply, backend_operation.out_param, backend_operation.out_param_count);
 					if (ret)

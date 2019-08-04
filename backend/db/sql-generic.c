@@ -499,35 +499,10 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_SCHEMA_EMPTY, "schema empty");
 		goto _error;
 	}
-	json = j_bson_as_json(schema, error);
-	if (G_UNLIKELY(!json))
-	{
-		goto _error;
-	}
-	value.val_string = batch->namespace;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 1, J_DB_TYPE_STRING, &value, error)))
-	{
-		goto _error;
-	}
-	value.val_string = name;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 2, J_DB_TYPE_STRING, &value, error)))
-	{
-		goto _error;
-	}
-	value.val_string = json;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 3, J_DB_TYPE_STRING, &value, error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_schema_structure_create, error)))
-	{
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_sql_exec(sql->str, error)))
 	{
 		goto _error;
 	}
-	j_bson_free_json(json);
 	g_string_free(sql, TRUE);
 	if (found_index)
 	{
@@ -595,6 +570,31 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 			i++;
 		}
 	}
+	json = j_bson_as_json(schema, error);
+	if (G_UNLIKELY(!json))
+	{
+		goto _error;
+	}
+	value.val_string = batch->namespace;
+	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 1, J_DB_TYPE_STRING, &value, error)))
+	{
+		goto _error;
+	}
+	value.val_string = name;
+	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 2, J_DB_TYPE_STRING, &value, error)))
+	{
+		goto _error;
+	}
+	value.val_string = json;
+	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 3, J_DB_TYPE_STRING, &value, error)))
+	{
+		goto _error;
+	}
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_schema_structure_create, error)))
+	{
+		goto _error;
+	}
+	j_bson_free_json(json);
 	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
 	{
 		goto _error;
