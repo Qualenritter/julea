@@ -143,19 +143,24 @@ set logscale y
 set key right outside
 set xlabel "#Entry" noenhanced
 set ylabel "operation/second" noenhanced
-plot	'$f-${n2}-entry-insert.csv'		using 1:2 with linespoints lc 1 pt 4 title "insert"			,\
-	'$f-${n2}-entry-update.csv'		using 1:2 with linespoints lc 2 pt 4 title "update"			,\
-	'$f-${n2}-entry-delete.csv'		using 1:2 with linespoints lc 3 pt 4 title "delete"			,\
-	'$f-${n2}-entry-insert-batch.csv'	using 1:2 with linespoints lc 1 pt 6 title "insert-batch"		,\
-	'$f-${n2}-entry-update-batch.csv'	using 1:2 with linespoints lc 2 pt 6 title "update-batch"		,\
-	'$f-${n2}-entry-delete-batch.csv'	using 1:2 with linespoints lc 3 pt 6 title "delete-batch"		,\
-	'$f-${n2}-iterator-single.csv'		using 1:2 with linespoints lc 4 pt 6 title "iterator-single"		,\
-	'$f-${n2}-iterator-all.csv'		using 1:2 with linespoints lc 5 pt 6 title "iterator-all"		,\
-	'$f-${n2}-entry-insert-batch-index.csv'	using 1:2 with linespoints lc 1 pt 8 title "insert-batch-index"	,\
-	'$f-${n2}-entry-update-batch-index.csv'	using 1:2 with linespoints lc 2 pt 8 title "update-batch-index"	,\
-	'$f-${n2}-entry-delete-batch-index.csv'	using 1:2 with linespoints lc 3 pt 8 title "delete-batch-index"	,\
-	'$f-${n2}-iterator-single-index.csv'	using 1:2 with linespoints lc 4 pt 8 title "iterator-single-index"	,\
-	'$f-${n2}-iterator-all-index.csv'	using 1:2 with linespoints lc 5 pt 8 title "iterator-all-index"
+plot	'$f-${n2}-entry-insert.csv'				using 1:2 with linespoints lc 1 pt  4 title "insert"				,\
+	'$f-${n2}-entry-update.csv'				using 1:2 with linespoints lc 2 pt  4 title "update"				,\
+	'$f-${n2}-entry-delete.csv'				using 1:2 with linespoints lc 3 pt  4 title "delete"				,\
+	'$f-${n2}-entry-insert-batch.csv'			using 1:2 with linespoints lc 1 pt  6 title "insert-batch"			,\
+	'$f-${n2}-entry-update-batch.csv'			using 1:2 with linespoints lc 2 pt  6 title "update-batch"			,\
+	'$f-${n2}-entry-delete-batch.csv'			using 1:2 with linespoints lc 3 pt  6 title "delete-batch"			,\
+	'$f-${n2}-iterator-single.csv'				using 1:2 with linespoints lc 4 pt  6 title "iterator-single"			,\
+	'$f-${n2}-iterator-all.csv'				using 1:2 with linespoints lc 5 pt  6 title "iterator-all"			,\
+	'$f-${n2}-entry-insert-batch-index.csv'			using 1:2 with linespoints lc 1 pt  8 title "insert-batch-index"		,\
+	'$f-${n2}-entry-update-batch-index.csv'			using 1:2 with linespoints lc 2 pt  8 title "update-batch-index"		,\
+	'$f-${n2}-entry-delete-batch-index.csv'			using 1:2 with linespoints lc 3 pt  8 title "delete-batch-index"		,\
+	'$f-${n2}-iterator-single-index.csv'			using 1:2 with linespoints lc 4 pt  8 title "iterator-single-index"		,\
+	'$f-${n2}-iterator-all-index.csv'			using 1:2 with linespoints lc 5 pt  8 title "iterator-all-index"		,\
+	'$f-${n2}-entry-insert-batch-index-atomicity.csv'	using 1:2 with linespoints lc 1 pt 12 title "insert-batch-index-atomicity"	,\
+	'$f-${n2}-entry-update-batch-index-atomicity.csv'	using 1:2 with linespoints lc 2 pt 12 title "update-batch-index-atomicity"	,\
+	'$f-${n2}-entry-delete-batch-index-atomicity.csv'	using 1:2 with linespoints lc 3 pt 12 title "delete-batch-index-atomicity"	,\
+	'$f-${n2}-iterator-single-index-atomicity.csv'		using 1:2 with linespoints lc 4 pt 12 title "iterator-single-index-atomicity"	,\
+	'$f-${n2}-iterator-all-index-atomicity.csv'		using 1:2 with linespoints lc 5 pt 12 title "iterator-all-index-atomicity"
 EOF
 cat gnuplot.plot | gnuplot
 mv gnuplot.plot $f-graph-entry${n2}.plot
