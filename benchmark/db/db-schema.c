@@ -40,6 +40,8 @@ static BenchmarkResult* benchmark_db_schema_create_executed = NULL; /*execute mu
 static BenchmarkResult* benchmark_db_schema_get_executed = NULL; /*execute multiple benchmarks together*/
 static BenchmarkResult* benchmark_db_schema_delete_executed = NULL; /*execute multiple benchmarks together*/
 //
+guint scale_factor = SCALE_FACTOR_HDD;
+//
 static void
 _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch, const guint n)
 {
@@ -539,10 +541,11 @@ benchmark_db_schema_equals(BenchmarkResult* result)
 	j_trace_leave(G_STRFUNC);
 }
 void
-benchmark_db_schema(gdouble _target_time, guint _n)
+benchmark_db_schema(gdouble _target_time, guint _n,guint _scale_factor)
 {
 	char testname[500];
 	const guint n = global_n = _n;
+	scale_factor=_scale_factor;
 
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;

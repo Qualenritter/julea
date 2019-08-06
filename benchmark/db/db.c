@@ -23,11 +23,13 @@
 #include "db.h"
 static gdouble target_time = 30.0;
 
+guint scale_factor = SCALE_FACTOR_HDD;
+
 static void
 exec_tests(guint n)
 {
-	benchmark_db_schema(target_time, n);
-	benchmark_db_entry(target_time, n);
+	benchmark_db_schema(target_time, n,scale_factor);
+	benchmark_db_entry(target_time, n,scale_factor);
 }
 static void
 exec_tree(guint depth, gfloat min, gfloat max)
@@ -65,8 +67,10 @@ void
 benchmark_db(void)
 {
 	const char* target_str;
+	const char* scale_str;
 	int ret;
 	double target = 0.0;
+	double scale = 0.0;
 	target_str = g_getenv("J_BENCHMARK_TARGET");
 	if (target_str)
 	{
@@ -76,6 +80,17 @@ benchmark_db(void)
 		{
 			g_debug("J_BENCHMARK_TARGET %s %f", target_str, target);
 			target_time = target;
+		}
+	}
+	scale_str = g_getenv("J_BENCHMARK_SCALE");
+	if (scale_str)
+	{
+		g_debug("J_BENCHMARK_SCALE %s", scale_str);
+		ret = sscanf(scale_str, "%lf", &scale);
+		if (ret == 1)
+		{
+			g_debug("J_BENCHMARK_SCALE %s %f", scale_str, scale);
+			scale_factor = scale;
 		}
 	}
 #ifdef JULEA_DEBUG

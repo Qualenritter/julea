@@ -60,15 +60,12 @@
 	} while (0)
 #endif
 
-void benchmark_db_schema(gdouble _target_time, guint _n);
-void benchmark_db_entry(gdouble _target_time, guint _n);
+void benchmark_db_schema(gdouble _target_time, guint _n,guint _scale_factor);
+void benchmark_db_entry(gdouble _target_time, guint _n,guint _scale_factor);
 
 
 #define SCALE_FACTOR_SSD_M2 1
 #define SCALE_FACTOR_SSD_SATA 10
 #define SCALE_FACTOR_HDD 100
-
-#define scale_factor SCALE_FACTOR_HDD
-
 
 #endif

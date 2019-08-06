@@ -38,6 +38,8 @@ static BenchmarkResult* benchmark_db_entry_delete_executed = NULL; /*execute mul
 static BenchmarkResult* benchmark_db_iterator_single_executed = NULL; /*execute multiple benchmarks together*/
 static BenchmarkResult* benchmark_db_iterator_all_executed = NULL; /*execute multiple benchmarks together*/
 //
+guint scale_factor = SCALE_FACTOR_HDD;
+//
 static void
 benchmark_db_entry_ref(BenchmarkResult* result)
 {
@@ -672,11 +674,12 @@ benchmark_db_iterator_all_index_atomicity(BenchmarkResult* result)
 	j_trace_leave(G_STRFUNC);
 }
 void
-benchmark_db_entry(gdouble _target_time, guint _n)
+benchmark_db_entry(gdouble _target_time, guint _n,guint _scale_factor)
 {
 	guint i;
 	char testname[500];
 	const guint n = global_n = _n;
+scale_factor=_scale_factor;
 
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;
