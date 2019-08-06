@@ -2,9 +2,13 @@ folders=$(find -type d \
 | grep -v "^.$" \
 | sort \
 | grep -v "debug" \
-| grep -v "warnke-01" \
-| grep -v "warnke-02" \
-| grep -v "warnke-03" \
+| grep -v "warnke-ssd-m2-01" \
+| grep -v "warnke-ssd-m2-02" \
+| grep -v "warnke-ssd-m2-03" \
+| grep -v "warnke-ssd-m2-04" \
+| grep -v "warnke-ssd-m2-05" \
+| grep -v "warnke-ssd-m2-06" \
+| grep -v "warnke-ssd-m2-07" \
 )
 
 n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
@@ -212,8 +216,8 @@ EOF
 str=""
 for f in ${folders}
 do
-	x=$(echo $f | sed "s/.*warnke-//g" | sed "s/-.*//g")
-	str="${str}, '$f-$y.csv' using 1:2 with linespoints title \"${x:0:5}\""
+	x=$(echo $f | sed "s/.*warnke-//g" | sed "s/-[^-]*$//g")
+	str="${str}, '$f-$y.csv' using 1:2 with linespoints title \"${x:0:10}\""
 done
 str="plot${str:1}"
 echo $str >> gnuplot.plot
