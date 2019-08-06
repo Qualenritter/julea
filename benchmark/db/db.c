@@ -23,7 +23,7 @@
 #include "db.h"
 static gdouble target_time = 30.0;
 
-guint scale_factor = SCALE_FACTOR_HDD;
+static guint scale_factor = SCALE_FACTOR_HDD;
 
 static void
 exec_tests(guint n)

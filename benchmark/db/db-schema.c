@@ -40,7 +40,7 @@ static BenchmarkResult* benchmark_db_schema_create_executed = NULL; /*execute mu
 static BenchmarkResult* benchmark_db_schema_get_executed = NULL; /*execute multiple benchmarks together*/
 static BenchmarkResult* benchmark_db_schema_delete_executed = NULL; /*execute multiple benchmarks together*/
 //
-guint scale_factor = SCALE_FACTOR_HDD;
+static guint scale_factor = SCALE_FACTOR_HDD;
 //
 static void
 _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch, const guint n)

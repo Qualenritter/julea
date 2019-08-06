@@ -38,7 +38,7 @@ static BenchmarkResult* benchmark_db_entry_delete_executed = NULL; /*execute mul
 static BenchmarkResult* benchmark_db_iterator_single_executed = NULL; /*execute multiple benchmarks together*/
 static BenchmarkResult* benchmark_db_iterator_all_executed = NULL; /*execute multiple benchmarks together*/
 //
-guint scale_factor = SCALE_FACTOR_HDD;
+static guint scale_factor = SCALE_FACTOR_HDD;
 //
 static void
 benchmark_db_entry_ref(BenchmarkResult* result)
