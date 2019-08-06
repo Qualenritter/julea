@@ -696,7 +696,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 		sprintf(testname, "/db/%d/entry/free", n);
 		j_benchmark_run(testname, benchmark_db_entry_free);
 	}
-	if (n < 500)
+	if (n * scale_factor < 500)
 	{
 		//more than 500 fields in a schema is not supported by backend - since entrys build on top of schema, entry does not support more than 500 fields too
 		// j_db_entry_set_field n variables
@@ -719,7 +719,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 		default:
 			global_n2 = 1;
 		}
-		if (n <= 1000)
+		if (n * scale_factor <= 1000)
 		{
 			//not using batches with more than 1000 same functions does not make sense
 			sprintf(testname, "/db/%d/%d/entry/insert", n, global_n2);
@@ -739,7 +739,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 150000) || (global_n2 == 5 && n <= 200000))
+		if ((global_n2 == 500 && n * scale_factor <= 50000) || (global_n2 == 50 && n * scale_factor <= 150000) || (global_n2 == 5 && n * scale_factor <= 200000))
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch", n, global_n2);
@@ -765,7 +765,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 150000) || (global_n2 == 5 && n <= 200000))
+		if ((global_n2 == 500 && n * scale_factor <= 50000) || (global_n2 == 50 && n * scale_factor <= 150000) || (global_n2 == 5 && n * scale_factor <= 200000))
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch-index", n, global_n2);
@@ -791,7 +791,7 @@ benchmark_db_entry(gdouble _target_time, guint _n)
 			g_free(benchmark_db_iterator_all_executed);
 			benchmark_db_iterator_all_executed = NULL;
 		}
-		if ((global_n2 == 500 && n <= 50000) || (global_n2 == 50 && n <= 150000) || (global_n2 == 5 && n <= 200000))
+		if ((global_n2 == 500 && n * scale_factor <= 50000) || (global_n2 == 50 && n * scale_factor <= 150000) || (global_n2 == 5 && n * scale_factor <= 200000))
 		{
 			// j_db_entry_insert 5,50,500 variables, n entrys
 			sprintf(testname, "/db/%d/%d/entry/insert-batch-index-atomicity", n, global_n2);

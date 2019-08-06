@@ -494,7 +494,7 @@ _benchmark_db_schema_add_field(BenchmarkResult* result, const guint n)
 static void
 benchmark_db_schema_add_field(BenchmarkResult* result)
 {
-	_benchmark_db_schema_add_field(result,global_n);
+	_benchmark_db_schema_add_field(result, global_n);
 }
 static void
 benchmark_db_schema_get_field(BenchmarkResult* result)
@@ -504,7 +504,7 @@ benchmark_db_schema_get_field(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_get_field_executed)
 	{
-		_benchmark_db_schema_add_field(&b,global_n);
+		_benchmark_db_schema_add_field(&b, global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_get_field_executed->elapsed_time;
 	result->operations = benchmark_db_schema_get_field_executed->operations;
@@ -518,7 +518,7 @@ benchmark_db_schema_get_fields(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_get_fields_executed)
 	{
-		_benchmark_db_schema_add_field(&b,global_n);
+		_benchmark_db_schema_add_field(&b, global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_get_fields_executed->elapsed_time;
 	result->operations = benchmark_db_schema_get_fields_executed->operations;
@@ -532,7 +532,7 @@ benchmark_db_schema_equals(BenchmarkResult* result)
 	j_trace_enter(G_STRFUNC, "(n=%d)", global_n);
 	if (!benchmark_db_schema_equals_executed)
 	{
-		_benchmark_db_schema_add_field(&b,global_n);
+		_benchmark_db_schema_add_field(&b, global_n);
 	}
 	result->elapsed_time = benchmark_db_schema_equals_executed->elapsed_time;
 	result->operations = benchmark_db_schema_equals_executed->operations;
@@ -546,7 +546,7 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;
-	if (n < 500)
+	if (n * scale_factor < 500)
 	{
 		//more than 500 fields in a schema is not supported by backend
 		//add n fields to a schema
@@ -570,7 +570,7 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 		g_free(benchmark_db_schema_equals_executed);
 		benchmark_db_schema_equals_executed = NULL;
 	}
-	if (n <= 1000)
+	if (n * scale_factor <= 1000)
 	{
 		//not using batches with more than 1000 same functions does not make sense
 		//create n schema at once
@@ -589,7 +589,7 @@ benchmark_db_schema(gdouble _target_time, guint _n)
 		g_free(benchmark_db_schema_delete_executed);
 		benchmark_db_schema_delete_executed = NULL;
 	}
-	if (n <= 100000)
+	if (n * scale_factor <= 100000)
 	{
 		//tests with more than 100000 schema does not make sense
 		{

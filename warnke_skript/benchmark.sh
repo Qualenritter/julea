@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-umount /mnt2
-mount /mnt2
+mountpoint=/mnt
+
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
 ./warnke_skript/format.sh
@@ -26,7 +26,7 @@ rm -rf build* prefix*
 ./waf.sh configure --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh build && ./waf.sh install
 thepath=$(pwd)
 mkdir -p log
-rm -rf /mnt2/julea/*
+rm -rf ${mountpoint}/julea/*
 (
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
@@ -34,9 +34,9 @@ rm -rf /mnt2/julea/*
 	./build-gcc-benchmark/tools/julea-config --user \
 		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
 		  --db-servers="$(hostname)" \
-		  --object-backend=posix --object-component=server --object-path=/mnt2/julea/object-benchmark \
-		  --kv-backend=sqlite --kv-component=server --kv-path=/mnt2/julea/kv-benchmark \
-		  --db-backend=sqlite --db-component=server --db-path=/mnt2/julea/db-benchmark
+		  --object-backend=posix --object-component=server --object-path=${mountpoint}/julea/object-benchmark \
+		  --kv-backend=sqlite --kv-component=server --kv-path=${mountpoint}/julea/kv-benchmark \
+		  --db-backend=sqlite --db-component=server --db-path=${mountpoint}/julea/db-benchmark
 )
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 (
@@ -46,8 +46,8 @@ mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 	./build-gcc-benchmark/tools/julea-config --user \
 		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
 		  --db-servers="$(hostname)" \
-		  --object-backend=posix --object-component=client --object-path=/mnt2/julea/object-benchmark \
-		  --kv-backend=sqlite --kv-component=client --kv-path=/mnt2/julea/kv-benchmark \
+		  --object-backend=posix --object-component=client --object-path=${mountpoint}/julea/object-benchmark \
+		  --kv-backend=sqlite --kv-component=client --kv-path=${mountpoint}/julea/kv-benchmark \
 		  --db-backend=sqlite --db-component=client --db-path=:memory:
 )
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark-debug
