@@ -17,7 +17,7 @@
  */
 
 /* this mockup should avoid the network communication and execute the requested backend operations on the client side instead */
-#define MOCKUP_COMPILES
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wredundant-decls"
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -35,29 +35,6 @@
 #include <core/jmessage.h>
 #include "../../../test-afl/afl.h"
 #include "../../../server/loop.c"
-#if (JULEA_TEST_MOCKUP == 0)
-#define j_message_new j_message_mockup_new
-#define j_message_new_reply j_message_mockup_new_reply
-#define j_message_ref j_message_mockup_ref
-#define j_message_unref j_message_mockup_unref
-#define j_message_get_type j_message_mockup_get_type
-#define j_message_get_count j_message_mockup_get_count
-#define j_message_append_1 j_message_mockup_append_1
-#define j_message_append_4 j_message_mockup_append_4
-#define j_message_append_8 j_message_mockup_append_8
-#define j_message_append_n j_message_mockup_append_n
-#define j_message_get_1 j_message_mockup_get_1
-#define j_message_get_4 j_message_mockup_get_4
-#define j_message_get_8 j_message_mockup_get_8
-#define j_message_get_n j_message_mockup_get_n
-#define j_message_get_string j_message_mockup_get_string
-#define j_message_send j_message_mockup_send
-#define j_message_receive j_message_mockup_receive
-#define j_message_read j_message_mockup_read
-#define j_message_write j_message_mockup_write
-#define j_message_add_send j_message_mockup_add_send
-#define j_message_add_operation j_message_mockup_add_operation
-#endif
 #define myabort(val)                                         \
 	do                                                   \
 	{                                                    \
@@ -67,6 +44,33 @@
 			abort();                             \
 		}                                            \
 	} while (0)
+#if (JULEA_TEST_MOCKUP == 1)
+
+enum JMessageSemantics
+{
+	J_MESSAGE_SEMANTICS_ATOMICITY_BATCH = 1 << 0,
+	J_MESSAGE_SEMANTICS_ATOMICITY_OPERATION = 1 << 1,
+	J_MESSAGE_SEMANTICS_ATOMICITY_NONE = 1 << 2,
+	J_MESSAGE_SEMANTICS_CONCURRENCY_OVERLAPPING = 1 << 3,
+	J_MESSAGE_SEMANTICS_CONCURRENCY_NON_OVERLAPPING = 1 << 4,
+	J_MESSAGE_SEMANTICS_CONCURRENCY_NONE = 1 << 5,
+	J_MESSAGE_SEMANTICS_CONSISTENCY_IMMEDIATE = 1 << 6,
+	J_MESSAGE_SEMANTICS_CONSISTENCY_EVENTUAL = 1 << 7,
+	J_MESSAGE_SEMANTICS_CONSISTENCY_NONE = 1 << 8,
+	J_MESSAGE_SEMANTICS_ORDERING_STRICT = 1 << 9,
+	J_MESSAGE_SEMANTICS_ORDERING_SEMI_RELAXED = 1 << 10,
+	J_MESSAGE_SEMANTICS_ORDERING_RELAXED = 1 << 11,
+	J_MESSAGE_SEMANTICS_PERSISTENCY_IMMEDIATE = 1 << 12,
+	J_MESSAGE_SEMANTICS_PERSISTENCY_EVENTUAL = 1 << 13,
+	J_MESSAGE_SEMANTICS_PERSISTENCY_NONE = 1 << 14,
+	J_MESSAGE_SEMANTICS_SAFETY_STORAGE = 1 << 15,
+	J_MESSAGE_SEMANTICS_SAFETY_NETWORK = 1 << 16,
+	J_MESSAGE_SEMANTICS_SAFETY_NONE = 1 << 17,
+	J_MESSAGE_SEMANTICS_SECURITY_STRICT = 1 << 18,
+	J_MESSAGE_SEMANTICS_SECURITY_NONE = 1 << 19
+};
+
+typedef enum JMessageSemantics JMessageSemantics;
 
 struct JMessage
 {
@@ -78,54 +82,11 @@ struct JMessage
 	JMessageType type;
 	gint ref_count;
 	gboolean client_side;
+	guint32 semantics;
 };
+static JMessage* server_reply;
 JMessage*
-j_message_mockup_new(JMessageType type, gsize size);
-JMessage*
-j_message_mockup_new_reply(JMessage* message_input);
-JMessage*
-j_message_mockup_ref(JMessage* message);
-void
-j_message_mockup_unref(JMessage* message);
-gboolean
-j_message_mockup_append_1(JMessage* message, gconstpointer data);
-gboolean
-j_message_mockup_append_4(JMessage* message, gconstpointer data);
-gboolean
-j_message_mockup_append_8(JMessage* message, gconstpointer data);
-gboolean
-j_message_mockup_append_n(JMessage* message, gconstpointer data, gsize size);
-gchar
-j_message_mockup_get_1(JMessage* message);
-gint32
-j_message_mockup_get_4(JMessage* message);
-gint64
-j_message_mockup_get_8(JMessage* message);
-gpointer
-j_message_mockup_get_n(JMessage* message, gsize size);
-gchar const*
-j_message_mockup_get_string(JMessage* message);
-gboolean
-j_message_mockup_send(JMessage* message, GSocketConnection* connection);
-gboolean
-j_message_mockup_receive(JMessage* message, GSocketConnection* connection);
-void
-j_message_mockup_add_operation(JMessage* message, gsize size);
-JMessageType
-j_message_mockup_get_type(JMessage const* message);
-guint32
-j_message_mockup_get_count(JMessage const* message);
-gboolean
-j_message_mockup_read(JMessage* message, GInputStream* stream);
-gboolean
-j_message_mockup_write(JMessage* message, GOutputStream* stream);
-void
-j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size);
-static JMessage* server_reply_mockup;
-JMessage*
-_j_message_mockup_new_reply(JMessage* message);
-JMessage*
-j_message_mockup_new(JMessageType type, gsize size)
+j_message_new(JMessageType type, gsize size)
 {
 	JMessage* message;
 	message = g_slice_new(JMessage);
@@ -137,60 +98,57 @@ j_message_mockup_new(JMessageType type, gsize size)
 	message->size_requested = size;
 	message->size_used = 0;
 	message->ref_count = 1;
+	message->semantics = 0;
 	return message;
 }
 JMessage*
-_j_message_mockup_new_reply(JMessage* message)
+_j_message_new_reply(JMessage* message)
 {
 	JMessage* reply;
 	myabort(!message);
 	myabort(message->size_used != message->size_requested);
-	reply = j_message_mockup_new(message->type, message->size_used);
-	j_message_mockup_append_n(reply, message->data->data, message->data->len);
+	reply = j_message_new(message->type, message->size_used);
+	j_message_append_n(reply, message->data->data, message->data->len);
 	reply->current = (gchar*)reply->data->data;
+	reply->semantics = message->semantics;
 	return reply;
 }
 JMessage*
-j_message_mockup_new_reply(JMessage* message_input)
+j_message_new_reply(JMessage* message_input)
 {
-#if (JULEA_TEST_MOCKUP == 1)
 	JMessage* message;
 	gint ret;
 	myabort(!message_input);
 	if (message_input->client_side)
 	{
-		message = _j_message_mockup_new_reply(message_input);
+		message = _j_message_new_reply(message_input);
 		message->client_side = FALSE;
-		ret = jd_handle_message(message,NULL,NULL,0,NULL);
+		ret = jd_handle_message(message, NULL, NULL, 0, NULL);
 		if (!ret)
 		{
 			abort();
 		}
-		j_message_mockup_unref(message);
-		message = _j_message_mockup_new_reply(server_reply_mockup);
-		message->operation_count = server_reply_mockup->operation_count;
-		j_message_mockup_unref(server_reply_mockup);
+		j_message_unref(message);
+		message = _j_message_new_reply(server_reply);
+		message->operation_count = server_reply->operation_count;
+		j_message_unref(server_reply);
 		return message;
 	}
 	else /*avoid infinite loop*/
 	{
-		return server_reply_mockup = j_message_mockup_ref(j_message_mockup_new(message_input->type, 0));
+		return server_reply = j_message_ref(j_message_new(message_input->type, 0));
 	}
-#else
-	(void)server_reply_mockup;
-	return NULL;
-#endif
 }
 
 JMessage*
-j_message_mockup_ref(JMessage* message)
+j_message_ref(JMessage* message)
 {
 	myabort(!message);
 	g_atomic_int_inc(&message->ref_count);
 	return message;
 }
 void
-j_message_mockup_unref(JMessage* message)
+j_message_unref(JMessage* message)
 {
 	if (message && g_atomic_int_dec_and_test(&message->ref_count))
 	{
@@ -199,23 +157,23 @@ j_message_mockup_unref(JMessage* message)
 	}
 }
 gboolean
-j_message_mockup_append_1(JMessage* message, gconstpointer data)
+j_message_append_1(JMessage* message, gconstpointer data)
 {
 
-	return j_message_mockup_append_n(message, data, 1);
+	return j_message_append_n(message, data, 1);
 }
 gboolean
-j_message_mockup_append_4(JMessage* message, gconstpointer data)
+j_message_append_4(JMessage* message, gconstpointer data)
 {
-	return j_message_mockup_append_n(message, data, 4);
+	return j_message_append_n(message, data, 4);
 }
 gboolean
-j_message_mockup_append_8(JMessage* message, gconstpointer data)
+j_message_append_8(JMessage* message, gconstpointer data)
 {
-	return j_message_mockup_append_n(message, data, 8);
+	return j_message_append_n(message, data, 8);
 }
 gboolean
-j_message_mockup_append_n(JMessage* message, gconstpointer data, gsize size)
+j_message_append_n(JMessage* message, gconstpointer data, gsize size)
 {
 	myabort(!message);
 	g_byte_array_append(message->data, data, size);
@@ -223,8 +181,13 @@ j_message_mockup_append_n(JMessage* message, gconstpointer data, gsize size)
 	myabort(message->size_used > message->size_requested);
 	return TRUE;
 }
+gboolean
+j_message_append_string(JMessage* message, gchar const* str)
+{
+	j_message_append_n(message, str, strlen(str) + 1);
+}
 gchar
-j_message_mockup_get_1(JMessage* message)
+j_message_get_1(JMessage* message)
 {
 	gchar result;
 	myabort(!message);
@@ -234,7 +197,7 @@ j_message_mockup_get_1(JMessage* message)
 	return result;
 }
 gint32
-j_message_mockup_get_4(JMessage* message)
+j_message_get_4(JMessage* message)
 {
 	gint32 result;
 	myabort(!message);
@@ -244,7 +207,7 @@ j_message_mockup_get_4(JMessage* message)
 	return result;
 }
 gint64
-j_message_mockup_get_8(JMessage* message)
+j_message_get_8(JMessage* message)
 {
 	gint64 result;
 	myabort(!message);
@@ -254,7 +217,7 @@ j_message_mockup_get_8(JMessage* message)
 	return result;
 }
 gpointer
-j_message_mockup_get_n(JMessage* message, gsize size)
+j_message_get_n(JMessage* message, gsize size)
 {
 	gpointer result;
 	myabort(!message);
@@ -264,7 +227,7 @@ j_message_mockup_get_n(JMessage* message, gsize size)
 	return result;
 }
 gchar const*
-j_message_mockup_get_string(JMessage* message)
+j_message_get_string(JMessage* message)
 {
 	gchar* ptr_end;
 	gchar* ptr = message->current;
@@ -275,59 +238,156 @@ j_message_mockup_get_string(JMessage* message)
 		ptr++;
 	}
 	myabort(ptr == ptr_end);
-	return j_message_mockup_get_n(message, ptr - message->current + 1);
+	return j_message_get_n(message, ptr - message->current + 1);
 }
 gboolean
-j_message_mockup_send(JMessage* message, GSocketConnection* connection)
+j_message_send(JMessage* message, GSocketConnection* connection)
 {
 	myabort(!message);
 	myabort(!connection);
 	return TRUE;
 }
 gboolean
-j_message_mockup_receive(JMessage* message, GSocketConnection* connection)
+j_message_receive(JMessage* message, GSocketConnection* connection)
 {
 	myabort(!message);
 	myabort(!connection);
 	return TRUE;
 }
 void
-j_message_mockup_add_operation(JMessage* message, gsize size)
+j_message_add_operation(JMessage* message, gsize size)
 {
 	myabort(!message);
 	message->size_requested += size;
 	message->operation_count++;
 }
 JMessageType
-j_message_mockup_get_type(JMessage const* message)
+j_message_get_type(JMessage const* message)
 {
 	myabort(!message);
 	return message->type;
 }
 guint32
-j_message_mockup_get_count(JMessage const* message)
+j_message_get_count(JMessage const* message)
+{
+	myabort(!message);
+	return message->operation_count;
+}
+
+void
+j_message_set_semantics(JMessage* message, JSemantics* semantics)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	guint32 serialized_semantics = 0;
+
+	g_return_if_fail(message != NULL);
+	g_return_if_fail(semantics != NULL);
+
+#define SERIALIZE_SEMANTICS(type, key)                                              \
+	{                                                                           \
+		gint tmp;                                                           \
+		tmp = j_semantics_get(semantics, J_SEMANTICS_##type);               \
+		if (tmp == J_SEMANTICS_##type##_##key)                              \
+		{                                                                   \
+			serialized_semantics |= J_MESSAGE_SEMANTICS_##type##_##key; \
+		}                                                                   \
+	}
+
+	SERIALIZE_SEMANTICS(ATOMICITY, BATCH)
+	SERIALIZE_SEMANTICS(ATOMICITY, OPERATION)
+	SERIALIZE_SEMANTICS(ATOMICITY, NONE)
+	SERIALIZE_SEMANTICS(CONCURRENCY, OVERLAPPING)
+	SERIALIZE_SEMANTICS(CONCURRENCY, NON_OVERLAPPING)
+	SERIALIZE_SEMANTICS(CONCURRENCY, NONE)
+	SERIALIZE_SEMANTICS(CONSISTENCY, IMMEDIATE)
+	SERIALIZE_SEMANTICS(CONSISTENCY, EVENTUAL)
+	SERIALIZE_SEMANTICS(CONSISTENCY, NONE)
+	SERIALIZE_SEMANTICS(ORDERING, STRICT)
+	SERIALIZE_SEMANTICS(ORDERING, SEMI_RELAXED)
+	SERIALIZE_SEMANTICS(ORDERING, RELAXED)
+	SERIALIZE_SEMANTICS(PERSISTENCY, IMMEDIATE)
+	SERIALIZE_SEMANTICS(PERSISTENCY, EVENTUAL)
+	SERIALIZE_SEMANTICS(PERSISTENCY, NONE)
+	SERIALIZE_SEMANTICS(SAFETY, STORAGE)
+	SERIALIZE_SEMANTICS(SAFETY, NETWORK)
+	SERIALIZE_SEMANTICS(SAFETY, NONE)
+	SERIALIZE_SEMANTICS(SECURITY, STRICT)
+	SERIALIZE_SEMANTICS(SECURITY, NONE)
+
+#undef SERIALIZE_SEMANTICS
+
+	message->semantics = GUINT32_TO_LE(serialized_semantics);
+}
+JSemantics*
+j_message_get_semantics(JMessage* message)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	JSemantics* semantics;
+
+	guint32 serialized_semantics;
+
+	g_return_val_if_fail(message != NULL, NULL);
+
+	serialized_semantics = message->semantics;
+	serialized_semantics = GUINT32_FROM_LE(serialized_semantics);
+
+	// If serialized_semantics is 0, we will end up with the default semantics.
+	semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
+
+#define DESERIALIZE_SEMANTICS(type, key)                                                    \
+	if (serialized_semantics & J_MESSAGE_SEMANTICS_##type##_##key)                      \
+	{                                                                                   \
+		j_semantics_set(semantics, J_SEMANTICS_##type, J_SEMANTICS_##type##_##key); \
+	}
+
+	DESERIALIZE_SEMANTICS(ATOMICITY, BATCH)
+	DESERIALIZE_SEMANTICS(ATOMICITY, OPERATION)
+	DESERIALIZE_SEMANTICS(ATOMICITY, NONE)
+	DESERIALIZE_SEMANTICS(CONCURRENCY, OVERLAPPING)
+	DESERIALIZE_SEMANTICS(CONCURRENCY, NON_OVERLAPPING)
+	DESERIALIZE_SEMANTICS(CONCURRENCY, NONE)
+	DESERIALIZE_SEMANTICS(CONSISTENCY, IMMEDIATE)
+	DESERIALIZE_SEMANTICS(CONSISTENCY, EVENTUAL)
+	DESERIALIZE_SEMANTICS(CONSISTENCY, NONE)
+	DESERIALIZE_SEMANTICS(ORDERING, STRICT)
+	DESERIALIZE_SEMANTICS(ORDERING, SEMI_RELAXED)
+	DESERIALIZE_SEMANTICS(ORDERING, RELAXED)
+	DESERIALIZE_SEMANTICS(PERSISTENCY, IMMEDIATE)
+	DESERIALIZE_SEMANTICS(PERSISTENCY, EVENTUAL)
+	DESERIALIZE_SEMANTICS(PERSISTENCY, NONE)
+	DESERIALIZE_SEMANTICS(SAFETY, STORAGE)
+	DESERIALIZE_SEMANTICS(SAFETY, NETWORK)
+	DESERIALIZE_SEMANTICS(SAFETY, NONE)
+	DESERIALIZE_SEMANTICS(SECURITY, STRICT)
+	DESERIALIZE_SEMANTICS(SECURITY, NONE)
+
+#undef DESERIALIZE_SEMANTICS
+
+	return semantics;
+}
+
+gboolean
+j_message_read(JMessage* message, GInputStream* stream)
 {
 	g_critical("mockup not implemented%d", 0);
 	abort();
 }
 gboolean
-j_message_mockup_read(JMessage* message, GInputStream* stream)
+j_message_write(JMessage* message, GOutputStream* stream)
 {
-	g_critical("mockup not implemented%d", 0);
-	abort();
-}
-gboolean
-j_message_mockup_write(JMessage* message, GOutputStream* stream)
-{
-	g_critical("mockup not implemented%d", 0);
+	g_critical("mockup not implemented%d", 1);
 	abort();
 }
 
 void
-j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size)
+j_message_add_send(JMessage* message, gconstpointer data, guint64 size)
 {
-	g_critical("mockup not implemented%d", 0);
+	g_critical("mockup not implemented%d", 2);
 	abort();
 }
 
 #pragma GCC diagnostic pop
+
+#endif
