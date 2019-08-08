@@ -51,7 +51,6 @@ struct JTrace;
 typedef struct JTrace JTrace;
 
 void j_trace_init (gchar const*);
-void j_trace_flush (const char*);
 void j_trace_fini (void);
 
 JTrace* j_trace_enter (gchar const*, gchar const*, ...) G_GNUC_PRINTF(2, 3);

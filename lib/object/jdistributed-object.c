@@ -486,7 +486,7 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 
 	JBackend* object_backend;
 	g_autoptr(JListIterator) it = NULL;
-	JMessage** messages = NULL;
+	g_autofree JMessage** messages = NULL;
 	gchar const* namespace = NULL;
 	gsize namespace_len = 0;
 	guint32 server_count = 0;
@@ -591,7 +591,7 @@ j_distributed_object_delete_exec (JList* operations, JSemantics* semantics)
 
 	JBackend* object_backend;
 	g_autoptr(JListIterator) it = NULL;
-	JMessage** messages = NULL;
+	g_autofree JMessage** messages = NULL;
 	gchar const* namespace = NULL;
 	gsize namespace_len = 0;
 	guint32 server_count = 0;
@@ -687,9 +687,9 @@ j_distributed_object_read_exec (JList* operations, JSemantics* semantics)
 	gboolean ret = FALSE;
 
 	JBackend* object_backend;
-	JList** br_lists = NULL;
+	g_autofree JList** br_lists = NULL;
 	g_autoptr(JListIterator) it = NULL;
-	JMessage** messages = NULL;
+	g_autofree JMessage** messages = NULL;
 	JDistributedObject* object = NULL;
 	gpointer object_handle;
 	gsize name_len = 0;
@@ -861,9 +861,9 @@ j_distributed_object_write_exec (JList* operations, JSemantics* semantics)
 	gboolean ret = FALSE;
 
 	JBackend* object_backend;
-	JList** bw_lists = NULL;
+	g_autofree JList** bw_lists = NULL;
 	g_autoptr(JListIterator) it = NULL;
-	JMessage** messages = NULL;
+	g_autofree JMessage** messages = NULL;
 	JDistributedObject* object = NULL;
 	gpointer object_handle;
 	gsize name_len = 0;
@@ -1037,7 +1037,7 @@ j_distributed_object_status_exec (JList* operations, JSemantics* semantics)
 
 	JBackend* object_backend;
 	g_autoptr(JListIterator) it = NULL;
-	JMessage** messages = NULL;
+	g_autofree JMessage** messages = NULL;
 	gchar const* namespace = NULL;
 	gsize namespace_len = 0;
 	guint32 server_count = 0;

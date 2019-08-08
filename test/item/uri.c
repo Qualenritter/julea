@@ -25,17 +25,18 @@
 
 #include "test.h"
 
-static void
-test_uri_new_free(void)
+static
+void
+test_uri_new_free (void)
 {
 	g_autoptr(JURI) uri = NULL;
 
 	uri = j_uri_new("julea://JULEA");
-	(void)uri;
 }
 
-static void
-test_uri_valid(void)
+static
+void
+test_uri_valid (void)
 {
 	JURI* uri;
 
@@ -65,8 +66,9 @@ test_uri_valid(void)
 	j_uri_free(uri);
 }
 
-static void
-test_uri_invalid(void)
+static
+void
+test_uri_invalid (void)
 {
 	JURI* uri;
 
@@ -95,8 +97,9 @@ test_uri_invalid(void)
 	g_assert(uri == NULL);
 }
 
-static void
-test_uri_create_delete(void)
+static
+void
+test_uri_create_delete (void)
 {
 	JURI* uri;
 	gboolean ret;
@@ -121,8 +124,9 @@ test_uri_create_delete(void)
 	j_uri_free(uri);
 }
 
-static void
-test_uri_get(void)
+static
+void
+test_uri_get (void)
 {
 	JURI* uri;
 	gboolean ret;
@@ -138,7 +142,7 @@ test_uri_get(void)
 }
 
 void
-test_uri(void)
+test_uri (void)
 {
 	g_test_add_func("/item/uri/new_free", test_uri_new_free);
 	g_test_add_func("/item/uri/valid", test_uri_valid);

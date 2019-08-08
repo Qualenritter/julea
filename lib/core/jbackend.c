@@ -38,19 +38,20 @@
  **/
 
 GQuark
-j_backend_db_error_quark(void)
+j_backend_db_error_quark (void)
 {
 	return g_quark_from_static_string("j-backend-db-error-quark");
 }
 
 GQuark
-j_backend_sql_error_quark(void)
+j_backend_sql_error_quark (void)
 {
 	return g_quark_from_static_string("j-sql-error-quark");
 }
 
-static GModule*
-j_backend_load(gchar const* name, JBackendComponent component, JBackendType type, JBackend** backend)
+static
+GModule*
+j_backend_load (gchar const* name, JBackendComponent component, JBackendType type, JBackend** backend)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -663,7 +664,7 @@ j_backend_db_fini (JBackend* backend)
 }
 
 gboolean
-j_backend_db_batch_start (JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch, GError** error)
+j_backend_db_batch_start (JBackend* backend, gchar const* namespace, JSemantics* semantics, gpointer* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -685,7 +686,7 @@ j_backend_db_batch_start (JBackend* backend, gchar const* namespace, JSemanticsS
 }
 
 gboolean
-j_backend_db_batch_execute(JBackend* backend, gpointer batch, GError** error)
+j_backend_db_batch_execute (JBackend* backend, gpointer batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
