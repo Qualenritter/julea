@@ -549,7 +549,7 @@ benchmark_db_schema(gdouble _target_time, guint _n,guint _scale_factor)
 
 	j_trace_enter(G_STRFUNC, "(n=%d)", n);
 	target_time = _target_time;
-	if (n * scale_factor < 500)
+	if (n < 500)
 	{
 		//more than 500 fields in a schema is not supported by backend
 		//add n fields to a schema

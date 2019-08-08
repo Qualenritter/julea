@@ -699,7 +699,7 @@ scale_factor=_scale_factor;
 		sprintf(testname, "/db/%d/entry/free", n);
 		j_benchmark_run(testname, benchmark_db_entry_free);
 	}
-	if (n * scale_factor < 500)
+	if (n < 500)
 	{
 		//more than 500 fields in a schema is not supported by backend - since entrys build on top of schema, entry does not support more than 500 fields too
 		// j_db_entry_set_field n variables

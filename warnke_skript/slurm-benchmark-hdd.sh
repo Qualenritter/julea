@@ -16,29 +16,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-scale=100
-tmpdir=$(mktemp -d)
-thepath=$PWD
-name="${hostname}-$(date +%d-%m-%y)"
-builddir="gcc-benchmark"
-
-#SBATCH -J ${name}
-#SBATCH --output=${thepath}/benchmark_values/${name}-slurm.out
+#SBATCH -J benchmark
 #SBATCH --partition=west
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 
+scale=1000
+thepath=$PWD
+name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
+builddir="gcc-benchmark"
+tmpdir=$(mktemp -d)
+
+
+
+
+echo $scale
+echo $tmpdir
+echo $thepath
+echo $name
+echo $builddir
+
 ${thepath}/build-${builddir}/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
   --db-servers="$(hostname)" \
-  --object-backend=posix --object-component=client --object-path="${tmpdir}/client-object${i}" \
-  --kv-backend=sqlite --kv-component=client --kv-path="${tmpdir}/client-kv${i}" \
-  --db-backend=sqlite --db-component=client --db-path="${tmpdir}/client-db${i}"
+  --object-backend=posix --object-component=server --object-path="${tmpdir}/server-object" \
+  --kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv" \
+  --db-backend=sqlite --db-component=server --db-path="${tmpdir}/server-db"
 
-mv ~/.config/julea/julea ~/.config/julea/julea-${name}
+mv ${HOME}/.config/julea/julea ${HOME}/.config/julea/julea-${name}
+
+cat ${HOME}/.config/julea/julea-${name}
 
 export LD_LIBRARY_PATH=${thepath}/prefix-${builddir}/lib/:$LD_LIBRARY_PATH
-export JULEA_CONFIG=~/.config/julea/julea-${name}
+export JULEA_CONFIG=${HOME}/.config/julea/julea-${name}
 export J_BENCHMARK_SCALE=${scale}
 export J_BENCHMARK_TARGET=30;
 
