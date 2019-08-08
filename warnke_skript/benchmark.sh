@@ -31,7 +31,6 @@ rm -rf ${mountpoint}/julea/*
 (
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	export J_TRACE=debug
 	./build-gcc-benchmark/tools/julea-config --user \
 		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
 		  --db-servers="$(hostname)" \
@@ -43,7 +42,6 @@ mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 (
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	export J_TRACE=debug
 	./build-gcc-benchmark/tools/julea-config --user \
 		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
 		  --db-servers="$(hostname)" \
@@ -69,8 +67,7 @@ sleep 2
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
-	export J_BENCHMARK_TARGET=1
-	export J_TRACE=sqltimer
+	export J_BENCHMARK_TARGET=0.001
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x1 2>&1
@@ -78,7 +75,6 @@ sleep 2
 	if [ $r -ne 0 ]; then
 		exit 1
 	fi
-	cat ../../log/x1 | grep -e CREATE -e INSERT | sed "s/.*INSERT INTO/INSERT INTO/g" | sed "s/.*CREATE TABLE/CREATE TABLE/g" > ../../log/x1.sql
 )
 r=$?
 if [ $r -ne 0 ]; then
@@ -95,8 +91,7 @@ sleep 2
 	export ASAN_OPTIONS=fast_unwind_on_malloc=0
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
-	export J_BENCHMARK_TARGET=1
-	export J_TRACE=sqltimer
+	export J_BENCHMARK_TARGET=0.001
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../log/x2 2>&1
@@ -104,7 +99,6 @@ sleep 2
 	if [ $r -ne 0 ]; then
 		exit 1
 	fi
-	cat ../../log/x2 | grep -e CREATE -e INSERT | sed "s/.*INSERT INTO/INSERT INTO/g" | sed "s/.*CREATE TABLE/CREATE TABLE/g" > ../../log/x2.sql
 )
 r=$?
 if [ $r -ne 0 ]; then
@@ -117,10 +111,8 @@ sleep 2
 	cd benchmark_values/debug
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	export J_BENCHMARK_TARGET=1
-	export J_TRACE=sqltimer
+	export J_BENCHMARK_TARGET=0.001
 	../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x3
-	cat ../../log/x3 | grep -e CREATE -e INSERT | sed "s/.*INSERT INTO/INSERT INTO/g" | sed "s/.*CREATE TABLE/CREATE TABLE/g" > ../../log/x3.sql
 )
 sleep 2
 (

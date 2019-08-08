@@ -648,7 +648,7 @@ j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemantics*s
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	{
-		J_TRACE("backend_batch_start", "%s, %d, %p, %p", namespace, semantics, (gpointer)batch, (gpointer)error);
+		J_TRACE("backend_batch_start", "%s, %p, %p, %p", namespace, (gpointer)semantics, (gpointer)batch, (gpointer)error);
 		ret = backend->db.backend_batch_start(namespace, semantics, batch, error);
 	}
 

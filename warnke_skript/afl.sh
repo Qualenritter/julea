@@ -113,7 +113,6 @@ function julea_run(){
 			echo "cat $a | ./build-${name}/test-afl/${programname}"
 			      cat $a | ./build-${name}/test-afl/${programname}
 		done
-		export J_TRACE=debug
 		if [ "${asan}" != "asan" ]
 		then
 			#asan not first in library list - first ist afl - all asan tests will fail

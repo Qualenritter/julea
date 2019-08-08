@@ -31,12 +31,13 @@
 #include <julea.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
-#include <jtrace-internal.h>
 #include <core/jbson-wrapper.h>
 
 JDBIterator*
 j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	guint ret;
 	guint ret2 = FALSE;
 	JBatch* batch;
@@ -44,7 +45,6 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 
 	g_return_val_if_fail(schema != NULL, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
 	if (G_UNLIKELY(!iterator->schema))
@@ -76,7 +76,6 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 		goto _error;
 	}
 	iterator->valid = TRUE;
-	j_trace_leave(G_STRFUNC);
 	return iterator;
 _error:
 	if (ret2)
@@ -87,24 +86,24 @@ _error:
 		}
 	}
 	j_db_iterator_unref(iterator);
-	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 JDBIterator*
 j_db_iterator_ref(JDBIterator* iterator, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(iterator != NULL, FALSE);
 	(void)error;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	g_atomic_int_inc(&iterator->ref_count);
-	j_trace_leave(G_STRFUNC);
 	return iterator;
 }
 void
 j_db_iterator_unref(JDBIterator* iterator)
 {
-	j_trace_enter(G_STRFUNC, NULL);
+J_TRACE_FUNCTION(NULL);
+
 	if (iterator && g_atomic_int_dec_and_test(&iterator->ref_count))
 	{
 		while (iterator->valid)
@@ -119,15 +118,15 @@ j_db_iterator_unref(JDBIterator* iterator)
 		}
 		g_slice_free(JDBIterator, iterator);
 	}
-	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(iterator != NULL, FALSE);
 	g_return_val_if_fail(iterator->valid, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (iterator->bson_valid)
 	{
 		j_bson_destroy(&iterator->bson);
@@ -137,17 +136,17 @@ j_db_iterator_next(JDBIterator* iterator, GError** error)
 		goto _error;
 	}
 	iterator->bson_valid = TRUE;
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	JDBTypeValue val;
 	bson_iter_t iter;
 
@@ -158,7 +157,6 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	g_return_val_if_fail(value != NULL, FALSE);
 	g_return_val_if_fail(length != NULL, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_db_schema_get_field(iterator->schema, name, type, error)))
 	{
 		goto _error;
@@ -219,9 +217,7 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }

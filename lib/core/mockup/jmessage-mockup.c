@@ -123,7 +123,7 @@ j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size);
 static JMessage* server_reply_mockup;
 JMessage*
 _j_message_mockup_new_reply(JMessage* message);
-#include "../../../server/server.c"
+#include "../../../server/server.h"
 JMessage*
 j_message_mockup_new(JMessageType type, gsize size)
 {
@@ -158,16 +158,14 @@ j_message_mockup_new_reply(JMessage* message_input)
 	guint operation_count;
 	gpointer connection = (void*)TRUE;
 	gint ret;
-	JSemantics*semantics ;
 	JBackend* jd_db_backend = j_db_backend();
 	myabort(!message_input);
 	if (message_input->client_side)
 	{
-		semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 		message = _j_message_mockup_new_reply(message_input);
 		message->client_side = FALSE;
 		operation_count = message_input->operation_count;
-		ret = db_server_message_exec(message->type, message, operation_count, jd_db_backend, semantics, connection);
+		ret = jd_handle_message(message,NULL,NULL,0,NULL);
 		if (!ret)
 		{
 			abort();
@@ -176,7 +174,6 @@ j_message_mockup_new_reply(JMessage* message_input)
 		message = _j_message_mockup_new_reply(server_reply_mockup);
 		message->operation_count = server_reply_mockup->operation_count;
 		j_message_mockup_unref(server_reply_mockup);
-		j_semantics_unref(semantics);
 		return message;
 	}
 	else /*avoid infinite loop*/

@@ -32,17 +32,17 @@
 #include <db/jdb-internal.h>
 #include <julea-db.h>
 #include <core/jbson-wrapper.h>
-#include <jtrace-internal.h>
 
 JDBSelector*
 j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	JDBTypeValue val;
 	JDBSelector* selector = NULL;
 
 	g_return_val_if_fail(mode < _J_DB_SELECTOR_MODE_COUNT, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	selector = g_slice_new(JDBSelector);
 	selector->ref_count = 1;
 	selector->mode = mode;
@@ -58,39 +58,38 @@ j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 	{
 		goto _error;
 	}
-	j_trace_leave(G_STRFUNC);
 	return selector;
 _error:
 	j_db_selector_unref(selector);
-	j_trace_leave(G_STRFUNC);
 	return NULL;
 }
 JDBSelector*
 j_db_selector_ref(JDBSelector* selector, GError** error)
-{
+{J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(selector != NULL, FALSE);
 	(void)error;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	g_atomic_int_inc(&selector->ref_count);
-	j_trace_leave(G_STRFUNC);
 	return selector;
 }
 void
 j_db_selector_unref(JDBSelector* selector)
 {
-	j_trace_enter(G_STRFUNC, NULL);
+J_TRACE_FUNCTION(NULL);
+
 	if (selector && g_atomic_int_dec_and_test(&selector->ref_count))
 	{
 		j_db_schema_unref(selector->schema);
 		bson_destroy(&selector->bson);
 		g_slice_free(JDBSelector, selector);
 	}
-	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	char buf[20];
 	bson_t bson;
 	JDBType type;
@@ -99,7 +98,6 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	g_return_val_if_fail(selector != NULL, FALSE);
 	g_return_val_if_fail(operator<_J_DB_SELECTOR_OPERATOR_COUNT, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(selector->bson_count + 1 > 500))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
@@ -163,22 +161,21 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 		goto _error;
 	}
 	selector->bson_count++;
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	char buf[20];
 
 	g_return_val_if_fail(selector != NULL, FALSE);
 	g_return_val_if_fail(sub_selector != NULL, FALSE);
 	g_return_val_if_fail(selector != sub_selector, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!sub_selector->bson_count))
 	{
 		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_EMPTY, "selector must not be emoty");
@@ -195,10 +192,8 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 		goto _error;
 	}
 	selector->bson_count += sub_selector->bson_count;
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 

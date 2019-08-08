@@ -19,7 +19,6 @@ mkdir -p ${basepath}
 	export G_SLICE=always-malloc
 	./build/server/julea-server &
 	server_pid=$!
-	export J_TRACE=debug
 	sleep 0.5s
 	./build/test/julea-test
 	echo "kill ${server_pid}"

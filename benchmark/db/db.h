@@ -32,7 +32,6 @@
 #include "benchmark.h"
 #include <stdlib.h>
 #include <unistd.h>
-#include <jtrace-internal.h>
 
 #ifdef JULEA_DEBUG
 #define ERROR_PARAM &error

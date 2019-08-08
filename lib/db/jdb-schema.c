@@ -32,18 +32,18 @@
 #include <db/jdb-internal.h>
 #include <julea-db.h>
 #include <core/jbson-wrapper.h>
-#include <jtrace-internal.h>
 
 JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	JDBSchema* schema = NULL;
 
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(name != NULL, FALSE);
 	(void)error;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	schema = g_slice_new(JDBSchema);
 	schema->namespace = g_strdup(namespace);
 	schema->name = g_strdup(name);
@@ -54,27 +54,27 @@ j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 	schema->ref_count = 1;
 	schema->server_side = FALSE;
 	bson_init(&schema->bson);
-	j_trace_leave(G_STRFUNC);
 	return schema;
 }
 JDBSchema*
 j_db_schema_ref(JDBSchema* schema, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(schema != NULL, FALSE);
 	(void)error;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	g_atomic_int_inc(&schema->ref_count);
-	j_trace_leave(G_STRFUNC);
 	return schema;
 }
 void
 j_db_schema_unref(JDBSchema* schema)
 {
+J_TRACE_FUNCTION(NULL);
+
 	guint i;
 	JDBSchemaIndex* index;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (schema && g_atomic_int_dec_and_test(&schema->ref_count))
 	{
 		g_free(schema->namespace);
@@ -96,11 +96,12 @@ j_db_schema_unref(JDBSchema* schema)
 		}
 		g_slice_free(JDBSchema, schema);
 	}
-	j_trace_leave(G_STRFUNC);
 }
 gboolean
 j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	JDBTypeValue val;
 	bson_iter_t iter;
 
@@ -109,7 +110,6 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	g_return_val_if_fail(type < _J_DB_TYPE_COUNT, FALSE);
 	g_return_val_if_fail(!schema->server_side, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (!schema->bson_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_init(&schema->bson, error)))
@@ -132,15 +132,15 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 		goto _error;
 	}
 	g_hash_table_insert(schema->variables, g_strdup(name), GINT_TO_POINTER(type));
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	JDBTypeValue val;
 	bson_iter_t iter;
 
@@ -150,7 +150,6 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 	g_return_val_if_fail(g_strcmp0(name, "_index"), FALSE);
 	g_return_val_if_fail(schema->bson_initialized, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
 	{
 		goto _error;
@@ -164,15 +163,15 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 		goto _error;
 	}
 	*type = val.val_uint32;
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 guint32
 j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	bson_iter_t iter;
 	guint count;
 	guint i;
@@ -184,7 +183,6 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	g_return_val_if_fail(types != NULL, FALSE);
 	g_return_val_if_fail(schema->bson_initialized, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	*names = NULL;
 	*types = NULL;
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
@@ -219,17 +217,17 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	}
 	(*names)[i] = NULL;
 	(*types)[i] = _J_DB_TYPE_COUNT;
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	/*TODO free names*/
 	/*TODO free types*/
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	JDBSchemaIndex index;
 	JDBSchemaIndex* index_tmp;
 	guint i;
@@ -244,7 +242,6 @@ j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 	g_return_val_if_fail(*names != NULL, FALSE);
 	g_return_val_if_fail(!schema->server_side, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	index.variables = NULL;
 	if (!schema->bson_index_initialized)
 	{
@@ -320,25 +317,24 @@ _not_equal:
 		goto _error;
 	}
 	g_array_append_val(schema->index, index);
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
 	if (index.variables)
 	{
 		g_hash_table_unref(index.variables);
 	}
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(!schema->server_side, FALSE);
 	g_return_val_if_fail(schema->bson_initialized, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (schema->bson_index_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_append_array(&schema->bson, "_index", &schema->bson_index, error)))
@@ -351,54 +347,52 @@ j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 	{
 		goto _error;
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(!schema->server_side, FALSE);
 	g_return_val_if_fail(!schema->bson_initialized, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	schema->server_side = TRUE;
 	schema->bson_initialized = TRUE;
 	if (G_UNLIKELY(!j_db_internal_schema_get(schema->namespace, schema->name, &schema->bson, batch, error)))
 	{
 		goto _error;
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 gboolean
 j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (G_UNLIKELY(!j_db_internal_schema_delete(schema->namespace, schema->name, batch, error)))
 	{
 		goto _error;
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 
 gboolean
 j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GError** error)
 {
+J_TRACE_FUNCTION(NULL);
+
 	guint schema1_count;
 	guint schema2_count;
 	bson_iter_t iter1;
@@ -412,7 +406,6 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 	g_return_val_if_fail(schema1 != NULL, FALSE);
 	g_return_val_if_fail(schema2 != NULL, FALSE);
 
-	j_trace_enter(G_STRFUNC, NULL);
 	if (schema1 == schema2)
 	{
 		*equal = TRUE;
@@ -486,9 +479,7 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 			*equal = *equal && schema1_count == schema2_count;
 		}
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
