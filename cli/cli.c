@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 guint
-j_cmd_arguments_length(gchar const** arguments)
+j_cmd_arguments_length (gchar const** arguments)
 {
 	guint i = 0;
 
@@ -37,7 +37,7 @@ j_cmd_arguments_length(gchar const** arguments)
 }
 
 void
-j_cmd_usage(void)
+j_cmd_usage (void)
 {
 	g_print("Usage:\n");
 	g_print("  %s COMMAND ARGUMENTS\n", g_get_prgname());
@@ -60,7 +60,7 @@ j_cmd_usage(void)
 }
 
 gboolean
-j_cmd_error_last(JURI* uri)
+j_cmd_error_last (JURI* uri)
 {
 	gboolean ret = FALSE;
 
@@ -77,12 +77,12 @@ j_cmd_error_last(JURI* uri)
 }
 
 int
-main(int argc, char** argv)
+main (int argc, char** argv)
 {
 	gboolean success;
 	g_autofree gchar* basename = NULL;
 	gchar const* command = NULL;
-	gchar const** arguments = NULL;
+	g_autofree gchar const** arguments = NULL;
 	gint i;
 
 	setlocale(LC_ALL, "");
@@ -136,6 +136,6 @@ main(int argc, char** argv)
 		success = FALSE;
 		j_cmd_usage();
 	}
-	g_free(arguments);
+
 	return (success) ? 0 : 1;
 }
