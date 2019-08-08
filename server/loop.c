@@ -587,6 +587,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 		if (!message_matched)
 		{
 			memcpy(&backend_operation, &j_backend_operation_db_query, sizeof(JBackendOperation));
+			message_matched = TRUE;
 		}
 		{
 			g_autoptr(JMessage) reply = NULL;

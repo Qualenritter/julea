@@ -35,14 +35,14 @@
 #include <core/jmessage.h>
 #include "../../../test-afl/afl.h"
 #include "../../../server/loop.c"
-#define myabort(val)                                         \
-	do                                                   \
-	{                                                    \
-		if (val)                                     \
-		{                                            \
-			g_critical("assertion failed%d", 0); \
-			abort();                             \
-		}                                            \
+#define myabort(val)                                                               \
+	do                                                                         \
+	{                                                                          \
+		if (val)                                                           \
+		{                                                                  \
+			g_critical("assertion failed %s %d", G_STRFUNC, __LINE__); \
+			abort();                                                   \
+		}                                                                  \
 	} while (0)
 #if (JULEA_TEST_MOCKUP == 1)
 
@@ -111,20 +111,26 @@ _j_message_new_reply(JMessage* message)
 	j_message_append_n(reply, message->data->data, message->data->len);
 	reply->current = (gchar*)reply->data->data;
 	reply->semantics = message->semantics;
+	reply->operation_count = message->operation_count;
+	reply->type = message->type;
 	return reply;
 }
 JMessage*
 j_message_new_reply(JMessage* message_input)
 {
 	JMessage* message;
-	gint ret;
 	myabort(!message_input);
+
+	if (!jd_db_backend)
+	{
+		jd_db_backend = j_db_backend();
+	}
+
 	if (message_input->client_side)
 	{
 		message = _j_message_new_reply(message_input);
 		message->client_side = FALSE;
-		ret = jd_handle_message(message, NULL, NULL, 0, NULL);
-		if (!ret)
+		if (!jd_handle_message(message, (void*)1, NULL, 0, NULL))
 		{
 			abort();
 		}
@@ -184,7 +190,7 @@ j_message_append_n(JMessage* message, gconstpointer data, gsize size)
 gboolean
 j_message_append_string(JMessage* message, gchar const* str)
 {
-	j_message_append_n(message, str, strlen(str) + 1);
+	return j_message_append_n(message, str, strlen(str) + 1);
 }
 gchar
 j_message_get_1(JMessage* message)
