@@ -34,7 +34,7 @@
 #include <jbatch.h>
 #include <jbatch-internal.h>
 #include <joperation-internal.h>
-#include <jtrace-internal.h>
+#include <jtrace.h>
 
 #include <string.h>
 
@@ -96,10 +96,10 @@ static
 gpointer
 j_operation_cache_thread (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JOperationCache* cache = data;
 	JCachedBatch* cached_batch;
-
-	j_trace_enter(G_STRFUNC, NULL);
 
 	while ((cached_batch = g_async_queue_pop(cache->queue)) != NULL)
 	{
@@ -128,8 +128,6 @@ j_operation_cache_thread (gpointer data)
 		g_mutex_unlock(cache->mutex);
 	}
 
-	j_trace_leave(G_STRFUNC);
-
 	return NULL;
 }
 
@@ -137,11 +135,11 @@ static
 gboolean
 j_operation_cache_test (JOperation* operation)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gboolean ret = FALSE;
 
 	(void)operation;
-
-	j_trace_enter(G_STRFUNC, NULL);
 
 	/* FIXME
 	switch (operation->type)
@@ -167,8 +165,6 @@ j_operation_cache_test (JOperation* operation)
 	}
 	*/
 
-	j_trace_leave(G_STRFUNC);
-
 	return ret;
 }
 
@@ -176,11 +172,11 @@ static
 guint64
 j_operation_cache_get_required_size (JOperation* operation)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	guint64 ret = 0;
 
 	(void)operation;
-
-	j_trace_enter(G_STRFUNC, NULL);
 
 	/* FIXME
 	switch (operation->type)
@@ -206,19 +202,17 @@ j_operation_cache_get_required_size (JOperation* operation)
 	}
 	*/
 
-	j_trace_leave(G_STRFUNC);
-
 	return ret;
 }
 
 void
 j_operation_cache_init (void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JOperationCache* cache;
 
 	g_return_if_fail(j_operation_cache == NULL);
-
-	j_trace_enter(G_STRFUNC, NULL);
 
 	cache = g_slice_new(JOperationCache);
 	cache->cache = j_cache_new(50 * 1024 * 1024);
@@ -230,18 +224,16 @@ j_operation_cache_init (void)
 	g_cond_init(cache->cond);
 
 	g_atomic_pointer_set(&j_operation_cache, cache);
-
-	j_trace_leave(G_STRFUNC);
 }
 
 void
 j_operation_cache_fini (void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JOperationCache* cache;
 
 	g_return_if_fail(j_operation_cache != NULL);
-
-	j_trace_enter(G_STRFUNC, NULL);
 
 	j_operation_cache_flush();
 
@@ -259,16 +251,14 @@ j_operation_cache_fini (void)
 	g_mutex_clear(cache->mutex);
 
 	g_slice_free(JOperationCache, cache);
-
-	j_trace_leave(G_STRFUNC);
 }
 
 gboolean
 j_operation_cache_flush (void)
 {
-	gboolean ret = TRUE;
+	J_TRACE_FUNCTION(NULL);
 
-	j_trace_enter(G_STRFUNC, NULL);
+	gboolean ret = TRUE;
 
 	g_mutex_lock(j_operation_cache->mutex);
 
@@ -279,14 +269,14 @@ j_operation_cache_flush (void)
 
 	g_mutex_unlock(j_operation_cache->mutex);
 
-	j_trace_leave(G_STRFUNC);
-
 	return ret;
 }
 
 gboolean
 j_operation_cache_add (JBatch* batch)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gboolean ret = TRUE;
 	JCachedBatch* cached_batch;
 	JList* operations;
@@ -295,8 +285,6 @@ j_operation_cache_add (JBatch* batch)
 	gchar* data;
 	gpointer buffer;
 	guint64 required_size = 0;
-
-	j_trace_enter(G_STRFUNC, NULL);
 
 	operations = j_batch_get_operations(batch);
 	iterator = j_list_iterator_new(operations);
@@ -326,7 +314,7 @@ j_operation_cache_add (JBatch* batch)
 
 	if (!ret)
 	{
-		goto end;
+		return FALSE;
 	}
 
 	data = buffer;
@@ -355,7 +343,7 @@ j_operation_cache_add (JBatch* batch)
 
 	if (!ret)
 	{
-		goto end;
+		return FALSE;
 	}
 
 	g_mutex_lock(j_operation_cache->mutex);
@@ -367,9 +355,6 @@ j_operation_cache_add (JBatch* batch)
 	cached_batch->data = buffer;
 
 	g_async_queue_push(j_operation_cache->queue, cached_batch);
-
-end:
-	j_trace_leave(G_STRFUNC);
 
 	return ret;
 }

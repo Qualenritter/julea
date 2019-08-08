@@ -28,7 +28,7 @@
 
 #include <jbackend-operation.h>
 
-#include <jtrace-internal.h>
+#include <jtrace.h>
 
 /**
  * \defgroup JBackendOperation Backend Operation
@@ -41,36 +41,48 @@
 gboolean
 j_backend_operation_unwrap_db_schema_create(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_schema_create(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
 gboolean
 j_backend_operation_unwrap_db_schema_get(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_schema_get(backend, batch, data->in_param[1].ptr, data->out_param[0].ptr, data->out_param[1].ptr);
 }
 
 gboolean
 j_backend_operation_unwrap_db_schema_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_schema_delete(backend, batch, data->in_param[1].ptr, data->out_param[0].ptr);
 }
 
 gboolean
 j_backend_operation_unwrap_db_insert(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_insert(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
 gboolean
 j_backend_operation_unwrap_db_update(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_update(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->in_param[3].ptr, data->out_param[0].ptr);
 }
 
 gboolean
 j_backend_operation_unwrap_db_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_delete(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 
@@ -78,6 +90,8 @@ j_backend_operation_unwrap_db_delete(JBackend* backend, gpointer batch, JBackend
 gboolean
 j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	GError** error;
 	gboolean ret;
 	gpointer iter;
@@ -87,7 +101,6 @@ j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendO
 	bson_t* bson = data->out_param[0].ptr;
 	bson_t* tmp;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	bson_init(bson);
 	ret = j_backend_db_query(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, &iter, data->out_param[1].ptr);
 	if (!ret)
@@ -113,16 +126,16 @@ j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendO
 		g_error_free(*error);
 		*error = NULL;
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 _error:
-	j_trace_leave(G_STRFUNC);
 	return FALSE;
 }
 
 gboolean
 j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JBackendOperationParam* element;
 	guint i;
 	guint len = 0;
@@ -131,7 +144,6 @@ j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, 
 	guint tmp;
 	GError** error;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)
 	{
 		len += 4;
@@ -233,7 +245,6 @@ j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, 
 			}
 		}
 	}
-	j_trace_leave(G_STRFUNC);
 	return TRUE;
 }
 
@@ -244,6 +255,8 @@ j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, 
 gboolean
 j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JBackendOperationParam* element;
 	guint i;
 	guint len;
@@ -254,7 +267,6 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 	GError** error;
 	gboolean ret = TRUE;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
@@ -312,7 +324,6 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 			}
 		}
 	}
-	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 
@@ -323,6 +334,8 @@ j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data
 gboolean
 j_backend_operation_from_message_static(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JBackendOperationParam* element;
 	guint i;
 	guint len;
@@ -330,7 +343,6 @@ j_backend_operation_from_message_static(JMessage* message, JBackendOperationPara
 	guint error_domain_len;
 	gboolean ret = TRUE;
 
-	j_trace_enter(G_STRFUNC, NULL);
 	for (i = 0; i < arrlen; i++)
 	{
 		len = j_message_get_4(message);
@@ -372,7 +384,6 @@ j_backend_operation_from_message_static(JMessage* message, JBackendOperationPara
 			}
 		}
 	}
-	j_trace_leave(G_STRFUNC);
 	return ret;
 }
 

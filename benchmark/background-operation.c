@@ -61,7 +61,6 @@ benchmark_background_operation_new_ref_unref (BenchmarkResult* result)
 	/* FIXME overhead? */
 	while (g_atomic_int_get(&benchmark_background_operation_counter) != (gint)n)
 	{
-		;
 	}
 
 	elapsed = j_benchmark_timer_elapsed();
