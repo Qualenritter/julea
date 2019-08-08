@@ -34,6 +34,7 @@
 #include <db/jdb-internal.h>
 #include <core/jmessage.h>
 #include "../../../test-afl/afl.h"
+#include "../../../server/loop.c"
 #if (JULEA_TEST_MOCKUP == 0)
 #define j_message_new j_message_mockup_new
 #define j_message_new_reply j_message_mockup_new_reply
@@ -123,7 +124,6 @@ j_message_mockup_add_send(JMessage* message, gconstpointer data, guint64 size);
 static JMessage* server_reply_mockup;
 JMessage*
 _j_message_mockup_new_reply(JMessage* message);
-#include "../../../server/server.h"
 JMessage*
 j_message_mockup_new(JMessageType type, gsize size)
 {
@@ -155,16 +155,12 @@ j_message_mockup_new_reply(JMessage* message_input)
 {
 #if (JULEA_TEST_MOCKUP == 1)
 	JMessage* message;
-	guint operation_count;
-	gpointer connection = (void*)TRUE;
 	gint ret;
-	JBackend* jd_db_backend = j_db_backend();
 	myabort(!message_input);
 	if (message_input->client_side)
 	{
 		message = _j_message_mockup_new_reply(message_input);
 		message->client_side = FALSE;
-		operation_count = message_input->operation_count;
 		ret = jd_handle_message(message,NULL,NULL,0,NULL);
 		if (!ret)
 		{
