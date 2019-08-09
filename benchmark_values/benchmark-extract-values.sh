@@ -16,7 +16,7 @@ n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 rm *.csv tmp *.plot *.pdf
 for f in ${folders}
 do
-	for x in $(cat "$f/benchmark_values" | sed "s-.*/db/--g" | sed "s-:.*--g" | sed "s-^[^/]*/--g" | sort -n | uniq)
+	for x in $(cat "$f/benchmark_values" | grep seconds | sed "s-.*/db/--g" | sed "s-:.*--g" | sed "s-^[^/]*/--g" | sort -n | uniq)
 	do
 		echo $x >> tmp
 	done
