@@ -1,0 +1,483 @@
+/*
+ * JULEA - Flexible storage framework
+ * Copyright (C) 2019 Benjamin Warnke
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file
+ **/
+
+#include <julea-config.h>
+#include <julea.h>
+#include <julea-db.h>
+#include <julea-object.h>
+#include <glib.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+
+#define _GNU_SOURCE
+
+#define JULEA_DB 530
+
+#ifdef JULEA_HDF_COMPILES
+
+static herr_t
+H5VL_julea_db_init(hid_t vipl_id)
+{
+        return 0;
+}
+static herr_t
+H5VL_julea_db_term(void)
+{
+        return 0;
+}
+static void*
+H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name,
+	hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id,
+	hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name,
+	hid_t aapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_attr_read(void* attr, hid_t mem_type_id, void* buf, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_attr_write(void* attr, hid_t mem_type_id, const void* buf, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL_attr_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_attr_close(void* attr, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
+	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,
+	hid_t dapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
+	hid_t dapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_dataset_read(void* dset, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
+	hid_t xfer_plist_id, void* buf, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_dataset_write(void* dset, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
+	hid_t xfer_plist_id, const void* buf, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_dataset_get(void* obj, H5VL_dataset_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_dataset_specific(void* obj, H5VL_dataset_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_dataset_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_dataset_close(void* dset, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_datatype_commit(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t type_id,
+	hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_datatype_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
+	hid_t tapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}static
+    herr_t H5VL_julea_db_datatype_get(void *obj, H5VL_datatype_get_t get_type, hid_t dxpl_id, void **req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_datatype_specific(void* obj, H5VL_datatype_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_datatype_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_datatype_close(void* dt, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
+	hid_t fapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_file_get(void* obj, H5VL_file_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_file_specific(void* obj, H5VL_file_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_file_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_file_close(void* file, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_group_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
+	hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
+	hid_t gapl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_group_get(void* obj, H5VL_group_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_group_specific(void* obj, H5VL_group_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_group_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_group_close(void* grp, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_link_create(H5VL_link_create_type_t create_type, void* obj, const H5VL_loc_params_t* loc_params,
+	hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void** req, va_list argumenmts)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_link_copy(void* src_obj, const H5VL_loc_params_t* loc_params1,
+	void* dst_obj, const H5VL_loc_params_t* loc_params2,
+	hid_t lcpl, hid_t lapl, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_link_move(void* src_obj, const H5VL_loc_params_t* loc_params1,
+	void* dst_obj, const H5VL_loc_params_t* loc_params2,
+	hid_t lcpl, hid_t lapl, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_link_get(void* obj, const H5VL_loc_params_t* loc_params, H5VL_link_get_t get_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_link_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL_link_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_link_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static void*
+H5VL_julea_db_object_open(void* obj, const H5VL_loc_params_t* loc_params, H5I_type_t* opened_type,
+	hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_object_copy(void* src_obj, const H5VL_loc_params_t* loc_params1, const char* src_name,
+	void* dst_obj, const H5VL_loc_params_t* loc_params2, const char* dst_name,
+	hid_t ocpypl_id, hid_t lcpl_id, hid_t dxpl_id, void** req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_object_get(void* obj, const H5VL_loc_params_t* loc_params, H5VL_object_get_t get_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_object_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL_object_specific_t specific_type,
+	hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_object_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_request_wait(void* req, uint64_t timeout, H5ES_status_t* status)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_request_notify(void* req, H5VL_request_notify_t cb, void* ctx)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_request_cancel(void* req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_request_specific(void* req, H5VL_request_specific_t specific_type, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_request_optional(void* req, va_list arguments)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+static herr_t
+H5VL_julea_db_request_free(void* req)
+{
+	g_critical("NOT implemented !!");
+	abort();
+}
+
+/**
+ * The class providing the functions to HDF5
+ **/
+static const H5VL_class_t H5VL_julea_db_g = {
+	.version = 0,
+	.value = JULEA_DB,
+	.name = "julea",
+	.cap_flags = 0,
+	.initialize = H5VL_julea_db_init,
+	.terminate = H5VL_julea_db_term,
+	.info_cls = {
+		.size = 0,
+		.copy = NULL,
+		.cmp = NULL,
+		.free = NULL,
+		.to_str = NULL,
+		.from_str = NULL,
+	},
+	.wrap_cls = {
+		.get_object = NULL,
+		.get_wrap_ctx = NULL,
+		.wrap_object = NULL,
+		.unwrap_object = NULL,
+		.free_wrap_ctx = NULL,
+	},
+	.attr_cls = {
+		.create = H5VL_julea_db_attr_create,
+		.open = H5VL_julea_db_attr_open,
+		.read = H5VL_julea_db_attr_read,
+		.write = H5VL_julea_db_attr_write,
+		.get = H5VL_julea_db_attr_get,
+		.specific = H5VL_julea_db_attr_specific,
+		.optional = H5VL_julea_db_attr_optional,
+		.close = H5VL_julea_db_attr_close,
+	},
+	.dataset_cls = {
+		.create = H5VL_julea_db_dataset_create,
+		.open = H5VL_julea_db_dataset_open,
+		.read = H5VL_julea_db_dataset_read,
+		.write = H5VL_julea_db_dataset_write,
+		.get = H5VL_julea_db_dataset_get,
+		.specific = H5VL_julea_db_dataset_specific,
+		.optional = H5VL_julea_db_dataset_optional,
+		.close = H5VL_julea_db_dataset_close,
+	},
+	.datatype_cls = {
+		.commit = H5VL_julea_db_datatype_commit,
+		.open = H5VL_julea_db_datatype_open,
+		.get = H5VL_julea_db_datatype_get,
+		.specific = H5VL_julea_db_datatype_specific,
+		.optional = H5VL_julea_db_datatype_optional,
+		.close = H5VL_julea_db_datatype_close,
+	},
+	.file_cls = {
+		.create = H5VL_julea_db_file_create,
+		.open = H5VL_julea_db_file_open,
+		.get = H5VL_julea_db_file_get,
+		.specific = H5VL_julea_db_file_specific,
+		.optional = H5VL_julea_db_file_optional,
+		.close = H5VL_julea_db_file_close,
+	},
+	.group_cls = {
+		.create = H5VL_julea_db_group_create,
+		.open = H5VL_julea_db_group_open,
+		.get = H5VL_julea_db_group_get,
+		.specific = H5VL_julea_db_group_specific,
+		.optional = H5VL_julea_db_group_optional,
+		.close = H5VL_julea_db_group_close,
+	},
+	.link_cls = {
+		.create = H5VL_julea_db_link_create,
+		.copy = H5VL_julea_db_link_copy,
+		.move = H5VL_julea_db_link_move,
+		.get = H5VL_julea_db_link_get,
+		.specific = H5VL_julea_db_link_specific,
+		.optional = H5VL_julea_db_link_optional,
+	},
+	.object_cls = {
+		.open = H5VL_julea_db_object_open,
+		.copy = H5VL_julea_db_object_copy,
+		.get = H5VL_julea_db_object_get,
+		.specific = H5VL_julea_db_object_specific,
+		.optional = H5VL_julea_db_object_optional,
+	},
+	.request_cls = {
+		.wait = H5VL_julea_db_request_wait,
+		.notify = H5VL_julea_db_request_notify,
+		.cancel = H5VL_julea_db_request_cancel,
+		.specific = H5VL_julea_db_request_specific,
+		.optional = H5VL_julea_db_request_optional,
+		.free = H5VL_julea_db_request_free,
+	},
+	.optional = NULL
+};
+#endif
