@@ -85,7 +85,7 @@ static void* H5VL_julea_kv_deserialize_space (const bson_t*);
 static void H5VL_julea_kv_deserialize_dataset(const bson_t*, JHD_t*, size_t*);
 static void H5VL_julea_kv_deserialize_size(const bson_t*, size_t*);
 
-char* create_path(const char*, char*);
+static char* create_path(const char*, char*);
 
 /**
  * Initializes the plugin

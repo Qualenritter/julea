@@ -225,7 +225,7 @@ static
 void*
 H5VL_julea_dataset_create (void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id, hid_t dapl_id, hid_t dxpl_id, void** req)
 {
-	return H5VL_julea_kv_dataset_create(obj,loc_params,name,lcpl_id,type_id.space_id,dcpl_id,dapl_id,dxpl_id,req);
+	return H5VL_julea_kv_dataset_create(obj,loc_params,name,lcpl_id,type_id,space_id,dcpl_id,dapl_id,dxpl_id,req);
 }
 
 /**

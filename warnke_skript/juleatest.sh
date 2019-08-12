@@ -1,7 +1,7 @@
 #!/bin/bash
 ./warnke_skript/kill.sh
 rm -rf build
-./waf.sh configure --debug
+./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 ./waf.sh install
 basepath="/mnt2/juleatest"
