@@ -80,7 +80,9 @@ H5VL_julea_db_object_new(JHDF5ObjectType type)
 
 	g_return_val_if_fail(type < _J_HDF5_OBJECT_TYPE_COUNT, NULL);
 
-	object = g_new(JHDF5Object_t, 1);
+	object = g_new0(JHDF5Object_t, 1);
+	object->backend_id = NULL;
+	object->backend_id_len = 0;
 	object->ref_count = 1;
 	object->type = type;
 	return object;
@@ -103,16 +105,15 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 			break;
 		case J_HDF5_OBJECT_TYPE_DATATYPE:
 			g_free(object->datatype.data);
-			g_free(object->datatype.backend_id);
 			break;
 		case J_HDF5_OBJECT_TYPE_SPACE:
 			g_free(object->space.data);
-			g_free(object->space.backend_id);
 			break;
 		case _J_HDF5_OBJECT_TYPE_COUNT:
 		default:
 			g_assert_not_reached();
 		}
+		g_free(object->backend_id);
 		g_free(object);
 	}
 }

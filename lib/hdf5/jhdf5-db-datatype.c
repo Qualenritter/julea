@@ -114,13 +114,13 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 
 	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE);
 	object->datatype.data = NULL;
-	object->datatype.backend_id = g_new(char, backend_id_len);
-	memcpy(object->datatype.backend_id, backend_id, backend_id_len);
-	object->datatype.backend_id_len = backend_id_len;
+	object->backend_id = g_new(char, backend_id_len);
+	memcpy(object->backend_id, backend_id, backend_id_len);
+	object->backend_id_len = backend_id_len;
 
 	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, &object->datatype.backend_id, object->datatype.backend_id_len, &error))
+	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, &object->backend_id, object->backend_id_len, &error))
 		goto _error;
 	if (!j_db_iterator_next(iterator, NULL))
 		goto _error;
@@ -170,7 +170,7 @@ _check_type_exist:
 		goto _error;
 	if (j_db_iterator_next(iterator, NULL))
 	{
-		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->datatype.backend_id, &object->datatype.backend_id_len, &error))
+		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 			goto _error;
 		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;

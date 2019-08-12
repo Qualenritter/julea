@@ -68,6 +68,10 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 					goto _error;
 				if (!j_db_schema_add_field(julea_db_schema_dataset, "name", J_DB_TYPE_STRING, &error))
 					goto _error;
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "datatype", J_DB_TYPE_BLOB, &error))
+					goto _error;
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "space", J_DB_TYPE_BLOB, &error))
+					goto _error;
 				if (!j_db_schema_create(julea_db_schema_dataset, batch, &error))
 					goto _error;
 				if (!j_batch_execute(batch))
@@ -104,41 +108,77 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,
 	hid_t dapl_id, hid_t dxpl_id, void** req)
 {
-	/*        J_TRACE_FUNCTION(NULL);
-
-        g_autoptr(GError) error = NULL;
-        g_autoptr(JBatch) batch = NULL;
-        g_autoptr(JDBEntry) entry = NULL;
-        JHDF5Dataset_t* dataset = NULL;
-        JHDF5File_t* file=obj;
-
-        g_return_val_if_fail(name != NULL, NULL);
-        g_return_val_if_fail(file != NULL, NULL);
-
-        batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-
-        if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
-                goto _error;
-        if (!j_db_entry_set_field(entry, "file", file->name, strlen(name), &error))
-                goto _error;
-        if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
-                goto _error;
-        if (!j_db_entry_insert(entry, batch, &error))
-                goto _error;
-        dataset = g_new(JHDF5Dataset_t, 1);
-        dataset->ref_count=1;
-        dataset->name = g_strdup(name);
-        dataset->file = H5VL_julea_db_file_ref(file);
-        return dataset;
-_error:
-        H5VL_julea_db_dataset_unref(dataset);
-        H5VL_julea_db_error_handler(error);
-        return NULL;
-*/
 	J_TRACE_FUNCTION(NULL);
 
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(JDBEntry) entry = NULL;
+	g_autoptr(JDBIterator) iterator = NULL;
+	g_autoptr(JDBSelector) selector = NULL;
+	JHDF5Object_t* object = NULL;
+	JHDF5Object_t* parent = obj;
+	JHDF5Object_t* file;
+	JDBType type;
+
+	g_return_val_if_fail(name != NULL, NULL);
+	g_return_val_if_fail(parent != NULL, NULL);
+
+	switch (parent->type)
+	{
+	case J_HDF5_OBJECT_TYPE_FILE:
+		file = parent;
+		break;
+	case J_HDF5_OBJECT_TYPE_DATASET:
+		file = parent->dataset.file;
+		break;
+	case J_HDF5_OBJECT_TYPE_DATATYPE:
+	case J_HDF5_OBJECT_TYPE_SPACE:
+	case _J_HDF5_OBJECT_TYPE_COUNT:
+	default:
+		g_assert_not_reached();
+		goto _error;
+	}
+
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATASET);
+	object->dataset.name = g_strdup(name);
+	object->dataset.file = H5VL_julea_db_object_ref(file);
+	object->dataset.datatype = H5VL_julea_db_datatype_encode(&type_id);
+	object->dataset.space = H5VL_julea_db_space_encode(&space_id);
+
+	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
+		goto _error;
+	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
+		goto _error;
+	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
+		goto _error;
+	if (!j_db_entry_set_field(entry, "datatype", object->dataset.datatype->backend_id, object->dataset.datatype->backend_id_len, &error))
+		goto _error;
+	if (!j_db_entry_set_field(entry, "space", object->dataset.space->backend_id, object->dataset.space->backend_id_len, &error))
+		goto _error;
+	if (!j_db_entry_insert(entry, batch, &error))
+		goto _error;
+	if (!j_batch_execute(batch))
+		goto _error;
+	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+		goto _error;
+	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+		goto _error;
+	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+		goto _error;
+	if (!(iterator = j_db_iterator_new(julea_db_schema_file, selector, &error)))
+		goto _error;
+	if (!j_db_iterator_next(iterator, &error))
+		goto _error;
+	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+		goto _error;
+	g_assert(!j_db_iterator_next(iterator, NULL));
+	return object;
+_error:
+	H5VL_julea_db_object_unref(object);
+	H5VL_julea_db_error_handler(error);
+	return NULL;
 }
 static void*
 H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
@@ -150,18 +190,28 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	abort();
 }
 static herr_t
-H5VL_julea_db_dataset_read(void* dset, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
+H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
 	hid_t xfer_plist_id, void* buf, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
 static herr_t
-H5VL_julea_db_dataset_write(void* dset, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
+H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
 	hid_t xfer_plist_id, const void* buf, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -169,6 +219,11 @@ static herr_t
 H5VL_julea_db_dataset_get(void* obj, H5VL_dataset_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -177,6 +232,11 @@ H5VL_julea_db_dataset_specific(void* obj, H5VL_dataset_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -184,15 +244,25 @@ static herr_t
 H5VL_julea_db_dataset_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
 static herr_t
-H5VL_julea_db_dataset_close(void* dset, hid_t dxpl_id, void** req)
+H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+
+	H5VL_julea_db_object_unref(object);
+	return 0;
 }
 #pragma GCC diagnostic pop
 #endif

@@ -110,11 +110,16 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDBEntry) entry = NULL;
+	g_autoptr(JDBIterator) iterator = NULL;
+	g_autoptr(JDBSelector) selector = NULL;
 	JHDF5Object_t* object = NULL;
+	JDBType type;
 
 	g_return_val_if_fail(name != NULL, NULL);
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
+	object->file.name = g_strdup(name);
 
 	if (!(entry = j_db_entry_new(julea_db_schema_file, &error)))
 		goto _error;
@@ -124,8 +129,17 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		goto _error;
 	if (!j_batch_execute(batch))
 		goto _error;
-	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
-	object->file.name = g_strdup(name);
+	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+		goto _error;
+	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+		goto _error;
+	if (!(iterator = j_db_iterator_new(julea_db_schema_file, selector, &error)))
+		goto _error;
+	if (!j_db_iterator_next(iterator, &error))
+		goto _error;
+	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+		goto _error;
+	g_assert(!j_db_iterator_next(iterator, NULL));
 	return object;
 _error:
 	H5VL_julea_db_object_unref(object);
@@ -143,12 +157,13 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 	g_autoptr(JDBSelector) selector = NULL;
 	JHDF5Object_t* object = NULL;
 	JDBType type;
-	guint64 length;
 	void* value = NULL;
 
 	g_return_val_if_fail(name != NULL, NULL);
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
+	object->file.name = g_strdup(name);
 
 	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
@@ -158,14 +173,9 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 		goto _error;
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-	if (!j_db_iterator_get_field(iterator, "name", &type, &value, &length, &error))
+	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-	if (g_strcmp0(value, name))
-		goto _error;
-	if (j_db_iterator_next(iterator, &error))
-		goto _error;
-	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
-	object->file.name = g_strdup(name);
+	g_assert(!j_db_iterator_next(iterator, NULL));
 	g_free(value);
 	return object;
 _error:
@@ -179,7 +189,7 @@ H5VL_julea_db_file_get(void* obj, H5VL_file_get_t get_type, hid_t dxpl_id, void*
 {
 	J_TRACE_FUNCTION(NULL);
 
- JHDF5Object_t* object = obj;
+	JHDF5Object_t* object = obj;
 
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
 
@@ -192,7 +202,7 @@ H5VL_julea_db_file_specific(void* obj, H5VL_file_specific_t specific_type,
 {
 	J_TRACE_FUNCTION(NULL);
 
- JHDF5Object_t* object = obj;
+	JHDF5Object_t* object = obj;
 
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
 
@@ -204,7 +214,7 @@ H5VL_julea_db_file_optional(void* obj, hid_t dxpl_id, void** req, va_list argume
 {
 	J_TRACE_FUNCTION(NULL);
 
- JHDF5Object_t* object = obj;
+	JHDF5Object_t* object = obj;
 
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
 
@@ -214,6 +224,8 @@ H5VL_julea_db_file_optional(void* obj, hid_t dxpl_id, void** req, va_list argume
 static herr_t
 H5VL_julea_db_file_close(void* obj, hid_t dxpl_id, void** req)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JHDF5Object_t* object = obj;
 
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);

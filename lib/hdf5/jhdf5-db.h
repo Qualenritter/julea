@@ -42,6 +42,8 @@ struct JHDF5Object_t
 {
 	gint ref_count;
 	JHDF5ObjectType type;
+	void* backend_id;
+	guint64 backend_id_len;
 	union
 	{
 		struct
@@ -52,21 +54,19 @@ struct JHDF5Object_t
 		{
 			char* name;
 			JHDF5Object_t* file;
+			JHDF5Object_t* datatype;
+			JHDF5Object_t* space;
 		} dataset;
 		struct
 		{
 			void* data;
 			size_t data_size;
-			void* backend_id;
-			guint64 backend_id_len;
 			hid_t hdf5_id;
 		} datatype;
 		struct
 		{
 			void* data;
 			size_t data_size;
-			void* backend_id;
-			guint64 backend_id_len;
 			hid_t hdf5_id;
 		} space;
 	};
