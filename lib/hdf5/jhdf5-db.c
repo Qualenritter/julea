@@ -100,6 +100,9 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 			H5VL_julea_db_object_unref(object->dataset.file);
 			g_free(object->dataset.name);
 			break;
+		case J_HDF5_OBJECT_TYPE_DATATYPE:
+			g_free(object->datatype.buf);
+			break;
 		case _J_HDF5_OBJECT_TYPE_COUNT:
 		default:
 			g_assert_not_reached();

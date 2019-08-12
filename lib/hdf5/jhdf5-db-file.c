@@ -122,6 +122,8 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		goto _error;
 	if (!j_db_entry_insert(entry, batch, &error))
 		goto _error;
+	if (!j_batch_execute(batch))
+		goto _error;
 	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
 	object->file.name = g_strdup(name);
 	return object;
@@ -142,7 +144,7 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 	JHDF5Object_t* object = NULL;
 	JDBType type;
 	guint64 length;
-	void* value;
+	void* value = NULL;
 
 	g_return_val_if_fail(name != NULL, NULL);
 
@@ -164,16 +166,23 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 		goto _error;
 	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
 	object->file.name = g_strdup(name);
+	g_free(value);
 	return object;
 _error:
 	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
+	g_free(value);
 	return NULL;
 }
 static herr_t
 H5VL_julea_db_file_get(void* obj, H5VL_file_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+ JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -182,6 +191,11 @@ H5VL_julea_db_file_specific(void* obj, H5VL_file_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+ JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -189,13 +203,22 @@ static herr_t
 H5VL_julea_db_file_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+ JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
 static herr_t
-H5VL_julea_db_file_close(void* file, hid_t dxpl_id, void** req)
+H5VL_julea_db_file_close(void* obj, hid_t dxpl_id, void** req)
 {
-	H5VL_julea_db_object_unref(file);
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_FILE, 1);
+
+	H5VL_julea_db_object_unref(object);
 	return 0;
 }
 #pragma GCC diagnostic pop

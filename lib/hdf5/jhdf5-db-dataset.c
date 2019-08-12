@@ -136,6 +136,7 @@ _error:
         return NULL;
 */
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -144,6 +145,7 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	hid_t dapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }

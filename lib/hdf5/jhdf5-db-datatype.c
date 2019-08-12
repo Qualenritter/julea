@@ -42,15 +42,187 @@
 
 #define _GNU_SOURCE
 
+static JDBSchema* julea_db_schema_datatype = NULL;
+
 static herr_t
 H5VL_julea_db_datatype_init(hid_t vipl_id)
 {
+	J_TRACE_FUNCTION(NULL);
+
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(GError) error = NULL;
+
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+
+	if (!(julea_db_schema_datatype = j_db_schema_new("hdf5", "datatype", NULL)))
+		goto _error;
+	if (!(j_db_schema_get(julea_db_schema_datatype, batch, &error) && j_batch_execute(batch)))
+	{
+		if (error)
+		{
+			if (error->code == J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND)
+			{
+				j_db_schema_unref(julea_db_schema_datatype);
+				if (!(julea_db_schema_datatype = j_db_schema_new("hdf5", "datatype", NULL)))
+					goto _error;
+				if (!j_db_schema_add_field(julea_db_schema_datatype, "data", J_DB_TYPE_BLOB, &error))
+					goto _error;
+				if (!j_db_schema_create(julea_db_schema_datatype, batch, &error))
+					goto _error;
+				if (!j_batch_execute(batch))
+					goto _error;
+			}
+			else
+			{
+				g_assert_not_reached();
+				goto _error;
+			}
+		}
+		else
+		{
+			g_assert_not_reached();
+			goto _error;
+		}
+	}
 	return 0;
+_error:
+	H5VL_julea_db_error_handler(error);
+	H5VL_julea_db_datatype_term();
+	return 1;
 }
 herr_t
 H5VL_julea_db_datatype_term(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
+	j_db_schema_unref(julea_db_schema_datatype);
+	julea_db_schema_datatype = NULL;
 	return 0;
+}
+
+static JHDF5Object_t*
+H5VL_julea_db_datatype_decode(guint32 backend_id)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	g_autoptr(JDBIterator) iterator = NULL;
+g_autoptr(GError) error = NULL;	g_autoptr(JDBSelector) selector = NULL;
+	JHDF5Object_t* object = NULL;
+	JDBType type;
+	guint64 length;
+	void* value = NULL;
+
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE);
+	object->datatype.buf = NULL;
+	object->datatype.backend_id = backend_id;
+
+	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+		goto _error;
+	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, &object->datatype.backend_id, sizeof(object->datatype.backend_id), &error))
+		goto _error;
+	if (!j_db_iterator_next(iterator, NULL))
+		goto _error;
+	if (!j_db_iterator_get_field(iterator, "data", &type, &value, &length, &error))
+		goto _error;
+	g_assert(!j_db_iterator_next(iterator, NULL));
+	object->datatype.buf = value;
+	object->datatype.hdf5_id = H5Tdecode(value);
+	return object;
+_error:
+	H5VL_julea_db_error_handler(error);
+	H5VL_julea_db_object_unref(object);
+	return NULL;
+}
+
+static JHDF5Object_t*
+H5VL_julea_db_datatype_encode(hid_t* type_id)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	g_autoptr(JDBEntry) entry = NULL;
+	g_autoptr(JBatch) batch = NULL;
+g_autoptr(GError) error = NULL;	g_autoptr(JDBIterator) iterator = NULL;
+	g_autoptr(JDBSelector) selector = NULL;
+	gboolean loop = FALSE;
+	JHDF5Object_t* object = NULL;
+	JDBType type;
+	guint64 length;
+	size_t size;
+	void* value = NULL;
+
+	g_return_val_if_fail(type_id != NULL, NULL);
+	g_return_val_if_fail(*type_id != -1, NULL);
+
+	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+
+	//transform to binary
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE);
+	H5Tencode(*type_id, NULL, &size);
+	object->datatype.buf = g_new(char, size);
+	H5Tencode(*type_id, object->datatype.buf, &size);
+	object->datatype.hdf5_id = *type_id;
+
+_check_type_exist:
+	//check if this datatype exists
+	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+		goto _error;
+	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, object->datatype.buf, size, &error))
+		goto _error;
+	if (j_db_iterator_next(iterator, NULL))
+	{
+		if (!j_db_iterator_get_field(iterator, "_id", &type, &value, &length, &error))
+			goto _error;
+		switch (type)
+		{
+		case J_DB_TYPE_SINT32:
+			object->datatype.backend_id = *(const gint32*)value;
+			break;
+		case J_DB_TYPE_UINT32:
+			object->datatype.backend_id = *(const guint32*)value;
+			break;
+		case J_DB_TYPE_SINT64:
+			object->datatype.backend_id = *(const gint64*)value;
+			break;
+		case J_DB_TYPE_UINT64:
+			object->datatype.backend_id = *(const guint64*)value;
+			break;
+		case J_DB_TYPE_FLOAT32:
+			object->datatype.backend_id = *(const gfloat*)value;
+			break;
+		case J_DB_TYPE_FLOAT64:
+			object->datatype.backend_id = *(const gdouble*)value;
+			break;
+		case J_DB_TYPE_STRING:
+		case J_DB_TYPE_BLOB:
+		case _J_DB_TYPE_COUNT:
+		default:;
+			g_assert_not_reached();
+		}
+		g_assert(!j_db_iterator_next(iterator, NULL));
+		goto _done;
+	}
+
+	g_return_val_if_fail(loop == FALSE, NULL);
+
+	//create new datatype if it did not exist before
+	if (!(entry = j_db_entry_new(julea_db_schema_datatype, &error)))
+		goto _error;
+	if (!j_db_entry_set_field(entry, "data", object->datatype.buf, size, &error))
+		goto _error;
+	if (!j_db_entry_insert(entry, batch, &error))
+		goto _error;
+	if (!j_batch_execute(batch))
+		goto _error;
+	loop = TRUE;
+	goto _check_type_exist;
+_done:
+	g_free(value);
+	return object;
+_error:
+	H5VL_julea_db_error_handler(error);
+	g_free(value);
+	H5VL_julea_db_object_unref(object);
+	return NULL;
 }
 
 static void*
