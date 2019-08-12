@@ -31,6 +31,7 @@ enum JHDF5ObjectType
 	J_HDF5_OBJECT_TYPE_FILE = 0,
 	J_HDF5_OBJECT_TYPE_DATASET,
 	J_HDF5_OBJECT_TYPE_DATATYPE,
+	J_HDF5_OBJECT_TYPE_SPACE,
 	_J_HDF5_OBJECT_TYPE_COUNT
 };
 
@@ -54,11 +55,20 @@ struct JHDF5Object_t
 		} dataset;
 		struct
 		{
-			size_t size;
-			char* buf;
-			guint backend_id;
+			void* data;
+			size_t data_size;
+			void* backend_id;
+			guint64 backend_id_len;
 			hid_t hdf5_id;
 		} datatype;
+		struct
+		{
+			void* data;
+			size_t data_size;
+			void* backend_id;
+			guint64 backend_id_len;
+			hid_t hdf5_id;
+		} space;
 	};
 };
 
@@ -77,7 +87,12 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object);
 static JHDF5Object_t*
 H5VL_julea_db_datatype_encode(hid_t* type_id);
 static JHDF5Object_t*
-H5VL_julea_db_datatype_decode(guint32 backend_id);
+H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len);
+
+static JHDF5Object_t*
+H5VL_julea_db_space_encode(hid_t* type_id);
+static JHDF5Object_t*
+H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len);
 
 static herr_t
 H5VL_julea_db_attr_init(hid_t vipl_id);
@@ -99,4 +114,8 @@ static herr_t
 H5VL_julea_db_group_init(hid_t vipl_id);
 herr_t
 H5VL_julea_db_group_term(void);
+static herr_t
+H5VL_julea_db_space_init(hid_t vipl_id);
+herr_t
+H5VL_julea_db_space_term(void);
 #endif

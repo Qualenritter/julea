@@ -44,6 +44,7 @@
 #include "jhdf5-db-attr.c"
 #include "jhdf5-db-group.c"
 #include "jhdf5-db-datatype.c"
+#include "jhdf5-db-space.c"
 
 #define _GNU_SOURCE
 
@@ -101,7 +102,12 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 			g_free(object->dataset.name);
 			break;
 		case J_HDF5_OBJECT_TYPE_DATATYPE:
-			g_free(object->datatype.buf);
+			g_free(object->datatype.data);
+			g_free(object->datatype.backend_id);
+			break;
+		case J_HDF5_OBJECT_TYPE_SPACE:
+			g_free(object->space.data);
+			g_free(object->space.backend_id);
 			break;
 		case _J_HDF5_OBJECT_TYPE_COUNT:
 		default:
@@ -126,7 +132,11 @@ H5VL_julea_db_init(hid_t vipl_id)
 		goto _error_datatype;
 	if (H5VL_julea_db_group_init(vipl_id))
 		goto _error_group;
+	if (H5VL_julea_db_space_init(vipl_id))
+		goto _error_space;
 	return 0;
+_error_space:
+	H5VL_julea_db_space_term();
 _error_group:
 	H5VL_julea_db_group_term();
 _error_datatype:
@@ -144,6 +154,8 @@ H5VL_julea_db_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	if (H5VL_julea_db_space_term())
+		goto _error;
 	if (H5VL_julea_db_group_term())
 		goto _error;
 	if (H5VL_julea_db_datatype_term())
