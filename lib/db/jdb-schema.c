@@ -36,7 +36,7 @@
 JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	JDBSchema* schema = NULL;
 
@@ -59,7 +59,7 @@ J_TRACE_FUNCTION(NULL);
 JDBSchema*
 j_db_schema_ref(JDBSchema* schema, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(schema != NULL, FALSE);
 	(void)error;
@@ -70,7 +70,7 @@ J_TRACE_FUNCTION(NULL);
 void
 j_db_schema_unref(JDBSchema* schema)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint i;
 	JDBSchemaIndex* index;
@@ -100,7 +100,7 @@ J_TRACE_FUNCTION(NULL);
 gboolean
 j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	JDBTypeValue val;
 	bson_iter_t iter;
@@ -139,7 +139,7 @@ _error:
 gboolean
 j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	JDBTypeValue val;
 	bson_iter_t iter;
@@ -170,7 +170,7 @@ _error:
 guint32
 j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	bson_iter_t iter;
 	guint count;
@@ -226,7 +226,7 @@ _error:
 gboolean
 j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	JDBSchemaIndex index;
 	JDBSchemaIndex* index_tmp;
@@ -328,7 +328,7 @@ _error:
 gboolean
 j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
@@ -354,7 +354,7 @@ _error:
 gboolean
 j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
@@ -374,7 +374,7 @@ _error:
 gboolean
 j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(schema != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
@@ -391,7 +391,7 @@ _error:
 gboolean
 j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint schema1_count;
 	guint schema2_count;

@@ -36,7 +36,7 @@
 JDBSelector*
 j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	JDBTypeValue val;
 	JDBSelector* selector = NULL;
@@ -65,7 +65,8 @@ _error:
 }
 JDBSelector*
 j_db_selector_ref(JDBSelector* selector, GError** error)
-{J_TRACE_FUNCTION(NULL);
+{
+	J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(selector != NULL, FALSE);
 	(void)error;
@@ -76,7 +77,7 @@ j_db_selector_ref(JDBSelector* selector, GError** error)
 void
 j_db_selector_unref(JDBSelector* selector)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	if (selector && g_atomic_int_dec_and_test(&selector->ref_count))
 	{
@@ -88,7 +89,7 @@ J_TRACE_FUNCTION(NULL);
 gboolean
 j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	char buf[20];
 	bson_t bson;
@@ -168,7 +169,7 @@ _error:
 gboolean
 j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	char buf[20];
 

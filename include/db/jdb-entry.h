@@ -132,4 +132,6 @@ gboolean j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch
  **/
 gboolean j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBEntry, j_db_entry_unref)
+
 #endif

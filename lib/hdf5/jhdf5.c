@@ -51,7 +51,7 @@ enum JHDF5Implementation
 
 typedef enum JHDF5Implementation JHDF5Implementation;
 
-static JHDF5Implementation hdf5_implementation_to_use = J_HDF5_IMPLEMENTATION_KV;
+static JHDF5Implementation hdf5_implementation_to_use = J_HDF5_IMPLEMENTATION_DB;
 
 /**
  * Provides the plugin type
@@ -68,8 +68,8 @@ H5PLget_plugin_type(void)
 const void*
 H5PLget_plugin_info(void)
 {
-//FIXME override hdf5_implementation_to_use with environment variable?
-//FIXME override hdf5_implementation_to_use within julea-test AT RUNTIME to test all (different) implementations?
+	//FIXME override hdf5_implementation_to_use with environment variable?
+	//FIXME override hdf5_implementation_to_use within julea-test AT RUNTIME to test all (different) implementations?
 	switch (hdf5_implementation_to_use)
 	{
 	case J_HDF5_IMPLEMENTATION_KV:

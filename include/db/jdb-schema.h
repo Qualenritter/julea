@@ -198,4 +198,6 @@ gboolean j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error);
  **/
 gboolean j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GError** error);
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBSchema, j_db_schema_unref)
+
 #endif

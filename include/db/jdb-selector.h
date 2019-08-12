@@ -131,4 +131,6 @@ gboolean j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSe
  **/
 gboolean j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error);
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBSelector, j_db_selector_unref)
+
 #endif
