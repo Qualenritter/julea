@@ -99,28 +99,6 @@ H5VL_julea_db_dataset_term(void)
 	return 0;
 }
 
-static JHDF5Dataset_t*
-H5VL_julea_db_dataset_ref(JHDF5Dataset_t* dataset)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	g_return_val_if_fail(dataset != NULL, NULL);
-
-	g_atomic_int_inc(&dataset->ref_count);
-	return dataset;
-}
-static void
-H5VL_julea_db_dataset_unref(JHDF5Dataset_t* dataset)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	if (dataset && g_atomic_int_dec_and_test(&dataset->ref_count))
-	{
-		H5VL_julea_db_file_unref(dataset->file);
-		g_free(dataset->name);
-		g_free(dataset);
-	}
-}
 static void*
 H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,

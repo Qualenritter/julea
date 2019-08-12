@@ -101,28 +101,6 @@ H5VL_julea_db_file_term(void)
 	return 0;
 }
 
-static JHDF5File_t*
-H5VL_julea_db_file_ref(JHDF5File_t* file)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	g_return_val_if_fail(file != NULL, NULL);
-
-	g_atomic_int_inc(&file->ref_count);
-	return file;
-}
-static void
-H5VL_julea_db_file_unref(JHDF5File_t* file)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	if (file && g_atomic_int_dec_and_test(&file->ref_count))
-	{
-		g_free(file->name);
-		g_free(file);
-	}
-}
-
 static void*
 H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	hid_t fapl_id, hid_t dxpl_id, void** req)
@@ -132,7 +110,7 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDBEntry) entry = NULL;
-	JHDF5File_t* file = NULL;
+	JHDF5Object_t* object = NULL;
 
 	g_return_val_if_fail(name != NULL, NULL);
 
@@ -144,12 +122,11 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		goto _error;
 	if (!j_db_entry_insert(entry, batch, &error))
 		goto _error;
-	file = g_new(JHDF5File_t, 1);
-	file->ref_count = 1;
-	file->name = g_strdup(name);
-	return file;
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
+	object->file.name = g_strdup(name);
+	return object;
 _error:
-	H5VL_julea_db_file_unref(file);
+	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
 	return NULL;
 }
@@ -162,7 +139,7 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
-	JHDF5File_t* file = NULL;
+	JHDF5Object_t* object = NULL;
 	JDBType type;
 	guint64 length;
 	void* value;
@@ -185,12 +162,11 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 		goto _error;
 	if (j_db_iterator_next(iterator, &error))
 		goto _error;
-	file = g_new(JHDF5File_t, 1);
-	file->ref_count = 1;
-	file->name = g_strdup(name);
-	return file;
+	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE);
+	object->file.name = g_strdup(name);
+	return object;
 _error:
-	H5VL_julea_db_file_unref(file);
+	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
 	return NULL;
 }
@@ -219,7 +195,7 @@ H5VL_julea_db_file_optional(void* obj, hid_t dxpl_id, void** req, va_list argume
 static herr_t
 H5VL_julea_db_file_close(void* file, hid_t dxpl_id, void** req)
 {
-	H5VL_julea_db_file_unref(file);
+	H5VL_julea_db_object_unref(file);
 	return 0;
 }
 #pragma GCC diagnostic pop

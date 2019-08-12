@@ -60,6 +60,54 @@ H5VL_julea_db_error_handler(GError* error)
 	}
 }
 
+static JHDF5Object_t*
+H5VL_julea_db_object_ref(JHDF5Object_t* object)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	g_return_val_if_fail(object != NULL, NULL);
+
+	g_atomic_int_inc(&object->ref_count);
+	return object;
+}
+static JHDF5Object_t*
+H5VL_julea_db_object_new(JHDF5ObjectType type)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object;
+
+	g_return_val_if_fail(type < _J_HDF5_OBJECT_TYPE_COUNT, NULL);
+
+	object = g_new(JHDF5Object_t, 1);
+	object->ref_count = 1;
+	object->type = type;
+	return object;
+}
+static void
+H5VL_julea_db_object_unref(JHDF5Object_t* object)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	if (object && g_atomic_int_dec_and_test(&object->ref_count))
+	{
+		switch (object->type)
+		{
+		case J_HDF5_OBJECT_TYPE_FILE:
+			g_free(object->file.name);
+			break;
+		case J_HDF5_OBJECT_TYPE_DATASET:
+			H5VL_julea_db_object_unref(object->dataset.file);
+			g_free(object->dataset.name);
+			break;
+		case _J_HDF5_OBJECT_TYPE_COUNT:
+		default:
+			g_assert_not_reached();
+		}
+		g_free(object);
+	}
+}
+
 static herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {

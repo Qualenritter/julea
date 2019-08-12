@@ -26,41 +26,55 @@
 #include <hdf5.h>
 #include <H5PLextern.h>
 
-struct JHDF5File_t
+enum JHDF5ObjectType
 {
-	gint ref_count;
-	char* name;
+	J_HDF5_OBJECT_TYPE_FILE = 0,
+	J_HDF5_OBJECT_TYPE_DATASET,
+	_J_HDF5_OBJECT_TYPE_COUNT
 };
-typedef struct JHDF5File_t JHDF5File_t;
 
-struct JHDF5Dataset_t
+ typedef enum JHDF5ObjectType JHDF5ObjectType;
+
+typedef struct JHDF5Object_t JHDF5Object_t;
+struct JHDF5Object_t
 {
 	gint ref_count;
-	JHDF5File_t* file;
-	char* name;
+	JHDF5ObjectType type;
+	union
+	{
+		struct
+		{
+			char* name;
+		} file;
+		struct
+		{
+			char* name;
+			JHDF5Object_t* file;
+		} dataset;
+	};
 };
-typedef struct JHDF5Dataset_t JHDF5Dataset_t;
+
+/*internal helper functions*/
 
 static void
 H5VL_julea_db_error_handler(GError* error);
 
-//file
-static JHDF5File_t*
-H5VL_julea_db_file_ref(JHDF5File_t* file);
+static JHDF5Object_t*
+H5VL_julea_db_object_new(JHDF5ObjectType type);
+static JHDF5Object_t*
+H5VL_julea_db_object_ref(JHDF5Object_t* object);
 static void
-H5VL_julea_db_file_unref(JHDF5File_t* file);
-static herr_t H5VL_julea_db_file_init(hid_t vipl_id);
-static herr_t
-H5VL_julea_db_file_term(void);
+H5VL_julea_db_object_unref(JHDF5Object_t* object);
 
-//dataset
-static JHDF5Dataset_t*
-H5VL_julea_db_dataset_ref(JHDF5Dataset_t* dataset);
-static void
-H5VL_julea_db_dataset_unref(JHDF5Dataset_t* dataset);
 static herr_t
-H5VL_julea_db_dataset_init(hid_t vipl_id);
-static herr_t
-H5VL_julea_db_dataset_term(void);
-
+H5VL_julea_db_attr_init(hid_t vipl_id);herr_t
+H5VL_julea_db_attr_term(void);static herr_t
+H5VL_julea_db_dataset_init(hid_t vipl_id);static herr_t
+H5VL_julea_db_dataset_term(void);static herr_t
+H5VL_julea_db_datatype_init(hid_t vipl_id);herr_t
+H5VL_julea_db_datatype_term(void);static herr_t
+H5VL_julea_db_file_init(hid_t vipl_id);static herr_t
+H5VL_julea_db_file_term(void);static herr_t
+H5VL_julea_db_group_init(hid_t vipl_id);herr_t
+H5VL_julea_db_group_term(void);
 #endif
