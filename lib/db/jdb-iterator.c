@@ -142,6 +142,15 @@ _error:
 	iterator->bson_valid = FALSE;
 	return FALSE;
 }
+#define J_AFL_DEBUG_BSON(bson)                           \
+	do                                               \
+	{                                                \
+		char* json = NULL;                       \
+		if (bson)                                \
+			json = bson_as_json(bson, NULL); \
+		g_debug("json iterator = %s", json);     \
+		bson_free((void*)json);                  \
+	} while (0)
 gboolean
 j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error)
 {
@@ -167,6 +176,8 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 	}
 	if (G_UNLIKELY(!j_bson_iter_find(&iter, name, error)))
 	{
+		g_debug("name was %s", name);
+		J_AFL_DEBUG_BSON(&iterator->bson);
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_bson_iter_value(&iter, *type, &val, error)))

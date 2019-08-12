@@ -149,30 +149,39 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 
 	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "datatype", object->dataset.datatype->backend_id, object->dataset.datatype->backend_id_len, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "space", object->dataset.space->backend_id, object->dataset.space->backend_id_len, &error))
 		goto _error;
 	if (!j_db_entry_insert(entry, batch, &error))
 		goto _error;
 	if (!j_batch_execute(batch))
 		goto _error;
-	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
-	if (!(iterator = j_db_iterator_new(julea_db_schema_file, selector, &error)))
+	if (!(iterator = j_db_iterator_new(julea_db_schema_dataset, selector, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	return object;
 _error:

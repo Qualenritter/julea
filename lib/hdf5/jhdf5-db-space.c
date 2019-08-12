@@ -118,14 +118,20 @@ H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
 	memcpy(object->backend_id, backend_id, backend_id_len);
 	object->backend_id_len = backend_id_len;
 
-	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_space, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, &object->backend_id, object->backend_id_len, &error))
 		goto _error;
+if (!(iterator = j_db_iterator_new(julea_db_schema_space, selector, &error)))
+                goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, NULL))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "data", &type, &object->space.data, &length, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	object->space.hdf5_id = H5Sdecode(object->space.data);
 	return object;
@@ -164,14 +170,19 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 
 _check_type_exist:
 	//check if this space exists
-	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_space, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "data", J_DB_SELECTOR_OPERATOR_EQ, object->space.data, size, &error))
-		goto _error;
+		goto _error;if (!(iterator = j_db_iterator_new(julea_db_schema_space, selector, &error)))
+                goto _error;
+	G_DEBUG_HERE();
 	if (j_db_iterator_next(iterator, NULL))
 	{
+		G_DEBUG_HERE();
 		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 			goto _error;
+		G_DEBUG_HERE();
 		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;
 	}
@@ -181,6 +192,7 @@ _check_type_exist:
 	//create new space if it did not exist before
 	if (!(entry = j_db_entry_new(julea_db_schema_space, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "data", object->space.data, size, &error))
 		goto _error;
 	if (!j_db_entry_insert(entry, batch, &error))

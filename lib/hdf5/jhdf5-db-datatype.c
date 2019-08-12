@@ -118,14 +118,20 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 	memcpy(object->backend_id, backend_id, backend_id_len);
 	object->backend_id_len = backend_id_len;
 
-	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, &object->backend_id, object->backend_id_len, &error))
 		goto _error;
+if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
+                goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, NULL))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "data", &type, &object->datatype.data, &length, &error))
 		goto _error;
+	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	object->datatype.hdf5_id = H5Tdecode(object->datatype.data);
 	return object;
@@ -164,14 +170,20 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 
 _check_type_exist:
 	//check if this datatype exists
-	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "data", J_DB_SELECTOR_OPERATOR_EQ, object->datatype.data, size, &error))
 		goto _error;
+if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
+                goto _error;
+	G_DEBUG_HERE();
 	if (j_db_iterator_next(iterator, NULL))
 	{
+		G_DEBUG_HERE();
 		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 			goto _error;
+		G_DEBUG_HERE();
 		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;
 	}
@@ -181,6 +193,7 @@ _check_type_exist:
 	//create new datatype if it did not exist before
 	if (!(entry = j_db_entry_new(julea_db_schema_datatype, &error)))
 		goto _error;
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "data", object->datatype.data, size, &error))
 		goto _error;
 	if (!j_db_entry_insert(entry, batch, &error))

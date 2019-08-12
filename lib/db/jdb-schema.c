@@ -110,6 +110,8 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	g_return_val_if_fail(type < _J_DB_TYPE_COUNT, FALSE);
 	g_return_val_if_fail(!schema->server_side, FALSE);
 
+	g_debug("add_field '%s'", name);
+
 	if (!schema->bson_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_init(&schema->bson, error)))
@@ -136,6 +138,15 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 _error:
 	return FALSE;
 }
+#define J_AFL_DEBUG_BSON(bson)                           \
+	do                                               \
+	{                                                \
+		char* json = NULL;                       \
+		if (bson)                                \
+			json = bson_as_json(bson, NULL); \
+		g_debug("json schema = %s", json);       \
+		bson_free((void*)json);                  \
+	} while (0)
 gboolean
 j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GError** error)
 {
@@ -150,12 +161,20 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 	g_return_val_if_fail(g_strcmp0(name, "_index"), FALSE);
 	g_return_val_if_fail(schema->bson_initialized, FALSE);
 
+	g_debug("get_field '%s'", name);
+
+	if (!g_strcmp0(name, "_id"))
+	{
+		*type = J_DB_TYPE_UINT32;
+		goto _done;
+	}
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
 	{
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_bson_iter_find(&iter, name, error)))
 	{
+		J_AFL_DEBUG_BSON(&schema->bson);
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_bson_iter_value(&iter, J_DB_TYPE_UINT32, &val, error)))
@@ -163,6 +182,7 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 		goto _error;
 	}
 	*type = val.val_uint32;
+_done:
 	return TRUE;
 _error:
 	return FALSE;
