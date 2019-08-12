@@ -482,7 +482,7 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	gboolean ret = FALSE;
+	gboolean ret = TRUE;
 
 	JBackend* object_backend;
 	g_autoptr(JListIterator) it = NULL;
@@ -490,7 +490,7 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 	gchar const* namespace = NULL;
 	gsize namespace_len = 0;
 	guint32 server_count = 0;
-
+G_DEBUG_HERE();
 	g_return_val_if_fail(operations != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
 
@@ -503,15 +503,16 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 		namespace = object->namespace;
 		namespace_len = strlen(namespace) + 1;
 	}
-
+G_DEBUG_HERE();
 	it = j_list_iterator_new(operations);
 	object_backend = j_object_backend();
-
+G_DEBUG_HERE();
 	if (object_backend == NULL)
 	{
+G_DEBUG_HERE();
 		server_count = j_configuration_get_object_server_count(j_configuration());
 		messages = g_new(JMessage*, server_count);
-
+G_DEBUG_HERE();
 		// FIXME use actual distribution
 		for (guint i = 0; i < server_count; i++)
 		{
@@ -528,24 +529,30 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 			j_message_append_n(messages[i], namespace, namespace_len);
 		}
 	}
-
+G_DEBUG_HERE();
 	while (j_list_iterator_next(it))
 	{
 		JDistributedObject* object = j_list_iterator_get(it);
-
+G_DEBUG_HERE();
 		if (object_backend != NULL)
 		{
 			gpointer object_handle;
-
+G_DEBUG_HERE();
+g_debug("ret = %d",ret);
 			ret = j_backend_object_create(object_backend, object->namespace, object->name, &object_handle) && ret;
+g_debug("ret = %d",ret);
+G_DEBUG_HERE();
+g_debug("ret = %d",ret);
 			ret = j_backend_object_close(object_backend, object_handle) && ret;
+g_debug("ret = %d",ret);
+G_DEBUG_HERE();
 		}
 		else
 		{
 			gsize name_len;
 
 			name_len = strlen(object->name) + 1;
-
+G_DEBUG_HERE();
 			// FIXME use actual distribution
 			for (guint i = 0; i < server_count; i++)
 			{
@@ -558,7 +565,7 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 	if (object_backend == NULL)
 	{
 		g_autofree gpointer* background_data = NULL;
-
+G_DEBUG_HERE();
 		background_data = g_new(gpointer, server_count);
 
 		// FIXME use actual distribution
@@ -571,13 +578,13 @@ j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 			data->message = messages[i];
 			data->operations = NULL;
 			data->semantics = semantics;
-
+G_DEBUG_HERE();
 			background_data[i] = data;
 		}
 
 		j_helper_execute_parallel(j_distributed_object_create_background_operation, background_data, server_count);
 	}
-
+G_DEBUG_HERE();
 	return ret;
 }
 

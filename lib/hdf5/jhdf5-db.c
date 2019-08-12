@@ -102,6 +102,8 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 		case J_HDF5_OBJECT_TYPE_DATASET:
 			H5VL_julea_db_object_unref(object->dataset.file);
 			g_free(object->dataset.name);
+			j_distribution_unref(object->dataset.distribution);
+			j_distributed_object_unref(object->dataset.object);
 			break;
 		case J_HDF5_OBJECT_TYPE_DATATYPE:
 			g_free(object->datatype.data);

@@ -56,6 +56,8 @@ struct JHDF5Object_t
 			JHDF5Object_t* file;
 			JHDF5Object_t* datatype;
 			JHDF5Object_t* space;
+			JDistribution* distribution;
+			JDistributedObject* object;
 		} dataset;
 		struct
 		{

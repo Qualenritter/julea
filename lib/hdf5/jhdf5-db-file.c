@@ -123,7 +123,6 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 
 	if (!(entry = j_db_entry_new(julea_db_schema_file, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
 		goto _error;
 	if (!j_db_entry_insert(entry, batch, &error))
@@ -132,18 +131,14 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		goto _error;
 	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
 	if (!(iterator = j_db_iterator_new(julea_db_schema_file, selector, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	return object;
 _error:
@@ -172,18 +167,14 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 
 	if (!(selector = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
 	if (!(iterator = j_db_iterator_new(julea_db_schema_file, selector, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	g_free(value);
 	return object;
