@@ -63,9 +63,13 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 	g_autoptr(GError) error = NULL;
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
 		goto _error;
+	}
 	if (!(julea_db_schema_attr = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "attr", NULL)))
+	{
 		goto _error;
+	}
 	if (!(j_db_schema_get(julea_db_schema_attr, batch, &error) && j_batch_execute(batch)))
 	{
 		if (error)
@@ -76,19 +80,33 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 				error = NULL;
 				j_db_schema_unref(julea_db_schema_attr);
 				if (!(julea_db_schema_attr = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "attr", NULL)))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_add_field(julea_db_schema_attr, "file", J_DB_TYPE_STRING, &error))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_add_field(julea_db_schema_attr, "name", J_DB_TYPE_STRING, &error))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_add_field(julea_db_schema_attr, "datatype", J_DB_TYPE_BLOB, &error))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_add_field(julea_db_schema_attr, "space", J_DB_TYPE_BLOB, &error))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_create(julea_db_schema_attr, batch, &error))
+				{
 					goto _error;
+				}
 				if (!j_batch_execute(batch))
+				{
 					goto _error;
+				}
 			}
 			else
 			{
@@ -148,53 +166,99 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	}
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
 		goto _error;
+	}
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.name = g_strdup(name)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.file = H5VL_julea_db_object_ref(file)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.datatype = H5VL_julea_db_datatype_encode(&type_id)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.space = H5VL_julea_db_space_encode(&space_id)))
+	{
 		goto _error;
+	}
 	if (!(entry = j_db_entry_new(julea_db_schema_attr, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_set_field(entry, "datatype", object->attr.datatype->backend_id, object->attr.datatype->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_set_field(entry, "space", object->attr.space->backend_id, object->attr.space->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_insert(entry, batch, &error))
+	{
 		goto _error;
+	}
 	if (!j_batch_execute(batch))
+	{
 		goto _error;
+	}
 	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+	{
 		goto _error;
+	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_attr, selector, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_next(iterator, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	if (!(object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
+	{
 		goto _error;
+	}
 	if (!(hex_buf = H5VL_julea_db_buf_to_hex("attr", object->backend_id, object->backend_id_len)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution)))
+	{
 		goto _error;
+	}
 	j_distributed_object_create(object->attr.object, batch);
 	if (!j_batch_execute(batch))
+	{
 		goto _error;
+	}
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -244,45 +308,81 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 	}
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
 		goto _error;
+	}
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.name = g_strdup(name)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.file = H5VL_julea_db_object_ref(file)))
+	{
 		goto _error;
+	}
 	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+	{
 		goto _error;
+	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_attr, selector, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_next(iterator, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_get_field(iterator, "space", &type, &space_id_buf, &space_id_buf_len, &error))
+	{
 		goto _error;
+	}
 	g_assert(type == J_DB_TYPE_BLOB);
 	if (!(object->attr.space = H5VL_julea_db_space_decode(space_id_buf, space_id_buf_len)))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_get_field(iterator, "datatype", &type, &datatype_id_buf, &datatype_id_buf_len, &error))
+	{
 		goto _error;
+	}
 	g_assert(type == J_DB_TYPE_BLOB);
 	if (!(object->attr.datatype = H5VL_julea_db_datatype_decode(datatype_id_buf, datatype_id_buf_len)))
+	{
 		goto _error;
+	}
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	if (!(object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
+	{
 		goto _error;
+	}
 	if (!(hex_buf = H5VL_julea_db_buf_to_hex("attr", object->backend_id, object->backend_id_len)))
+	{
 		goto _error;
+	}
 	if (!(object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution)))
+	{
 		goto _error;
+	}
 	j_distributed_object_create(object->attr.object, batch);
 	if (!j_batch_execute(batch))
+	{
 		goto _error;
+	}
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -316,7 +416,9 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 	}
 	j_distributed_object_read(object->attr.object, buf, data_size, 0, &bytes_read, batch);
 	if (!j_batch_execute(batch))
+	{
 		goto _error;
+	}
 	g_free(dims);
 	return 0;
 _error:
@@ -350,7 +452,9 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 	}
 	j_distributed_object_write(object->attr.object, buf, data_size, 0, &bytes_written, batch);
 	if (!j_batch_execute(batch))
+	{
 		goto _error;
+	}
 	g_free(dims);
 	return 0;
 _error:

@@ -65,9 +65,13 @@ H5VL_julea_db_space_init(hid_t vipl_id)
 	g_autoptr(GError) error = NULL;
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
 		goto _error;
+	}
 	if (!(julea_db_schema_space = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "space", NULL)))
+	{
 		goto _error;
+	}
 	if (!(j_db_schema_get(julea_db_schema_space, batch, &error) && j_batch_execute(batch)))
 	{
 		if (error)
@@ -78,13 +82,21 @@ H5VL_julea_db_space_init(hid_t vipl_id)
 				error = NULL;
 				j_db_schema_unref(julea_db_schema_space);
 				if (!(julea_db_schema_space = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "space", NULL)))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_add_field(julea_db_schema_space, "data", J_DB_TYPE_BLOB, &error))
+				{
 					goto _error;
+				}
 				if (!j_db_schema_create(julea_db_schema_space, batch, &error))
+				{
 					goto _error;
+				}
 				if (!j_batch_execute(batch))
+				{
 					goto _error;
+				}
 			}
 			else
 			{
@@ -117,21 +129,35 @@ H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
 	JDBType type;
 	guint64 length;
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_SPACE)))
+	{
 		goto _error;
+	}
 	if (!(object->backend_id = g_new(char, backend_id_len)))
+	{
 		goto _error;
+	}
 	memcpy(object->backend_id, backend_id, backend_id_len);
 	object->backend_id_len = backend_id_len;
 	if (!(selector = j_db_selector_new(julea_db_schema_space, J_DB_SELECTOR_MODE_AND, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, object->backend_id, object->backend_id_len, &error))
+	{
 		goto _error;
+	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_space, selector, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_next(iterator, NULL))
+	{
 		goto _error;
+	}
 	if (!j_db_iterator_get_field(iterator, "data", &type, &object->space.data, &length, &error))
+	{
 		goto _error;
+	}
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	object->space.hdf5_id = H5Sdecode(object->space.data);
 	return object;
@@ -160,28 +186,42 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	g_return_val_if_fail(*type_id != -1, NULL);
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
 		goto _error;
+	}
 	//transform to binary
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_SPACE)))
+	{
 		goto _error;
+	}
 	H5Sencode(*type_id, NULL, &size);
 	if (!(object->space.data = g_new(char, size)))
+	{
 		goto _error;
+	}
 	H5Sencode(*type_id, object->space.data, &size);
 	object->space.hdf5_id = *type_id;
 
 _check_type_exist:
 	//check if this space exists
 	if (!(selector = j_db_selector_new(julea_db_schema_space, J_DB_SELECTOR_MODE_AND, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_selector_add_field(selector, "data", J_DB_SELECTOR_OPERATOR_EQ, object->space.data, size, &error))
+	{
 		goto _error;
+	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_space, selector, &error)))
+	{
 		goto _error;
+	}
 	if (j_db_iterator_next(iterator, NULL))
 	{
 		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+		{
 			goto _error;
+		}
 		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;
 	}
@@ -190,13 +230,21 @@ _check_type_exist:
 
 	//create new space if it did not exist before
 	if (!(entry = j_db_entry_new(julea_db_schema_space, &error)))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_set_field(entry, "data", object->space.data, size, &error))
+	{
 		goto _error;
+	}
 	if (!j_db_entry_insert(entry, batch, &error))
+	{
 		goto _error;
+	}
 	if (!j_batch_execute(batch))
+	{
 		goto _error;
+	}
 	loop = TRUE;
 	goto _check_type_exist;
 _done:

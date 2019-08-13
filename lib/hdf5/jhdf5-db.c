@@ -85,56 +85,80 @@ H5VL_julea_db_space_term(void);
 static herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {
-        J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
-        if (H5VL_julea_db_file_init(vipl_id))
-                goto _error_file;
-        if (H5VL_julea_db_dataset_init(vipl_id))
-                goto _error_dataset;
-        if (H5VL_julea_db_attr_init(vipl_id))
-                goto _error_attr;
-        if (H5VL_julea_db_datatype_init(vipl_id))
-                goto _error_datatype;
-        if (H5VL_julea_db_group_init(vipl_id))
-                goto _error_group;
-        if (H5VL_julea_db_space_init(vipl_id))
-                goto _error_space;
-        return 0;
+	if (H5VL_julea_db_file_init(vipl_id))
+	{
+		goto _error_file;
+	}
+	if (H5VL_julea_db_dataset_init(vipl_id))
+	{
+		goto _error_dataset;
+	}
+	if (H5VL_julea_db_attr_init(vipl_id))
+	{
+		goto _error_attr;
+	}
+	if (H5VL_julea_db_datatype_init(vipl_id))
+	{
+		goto _error_datatype;
+	}
+	if (H5VL_julea_db_group_init(vipl_id))
+	{
+		goto _error_group;
+	}
+	if (H5VL_julea_db_space_init(vipl_id))
+	{
+		goto _error_space;
+	}
+	return 0;
 _error_space:
-        H5VL_julea_db_space_term();
+	H5VL_julea_db_space_term();
 _error_group:
-        H5VL_julea_db_group_term();
+	H5VL_julea_db_group_term();
 _error_datatype:
-        H5VL_julea_db_datatype_term();
+	H5VL_julea_db_datatype_term();
 _error_attr:
-        H5VL_julea_db_attr_term();
+	H5VL_julea_db_attr_term();
 _error_dataset:
-        H5VL_julea_db_dataset_term();
+	H5VL_julea_db_dataset_term();
 _error_file:
-        H5VL_julea_db_file_term();
-        return 1;
+	H5VL_julea_db_file_term();
+	return 1;
 }
 
 static herr_t
 H5VL_julea_db_term(void)
 {
-        J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
-        if (H5VL_julea_db_space_term())
-                goto _error;
-        if (H5VL_julea_db_group_term())
-                goto _error;
-        if (H5VL_julea_db_datatype_term())
-                goto _error;
-        if (H5VL_julea_db_attr_term())
-                goto _error;
-        if (H5VL_julea_db_dataset_term())
-                goto _error;
-        if (H5VL_julea_db_file_term())
-                goto _error;
-        return 0;
+	if (H5VL_julea_db_space_term())
+	{
+		goto _error;
+	}
+	if (H5VL_julea_db_group_term())
+	{
+		goto _error;
+	}
+	if (H5VL_julea_db_datatype_term())
+	{
+		goto _error;
+	}
+	if (H5VL_julea_db_attr_term())
+	{
+		goto _error;
+	}
+	if (H5VL_julea_db_dataset_term())
+	{
+		goto _error;
+	}
+	if (H5VL_julea_db_file_term())
+	{
+		goto _error;
+	}
+	return 0;
 _error:
-        return 1;
+	return 1;
 }
 
 /**
