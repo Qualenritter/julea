@@ -153,67 +153,43 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	object->attr.space = H5VL_julea_db_space_encode(&space_id);
 	object->attr.distribution = NULL;
 	object->attr.object = NULL;
-	G_DEBUG_HERE();
 	if (!(entry = j_db_entry_new(julea_db_schema_attr, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "datatype", object->attr.datatype->backend_id, object->attr.datatype->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "space", object->attr.space->backend_id, object->attr.space->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_entry_insert(entry, batch, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_batch_execute(batch))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!(iterator = j_db_iterator_new(julea_db_schema_attr, selector, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	G_DEBUG_HERE();
 	object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-	G_DEBUG_HERE();
 	hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len);
-	G_DEBUG_HERE();
 	object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution);
-	g_debug("hex_buf %s", hex_buf);
-	G_DEBUG_HERE();
 	j_distributed_object_create(object->attr.object, batch);
-	G_DEBUG_HERE();
 	if (!j_batch_execute(batch))
 		goto _error;
-	G_DEBUG_HERE();
 	return object;
 _error:
-	G_DEBUG_HERE();
 	H5VL_julea_db_error_handler(error);
-	G_DEBUG_HERE();
 	H5VL_julea_db_object_unref(object);
-	G_DEBUG_HERE();
 	return NULL;
 }
 static void*
@@ -266,56 +242,40 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 	object->attr.distribution = NULL;
 	object->attr.object = NULL;
 
-	G_DEBUG_HERE();
 	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!(iterator = j_db_iterator_new(julea_db_schema_attr, selector, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "space", &type, &space_id_buf, &space_id_buf_len, &error))
-		goto _error;g_assert(type==J_DB_TYPE_BLOB);
+		goto _error;
+	g_assert(type == J_DB_TYPE_BLOB);
 	if (!(object->attr.space = H5VL_julea_db_space_decode(space_id_buf, space_id_buf_len)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "datatype", &type, &datatype_id_buf, &datatype_id_buf_len, &error))
-		goto _error;g_assert(type==J_DB_TYPE_BLOB);
+		goto _error;
+	g_assert(type == J_DB_TYPE_BLOB);
 	if (!(object->attr.datatype = H5VL_julea_db_datatype_decode(datatype_id_buf, datatype_id_buf_len)))
 		goto _error;
-	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	G_DEBUG_HERE();
 	object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-	G_DEBUG_HERE();
 	hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len);
-	G_DEBUG_HERE();
 	object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution);
 	g_debug("hex_buf %s", hex_buf);
-	G_DEBUG_HERE();
 	j_distributed_object_create(object->attr.object, batch);
-	G_DEBUG_HERE();
 	if (!j_batch_execute(batch))
 		goto _error;
-	G_DEBUG_HERE();
 	return object;
 _error:
-	G_DEBUG_HERE();
 	H5VL_julea_db_error_handler(error);
-	G_DEBUG_HERE();
 	H5VL_julea_db_object_unref(object);
-	G_DEBUG_HERE();
 	return NULL;
 }
 static herr_t

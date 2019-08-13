@@ -244,53 +244,36 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	object->dataset.distribution = NULL;
 	object->dataset.object = NULL;
 
-	G_DEBUG_HERE();
 	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!(iterator = j_db_iterator_new(julea_db_schema_dataset, selector, &error)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "space", &type, &space_id_buf, &space_id_buf_len, &error))
 		goto _error;
-g_assert(type==J_DB_TYPE_BLOB);
+	g_assert(type == J_DB_TYPE_BLOB);
 	if (!(object->dataset.space = H5VL_julea_db_space_decode(space_id_buf, space_id_buf_len)))
 		goto _error;
-	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "datatype", &type, &datatype_id_buf, &datatype_id_buf_len, &error))
 		goto _error;
-g_assert(type==J_DB_TYPE_BLOB);
+	g_assert(type == J_DB_TYPE_BLOB);
 	if (!(object->dataset.datatype = H5VL_julea_db_datatype_decode(datatype_id_buf, datatype_id_buf_len)))
 		goto _error;
-	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	G_DEBUG_HERE();
 	object->dataset.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-	G_DEBUG_HERE();
 	hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len);
-	G_DEBUG_HERE();
 	object->dataset.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->dataset.distribution);
-	g_debug("hex_buf %s", hex_buf);
-	G_DEBUG_HERE();
 	return object;
 _error:
-	G_DEBUG_HERE();
 	H5VL_julea_db_error_handler(error);
-	G_DEBUG_HERE();
 	H5VL_julea_db_object_unref(object);
-	G_DEBUG_HERE();
 	return NULL;
 }
 static herr_t
