@@ -34,15 +34,26 @@
 #include <unistd.h>
 #include <string.h>
 
-#ifdef JULEA_HDF_COMPILES
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include "jhdf5-db.h"
+#include "jhdf5-db-shared.c"
 
 #define _GNU_SOURCE
 
 static JDBSchema* julea_db_schema_dataset = NULL;
+
+static herr_t
+H5VL_julea_db_dataset_term(void)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	j_db_schema_unref(julea_db_schema_dataset);
+	julea_db_schema_dataset = NULL;
+	return 0;
+}
 
 static herr_t
 H5VL_julea_db_dataset_init(hid_t vipl_id)
@@ -96,16 +107,6 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 _error:
 	return 1;
 }
-static herr_t
-H5VL_julea_db_dataset_term(void)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	j_db_schema_unref(julea_db_schema_dataset);
-	julea_db_schema_dataset = NULL;
-	return 0;
-}
-
 static void*
 H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,
@@ -535,4 +536,3 @@ H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 	return 0;
 }
 #pragma GCC diagnostic pop
-#endif

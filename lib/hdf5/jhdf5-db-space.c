@@ -20,6 +20,8 @@
  * \file
  **/
 
+#define JULEA_HDF5_SPACE_COMPILES
+
 #include <julea-config.h>
 #include <julea.h>
 #include <julea-db.h>
@@ -34,16 +36,26 @@
 #include <unistd.h>
 #include <string.h>
 
-#ifdef JULEA_HDF_COMPILES
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include "jhdf5-db.h"
+#include "jhdf5-db-shared.c"
 
 #define _GNU_SOURCE
 
 static JDBSchema* julea_db_schema_space = NULL;
 
+static herr_t
+H5VL_julea_db_space_term(void)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	j_db_schema_unref(julea_db_schema_space);
+	julea_db_schema_space = NULL;
+	return 0;
+}
 static herr_t
 H5VL_julea_db_space_init(hid_t vipl_id)
 {
@@ -91,15 +103,6 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	H5VL_julea_db_space_term();
 	return 1;
-}
-herr_t
-H5VL_julea_db_space_term(void)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	j_db_schema_unref(julea_db_schema_space);
-	julea_db_schema_space = NULL;
-	return 0;
 }
 
 static JHDF5Object_t*
@@ -205,4 +208,3 @@ _error:
 }
 
 #pragma GCC diagnostic pop
-#endif

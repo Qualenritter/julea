@@ -34,21 +34,22 @@
 #include <unistd.h>
 #include <string.h>
 
-#ifdef JULEA_HDF_COMPILES
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include "jhdf5-db.h"
+#include "jhdf5-db-shared.c"
 
 #define _GNU_SOURCE
 
 static herr_t
-H5VL_julea_db_group_init(hid_t vipl_id)
+H5VL_julea_db_group_term(void)
 {
 	return 0;
 }
-herr_t
-H5VL_julea_db_group_term(void)
+static herr_t
+H5VL_julea_db_group_init(hid_t vipl_id)
 {
 	return 0;
 }
@@ -106,4 +107,3 @@ H5VL_julea_db_group_close(void* grp, hid_t dxpl_id, void** req)
 }
 
 #pragma GCC diagnostic pop
-#endif

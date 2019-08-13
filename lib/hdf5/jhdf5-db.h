@@ -23,6 +23,8 @@
 #ifndef H5VL_JULEA_DB_H
 #define H5VL_JULEA_DB_H
 
+#define H5Sencode_vers 1
+
 #include <hdf5.h>
 #include <H5PLextern.h>
 
@@ -110,28 +112,18 @@ H5VL_julea_db_space_encode(hid_t* type_id);
 static JHDF5Object_t*
 H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len);
 
-static herr_t
-H5VL_julea_db_attr_init(hid_t vipl_id);
-herr_t
-H5VL_julea_db_attr_term(void);
-static herr_t
-H5VL_julea_db_dataset_init(hid_t vipl_id);
-static herr_t
-H5VL_julea_db_dataset_term(void);
-static herr_t
-H5VL_julea_db_datatype_init(hid_t vipl_id);
-herr_t
-H5VL_julea_db_datatype_term(void);
-static herr_t
-H5VL_julea_db_file_init(hid_t vipl_id);
-static herr_t
-H5VL_julea_db_file_term(void);
-static herr_t
-H5VL_julea_db_group_init(hid_t vipl_id);
-herr_t
-H5VL_julea_db_group_term(void);
-static herr_t
-H5VL_julea_db_space_init(hid_t vipl_id);
-herr_t
-H5VL_julea_db_space_term(void);
+#ifndef JULEA_HDF5_MAIN_COMPILES
+#ifndef JULEA_HDF5_SPACE_COMPILES
+static JHDF5Object_t*H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len){return NULL;}
+static JHDF5Object_t*
+H5VL_julea_db_space_encode(hid_t* type_id){return NULL;}
+#endif
+#ifndef JULEA_HDF5_DATATYPE_COMPILES
+static JHDF5Object_t*
+H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len){return NULL;}
+static JHDF5Object_t*
+H5VL_julea_db_datatype_encode(hid_t* type_id){return NULL;}
+#endif
+#endif
+
 #endif

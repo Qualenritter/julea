@@ -20,6 +20,8 @@
  * \file
  **/
 
+#define JULEA_HDF5_MAIN_COMPILES
+
 #include <julea-config.h>
 #include <julea.h>
 #include <julea-db.h>
@@ -34,11 +36,41 @@
 #include <unistd.h>
 #include <string.h>
 
-#ifdef JULEA_HDF_COMPILES
+#define H5Sencode_vers 1
+
+#include <hdf5.h>
+#include <H5PLextern.h>
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+static herr_t
+H5VL_julea_db_attr_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_attr_term(void);
+static herr_t
+H5VL_julea_db_dataset_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_dataset_term(void);
+static herr_t
+H5VL_julea_db_datatype_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_datatype_term(void);
+static herr_t
+H5VL_julea_db_file_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_file_term(void);
+static herr_t
+H5VL_julea_db_group_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_group_term(void);
+static herr_t
+H5VL_julea_db_space_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_space_term(void);
+
 #include "jhdf5-db.h"
+#include "jhdf5-db-shared.c"
 #include "jhdf5-db-file.c"
 #include "jhdf5-db-dataset.c"
 #include "jhdf5-db-attr.c"
@@ -50,157 +82,59 @@
 
 #define JULEA_DB 530
 
-static char*
-H5VL_julea_db_buf_to_hex(const char* prefix, const char* buf, guint buf_len)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	const guint prefix_len = strlen(prefix);
-	char* str = g_new(char, buf_len * 2 + 1 + prefix_len);
-	unsigned const char* pin = (unsigned const char*)buf;
-	unsigned const char* pin_end = pin + buf_len;
-	const char* hex = "0123456789ABCDEF";
-	char* pout = str;
-
-	memcpy(str, prefix, prefix_len);
-	pout += prefix_len;
-	while (pin < pin_end)
-	{
-		*pout++ = hex[(*pin >> 4) & 0xF];
-		*pout++ = hex[(*pin++) & 0xF];
-	}
-	*pout = 0;
-	return str;
-}
-
-static void
-H5VL_julea_db_error_handler(GError* error)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	if (error)
-	{
-		g_debug("%s %d %s", g_quark_to_string(error->domain), error->code, error->message);
-	}
-}
-
-static JHDF5Object_t*
-H5VL_julea_db_object_ref(JHDF5Object_t* object)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	g_return_val_if_fail(object != NULL, NULL);
-
-	g_atomic_int_inc(&object->ref_count);
-	return object;
-}
-static JHDF5Object_t*
-H5VL_julea_db_object_new(JHDF5ObjectType type)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	JHDF5Object_t* object;
-
-	g_return_val_if_fail(type < _J_HDF5_OBJECT_TYPE_COUNT, NULL);
-
-	object = g_new0(JHDF5Object_t, 1);
-	object->backend_id = NULL;
-	object->backend_id_len = 0;
-	object->ref_count = 1;
-	object->type = type;
-	return object;
-}
-static void
-H5VL_julea_db_object_unref(JHDF5Object_t* object)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	if (object && g_atomic_int_dec_and_test(&object->ref_count))
-	{
-		switch (object->type)
-		{
-		case J_HDF5_OBJECT_TYPE_FILE:
-			g_free(object->file.name);
-			break;
-		case J_HDF5_OBJECT_TYPE_DATASET:
-			H5VL_julea_db_object_unref(object->dataset.file);
-			g_free(object->dataset.name);
-			j_distribution_unref(object->dataset.distribution);
-			j_distributed_object_unref(object->dataset.object);
-			break;
-		case J_HDF5_OBJECT_TYPE_ATTR:
-			H5VL_julea_db_object_unref(object->attr.file);
-			g_free(object->attr.name);
-			j_distribution_unref(object->attr.distribution);
-			j_distributed_object_unref(object->attr.object);
-			break;
-		case J_HDF5_OBJECT_TYPE_DATATYPE:
-			g_free(object->datatype.data);
-			break;
-		case J_HDF5_OBJECT_TYPE_SPACE:
-			g_free(object->space.data);
-			break;
-		case _J_HDF5_OBJECT_TYPE_COUNT:
-		default:
-			g_assert_not_reached();
-		}
-		g_free(object->backend_id);
-		g_free(object);
-	}
-}
-
 static herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {
-	J_TRACE_FUNCTION(NULL);
+        J_TRACE_FUNCTION(NULL);
 
-	if (H5VL_julea_db_file_init(vipl_id))
-		goto _error_file;
-	if (H5VL_julea_db_dataset_init(vipl_id))
-		goto _error_dataset;
-	if (H5VL_julea_db_attr_init(vipl_id))
-		goto _error_attr;
-	if (H5VL_julea_db_datatype_init(vipl_id))
-		goto _error_datatype;
-	if (H5VL_julea_db_group_init(vipl_id))
-		goto _error_group;
-	if (H5VL_julea_db_space_init(vipl_id))
-		goto _error_space;
-	return 0;
+        if (H5VL_julea_db_file_init(vipl_id))
+                goto _error_file;
+        if (H5VL_julea_db_dataset_init(vipl_id))
+                goto _error_dataset;
+        if (H5VL_julea_db_attr_init(vipl_id))
+                goto _error_attr;
+        if (H5VL_julea_db_datatype_init(vipl_id))
+                goto _error_datatype;
+        if (H5VL_julea_db_group_init(vipl_id))
+                goto _error_group;
+        if (H5VL_julea_db_space_init(vipl_id))
+                goto _error_space;
+        return 0;
 _error_space:
-	H5VL_julea_db_space_term();
+        H5VL_julea_db_space_term();
 _error_group:
-	H5VL_julea_db_group_term();
+        H5VL_julea_db_group_term();
 _error_datatype:
-	H5VL_julea_db_datatype_term();
+        H5VL_julea_db_datatype_term();
 _error_attr:
-	H5VL_julea_db_attr_term();
+        H5VL_julea_db_attr_term();
 _error_dataset:
-	H5VL_julea_db_dataset_term();
+        H5VL_julea_db_dataset_term();
 _error_file:
-	H5VL_julea_db_file_term();
-	return 1;
+        H5VL_julea_db_file_term();
+        return 1;
 }
+
 static herr_t
 H5VL_julea_db_term(void)
 {
-	J_TRACE_FUNCTION(NULL);
+        J_TRACE_FUNCTION(NULL);
 
-	if (H5VL_julea_db_space_term())
-		goto _error;
-	if (H5VL_julea_db_group_term())
-		goto _error;
-	if (H5VL_julea_db_datatype_term())
-		goto _error;
-	if (H5VL_julea_db_attr_term())
-		goto _error;
-	if (H5VL_julea_db_dataset_term())
-		goto _error;
-	if (H5VL_julea_db_file_term())
-		goto _error;
-	return 0;
+        if (H5VL_julea_db_space_term())
+                goto _error;
+        if (H5VL_julea_db_group_term())
+                goto _error;
+        if (H5VL_julea_db_datatype_term())
+                goto _error;
+        if (H5VL_julea_db_attr_term())
+                goto _error;
+        if (H5VL_julea_db_dataset_term())
+                goto _error;
+        if (H5VL_julea_db_file_term())
+                goto _error;
+        return 0;
 _error:
-	return 1;
+        return 1;
 }
 
 /**
@@ -299,4 +233,3 @@ static const H5VL_class_t H5VL_julea_db_g = {
 	.optional = NULL
 };
 #pragma GCC diagnostic pop
-#endif

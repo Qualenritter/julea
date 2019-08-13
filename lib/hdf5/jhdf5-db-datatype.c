@@ -20,6 +20,8 @@
  * \file
  **/
 
+#define JULEA_HDF5_DATATYPE_COMPILES
+
 #include <julea-config.h>
 #include <julea.h>
 #include <julea-db.h>
@@ -34,16 +36,26 @@
 #include <unistd.h>
 #include <string.h>
 
-#ifdef JULEA_HDF_COMPILES
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include "jhdf5-db.h"
+#include "jhdf5-db-shared.c"
 
 #define _GNU_SOURCE
 
 static JDBSchema* julea_db_schema_datatype = NULL;
 
+static herr_t
+H5VL_julea_db_datatype_term(void)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	j_db_schema_unref(julea_db_schema_datatype);
+	julea_db_schema_datatype = NULL;
+	return 0;
+}
 static herr_t
 H5VL_julea_db_datatype_init(hid_t vipl_id)
 {
@@ -92,15 +104,6 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	H5VL_julea_db_datatype_term();
 	return 1;
-}
-herr_t
-H5VL_julea_db_datatype_term(void)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	j_db_schema_unref(julea_db_schema_datatype);
-	julea_db_schema_datatype = NULL;
-	return 0;
 }
 
 static JHDF5Object_t*
@@ -262,4 +265,3 @@ H5VL_julea_db_datatype_close(void* dt, hid_t dxpl_id, void** req)
 }
 
 #pragma GCC diagnostic pop
-#endif
