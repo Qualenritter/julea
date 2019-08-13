@@ -7,9 +7,9 @@ rm -rf build
 basepath="/mnt2/juleatest"
 julea-config --user \
 	--object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" \
-	--object-backend=posix --object-component=server --object-path=${basepath}/posix \
-	--kv-backend=sqlite --kv-component=server --kv-path=${basepath}/lmdb \
-	--db-backend=sqlite --db-component=server --db-path=memory
+	--object-backend=posix --object-component=server --object-path=${basepath}/object \
+	--kv-backend=sqlite --kv-component=server --kv-path=${basepath}/kv \
+	--db-backend=sqlite --db-component=server --db-path=${basepath}/db
 rm -rf ${basepath}
 mkdir -p ${basepath}
 (
