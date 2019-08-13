@@ -91,7 +91,7 @@ struct JHDF5Object_t
 static void
 H5VL_julea_db_error_handler(GError* error);
 static char*
-H5VL_julea_db_buf_to_hex(const char* buf, guint buf_len);
+H5VL_julea_db_buf_to_hex(const char* prefix, const char* buf, guint buf_len);
 
 static JHDF5Object_t*
 H5VL_julea_db_object_new(JHDF5ObjectType type);

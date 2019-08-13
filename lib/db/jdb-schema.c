@@ -110,8 +110,6 @@ j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError
 	g_return_val_if_fail(type < _J_DB_TYPE_COUNT, FALSE);
 	g_return_val_if_fail(!schema->server_side, FALSE);
 
-	g_debug("add_field '%s'", name);
-
 	if (!schema->bson_initialized)
 	{
 		if (G_UNLIKELY(!j_bson_init(&schema->bson, error)))

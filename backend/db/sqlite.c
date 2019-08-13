@@ -33,7 +33,7 @@ static sqlite3* backend_db = NULL;
 static gboolean
 j_sql_finalize(void* _stmt, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
 
@@ -50,7 +50,7 @@ _error:
 static gboolean
 j_sql_prepare(const char* sql, void* _stmt, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt** stmt = _stmt;
 
@@ -68,7 +68,7 @@ _error:
 static gboolean
 j_sql_bind_null(void* _stmt, guint idx, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
 
@@ -85,10 +85,11 @@ _error:
 static gboolean
 j_sql_column(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
 
+	memset(value, 0, sizeof(*value));
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
@@ -129,7 +130,7 @@ _error:
 static gboolean
 j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
 
@@ -203,7 +204,7 @@ _error:
 static gboolean
 j_sql_reset(void* _stmt, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
 
@@ -220,7 +221,7 @@ _error:
 static gboolean
 j_sql_exec(const char* sql, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt;
 
@@ -251,7 +252,7 @@ _error2:
 static gboolean
 j_sql_step(void* _stmt, gboolean* found, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
 	guint ret;
@@ -278,7 +279,7 @@ _error:
 static gboolean
 j_sql_step_and_reset_check_done(void* _stmt, GError** error)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	gboolean sql_found;
 
@@ -306,7 +307,7 @@ _error2:
 static gboolean
 backend_init(gchar const* path)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	g_autofree gchar* dirname = NULL;
 
@@ -343,7 +344,7 @@ _error:
 static void
 backend_fini(void)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	fini_sql();
 	sqlite3_close(backend_db);

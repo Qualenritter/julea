@@ -51,21 +51,24 @@
 #define JULEA_DB 530
 
 static char*
-H5VL_julea_db_buf_to_hex(const char* buf, guint buf_len)
+H5VL_julea_db_buf_to_hex(const char* prefix, const char* buf, guint buf_len)
 {
-	char* str = g_new(char, buf_len * 2 + 1);
+	J_TRACE_FUNCTION(NULL);
 
+	const guint prefix_len = strlen(prefix);
+	char* str = g_new(char, buf_len * 2 + 1 + prefix_len);
 	unsigned const char* pin = (unsigned const char*)buf;
+	unsigned const char* pin_end = pin + buf_len;
 	const char* hex = "0123456789ABCDEF";
 	char* pout = str;
-	guint i = 0;
-	for (; i < sizeof(buf) - 1; ++i)
+
+	memcpy(str, prefix, prefix_len);
+	pout += prefix_len;
+	while (pin < pin_end)
 	{
 		*pout++ = hex[(*pin >> 4) & 0xF];
 		*pout++ = hex[(*pin++) & 0xF];
 	}
-	*pout++ = hex[(*pin >> 4) & 0xF];
-	*pout++ = hex[(*pin) & 0xF];
 	*pout = 0;
 	return str;
 }
