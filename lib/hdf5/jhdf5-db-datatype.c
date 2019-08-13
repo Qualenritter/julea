@@ -52,7 +52,8 @@ H5VL_julea_db_datatype_init(hid_t vipl_id)
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
 
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+		goto _error;
 
 	if (!(julea_db_schema_datatype = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype", NULL)))
 		goto _error;
@@ -62,6 +63,8 @@ H5VL_julea_db_datatype_init(hid_t vipl_id)
 		{
 			if (error->code == J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND)
 			{
+				g_error_free(error);
+				error = NULL;
 				j_db_schema_unref(julea_db_schema_datatype);
 				if (!(julea_db_schema_datatype = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype", NULL)))
 					goto _error;
@@ -112,15 +115,16 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 	JDBType type;
 	guint64 length;
 
-	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE);
-	object->datatype.data = NULL;
-	object->backend_id = g_new(char, backend_id_len);
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE)))
+		goto _error;
+	if (!(object->backend_id = g_new(char, backend_id_len)))
+		goto _error;
 	memcpy(object->backend_id, backend_id, backend_id_len);
 	object->backend_id_len = backend_id_len;
 
 	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, &object->backend_id, object->backend_id_len, &error))
+	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, object->backend_id, object->backend_id_len, &error))
 		goto _error;
 	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
 		goto _error;
@@ -129,7 +133,8 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 	if (!j_db_iterator_get_field(iterator, "data", &type, &object->datatype.data, &length, &error))
 		goto _error;
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	object->datatype.hdf5_id = H5Tdecode(object->datatype.data);
+	if (!(object->datatype.hdf5_id = H5Tdecode(object->datatype.data)))
+		goto _error;
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -155,12 +160,15 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 	g_return_val_if_fail(type_id != NULL, NULL);
 	g_return_val_if_fail(*type_id != -1, NULL);
 
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+		goto _error;
 
 	//transform to binary
-	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE);
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE)))
+		goto _error;
 	H5Tencode(*type_id, NULL, &size);
-	object->datatype.data = g_new(char, size);
+	if (!(object->datatype.data = g_new(char, size)))
+		goto _error;
 	H5Tencode(*type_id, object->datatype.data, &size);
 	object->datatype.hdf5_id = *type_id;
 
@@ -206,6 +214,7 @@ H5VL_julea_db_datatype_commit(void* obj, const H5VL_loc_params_t* loc_params, co
 	hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -214,6 +223,7 @@ H5VL_julea_db_datatype_open(void* obj, const H5VL_loc_params_t* loc_params, cons
 	hid_t tapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -221,6 +231,7 @@ static herr_t
 H5VL_julea_db_datatype_get(void* obj, H5VL_datatype_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -229,6 +240,7 @@ H5VL_julea_db_datatype_specific(void* obj, H5VL_datatype_specific_t specific_typ
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -236,6 +248,7 @@ static herr_t
 H5VL_julea_db_datatype_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -243,6 +256,7 @@ static herr_t
 H5VL_julea_db_datatype_close(void* dt, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }

@@ -74,6 +74,7 @@ static void
 H5VL_julea_db_error_handler(GError* error)
 {
 	J_TRACE_FUNCTION(NULL);
+	G_DEBUG_HERE();
 
 	if (error)
 	{
@@ -85,6 +86,7 @@ static JHDF5Object_t*
 H5VL_julea_db_object_ref(JHDF5Object_t* object)
 {
 	J_TRACE_FUNCTION(NULL);
+	G_DEBUG_HERE();
 
 	g_return_val_if_fail(object != NULL, NULL);
 
@@ -95,6 +97,7 @@ static JHDF5Object_t*
 H5VL_julea_db_object_new(JHDF5ObjectType type)
 {
 	J_TRACE_FUNCTION(NULL);
+	G_DEBUG_HERE();
 
 	JHDF5Object_t* object;
 
@@ -111,6 +114,7 @@ static void
 H5VL_julea_db_object_unref(JHDF5Object_t* object)
 {
 	J_TRACE_FUNCTION(NULL);
+	G_DEBUG_HERE();
 
 	if (object && g_atomic_int_dec_and_test(&object->ref_count))
 	{
@@ -150,6 +154,7 @@ static herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
+	G_DEBUG_HERE();
 
 	if (H5VL_julea_db_file_init(vipl_id))
 		goto _error_file;
@@ -182,6 +187,7 @@ static herr_t
 H5VL_julea_db_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+	G_DEBUG_HERE();
 
 	if (H5VL_julea_db_space_term())
 		goto _error;

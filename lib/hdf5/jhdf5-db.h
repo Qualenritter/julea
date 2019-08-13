@@ -26,7 +26,7 @@
 #include <hdf5.h>
 #include <H5PLextern.h>
 
-#define JULEA_HDF5_DB_NAMESPACE "hdf5-db"
+#define JULEA_HDF5_DB_NAMESPACE "HDF5_DB"
 
 enum JHDF5ObjectType
 {

@@ -52,8 +52,8 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
 
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+		goto _error;
 	if (!(julea_db_schema_attr = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "attr", NULL)))
 		goto _error;
 	if (!(j_db_schema_get(julea_db_schema_attr, batch, &error) && j_batch_execute(batch)))
@@ -62,6 +62,8 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 		{
 			if (error->code == J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND)
 			{
+				g_error_free(error);
+				error = NULL;
 				j_db_schema_unref(julea_db_schema_attr);
 				if (!(julea_db_schema_attr = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "attr", NULL)))
 					goto _error;
@@ -144,15 +146,18 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 		goto _error;
 	}
 
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-
-	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR);
-	object->attr.name = g_strdup(name);
-	object->attr.file = H5VL_julea_db_object_ref(file);
-	object->attr.datatype = H5VL_julea_db_datatype_encode(&type_id);
-	object->attr.space = H5VL_julea_db_space_encode(&space_id);
-	object->attr.distribution = NULL;
-	object->attr.object = NULL;
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+		goto _error;
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR)))
+		goto _error;
+	if (!(object->attr.name = g_strdup(name)))
+		goto _error;
+	if (!(object->attr.file = H5VL_julea_db_object_ref(file)))
+		goto _error;
+	if (!(object->attr.datatype = H5VL_julea_db_datatype_encode(&type_id)))
+		goto _error;
+	if (!(object->attr.space = H5VL_julea_db_space_encode(&space_id)))
+		goto _error;
 	if (!(entry = j_db_entry_new(julea_db_schema_attr, &error)))
 		goto _error;
 	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
@@ -180,9 +185,12 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-	hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len);
-	object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution);
+	if (!(object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
+		goto _error;
+	if (!(hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len)))
+		goto _error;
+	if (!(object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution)))
+		goto _error;
 	j_distributed_object_create(object->attr.object, batch);
 	if (!j_batch_execute(batch))
 		goto _error;
@@ -234,14 +242,14 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 		goto _error;
 	}
 
-	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-
-	object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR);
-	object->attr.name = g_strdup(name);
-	object->attr.file = H5VL_julea_db_object_ref(file);
-	object->attr.distribution = NULL;
-	object->attr.object = NULL;
-
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+		goto _error;
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR)))
+		goto _error;
+	if (!(object->attr.name = g_strdup(name)))
+		goto _error;
+	if (!(object->attr.file = H5VL_julea_db_object_ref(file)))
+		goto _error;
 	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
@@ -265,10 +273,12 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 	if (!(object->attr.datatype = H5VL_julea_db_datatype_decode(datatype_id_buf, datatype_id_buf_len)))
 		goto _error;
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-	hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len);
-	object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution);
-	g_debug("hex_buf %s", hex_buf);
+	if (!(object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
+		goto _error;
+	if (!(hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len)))
+		goto _error;
+	if (!(object->attr.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->attr.distribution)))
+		goto _error;
 	j_distributed_object_create(object->attr.object, batch);
 	if (!j_batch_execute(batch))
 		goto _error;
@@ -299,7 +309,6 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 	ndims = H5Sget_simple_extent_ndims(object->attr.space->space.hdf5_id);
 	dims = g_new(hsize_t, ndims);
 	H5Sget_simple_extent_dims(object->attr.space->space.hdf5_id, dims, NULL);
-
 	for (gint i = 0; i < ndims; i++)
 	{
 		data_size *= dims[i];
@@ -334,7 +343,6 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 	ndims = H5Sget_simple_extent_ndims(object->attr.space->space.hdf5_id);
 	dims = g_new(hsize_t, ndims);
 	H5Sget_simple_extent_dims(object->attr.space->space.hdf5_id, dims, NULL);
-
 	for (gint i = 0; i < ndims; i++)
 	{
 		data_size *= dims[i];
@@ -352,6 +360,7 @@ static herr_t
 H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -360,6 +369,7 @@ H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -367,6 +377,7 @@ static herr_t
 H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
