@@ -361,14 +361,37 @@ H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void*
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_ATTR, 1);
+
+switch (get_type)
+        {
+        case H5VL_ATTR_GET_SPACE:
+		*(va_arg(arguments, hid_t*)) = object->attr.space->space.hdf5_id;
+	break;
+        case H5VL_ATTR_GET_TYPE:
+		*(va_arg(arguments, hid_t*)) = object->attr.datatype->datatype.hdf5_id;
+	break;
+	case H5VL_ATTR_GET_ACPL:
+        case H5VL_ATTR_GET_INFO:
+        case H5VL_ATTR_GET_NAME:
+        case H5VL_ATTR_GET_STORAGE_SIZE:
+        default:
+                g_assert_not_reached();
+                exit(1);
+        }
+return 0;
 }
 static herr_t
 H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL_attr_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+        JHDF5Object_t* object = obj;
+
+        g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_ATTR, 1);
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -377,6 +400,10 @@ static herr_t
 H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+        JHDF5Object_t* object = obj;
+
+        g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_ATTR, 1);
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();

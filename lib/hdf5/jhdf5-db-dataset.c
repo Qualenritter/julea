@@ -366,14 +366,28 @@ _error:
 static herr_t
 H5VL_julea_db_dataset_get(void* obj, H5VL_dataset_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
-	J_TRACE_FUNCTION(NULL);
+        J_TRACE_FUNCTION(NULL);
 
-	JHDF5Object_t* object = obj;
+        JHDF5Object_t* object = obj;
 
-	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
+        g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
 
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+switch (get_type)
+        {
+case H5VL_DATASET_GET_SPACE:
+                *(va_arg(arguments, hid_t*)) = object->dataset.space->space.hdf5_id;break;
+case H5VL_DATASET_GET_TYPE:
+                *(va_arg(arguments, hid_t*)) = object->dataset.datatype->datatype.hdf5_id;break;
+case H5VL_DATASET_GET_DAPL:
+case H5VL_DATASET_GET_DCPL:
+case H5VL_DATASET_GET_OFFSET:
+case H5VL_DATASET_GET_SPACE_STATUS:
+case H5VL_DATASET_GET_STORAGE_SIZE:
+        default:
+                g_assert_not_reached();
+                exit(1);
+        }
+return 0;
 }
 static herr_t
 H5VL_julea_db_dataset_specific(void* obj, H5VL_dataset_specific_t specific_type,
