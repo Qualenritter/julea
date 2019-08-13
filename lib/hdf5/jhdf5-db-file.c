@@ -54,7 +54,7 @@ H5VL_julea_db_file_init(hid_t vipl_id)
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 
-	if (!(julea_db_schema_file = j_db_schema_new("hdf5", "file", NULL)))
+	if (!(julea_db_schema_file = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "file", NULL)))
 		goto _error;
 	if (!(j_db_schema_get(julea_db_schema_file, batch, &error) && j_batch_execute(batch)))
 	{
@@ -63,7 +63,7 @@ H5VL_julea_db_file_init(hid_t vipl_id)
 			if (error->code == J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND)
 			{
 				j_db_schema_unref(julea_db_schema_file);
-				if (!(julea_db_schema_file = j_db_schema_new("hdf5", "file", NULL)))
+				if (!(julea_db_schema_file = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "file", NULL)))
 					goto _error;
 				if (!j_db_schema_add_field(julea_db_schema_file, "name", J_DB_TYPE_STRING, &error))
 					goto _error;
