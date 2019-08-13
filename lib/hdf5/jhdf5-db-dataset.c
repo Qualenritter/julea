@@ -104,26 +104,6 @@ H5VL_julea_db_dataset_term(void)
 	return 0;
 }
 
-static char*
-buf_to_hex(const char* buf, guint buf_len)
-{
-	char* str = g_new(char, buf_len * 2 + 1);
-
-	unsigned const char* pin = (unsigned const char*)buf;
-	const char* hex = "0123456789ABCDEF";
-	char* pout = str;
-	guint i = 0;
-	for (; i < sizeof(buf) - 1; ++i)
-	{
-		*pout++ = hex[(*pin >> 4) & 0xF];
-		*pout++ = hex[(*pin++) & 0xF];
-	}
-	*pout++ = hex[(*pin >> 4) & 0xF];
-	*pout++ = hex[(*pin) & 0xF];
-	*pout = 0;
-	return str;
-}
-
 static void*
 H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,
@@ -153,6 +133,9 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
 		break;
+	case J_HDF5_OBJECT_TYPE_ATTR:
+		file = parent->attr.file;
+		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
 	case _J_HDF5_OBJECT_TYPE_COUNT:
@@ -171,71 +154,71 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	object->dataset.distribution = NULL;
 	object->dataset.object = NULL;
 
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "datatype", object->dataset.datatype->backend_id, object->dataset.datatype->backend_id_len, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_entry_set_field(entry, "space", object->dataset.space->backend_id, object->dataset.space->backend_id_len, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_entry_insert(entry, batch, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_batch_execute(batch))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!(iterator = j_db_iterator_new(julea_db_schema_dataset, selector, &error)))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_iterator_next(iterator, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	g_assert(!j_db_iterator_next(iterator, NULL));
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	object->dataset.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN);
-G_DEBUG_HERE();
-	hex_buf = buf_to_hex(object->backend_id, object->backend_id_len);
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
+	hex_buf = H5VL_julea_db_buf_to_hex(object->backend_id, object->backend_id_len);
+	G_DEBUG_HERE();
 	object->dataset.object = j_distributed_object_new("hdf5", hex_buf, object->dataset.distribution);
-g_debug("hex_buf %s",hex_buf);
-G_DEBUG_HERE();
+	g_debug("hex_buf %s", hex_buf);
+	G_DEBUG_HERE();
 	j_distributed_object_create(object->dataset.object, batch);
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	if (!j_batch_execute(batch))
 		goto _error;
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	g_free(hex_buf);
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	return object;
 _error:
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	H5VL_julea_db_error_handler(error);
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	H5VL_julea_db_object_unref(object);
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	g_free(hex_buf);
-G_DEBUG_HERE();
+	G_DEBUG_HERE();
 	return NULL;
 }
 static void*
@@ -269,9 +252,9 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_read = 0;
 	data_size = H5Tget_size(object->dataset.datatype->datatype.hdf5_id);
-	ndims = H5Sget_simple_extent_ndims(space_id);//space_id from dataset_create
+	ndims = H5Sget_simple_extent_ndims(object->dataset.space->space.hdf5_id);
 	dims = g_new(hsize_t, ndims);
-	H5Sget_simple_extent_dims(space_id, dims, NULL);
+	H5Sget_simple_extent_dims(object->dataset.space->space.hdf5_id, dims, NULL);
 
 	for (gint i = 0; i < ndims; i++)
 	{
@@ -308,9 +291,9 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_written = 0;
 	data_size = H5Tget_size(object->dataset.datatype->datatype.hdf5_id);
-	ndims = H5Sget_simple_extent_ndims(space_id);//space_id from dataset_create
+	ndims = H5Sget_simple_extent_ndims(object->dataset.space->space.hdf5_id);
 	dims = g_new(hsize_t, ndims);
-	H5Sget_simple_extent_dims(space_id, dims, NULL);
+	H5Sget_simple_extent_dims(object->dataset.space->space.hdf5_id, dims, NULL);
 
 	for (gint i = 0; i < ndims; i++)
 	{

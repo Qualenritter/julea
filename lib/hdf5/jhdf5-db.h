@@ -30,6 +30,7 @@ enum JHDF5ObjectType
 {
 	J_HDF5_OBJECT_TYPE_FILE = 0,
 	J_HDF5_OBJECT_TYPE_DATASET,
+	J_HDF5_OBJECT_TYPE_ATTR,
 	J_HDF5_OBJECT_TYPE_DATATYPE,
 	J_HDF5_OBJECT_TYPE_SPACE,
 	_J_HDF5_OBJECT_TYPE_COUNT
@@ -61,6 +62,15 @@ struct JHDF5Object_t
 		} dataset;
 		struct
 		{
+			char* name;
+			JHDF5Object_t* file;
+			JHDF5Object_t* datatype;
+			JHDF5Object_t* space;
+			JDistribution* distribution;
+			JDistributedObject* object;
+		} attr;
+		struct
+		{
 			void* data;
 			size_t data_size;
 			hid_t hdf5_id;
@@ -78,6 +88,8 @@ struct JHDF5Object_t
 
 static void
 H5VL_julea_db_error_handler(GError* error);
+static char*
+H5VL_julea_db_buf_to_hex(const char* buf, guint buf_len);
 
 static JHDF5Object_t*
 H5VL_julea_db_object_new(JHDF5ObjectType type);

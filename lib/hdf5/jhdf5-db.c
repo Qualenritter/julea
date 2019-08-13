@@ -50,6 +50,26 @@
 
 #define JULEA_DB 530
 
+static char*
+H5VL_julea_db_buf_to_hex(const char* buf, guint buf_len)
+{
+	char* str = g_new(char, buf_len * 2 + 1);
+
+	unsigned const char* pin = (unsigned const char*)buf;
+	const char* hex = "0123456789ABCDEF";
+	char* pout = str;
+	guint i = 0;
+	for (; i < sizeof(buf) - 1; ++i)
+	{
+		*pout++ = hex[(*pin >> 4) & 0xF];
+		*pout++ = hex[(*pin++) & 0xF];
+	}
+	*pout++ = hex[(*pin >> 4) & 0xF];
+	*pout++ = hex[(*pin) & 0xF];
+	*pout = 0;
+	return str;
+}
+
 static void
 H5VL_julea_db_error_handler(GError* error)
 {
@@ -104,6 +124,12 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 			g_free(object->dataset.name);
 			j_distribution_unref(object->dataset.distribution);
 			j_distributed_object_unref(object->dataset.object);
+			break;
+		case J_HDF5_OBJECT_TYPE_ATTR:
+			H5VL_julea_db_object_unref(object->attr.file);
+			g_free(object->attr.name);
+			j_distribution_unref(object->attr.distribution);
+			j_distributed_object_unref(object->attr.object);
 			break;
 		case J_HDF5_OBJECT_TYPE_DATATYPE:
 			g_free(object->datatype.data);
