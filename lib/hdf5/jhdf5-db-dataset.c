@@ -92,11 +92,11 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					goto _error;
 				}
-				if (!j_db_schema_add_field(julea_db_schema_dataset, "datatype", J_DB_TYPE_BLOB, &error))
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "datatype", J_DB_TYPE_ID, &error))
 				{
 					goto _error;
 				}
-				if (!j_db_schema_add_field(julea_db_schema_dataset, "space", J_DB_TYPE_BLOB, &error))
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "space", J_DB_TYPE_ID, &error))
 				{
 					goto _error;
 				}
@@ -351,7 +351,7 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 		goto _error;
 	}
-	g_assert(type == J_DB_TYPE_BLOB);
+	g_assert(type != J_DB_TYPE_ID);
 	if (!(object->dataset.space = H5VL_julea_db_space_decode(space_id_buf, space_id_buf_len)))
 	{
 		goto _error;
@@ -360,7 +360,7 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 		goto _error;
 	}
-	g_assert(type == J_DB_TYPE_BLOB);
+	g_assert(type != J_DB_TYPE_ID);
 	if (!(object->dataset.datatype = H5VL_julea_db_datatype_decode(datatype_id_buf, datatype_id_buf_len)))
 	{
 		goto _error;
