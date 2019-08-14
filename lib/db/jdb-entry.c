@@ -133,6 +133,7 @@ j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, gu
 		val.val_blob = (const char*)value;
 		val.val_blob_length = length;
 		break;
+	case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}

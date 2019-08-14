@@ -116,7 +116,7 @@ j_sql_column(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError**
 	case J_DB_TYPE_BLOB:
 		value->val_blob = sqlite3_column_blob(stmt, idx);
 		value->val_blob_length = sqlite3_column_bytes(stmt, idx);
-		break;
+		break;case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
 	default:
 		g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
@@ -191,7 +191,7 @@ j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GErr
 			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
-		break;
+		break;case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
 	default:
 		g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");

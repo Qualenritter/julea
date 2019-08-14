@@ -161,6 +161,8 @@ build_selector_single(guint varname, guint value)
 				MYABORT_IF(!bson_append_binary(&bson_child, "_value", BSON_SUBTYPE_BINARY, -1, (const uint8_t*)namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES], 1 + strlen(namespace_varvalues_string_const[value % AFL_LIMIT_SCHEMA_STRING_VALUES])));
 			}
 			break;
+		case J_DB_TYPE_ID:
+			break;
 		case _J_DB_TYPE_COUNT:
 		default: //LCOV_EXCL_LINE
 			MYABORT(); //LCOV_EXCL_LINE
@@ -242,6 +244,8 @@ build_metadata(void)
 					case J_DB_TYPE_BLOB:
 						count++;
 						MYABORT_IF(!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])));
+						break;
+					case J_DB_TYPE_ID:
 						break;
 					case _J_DB_TYPE_COUNT:
 					default: //LCOV_EXCL_LINE
@@ -431,6 +435,8 @@ event_query_single(void)
 					{
 						MYABORT_IF(bson_iter_type(&iter) != BSON_TYPE_NULL);
 					}
+					break;
+				case J_DB_TYPE_ID:
 					break;
 				case _J_DB_TYPE_COUNT:
 				default: //LCOV_EXCL_LINE

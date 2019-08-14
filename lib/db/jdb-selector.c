@@ -150,6 +150,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 		val.val_blob = value;
 		val.val_blob_length = length;
 		break;
+	case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}

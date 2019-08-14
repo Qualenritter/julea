@@ -139,7 +139,7 @@ event_entry_set_field(void)
 		{
 			the_stored_entry_field_set = the_stored_entry_field_set | (1 << random_values.var_name);
 		}
-		break;
+		break;case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
 		MYABORT_IF(ret_expected);
 		break;

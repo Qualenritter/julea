@@ -214,6 +214,7 @@ j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type,
 		memcpy(*value, val.val_blob, val.val_blob_length);
 		*length = val.val_blob_length;
 		break;
+	case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
 	default:;
 	}

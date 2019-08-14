@@ -150,11 +150,6 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 	g_return_val_if_fail(g_strcmp0(name, "_index"), FALSE);
 	g_return_val_if_fail(schema->bson_initialized, FALSE);
 
-	if (!g_strcmp0(name, "_id"))
-	{
-		*type = J_DB_TYPE_UINT32;
-		goto _done;
-	}
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &schema->bson, error)))
 	{
 		goto _error;
@@ -168,7 +163,6 @@ j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GErro
 		goto _error;
 	}
 	*type = val.val_uint32;
-_done:
 	return TRUE;
 _error:
 	return FALSE;
@@ -200,7 +194,7 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 		goto _error;
 	}
 	count++;
-	*names = g_new(gchar*, count);
+	*names = g_new0(gchar*, count);
 	*types = g_new(JDBType, count);
 	i = 0;
 	while (bson_iter_next(&iter))
@@ -225,8 +219,10 @@ j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, G
 	(*types)[i] = _J_DB_TYPE_COUNT;
 	return TRUE;
 _error:
-	/*TODO free names*/
-	/*TODO free types*/
+	g_strfreev(*names);
+	g_free(*types);
+	*names = NULL;
+	*types = NULL;
 	return FALSE;
 }
 gboolean
