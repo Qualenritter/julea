@@ -56,6 +56,7 @@ githash=$(git log --pretty=format:'%H' -n 1)
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	./build-gcc-benchmark/server/julea-server
 )&
+server_pid=$!
 sleep 2
 (
 	rm -rf benchmark_values/debug
@@ -123,7 +124,6 @@ sleep 2
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=30;
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
-	./warnke_skript/kill.sh
+	kill -9 ${server_pid}
 )
 wait
-./warnke_skript/kill.sh

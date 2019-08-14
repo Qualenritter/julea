@@ -22,9 +22,9 @@ export J_BENCHMARK_SCALE=100
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
 ./warnke_skript/format.sh
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh build && ./waf.sh install
-./waf.sh configure --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh build && ./waf.sh install
-./waf.sh configure --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh build && ./waf.sh install
+./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
+./waf.sh build
+./waf.sh install
 thepath=$(pwd)
 mkdir -p log
 rm -rf ${mountpoint}/julea/*
@@ -45,6 +45,7 @@ githash=$(git log --pretty=format:'%H' -n 1)
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	./build-gcc-benchmark/server/julea-server
 )&
+server_pid=$!
 sleep 2
 (
 	rm -rf benchmark_values/warnke-${githash}
@@ -54,7 +55,6 @@ sleep 2
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=30;
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
-	./warnke_skript/kill.sh
+	kill -9 ${server_pid}
 )
 wait
-./warnke_skript/kill.sh
