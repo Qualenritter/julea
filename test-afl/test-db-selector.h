@@ -187,6 +187,7 @@ event_selector_add_field(void)
 			}
 			break;
 		case J_DB_TYPE_ID:
+			break;
 		case _J_DB_TYPE_COUNT:
 			MYABORT_IF(ret_expected);
 			break;

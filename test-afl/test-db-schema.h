@@ -118,6 +118,8 @@ event_schema_add_field(void)
 	ret_expected = TRUE;
 	ret_expected = ret_expected && random_values.var_type < _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_schema_field_type == _J_DB_TYPE_COUNT;
+	if ((random_values.var_name == 0) && (the_schema_field_type == J_DB_TYPE_ID))
+		the_schema_field_type = J_DB_TYPE_UINT32;
 	G_DEBUG_HERE();
 	ret = j_db_schema_add_field(the_stored_schema, varname_strbuf, random_values.var_type, &error);
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
@@ -151,7 +153,7 @@ event_schema_get_field(void)
 	if (ret_expected && ret)
 	{
 		MYABORT_IF(ret != (the_schema_field_type != _J_DB_TYPE_COUNT));
-		MYABORT_IF(type != the_schema_field_type);
+		MYABORT_IF((type != the_schema_field_type) && (the_schema_field_type != J_DB_TYPE_ID));
 	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 }
@@ -208,7 +210,7 @@ event_schema_get_fields(void)
 				}
 			}
 			MYABORT_IF(!found);
-			MYABORT_IF(*types_cur != schema_field_types[random_values.namespace][random_values.name][j]);
+			MYABORT_IF((*types_cur != schema_field_types[random_values.namespace][random_values.name][j]) && (*types_cur != J_DB_TYPE_ID));
 			i++;
 			types_cur++;
 			names_cur++;

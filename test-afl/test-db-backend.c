@@ -246,7 +246,6 @@ build_metadata(void)
 						MYABORT_IF(!bson_append_binary(bson, varname_strbuf, -1, BSON_SUBTYPE_BINARY, (const uint8_t*)namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]], 1 + strlen(namespace_varvalues_string_const[namespace_varvalues_string[random_values.namespace][random_values.name][random_values.values.value_index][i]])));
 						break;
 					case J_DB_TYPE_ID:
-						break;
 					case _J_DB_TYPE_COUNT:
 					default: //LCOV_EXCL_LINE
 						MYABORT(); //LCOV_EXCL_LINE
@@ -869,6 +868,10 @@ event_schema_create(void)
 	for (i = 0; i < random_values.schema_create.variable_count; i++)
 	{
 		random_values.schema_create.variable_types[i] = random_values.schema_create.variable_types[i] % _J_DB_TYPE_COUNT;
+		if (random_values.schema_create.variable_types[i] == J_DB_TYPE_ID)
+		{
+			random_values.schema_create.variable_types[i] = J_DB_TYPE_UINT32;
+		}
 	}
 	bson = bson_new();
 	ret_expected = random_values.schema_create.variable_count > 0;

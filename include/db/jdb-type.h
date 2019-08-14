@@ -27,6 +27,8 @@
 #error "Only <julea-db.h> can be included directly."
 #endif
 
+#include <glib.h>
+
 enum JDBType
 {
 	J_DB_TYPE_SINT32 = 0,

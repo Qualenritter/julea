@@ -108,6 +108,19 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					goto _error;
 				}
+				j_db_schema_unref(julea_db_schema_dataset);
+				if (!(julea_db_schema_dataset = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "dataset", NULL)))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_get(julea_db_schema_dataset, batch, &error))
+				{
+					goto _error;
+				}
+				if (!j_batch_execute(batch))
+				{
+					goto _error;
+				}
 			}
 			else
 			{

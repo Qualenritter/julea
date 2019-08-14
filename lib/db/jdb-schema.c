@@ -408,13 +408,9 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 	g_return_val_if_fail(schema1 != NULL, FALSE);
 	g_return_val_if_fail(schema2 != NULL, FALSE);
 
-	if (schema1 == schema2)
+	*equal = TRUE;
+	if (schema1 != schema2)
 	{
-		*equal = TRUE;
-	}
-	else
-	{
-		*equal = TRUE;
 		*equal = *equal && !g_strcmp0(schema1->namespace, schema2->namespace);
 		*equal = *equal && !g_strcmp0(schema1->name, schema2->name);
 		*equal = *equal && (schema1->bson_initialized == schema2->bson_initialized);
@@ -441,7 +437,7 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 				{
 					goto _error;
 				}
-				if (g_strcmp0(key, "_index"))
+				if (g_strcmp0(key, "_index") && g_strcmp0(key, "_id"))
 				{
 					schema1_count++;
 					if (G_UNLIKELY(!j_bson_iter_init(&iter2, &schema2->bson, error)))
@@ -462,7 +458,7 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 					{
 						goto _error;
 					}
-					*equal = *equal && val1.val_uint32 == val2.val_uint32;
+					*equal = *equal && ((val1.val_uint32 == val2.val_uint32) || (val1.val_uint32 == J_DB_TYPE_ID) || (val2.val_uint32 == J_DB_TYPE_ID));
 				}
 			}
 			if (G_UNLIKELY(!j_bson_iter_init(&iter2, &schema2->bson, error)))
@@ -474,6 +470,11 @@ j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GErr
 				goto _error;
 			}
 			ret = j_bson_iter_find(&iter2, "_index", NULL);
+			if (ret)
+			{
+				schema2_count--;
+			}
+			ret = j_bson_iter_find(&iter2, "_id", NULL);
 			if (ret)
 			{
 				schema2_count--;
