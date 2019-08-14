@@ -32,6 +32,8 @@ event_entry_new(void)
 	{
 		return;
 	}
+	if (!the_stored_schema->bson_initialized)
+		return;
 	ret_expected = TRUE;
 	G_DEBUG_HERE();
 	the_stored_entry = j_db_entry_new(the_stored_schema, &error);

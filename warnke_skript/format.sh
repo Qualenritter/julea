@@ -27,7 +27,7 @@ rm -rf build
 for f in $(git diff --name-only master | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
 	echo $f
 	cd build
-	clang-tidy -header-filter='.*,-dependencies' -fix -checks='readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration' -p=/src/julea/warnke_skript ../$f
+	clang-tidy -header-filter='.*,-dependencies' -fix -checks='readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration' -p=/src/julea/build ../$f
 	cd ..
 	clang-format -i $f
 done

@@ -33,6 +33,15 @@
 #include <julea.h>
 #include <core/jbson-wrapper.h>
 
+#define J_AFL_DEBUG_BSON(bson)                           \
+	do                                               \
+	{                                                \
+		char* json = NULL;                       \
+		if (bson)                                \
+			json = bson_as_json(bson, NULL); \
+		g_debug("json = %s", json);              \
+		bson_free((void*)json);                  \
+	} while (0)
 struct J_db_iterator_helper
 {
 	bson_t bson;
@@ -148,6 +157,8 @@ j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t co
 	JOperation* op;
 	JBackendOperation* data;
 
+	g_debug("namespace='%s' name='%s'", namespace, name);
+	J_AFL_DEBUG_BSON(schema);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_schema_create, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
@@ -255,6 +266,9 @@ j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* se
 	JOperation* op;
 	JBackendOperation* data;
 
+	g_debug("namespace='%s' name='%s'", namespace, name);
+	J_AFL_DEBUG_BSON(selector);
+	J_AFL_DEBUG_BSON(metadata);
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_update, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;
