@@ -97,8 +97,7 @@ gboolean j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer 
  **/
 gboolean j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error);
 /**
- * Replayes all entrys with the given entry in the backend where the selector matches.
- * All variables defined in the schema, which are not explicitily set, are initialized to NULL.
+ * Replayes all entrys attributes with the given entrys attributes in the backend where the selector matches.
  *
  * The entry must not be modified until the batch is executed.
  * The selector must not be modified until the batch is executed.

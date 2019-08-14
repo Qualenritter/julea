@@ -237,7 +237,7 @@ struct JBackend
 			* }
 			* \endcode
 			*
-			* \param[in] metadata  The data to write. All undefined columns will be set to NULL.
+			* \param[in] metadata  The data to write.
 			* \code
 			* {
 			*	"var_name1": value1,
