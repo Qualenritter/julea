@@ -31,7 +31,9 @@ event_selector_new(void)
 	g_debug("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
 	random_values.selector_mode = random_values.selector_mode % _J_DB_SELECTOR_MODE_COUNT;
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && (random_values.selector_mode != _J_DB_SELECTOR_MODE_COUNT);
 	G_DEBUG_HERE();
@@ -46,7 +48,9 @@ event_selector_ref(void)
 	gint ref_count;
 	g_debug("AFL_EVENT_DB_SELECTOR_REF %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_selector)
+	{
 		return;
+	}
 	ref_count = the_stored_selector->ref_count;
 	G_DEBUG_HERE();
 	ptr = j_db_selector_ref(the_stored_selector, &error);
@@ -67,7 +71,9 @@ event_selector_add_field(void)
 	JDBSelectorOperator operator= random_values.selector_operator % _J_DB_SELECTOR_OPERATOR_COUNT;
 	g_debug("AFL_EVENT_DB_SELECTOR_ADD_FIELD %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_selector)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && operator<_J_DB_SELECTOR_OPERATOR_COUNT;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
@@ -179,7 +185,8 @@ event_selector_add_field(void)
 			{
 				the_stored_selector_field_count++;
 			}
-			break;case J_DB_TYPE_ID:
+			break;
+		case J_DB_TYPE_ID:
 		case _J_DB_TYPE_COUNT:
 			MYABORT_IF(ret_expected);
 			break;
@@ -200,11 +207,17 @@ event_selector_add_selector(void)
 	g_debug("AFL_EVENT_DB_SELECTOR_ADD_SELECTOR %d %d", random_values.namespace, random_values.name);
 	random_values.selector_selector = random_values.selector_selector % AFL_LIMIT_SELECTOR;
 	if (!the_stored_selector)
+	{
 		return;
+	}
 	if (!stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector])
+	{
 		return;
+	}
 	if (random_values.selector_selector == random_values.selector)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
 	G_DEBUG_HERE();

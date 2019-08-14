@@ -29,102 +29,96 @@
 
 #include "../../test-afl/test-db-backend.c"
 
-static
-void
-test_db_schema_create (void)
+static void
+test_db_schema_create(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_SCHEMA_CREATE;
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static
-void
-test_db_schema_get (void)
+static void
+test_db_schema_get(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_SCHEMA_GET;
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static
-void
-test_db_schema_delete (void)
+static void
+test_db_schema_delete(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_SCHEMA_DELETE;
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static
-void
-test_db_insert (void)
+static void
+test_db_insert(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_INSERT;
 	test_db_backend_exec();
-event = AFL_EVENT_DB_SCHEMA_CREATE;
-        test_db_backend_exec();
- event = AFL_EVENT_DB_INSERT;
-        test_db_backend_exec();
+	event = AFL_EVENT_DB_SCHEMA_CREATE;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_INSERT;
+	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static
-void
-test_db_update (void)
+static void
+test_db_update(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_UPDATE;
 	test_db_backend_exec();
-event = AFL_EVENT_DB_SCHEMA_CREATE;
-        test_db_backend_exec();
- event = AFL_EVENT_DB_UPDATE;
-        test_db_backend_exec();
- event = AFL_EVENT_DB_INSERT;
-        test_db_backend_exec();
- event = AFL_EVENT_DB_UPDATE;
-        test_db_backend_exec();
+	event = AFL_EVENT_DB_SCHEMA_CREATE;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_UPDATE;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_INSERT;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_UPDATE;
+	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static
-void
-test_db_delete (void)
+static void
+test_db_delete(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_DELETE;
 	test_db_backend_exec();
-event = AFL_EVENT_DB_SCHEMA_CREATE;
-        test_db_backend_exec();
- event = AFL_EVENT_DB_INSERT;
-        test_db_backend_exec();
-event = AFL_EVENT_DB_DELETE;
-        test_db_backend_exec();
+	event = AFL_EVENT_DB_SCHEMA_CREATE;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_INSERT;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_DELETE;
+	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static
-void
-test_db_query_all (void)
+static void
+test_db_query_all(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_QUERY_ALL;
 	test_db_backend_exec();
-event = AFL_EVENT_DB_SCHEMA_CREATE;
-        test_db_backend_exec();
- event = AFL_EVENT_DB_INSERT;
-        test_db_backend_exec();event = AFL_EVENT_DB_QUERY_ALL;
-        test_db_backend_exec();
+	event = AFL_EVENT_DB_SCHEMA_CREATE;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_INSERT;
+	test_db_backend_exec();
+	event = AFL_EVENT_DB_QUERY_ALL;
+	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
 
 void
-test_db_backend (void)
+test_db_backend(void)
 {
 	test_db_backend_init();
-	g_test_add_func("/db/backend/schema-create",test_db_schema_create);
-	g_test_add_func("/db/backend/schema-get",test_db_schema_get);
-	g_test_add_func("/db/backend/schema-delete",test_db_schema_delete);
-	g_test_add_func("/db/backend/insert",test_db_insert);
-	g_test_add_func("/db/backend/update",test_db_update);
-	g_test_add_func("/db/backend/delete",test_db_delete);
-	g_test_add_func("/db/backend/query_all",test_db_query_all);
+	g_test_add_func("/db/backend/schema-create", test_db_schema_create);
+	g_test_add_func("/db/backend/schema-get", test_db_schema_get);
+	g_test_add_func("/db/backend/schema-delete", test_db_schema_delete);
+	g_test_add_func("/db/backend/insert", test_db_insert);
+	g_test_add_func("/db/backend/update", test_db_update);
+	g_test_add_func("/db/backend/delete", test_db_delete);
+	g_test_add_func("/db/backend/query_all", test_db_query_all);
 }

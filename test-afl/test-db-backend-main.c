@@ -21,28 +21,28 @@
 int
 main(int argc, char* argv[])
 {
-        if (argc > 1)
-        {
-                test_db_backend_create_base_test_files(argv[1]);
-                goto fini;
-        }
-        test_db_backend_init();
+	if (argc > 1)
+	{
+		test_db_backend_create_base_test_files(argv[1]);
+		goto fini;
+	}
+	test_db_backend_init();
 #ifdef __AFL_HAVE_MANUAL_CONTROL
-        //https://github.com/mirrorer/afl/tree/master/llvm_mode
-        // this does not work with threads or network connections
-        //        __AFL_INIT();
-        //      while (__AFL_LOOP(1000))
+	//https://github.com/mirrorer/afl/tree/master/llvm_mode
+	// this does not work with threads or network connections
+	//        __AFL_INIT();
+	//      while (__AFL_LOOP(1000))
 #endif
-        {
-        loop:
-                MY_READ_MAX(event, _AFL_EVENT_DB_COUNT);
-                MY_READ(random_values);
-                test_db_backend_exec();
-                goto loop;
-        cleanup:
-                test_db_backend_cleanup();
-        }
+	{
+	loop:
+		MY_READ_MAX(event, _AFL_EVENT_DB_COUNT);
+		MY_READ(random_values);
+		test_db_backend_exec();
+		goto loop;
+	cleanup:
+		test_db_backend_cleanup();
+	}
 fini:
-        j_fini(); //memory leaks count as error -> free everything possible
-        return 0;
+	j_fini(); //memory leaks count as error -> free everything possible
+	return 0;
 }

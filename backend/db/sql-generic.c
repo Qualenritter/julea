@@ -606,11 +606,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 		{
 			goto _error;
 		}
-		if (equals)
-		{
-			found_index = TRUE;
-		}
-		else
+		if (!equals)
 		{
 			value.val_string = batch->namespace;
 			if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 1, J_DB_TYPE_STRING, &value, error)))
@@ -632,7 +628,9 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 				goto _error;
 			}
 			if (value.val_uint32 == J_DB_TYPE_ID)
+			{
 				value.val_uint32 = J_DB_TYPE_UINT32;
+			}
 			if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 4, J_DB_TYPE_UINT32, &value, error)))
 			{
 				goto _error;
@@ -681,8 +679,12 @@ _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError**
 		goto _error;
 	}
 	if (schema)
+	{
 		if (!j_bson_init(schema, error))
+		{
 			goto _error;
+		}
+	}
 	bson_initialized = TRUE;
 	while (TRUE)
 	{
@@ -691,10 +693,14 @@ _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError**
 			goto _error;
 		}
 		if (!sql_found)
+		{
 			break;
+		}
 		found = TRUE;
 		if (!schema)
+		{
 			break;
+		}
 		if (G_UNLIKELY(!j_sql_column(stmt_schema_structure_get, 0, J_DB_TYPE_STRING, &value1, error)))
 		{
 			goto _error;
@@ -724,7 +730,9 @@ _error:
 		goto _error2;
 	}
 	if (bson_initialized)
+	{
 		j_bson_destroy(schema);
+	}
 	return FALSE;
 _error2:
 	/*something failed very hard*/

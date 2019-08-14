@@ -29,7 +29,9 @@ event_iterator_new(void)
 	j_db_iterator_unref(the_stored_iterator);
 	the_stored_iterator_next_count = 0;
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	switch (random_values.invalid_switch % 2)
 	{
@@ -63,7 +65,9 @@ event_iterator_ref(void)
 	gint ref_count;
 	g_debug("AFL_EVENT_DB_ITERATOR_REF %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_iterator)
+	{
 		return;
+	}
 	ref_count = the_stored_iterator->ref_count;
 	G_DEBUG_HERE();
 	ptr = j_db_iterator_ref(the_stored_iterator, &error);
@@ -82,9 +86,13 @@ event_iterator_next(void)
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ITERATOR_NEXT %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_iterator)
+	{
 		return;
+	}
 	if (!the_stored_iterator->valid)
+	{
 		return;
+	}
 	G_DEBUG_HERE();
 	ret = j_db_iterator_next(the_stored_iterator, &error);
 	ret_expected = TRUE;
@@ -152,9 +160,13 @@ event_iterator_get_field(void)
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	if (!the_stored_iterator)
+	{
 		return;
+	}
 	if (!the_stored_iterator->bson_valid)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && the_schema_field_type != _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_stored_iterator_next_count;

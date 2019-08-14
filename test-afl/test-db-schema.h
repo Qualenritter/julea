@@ -85,7 +85,9 @@ event_schema_ref(void)
 	gint ref_count;
 	g_debug("AFL_EVENT_DB_SCHEMA_REF %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	ref_count = the_stored_schema->ref_count;
 	G_DEBUG_HERE();
 	ptr = j_db_schema_ref(the_stored_schema, &error);
@@ -106,9 +108,13 @@ event_schema_add_field(void)
 	random_values.var_type = random_values.var_type % _J_DB_TYPE_COUNT;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	if (the_stored_schema->server_side)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && random_values.var_type < _J_DB_TYPE_COUNT;
 	ret_expected = ret_expected && the_schema_field_type == _J_DB_TYPE_COUNT;
@@ -131,9 +137,13 @@ event_schema_get_field(void)
 	random_values.var_name = random_values.var_name % AFL_LIMIT_SCHEMA_FIELDS;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	if (!the_stored_schema->bson_initialized)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && the_schema_field_type < _J_DB_TYPE_COUNT;
 	G_DEBUG_HERE();
@@ -161,9 +171,13 @@ event_schema_get_fields(void)
 	gboolean ret_expected;
 	g_debug("AFL_EVENT_DB_SCHEMA_GET_FIELDS %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	if (!the_stored_schema->bson_initialized)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	k = 0;
 	for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
@@ -224,11 +238,17 @@ event_schema_create(void)
 	gboolean ret_expected;
 	g_debug("AFL_EVENT_DB_SCHEMA_CREATE %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	if (!the_stored_schema->bson_initialized)
+	{
 		return;
+	}
 	if (the_stored_schema->server_side)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	k = 0;
 	for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
@@ -257,7 +277,9 @@ event_schema_get(void)
 	gboolean ret_expected;
 	g_debug("AFL_EVENT_DB_SCHEMA_GET %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	ret_expected = the_stored_schema->server_side;
 	G_DEBUG_HERE();
 	schema = j_db_schema_new(the_stored_schema->namespace, the_stored_schema->name, &error);
@@ -285,7 +307,9 @@ event_schema_delete(void)
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	g_debug("AFL_EVENT_DB_SCHEMA_DELETE %d %d", random_values.namespace, random_values.name);
 	if (!the_stored_schema)
+	{
 		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && the_stored_schema->server_side;
 	G_DEBUG_HERE();

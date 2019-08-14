@@ -114,15 +114,28 @@ H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len);
 
 #ifndef JULEA_HDF5_MAIN_COMPILES
 #ifndef JULEA_HDF5_SPACE_COMPILES
-static JHDF5Object_t*H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len){return NULL;}
 static JHDF5Object_t*
-H5VL_julea_db_space_encode(hid_t* type_id){return NULL;}
+H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
+{
+	return NULL;
+}
+static JHDF5Object_t*
+H5VL_julea_db_space_encode(hid_t* type_id)
+{
+	return NULL;
+}
 #endif
 #ifndef JULEA_HDF5_DATATYPE_COMPILES
 static JHDF5Object_t*
-H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len){return NULL;}
+H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
+{
+	return NULL;
+}
 static JHDF5Object_t*
-H5VL_julea_db_datatype_encode(hid_t* type_id){return NULL;}
+H5VL_julea_db_datatype_encode(hid_t* type_id)
+{
+	return NULL;
+}
 #endif
 #endif
 

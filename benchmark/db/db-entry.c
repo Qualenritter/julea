@@ -43,7 +43,7 @@ static guint scale_factor = SCALE_FACTOR_HDD;
 static void
 benchmark_db_entry_ref(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint batch_count = 1000;
 	GError* error = NULL;
@@ -101,7 +101,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_entry_unref(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -115,7 +115,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_entry_new(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint batch_count = 1000;
 	GError* error = NULL;
@@ -168,7 +168,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_entry_free(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -182,7 +182,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 _benchmark_db_entry_set_field(BenchmarkResult* result, const guint n)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	GError* error = NULL;
 	gboolean ret;
@@ -230,7 +230,7 @@ benchmark_db_entry_set_field(BenchmarkResult* result)
 static void
 _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean use_index, const guint n, JSemanticsAtomicity atomicity)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	GError* error = NULL;
 	gboolean ret;
@@ -477,35 +477,35 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_entry_insert(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_insert(result, FALSE, FALSE, global_n, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_insert_batch(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_insert(result, TRUE, FALSE, global_n, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_insert_batch_index(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_insert(result, TRUE, TRUE, global_n, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_insert_batch_index_atomicity(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_insert(result, TRUE, TRUE, global_n, J_SEMANTICS_ATOMICITY_BATCH);
 }
 static void
 _benchmark_db_entry_update(BenchmarkResult* result, gboolean use_batch, gboolean use_index, JSemanticsAtomicity atomicity)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -519,35 +519,35 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_entry_update(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_update(result, FALSE, FALSE, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_update_batch(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_update(result, TRUE, FALSE, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_update_batch_index(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_update(result, TRUE, TRUE, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_update_batch_index_atomicity(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_update(result, TRUE, TRUE, J_SEMANTICS_ATOMICITY_BATCH);
 }
 static void
 _benchmark_db_entry_delete(BenchmarkResult* result, gboolean use_batch, gboolean use_index, JSemanticsAtomicity atomicity)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -561,35 +561,35 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_entry_delete(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_delete(result, FALSE, FALSE, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_delete_batch(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_delete(result, TRUE, FALSE, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_delete_batch_index(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_delete(result, TRUE, TRUE, J_SEMANTICS_ATOMICITY_NONE);
 }
 static void
 benchmark_db_entry_delete_batch_index_atomicity(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_entry_delete(result, TRUE, TRUE, J_SEMANTICS_ATOMICITY_BATCH);
 }
 static void
 benchmark_db_iterator_single(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -603,7 +603,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_iterator_single_index(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -617,7 +617,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_iterator_single_index_atomicity(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -631,7 +631,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_iterator_all(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -645,7 +645,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_iterator_all_index(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -659,7 +659,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_iterator_all_index_atomicity(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -671,14 +671,14 @@ J_TRACE_FUNCTION(NULL);
 	result->operations = benchmark_db_iterator_all_executed->operations;
 }
 void
-benchmark_db_entry(gdouble _target_time, guint _n,guint _scale_factor)
+benchmark_db_entry(gdouble _target_time, guint _n, guint _scale_factor)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint i;
 	char testname[500];
 	const guint n = global_n = _n;
-scale_factor=_scale_factor;
+	scale_factor = _scale_factor;
 
 	target_time = _target_time;
 	{

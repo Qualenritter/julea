@@ -28,8 +28,8 @@ static guint scale_factor = SCALE_FACTOR_HDD;
 static void
 exec_tests(guint n)
 {
-	benchmark_db_schema(target_time, n,scale_factor);
-	benchmark_db_entry(target_time, n,scale_factor);
+	benchmark_db_schema(target_time, n, scale_factor);
+	benchmark_db_entry(target_time, n, scale_factor);
 }
 static void
 exec_tree(guint depth, gfloat min, gfloat max)

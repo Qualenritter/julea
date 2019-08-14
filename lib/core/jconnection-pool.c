@@ -70,7 +70,7 @@ typedef struct JConnectionPool JConnectionPool;
 static JConnectionPool* j_connection_pool = NULL;
 
 void
-j_connection_pool_init (JConfiguration* configuration)
+j_connection_pool_init(JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -110,7 +110,7 @@ j_connection_pool_init (JConfiguration* configuration)
 }
 
 void
-j_connection_pool_fini (void)
+j_connection_pool_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -169,9 +169,8 @@ j_connection_pool_fini (void)
 	g_slice_free(JConnectionPool, pool);
 }
 
-static
-GSocketConnection*
-j_connection_pool_pop_internal (GAsyncQueue* queue, guint* count, gchar const* server)
+static GSocketConnection*
+j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* server)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -259,9 +258,8 @@ j_connection_pool_pop_internal (GAsyncQueue* queue, guint* count, gchar const* s
 	return connection;
 }
 
-static
-void
-j_connection_pool_push_internal (GAsyncQueue* queue, GSocketConnection* connection)
+static void
+j_connection_pool_push_internal(GAsyncQueue* queue, GSocketConnection* connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -272,7 +270,7 @@ j_connection_pool_push_internal (GAsyncQueue* queue, GSocketConnection* connecti
 }
 
 GSocketConnection*
-j_connection_pool_pop_object (guint index)
+j_connection_pool_pop_object(guint index)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -287,7 +285,7 @@ j_connection_pool_pop_object (guint index)
 }
 
 void
-j_connection_pool_push_object (guint index, GSocketConnection* connection)
+j_connection_pool_push_object(guint index, GSocketConnection* connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -299,7 +297,7 @@ j_connection_pool_push_object (guint index, GSocketConnection* connection)
 }
 
 GSocketConnection*
-j_connection_pool_pop_kv (guint index)
+j_connection_pool_pop_kv(guint index)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -314,7 +312,7 @@ j_connection_pool_pop_kv (guint index)
 }
 
 void
-j_connection_pool_push_kv (guint index, GSocketConnection* connection)
+j_connection_pool_push_kv(guint index, GSocketConnection* connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -326,7 +324,7 @@ j_connection_pool_push_kv (guint index, GSocketConnection* connection)
 }
 
 GSocketConnection*
-j_connection_pool_pop_db (guint index)
+j_connection_pool_pop_db(guint index)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -346,7 +344,7 @@ j_connection_pool_pop_db (guint index)
 }
 
 void
-j_connection_pool_push_db (guint index, GSocketConnection* connection)
+j_connection_pool_push_db(guint index, GSocketConnection* connection)
 {
 	J_TRACE_FUNCTION(NULL);
 

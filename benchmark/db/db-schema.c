@@ -45,7 +45,7 @@ static guint scale_factor = SCALE_FACTOR_HDD;
 static void
 _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch, const guint n)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	JDBSchema** schema_array = NULL;
 	GError* error = NULL;
@@ -180,21 +180,21 @@ start:
 static void
 benchmark_db_schema_create(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_schema_create(result, FALSE, global_n);
 }
 static void
 benchmark_db_schema_create_batch(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_schema_create(result, TRUE, global_n);
 }
 static void
 _benchmark_db_schema_delete(BenchmarkResult* result, gboolean use_batch)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -208,21 +208,21 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_schema_delete(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_schema_delete(result, FALSE);
 }
 static void
 benchmark_db_schema_delete_batch(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_schema_delete(result, TRUE);
 }
 static void
 _benchmark_db_schema_get(BenchmarkResult* result, gboolean use_batch)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -236,21 +236,21 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_schema_get(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_schema_get(result, FALSE);
 }
 static void
 benchmark_db_schema_get_batch(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	_benchmark_db_schema_get(result, TRUE);
 }
 static void
 benchmark_db_schema_ref(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint batch_count = 1000;
 	GError* error = NULL;
@@ -306,7 +306,7 @@ start:
 static void
 benchmark_db_schema_unref(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -320,7 +320,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_schema_new(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	guint batch_count = 1000;
 	GError* error = NULL;
@@ -371,7 +371,7 @@ start:
 static void
 benchmark_db_schema_free(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -385,7 +385,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 _benchmark_db_schema_add_field(BenchmarkResult* result, const guint n)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	gchar** names;
 	JDBType* types;
@@ -497,7 +497,7 @@ benchmark_db_schema_add_field(BenchmarkResult* result)
 static void
 benchmark_db_schema_get_field(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -511,7 +511,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_schema_get_fields(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -525,7 +525,7 @@ J_TRACE_FUNCTION(NULL);
 static void
 benchmark_db_schema_equals(BenchmarkResult* result)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	BenchmarkResult b;
 
@@ -537,13 +537,13 @@ J_TRACE_FUNCTION(NULL);
 	result->operations = benchmark_db_schema_equals_executed->operations;
 }
 void
-benchmark_db_schema(gdouble _target_time, guint _n,guint _scale_factor)
+benchmark_db_schema(gdouble _target_time, guint _n, guint _scale_factor)
 {
-J_TRACE_FUNCTION(NULL);
+	J_TRACE_FUNCTION(NULL);
 
 	char testname[500];
 	const guint n = global_n = _n;
-	scale_factor=_scale_factor;
+	scale_factor = _scale_factor;
 
 	target_time = _target_time;
 	if (n < 500)
