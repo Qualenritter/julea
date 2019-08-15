@@ -177,6 +177,7 @@ j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GEr
 	g_return_val_if_fail(selector != NULL, FALSE);
 	g_return_val_if_fail(sub_selector != NULL, FALSE);
 	g_return_val_if_fail(selector != sub_selector, FALSE);
+	g_return_val_if_fail(selector->schema == sub_selector->schema, FALSE);
 
 	if (G_UNLIKELY(!sub_selector->bson_count))
 	{

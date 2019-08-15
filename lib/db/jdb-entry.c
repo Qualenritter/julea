@@ -171,6 +171,7 @@ j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 	g_return_val_if_fail(entry != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(selector != NULL, FALSE);
+	g_return_val_if_fail(selector->schema == schema, FALSE);
 
 	bson = j_db_selector_get_bson(selector);
 
@@ -194,6 +195,7 @@ j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 
 	g_return_val_if_fail(entry != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
+	g_return_val_if_fail((selector == NULL) || (selector->schema == schema), FALSE);
 
 	if (G_UNLIKELY(!j_db_internal_delete(entry->schema->namespace, entry->schema->name, j_db_selector_get_bson(selector), batch, error)))
 	{

@@ -44,6 +44,7 @@ j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 	JDBIterator* iterator = NULL;
 
 	g_return_val_if_fail(schema != NULL, FALSE);
+	g_return_val_if_fail((selector == NULL) || (selector->schema == schema), FALSE);
 
 	iterator = g_slice_new(JDBIterator);
 	iterator->schema = j_db_schema_ref(schema, error);
