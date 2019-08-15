@@ -20,6 +20,9 @@
  * \file
  **/
 
+#ifndef JULEA_DB_HDF5_GROUP_C
+#define JULEA_DB_HDF5_GROUP_C
+
 #include <julea-config.h>
 #include <julea.h>
 #include <julea-db.h>
@@ -107,3 +110,4 @@ H5VL_julea_db_group_close(void* grp, hid_t dxpl_id, void** req)
 }
 
 #pragma GCC diagnostic pop
+#endif

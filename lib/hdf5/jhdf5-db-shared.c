@@ -19,7 +19,8 @@
 /**
  * \file
  **/
-
+#ifndef JULEA_DB_HDF5_SHARED_C
+#define JULEA_DB_HDF5_SHARED_C
 #include <julea-config.h>
 #include <julea.h>
 #include <julea-db.h>
@@ -34,8 +35,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#ifndef JULEA_HDF5_DB_SHARED_C
-#define JULEA_HDF5_DB_SHARED_C
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"

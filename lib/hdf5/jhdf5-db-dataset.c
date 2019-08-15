@@ -19,6 +19,8 @@
 /**
  * \file
  **/
+#ifndef JULEA_DB_HDF5_DATASET_C
+#define JULEA_DB_HDF5_DATASET_C
 
 #include <julea-config.h>
 #include <julea.h>
@@ -38,8 +40,9 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
 
-#include "jhdf5-db.h"
+#include "jhdf5-db-datatype.c"
 #include "jhdf5-db-shared.c"
+#include "jhdf5-db.h"
 
 #define _GNU_SOURCE
 
@@ -84,7 +87,7 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					goto _error;
 				}
-				if (!j_db_schema_add_field(julea_db_schema_dataset, "file", J_DB_TYPE_STRING, &error))
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "file", J_DB_TYPE_ID, &error))
 				{
 					goto _error;
 				}
@@ -427,6 +430,7 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	g_autofree hsize_t* dims = NULL;
 	guint64 bytes_read;
 	gsize data_size;
+	gsize data_count;
 	JHDF5Object_t* object = obj;
 	gint ndims = 0;
 
@@ -449,7 +453,7 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		{
 		case H5S_SEL_POINTS:
 		{
-			hssize_t npoints = 0;
+			/*			hssize_t npoints = 0;
 			hsize_t file_offset = 0;
 			hsize_t point_current_arr[ndims];
 			hssize_t point_range_first = 0;
@@ -497,7 +501,9 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 					}
 					point_current_index++;
 				}
-			}
+			}*/
+			g_critical("%s NOT implemented !!", G_STRLOC);
+			abort();
 		}
 		break;
 		case H5S_SEL_HYPERSLABS:
@@ -508,11 +514,20 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		break;
 		case H5S_SEL_ALL:
 		{
+			const void* local_buf;
+			void* local_buf_org;
+			data_count = 1;
 			for (gint i = 0; i < ndims; i++)
 			{
-				data_size *= dims[i];
+				data_count *= dims[i];
 			}
+			data_size *= data_count;
+			local_buf_org = g_new(char, data_size);
 			j_distributed_object_read(object->dataset.object, buf, data_size, 0, &bytes_read, batch);
+			local_buf = H5VL_julea_db_datatype_convert_type(object->dataset.datatype->datatype.hdf5_id, mem_type_id, buf, local_buf_org, data_count);
+			if (local_buf != buf)
+				memcpy(buf, local_buf, data_size);
+			g_free(local_buf_org);
 		}
 		break;
 		case H5S_SEL_N:
@@ -545,11 +560,13 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	g_autoptr(JBatch) batch = NULL;
 	guint64 bytes_written;
 	gsize data_size;
+	gsize data_count;
 	JHDF5Object_t* object = obj;
 
 	g_return_val_if_fail(buf != NULL, 1);
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
-	g_return_val_if_fail(H5Tequal(mem_type_id, object->dataset.datatype->datatype.hdf5_id), 1);
+	H5VL_julea_db_datatype_print(mem_type_id);
+	H5VL_julea_db_datatype_print(object->dataset.datatype->datatype.hdf5_id);
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
@@ -562,15 +579,22 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 		{
 			g_autofree hsize_t* dims;
 			gint ndims;
+			const void* local_buf;
+			void* local_buf_org;
 			data_size = H5Tget_size(object->dataset.datatype->datatype.hdf5_id);
 			ndims = H5Sget_simple_extent_ndims(object->dataset.space->space.hdf5_id);
 			dims = g_new(hsize_t, ndims);
 			H5Sget_simple_extent_dims(object->dataset.space->space.hdf5_id, dims, NULL);
+			data_count = 1;
 			for (gint i = 0; i < ndims; i++)
 			{
-				data_size *= dims[i];
+				data_count *= dims[i];
 			}
-			j_distributed_object_write(object->dataset.object, buf, data_size, 0, &bytes_written, batch);
+			data_size *= data_count;
+			local_buf_org = g_new(char, data_size);
+			local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
+			j_distributed_object_write(object->dataset.object, local_buf, data_size, 0, &bytes_written, batch);
+			g_free(local_buf_org);
 		}
 		else
 		{
@@ -665,3 +689,4 @@ H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 	return 0;
 }
 #pragma GCC diagnostic pop
+#endif

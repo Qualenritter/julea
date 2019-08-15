@@ -19,6 +19,8 @@
 /**
  * \file
  **/
+#ifndef JULEA_DB_HDF5_FILE_C
+#define JULEA_DB_HDF5_FILE_C
 
 #include <julea-config.h>
 #include <julea.h>
@@ -291,3 +293,4 @@ H5VL_julea_db_file_close(void* obj, hid_t dxpl_id, void** req)
 	return 0;
 }
 #pragma GCC diagnostic pop
+#endif

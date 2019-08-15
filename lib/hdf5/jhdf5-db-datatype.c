@@ -19,7 +19,8 @@
 /**
  * \file
  **/
-
+#ifndef JULEA_DB_HDF5_DATATYPE_C
+#define JULEA_DB_HDF5_DATATYPE_C
 #define JULEA_HDF5_DATATYPE_COMPILES
 
 #include <julea-config.h>
@@ -46,7 +47,272 @@
 #define _GNU_SOURCE
 
 static JDBSchema* julea_db_schema_datatype = NULL;
+#define _bswap16(a, b) *(guint16*)b = (((*(const guint16*)a) & 0x00FF) << 8) | (((*(const guint16*)a) & 0xFF00) >> 8)
+#define _bswap32(a, b) *(guint32*)b = (((*(const guint32*)a) & 0x000000FF) << 24) | (((*(const guint32*)a) & 0x0000FF00) << 8) | (((*(const guint32*)a) & 0x00FF0000) >> 8) | (((*(const guint32*)a) & 0xFF000000) >> 24)
+#define _bswap64(a, b) *(guint64*)b = (((*(const guint64*)a) & 0x00000000000000FFULL) << 56) | (((*(const guint64*)a) & 0x000000000000FF00ULL) << 40) | (((*(const guint64*)a) & 0x0000000000FF0000ULL) << 24) | \
+	(((*(const guint64*)a) & 0x00000000FF000000ULL) << 8) | (((*(const guint64*)a) & 0x000000FF00000000ULL) >> 8) | (((*(const guint64*)a) & 0x0000FF0000000000ULL) >> 24) | (((*(const guint64*)a) & 0x00FF000000000000ULL) >> 40) | (((*(const guint64*)a) & 0xFF00000000000000ULL) >> 56)
 
+static const void*
+H5VL_julea_db_datatype_convert_type_change(hid_t type_id_from, hid_t type_id_to, const char* from_buf, char* target_buf, guint count)
+{
+	guint i;
+	size_t size;
+	const char* from_buf_ptr;
+	char* target_buf_ptr;
+	g_assert(H5Tget_class(type_id_from) == H5Tget_class(type_id_to));
+	g_assert(H5Tget_size(type_id_from) == H5Tget_size(type_id_to));
+	size = H5Tget_size(type_id_from);
+	switch (H5Tget_class(type_id_from))
+	{
+	case H5T_FLOAT:
+		if ((H5Tget_order(type_id_from) | H5Tget_order(type_id_to)) == (H5T_ORDER_LE | H5T_ORDER_BE))
+		{
+			from_buf_ptr = from_buf;
+			target_buf_ptr = target_buf;
+			for (i = 0; i < count; i++)
+			{
+				switch (size)
+				{
+				case 1:
+					break;
+				case 2:
+					_bswap16(from_buf_ptr, target_buf_ptr);
+					break;
+				case 4:
+					_bswap32(from_buf_ptr, target_buf_ptr);
+					break;
+				case 8:
+					_bswap64(from_buf_ptr, target_buf_ptr);
+					break;
+				default:
+					g_critical("%s NOT implemented !!", G_STRLOC);
+					abort();
+				}
+				from_buf_ptr += size;
+				target_buf_ptr += size;
+			}
+		}
+		else
+		{
+			g_critical("%s NOT implemented !!", G_STRLOC);
+			abort();
+		}
+		break;
+	case H5T_INTEGER:
+	case H5T_STRING:
+	case H5T_BITFIELD:
+	case H5T_OPAQUE:
+	case H5T_COMPOUND:
+	case H5T_REFERENCE:
+	case H5T_ENUM:
+	case H5T_VLEN:
+	case H5T_ARRAY:
+	case H5T_NO_CLASS:
+	case H5T_TIME:
+	case H5T_NCLASSES:
+	default:
+		g_critical("%s NOT implemented !!", G_STRLOC);
+		abort();
+	}
+	return target_buf;
+}
+
+static const void*
+H5VL_julea_db_datatype_convert_type(hid_t type_id_from, hid_t type_id_to, const char* from_buf, char* tmp_buf, guint count)
+{
+	if (H5Tequal(type_id_from, type_id_to))
+		return from_buf;
+	return H5VL_julea_db_datatype_convert_type_change(type_id_from, type_id_to, from_buf, tmp_buf, count);
+}
+static void
+H5VL_julea_db_datatype_print_recoursive(hid_t type_id, guint level, const char* root_name, size_t offset)
+{
+	guint i;
+	gint j;
+	gchar* padding;
+	padding = g_new(gchar, level + 1);
+	for (i = 0; i < level; i++)
+	{
+		padding[i] = ' ';
+	}
+	padding[level] = 0;
+	g_debug("%s{", padding);
+	g_debug("%s  name %s", padding, root_name);
+	g_debug("%s  type_id %ld", padding, type_id);
+	g_debug("%s  offset %ld", padding, offset);
+	switch (H5Tget_class(type_id))
+	{
+	case H5T_INTEGER:
+		g_debug("%s  class H5T_INTEGER", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_FLOAT:
+		g_debug("%s  class H5T_FLOAT", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		//              g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		//              g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_STRING:
+		g_debug("%s  class H5T_STRING", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_BITFIELD:
+		g_debug("%s  class H5T_BITFIELD", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_OPAQUE:
+		g_debug("%s  class H5T_OPAQUE", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_COMPOUND:
+		g_debug("%s  class H5T_COMPOUND", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		for (j = 0; j < H5Tget_nmembers(type_id); j++)
+		{
+			H5VL_julea_db_datatype_print_recoursive(H5Tget_member_type(type_id, j), level + 2, H5Tget_member_name(type_id, j), H5Tget_member_offset(type_id, j));
+		}
+		break;
+	case H5T_REFERENCE:
+		g_debug("%s  class H5T_REFERENCE", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_ENUM:
+		g_debug("%s  class H5T_ENUM", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_VLEN:
+		g_debug("%s  class H5T_VLEN", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_ARRAY:
+		g_debug("%s  class H5T_ARRAY", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_NO_CLASS:
+		g_debug("%s  class H5T_NO_CLASS", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_TIME:
+		g_debug("%s  class H5T_TIME", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	case H5T_NCLASSES:
+		g_debug("%s  class H5T_NCLASSES", padding);
+		g_debug("%s  H5Tget_order %d", padding, H5Tget_order(type_id));
+		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
+		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
+		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
+		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
+		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
+		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
+		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
+		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
+		break;
+	default:
+		g_critical("%s NOT implemented !!", G_STRLOC);
+		abort();
+	}
+	g_debug("%s}", padding);
+}
+static void
+H5VL_julea_db_datatype_print(hid_t type_id)
+{
+	H5VL_julea_db_datatype_print_recoursive(type_id, 0, "", 0);
+}
 static herr_t
 H5VL_julea_db_datatype_term(void)
 {
@@ -315,3 +581,4 @@ H5VL_julea_db_datatype_close(void* dt, hid_t dxpl_id, void** req)
 }
 
 #pragma GCC diagnostic pop
+#endif

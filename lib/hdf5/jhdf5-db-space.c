@@ -20,6 +20,8 @@
  * \file
  **/
 
+#ifndef JULEA_DB_HDF5_SPACE_C
+#define JULEA_DB_HDF5_SPACE_C
 #define JULEA_HDF5_SPACE_COMPILES
 
 #include <julea-config.h>
@@ -256,3 +258,4 @@ _error:
 }
 
 #pragma GCC diagnostic pop
+#endif

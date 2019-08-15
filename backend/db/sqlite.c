@@ -226,7 +226,7 @@ j_sql_exec(const char* sql, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt;
-	g_debug("exec");
+	g_debug("exec %s", sql);
 	if (G_UNLIKELY(!j_sql_prepare(sql, &stmt, error)))
 	{
 		goto _error;

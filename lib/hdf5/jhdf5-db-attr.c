@@ -20,6 +20,9 @@
  * \file
  **/
 
+#ifndef JULEA_DB_HDF5_ATTR_C
+#define JULEA_DB_HDF5_ATTR_C
+
 #include <julea-config.h>
 #include <julea.h>
 #include <julea-db.h>
@@ -83,7 +86,7 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 				{
 					goto _error;
 				}
-				if (!j_db_schema_add_field(julea_db_schema_attr, "file", J_DB_TYPE_STRING, &error))
+				if (!j_db_schema_add_field(julea_db_schema_attr, "file", J_DB_TYPE_ID, &error))
 				{
 					goto _error;
 				}
@@ -539,3 +542,4 @@ H5VL_julea_db_attr_close(void* obj, hid_t dxpl_id, void** req)
 	return 0;
 }
 #pragma GCC diagnostic pop
+#endif
