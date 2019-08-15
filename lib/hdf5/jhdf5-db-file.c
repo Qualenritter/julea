@@ -134,6 +134,8 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 
 	g_return_val_if_fail(name != NULL, NULL);
 
+	g_debug("XXX create file '%s' (F '%s')", name);
+
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
 		goto _error;
