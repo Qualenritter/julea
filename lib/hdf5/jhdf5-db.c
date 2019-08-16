@@ -68,6 +68,10 @@ static herr_t
 H5VL_julea_db_space_init(hid_t vipl_id);
 static herr_t
 H5VL_julea_db_space_term(void);
+static herr_t
+H5VL_julea_db_link_init(hid_t vipl_id);
+static herr_t
+H5VL_julea_db_link_term(void);
 
 #include "jhdf5-db.h"
 #include "jhdf5-db-shared.c"
@@ -77,6 +81,7 @@ H5VL_julea_db_space_term(void);
 #include "jhdf5-db-group.c"
 #include "jhdf5-db-datatype.c"
 #include "jhdf5-db-space.c"
+#include "jhdf5-db-link.c"
 
 #define _GNU_SOURCE
 
@@ -111,7 +116,13 @@ H5VL_julea_db_init(hid_t vipl_id)
 	{
 		goto _error_space;
 	}
+	if (H5VL_julea_db_link_init(vipl_id))
+	{
+		goto _error_link;
+	}
 	return 0;
+_error_link:
+	H5VL_julea_db_link_term();
 _error_space:
 	H5VL_julea_db_space_term();
 _error_group:
@@ -132,6 +143,10 @@ H5VL_julea_db_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	if (H5VL_julea_db_link_term())
+	{
+		goto _error;
+	}
 	if (H5VL_julea_db_space_term())
 	{
 		goto _error;
@@ -232,12 +247,12 @@ static const H5VL_class_t H5VL_julea_db_g = {
 		.close = H5VL_julea_db_group_close,
 	},
 	.link_cls = {
-		.create = NULL,
-		.copy = NULL,
-		.move = NULL,
-		.get = NULL,
-		.specific = NULL,
-		.optional = NULL,
+		.create = H5VL_julea_db_link_create,
+		.copy = H5VL_julea_db_link_copy,
+		.move = H5VL_julea_db_link_move,
+		.get = H5VL_julea_db_link_get,
+		.specific = H5VL_julea_db_link_specific,
+		.optional = H5VL_julea_db_link_optional,
 	},
 	.object_cls = {
 		.open = NULL,

@@ -40,9 +40,11 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-function"
 
-#include "jhdf5-db-datatype.c"
-#include "jhdf5-db-shared.c"
 #include "jhdf5-db.h"
+#include "jhdf5-db-shared.c"
+#include "jhdf5-db-datatype.c"
+#include "jhdf5-db-space.c"
+#include "jhdf5-db-link.c"
 
 #define _GNU_SOURCE
 
@@ -87,11 +89,15 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					goto _error;
 				}
-				if (!j_db_schema_add_field(julea_db_schema_dataset, "file", J_DB_TYPE_ID, &error))
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "xxx_parent", J_DB_TYPE_ID, &error))
 				{
 					goto _error;
 				}
-				if (!j_db_schema_add_field(julea_db_schema_dataset, "name", J_DB_TYPE_STRING, &error))
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "xxx_name", J_DB_TYPE_STRING, &error))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "file", J_DB_TYPE_ID, &error))
 				{
 					goto _error;
 				}
@@ -216,7 +222,11 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	{
 		goto _error;
 	}
-	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
+	if (!j_db_entry_set_field(entry, "xxx_parent", parent->backend_id, parent->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_set_field(entry, "xxx_name", name, strlen(name), &error))
 	{
 		goto _error;
 	}
@@ -244,7 +254,11 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	{
 		goto _error;
 	}
-	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+	if (!j_db_selector_add_field(selector, "xxx_parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_selector_add_field(selector, "xxx_name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 	{
 		goto _error;
 	}
@@ -278,6 +292,8 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	{
 		goto _error;
 	}
+	if (!H5VL_julea_db_link_create_helper(parent, object, name))
+		goto _error;
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -342,15 +358,13 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 		goto _error;
 	}
+	if (!H5VL_julea_db_link_get_helper(parent, object, name))
+		goto _error;
 	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
 	{
 		goto _error;
 	}
-	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
-	{
-		goto _error;
-	}
-	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, object->backend_id, object->backend_id_len, &error))
 	{
 		goto _error;
 	}
@@ -362,15 +376,10 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 		goto _error;
 	}
-	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
-	{
-		goto _error;
-	}
 	if (!j_db_iterator_get_field(iterator, "space", &type, &space_id_buf, &space_id_buf_len, &error))
 	{
 		goto _error;
 	}
-	g_assert(type != J_DB_TYPE_ID);
 	if (!(object->dataset.space = H5VL_julea_db_space_decode(space_id_buf, space_id_buf_len)))
 	{
 		goto _error;
@@ -379,7 +388,6 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 		goto _error;
 	}
-	g_assert(type != J_DB_TYPE_ID);
 	if (!(object->dataset.datatype = H5VL_julea_db_datatype_decode(datatype_id_buf, datatype_id_buf_len)))
 	{
 		goto _error;

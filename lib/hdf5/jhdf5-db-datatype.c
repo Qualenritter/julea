@@ -21,7 +21,6 @@
  **/
 #ifndef JULEA_DB_HDF5_DATATYPE_C
 #define JULEA_DB_HDF5_DATATYPE_C
-#define JULEA_HDF5_DATATYPE_COMPILES
 
 #include <julea-config.h>
 #include <julea.h>
