@@ -67,8 +67,9 @@ struct JDistribution
 
 static JDistributionVTable j_distribution_vtables[3];
 
-static JDistribution*
-j_distribution_new_common(JDistributionType type, JConfiguration* configuration)
+static
+JDistribution*
+j_distribution_new_common (JDistributionType type, JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -101,7 +102,7 @@ j_distribution_new_common(JDistributionType type, JConfiguration* configuration)
  * \return A new distribution. Should be freed with j_distribution_unref().
  **/
 JDistribution*
-j_distribution_new(JDistributionType type)
+j_distribution_new (JDistributionType type)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -121,7 +122,7 @@ j_distribution_new(JDistributionType type)
  * \param distribution A distribution.
  **/
 JDistribution*
-j_distribution_ref(JDistribution* distribution)
+j_distribution_ref (JDistribution* distribution)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -164,7 +165,7 @@ j_distribution_unref(JDistribution* distribution)
  * \param block_size   A block size.
  */
 void
-j_distribution_set_block_size(JDistribution* distribution, guint64 block_size)
+j_distribution_set_block_size (JDistribution* distribution, guint64 block_size)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -187,7 +188,7 @@ j_distribution_set_block_size(JDistribution* distribution, guint64 block_size)
  * \param start_index  An index.
  */
 void
-j_distribution_set(JDistribution* distribution, gchar const* key, guint64 value)
+j_distribution_set (JDistribution* distribution, gchar const* key, guint64 value)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -201,7 +202,7 @@ j_distribution_set(JDistribution* distribution, gchar const* key, guint64 value)
 }
 
 void
-j_distribution_set2(JDistribution* distribution, gchar const* key, guint64 value1, guint64 value2)
+j_distribution_set2 (JDistribution* distribution, gchar const* key, guint64 value1, guint64 value2)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -216,8 +217,9 @@ j_distribution_set2(JDistribution* distribution, gchar const* key, guint64 value
 
 /* Internal */
 
-static void
-j_distribution_check_vtables(void)
+static
+void
+j_distribution_check_vtables (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -235,7 +237,7 @@ j_distribution_check_vtables(void)
 }
 
 void
-j_distribution_init(void)
+j_distribution_init (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -257,7 +259,7 @@ j_distribution_init(void)
  * \return A new distribution. Should be freed with j_distribution_unref().
  **/
 JDistribution*
-j_distribution_new_from_bson(bson_t const* b)
+j_distribution_new_from_bson (bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -284,7 +286,7 @@ j_distribution_new_from_bson(bson_t const* b)
  * \return A new distribution. Should be freed with j_distribution_unref().
  **/
 JDistribution*
-j_distribution_new_for_configuration(JDistributionType type, JConfiguration* configuration)
+j_distribution_new_for_configuration (JDistributionType type, JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -308,7 +310,7 @@ j_distribution_new_for_configuration(JDistributionType type, JConfiguration* con
  * \return A new BSON object. Should be freed with g_slice_free().
  **/
 bson_t*
-j_distribution_serialize(JDistribution* distribution)
+j_distribution_serialize (JDistribution* distribution)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -340,7 +342,7 @@ j_distribution_serialize(JDistribution* distribution)
  * \param b           A BSON object.
  **/
 void
-j_distribution_deserialize(JDistribution* distribution, bson_t const* b)
+j_distribution_deserialize (JDistribution* distribution, bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -381,7 +383,7 @@ j_distribution_deserialize(JDistribution* distribution, bson_t const* b)
  * \return A new distribution. Should be freed with j_distribution_unref().
  **/
 void
-j_distribution_reset(JDistribution* distribution, guint64 length, guint64 offset)
+j_distribution_reset (JDistribution* distribution, guint64 length, guint64 offset)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -404,7 +406,7 @@ j_distribution_reset(JDistribution* distribution, guint64 length, guint64 offset
  * \return TRUE on success, FALSE if the distribution is finished.
  **/
 gboolean
-j_distribution_distribute(JDistribution* distribution, guint* index, guint64* new_length, guint64* new_offset, guint64* block_id)
+j_distribution_distribute (JDistribution* distribution, guint* index, guint64* new_length, guint64* new_offset, guint64* block_id)
 {
 	J_TRACE_FUNCTION(NULL);
 
