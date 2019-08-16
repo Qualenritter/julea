@@ -74,7 +74,7 @@ static void* stmt_transaction_commit = NULL;
 static void
 freeJSqlIterator(gpointer ptr)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlIterator* iter = ptr;
 
@@ -89,7 +89,7 @@ freeJSqlIterator(gpointer ptr)
 static void
 freeJSqlCacheNamespaces(void* ptr)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlCacheNamespaces* p = ptr;
 
@@ -105,7 +105,7 @@ freeJSqlCacheNamespaces(void* ptr)
 static void
 freeJSqlCacheNames(void* ptr)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlCacheNames* p = ptr;
 
@@ -121,7 +121,7 @@ freeJSqlCacheNames(void* ptr)
 static void
 freeJSqlCacheSQLQueries(void* ptr)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlCacheSQLQueries* p = ptr;
 
@@ -137,7 +137,7 @@ freeJSqlCacheSQLQueries(void* ptr)
 static void
 freeJSqlCacheSQLPrepared(void* ptr)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlCacheSQLPrepared* p = ptr;
 
@@ -165,7 +165,7 @@ freeJSqlCacheSQLPrepared(void* ptr)
 static JSqlCacheSQLPrepared*
 getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlCacheNames* cacheNames = NULL;
 	JSqlCacheSQLQueries* cacheQueries = NULL;
@@ -215,7 +215,7 @@ _error:
 static void
 deleteCachePrepared(gchar const* namespace, gchar const* name)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlCacheNames* cacheNames = NULL;
 
@@ -236,7 +236,7 @@ _error:
 static gboolean
 init_sql(void)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	GError* error = NULL;
 
@@ -284,7 +284,7 @@ _error:
 static void
 fini_sql(void)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	freeJSqlCacheNamespaces(cacheNamespaces);
 	j_sql_finalize(stmt_schema_structure_create, NULL);
@@ -297,7 +297,7 @@ fini_sql(void)
 static gboolean
 _backend_batch_start(JSqlBatch* batch, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(!batch->open, FALSE);
 
@@ -314,7 +314,7 @@ _error:
 static gboolean
 _backend_batch_execute(JSqlBatch* batch, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(batch->open || (!batch->open && batch->aborted), FALSE);
 
@@ -330,7 +330,7 @@ _error:
 static gboolean
 _backend_batch_abort(JSqlBatch* batch, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(batch->open, FALSE);
 
@@ -348,7 +348,7 @@ _error:
 static gboolean
 backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _batch, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlBatch* batch;
 
@@ -373,7 +373,7 @@ _error:
 static gboolean
 backend_batch_execute(gpointer _batch, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlBatch* batch = _batch;
 
@@ -395,7 +395,7 @@ _error:
 static gboolean
 backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlBatch* batch = _batch;
 	bson_iter_t iter;
@@ -752,7 +752,7 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 static gboolean
 backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JDBTypeValue value;
 	JSqlBatch* batch = _batch;
@@ -875,7 +875,7 @@ _error:
 static gboolean
 backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlBatch* batch = _batch;
 	gboolean has_next;
@@ -988,7 +988,7 @@ _error2:
 static gboolean
 build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guint* variables_count, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JDBSelectorMode mode_child;
 	gboolean equals;
@@ -1126,7 +1126,7 @@ _error:
 static gboolean
 bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* variables_count, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	bson_iter_t iterchild;
 	JDBTypeValue value;
@@ -1199,7 +1199,7 @@ _error:
 static gboolean
 _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JDBSelectorMode mode_child;
 	JSqlBatch* batch = _batch;
@@ -1313,7 +1313,7 @@ _error:
 static gboolean
 backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlBatch* batch = _batch;
 	guint count;
@@ -1490,7 +1490,7 @@ _error2:
 static gboolean
 backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JSqlBatch* batch = _batch;
 	JSqlIterator* iterator = NULL;
@@ -1549,7 +1549,7 @@ _error2:
 static gboolean
 backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	JDBSelectorMode mode_child;
 	bson_t schema;
