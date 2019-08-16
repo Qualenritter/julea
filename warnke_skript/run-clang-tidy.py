@@ -19,7 +19,7 @@ and clang-apply-replacements in $PATH.
 Example invocations.
 - Run clang-tidy on all files in the current working directory with a default
   set of checks and show warnings in the cpp files and all project headers.
-    run-clang-tidy.py $PWD
+    run-clang-tidy.py ${PWD}
 
 - Fix all header guards.
     run-clang-tidy.py -fix -checks=-*,llvm-header-guard

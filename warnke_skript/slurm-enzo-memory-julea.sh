@@ -21,14 +21,14 @@
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 
-scale=1000
+scale=10
 thepath=${PWD}
 name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
-builddir="gcc-benchmark"
-tmpdir=$(mktemp -d)
+builddir="hdf-julea"
+tmpdir=/dev/shm/warnke/julea
 
-
-
+rm -rf $tmpdir
+mkdir -p $tmpdir
 
 echo $scale
 echo $tmpdir
@@ -41,7 +41,7 @@ ${thepath}/build-${builddir}/tools/julea-config --user \
   --db-servers="$(hostname)" \
   --object-backend=posix --object-component=server --object-path="${tmpdir}/server-object" \
   --kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv" \
-  --db-backend=sqlite --db-component=server --db-path="${tmpdir}/server-db"
+  --db-backend=sqlite --db-component=server --db-path="memory"
 
 mv ${HOME}/.config/julea/julea ${HOME}/.config/julea/julea-${name}
 
@@ -51,6 +51,9 @@ export LD_LIBRARY_PATH=${thepath}/prefix-${builddir}/lib/:$LD_LIBRARY_PATH
 export JULEA_CONFIG=${HOME}/.config/julea/julea-${name}
 export J_BENCHMARK_SCALE=${scale}
 export J_BENCHMARK_TARGET=30;
+export HDF5_VOL_JULEA=1
 
-./build-gcc-benchmark/server/julea-server &
-./build-gcc-benchmark/benchmark/julea-benchmark
+./build-hdf-julea/server/julea-server &
+cp -r /home/warnke/enzo-dev/run/Hydro/Hydro-3D/CollapseTestNonCosmological $tmpdir
+cd $tmpdir
+./enzo.exe -d CollapseTestNonCosmological.enzo

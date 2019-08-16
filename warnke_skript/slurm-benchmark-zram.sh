@@ -22,7 +22,7 @@
 #SBATCH --nodes=1
 
 scale=10
-thepath=$PWD
+thepath=${PWD}
 name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
 builddir="gcc-benchmark"
 tmpdir=/dev/shm/warnke/julea
@@ -32,7 +32,7 @@ mkdir -p $tmpdir
 
 echo $scale
 echo $tmpdir
-echo $thepatp
+echo $thepath
 echo $name
 echo $builddir
 
