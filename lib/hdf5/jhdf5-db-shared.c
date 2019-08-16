@@ -129,6 +129,10 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 			j_distribution_unref(object->attr.distribution);
 			j_distributed_object_unref(object->attr.object);
 			break;
+		case J_HDF5_OBJECT_TYPE_GROUP:
+			H5VL_julea_db_object_unref(object->group.file);
+			g_free(object->group.name);
+			break;
 		case J_HDF5_OBJECT_TYPE_DATATYPE:
 			g_free(object->datatype.data);
 			break;

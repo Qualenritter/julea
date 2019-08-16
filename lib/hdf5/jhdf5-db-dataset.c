@@ -182,6 +182,10 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 		file = parent->attr.file;
 		g_debug("XXX create dataset '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		g_debug("XXX create dataset '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
+		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
 	case _J_HDF5_OBJECT_TYPE_COUNT:
@@ -333,6 +337,9 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
@@ -511,12 +518,17 @@ H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 	gboolean range_valid = FALSE;
 	gint stored_ndims;
 	guint i;
+	H5S_sel_type sel_type;
 	stored_ndims = H5Sget_simple_extent_ndims(stored_space_id);
 	stored_dims = g_new(hsize_t, stored_ndims);
 	H5Sget_simple_extent_dims(stored_space_id, stored_dims, NULL);
 	range_arr = g_array_new(FALSE, FALSE, sizeof(JHDF5IndexRange));
-
-	switch (H5Sget_select_type(mem_space_id))
+	G_DEBUG_HERE();
+	if (mem_space_id == H5S_ALL)
+		sel_type = H5S_SEL_ALL;
+	else
+		sel_type = H5Sget_select_type(mem_space_id);
+	switch (sel_type)
 	{
 	case H5S_SEL_POINTS:
 	{
@@ -736,10 +748,15 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	local_buf_org = g_new(char, data_size* data_count);
 
 	local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
+	G_DEBUG_HERE();
+	g_debug("mem_space_id = %d %d", mem_space_id, mem_space_id == H5S_ALL);
 	if (!(mem_space_arr = H5VL_julea_db_space_hdf5_to_range(mem_space_id, object->dataset.space->space.hdf5_id)))
 		goto _error;
+	g_debug("file_space_id = %d %d", file_space_id, file_space_id == H5S_ALL);
+	G_DEBUG_HERE();
 	if (!(file_space_arr = H5VL_julea_db_space_hdf5_to_range(file_space_id, object->dataset.space->space.hdf5_id)))
 		goto _error;
+	G_DEBUG_HERE();
 	mem_space_idx = 0;
 	file_space_idx = 0;
 	while ((mem_space_idx < mem_space_arr->len) && (file_space_idx < file_space_arr->len))

@@ -176,6 +176,9 @@ H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
 		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
 	case _J_HDF5_OBJECT_TYPE_COUNT:
@@ -190,6 +193,9 @@ H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		g_assert(file == child->attr.file);
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		g_assert(file == child->group.file);
 		break;
 	case J_HDF5_OBJECT_TYPE_FILE:
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
@@ -270,6 +276,10 @@ H5VL_julea_db_link_create_helper(JHDF5Object_t* parent, JHDF5Object_t* child, co
 		file = parent->attr.file;
 		g_debug("XXX create link '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		g_debug("XXX create link '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
+		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
 	case _J_HDF5_OBJECT_TYPE_COUNT:
@@ -284,6 +294,9 @@ H5VL_julea_db_link_create_helper(JHDF5Object_t* parent, JHDF5Object_t* child, co
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		g_assert(file == child->attr.file);
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		g_assert(file == child->group.file);
 		break;
 	case J_HDF5_OBJECT_TYPE_FILE:
 	case J_HDF5_OBJECT_TYPE_DATATYPE:

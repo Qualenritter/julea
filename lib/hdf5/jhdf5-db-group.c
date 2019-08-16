@@ -43,18 +43,112 @@
 
 #include "jhdf5-db.h"
 #include "jhdf5-db-shared.c"
+#include "jhdf5-db-link.c"
 
 #define _GNU_SOURCE
+
+static JDBSchema* julea_db_schema_group = NULL;
 
 static herr_t
 H5VL_julea_db_group_term(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
+	j_db_schema_unref(julea_db_schema_group);
+	julea_db_schema_group = NULL;
 	return 0;
 }
 static herr_t
 H5VL_julea_db_group_init(hid_t vipl_id)
 {
+	J_TRACE_FUNCTION(NULL);
+
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(GError) error = NULL;
+
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
+		goto _error;
+	}
+	if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
+	{
+		goto _error;
+	}
+	if (!(j_db_schema_get(julea_db_schema_group, batch, &error) && j_batch_execute(batch)))
+	{
+		if (error)
+		{
+			if (error->code == J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND)
+			{
+				g_error_free(error);
+				error = NULL;
+				j_db_schema_unref(julea_db_schema_group);
+				if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_add_field(julea_db_schema_group, "file", J_DB_TYPE_ID, &error))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_add_field(julea_db_schema_group, "xxx_parent", J_DB_TYPE_ID, &error))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_add_field(julea_db_schema_group, "xxx_name", J_DB_TYPE_STRING, &error))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_create(julea_db_schema_group, batch, &error))
+				{
+					goto _error;
+				}
+				if (!j_batch_execute(batch))
+				{
+					goto _error;
+				}
+				j_db_schema_unref(julea_db_schema_group);
+				if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_get(julea_db_schema_group, batch, &error))
+				{
+					goto _error;
+				}
+				if (!j_batch_execute(batch))
+				{
+					goto _error;
+				}
+				j_db_schema_unref(julea_db_schema_group);
+				if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
+				{
+					goto _error;
+				}
+				if (!j_db_schema_get(julea_db_schema_group, batch, &error))
+				{
+					goto _error;
+				}
+				if (!j_batch_execute(batch))
+				{
+					goto _error;
+				}
+			}
+			else
+			{
+				g_assert_not_reached();
+				goto _error;
+			}
+		}
+		else
+		{
+			g_assert_not_reached();
+			goto _error;
+		}
+	}
 	return 0;
+_error:
+	return 1;
 }
 
 static void*
@@ -63,8 +157,122 @@ H5VL_julea_db_group_create(void* obj, const H5VL_loc_params_t* loc_params, const
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(JDBEntry) entry = NULL;
+	g_autoptr(JDBIterator) iterator = NULL;
+	g_autoptr(JDBSelector) selector = NULL;
+	g_autofree char* hex_buf = NULL;
+	JHDF5Object_t* object = NULL;
+	JHDF5Object_t* parent = obj;
+	JHDF5Object_t* file;
+	JDBType type;
+
+	g_return_val_if_fail(name != NULL, NULL);
+	g_return_val_if_fail(parent != NULL, NULL);
+
+	switch (parent->type)
+	{
+	case J_HDF5_OBJECT_TYPE_FILE:
+		g_debug("XXX create group '%s' (F '%s')", name, parent->file.name);
+		file = parent;
+		break;
+	case J_HDF5_OBJECT_TYPE_DATASET:
+		file = parent->dataset.file;
+		g_debug("XXX create group '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
+		break;
+	case J_HDF5_OBJECT_TYPE_ATTR:
+		file = parent->attr.file;
+		g_debug("XXX create group '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		g_debug("XXX create group '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
+		break;
+	case J_HDF5_OBJECT_TYPE_DATATYPE:
+	case J_HDF5_OBJECT_TYPE_SPACE:
+	case _J_HDF5_OBJECT_TYPE_COUNT:
+	default:
+		g_assert_not_reached();
+		goto _error;
+	}
+
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
+		goto _error;
+	}
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_GROUP)))
+	{
+		goto _error;
+	}
+	if (!(object->group.name = g_strdup(name)))
+	{
+		goto _error;
+	}
+	if (!(object->group.file = H5VL_julea_db_object_ref(file)))
+	{
+		goto _error;
+	}
+	if (!(entry = j_db_entry_new(julea_db_schema_group, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_set_field(entry, "xxx_parent", parent->backend_id, parent->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_set_field(entry, "xxx_name", name, strlen(name), &error))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_insert(entry, batch, &error))
+	{
+		goto _error;
+	}
+	if (!j_batch_execute(batch))
+	{
+		goto _error;
+	}
+	if (!(selector = j_db_selector_new(julea_db_schema_group, J_DB_SELECTOR_MODE_AND, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_selector_add_field(selector, "xxx_parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_selector_add_field(selector, "xxx_name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+	{
+		goto _error;
+	}
+	if (!(iterator = j_db_iterator_new(julea_db_schema_group, selector, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_iterator_next(iterator, &error))
+	{
+		goto _error;
+	}
+	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	g_assert(!j_db_iterator_next(iterator, NULL));
+	if (!H5VL_julea_db_link_create_helper(parent, object, name))
+		goto _error;
+	return object;
+_error:
+	H5VL_julea_db_error_handler(error);
+	H5VL_julea_db_object_unref(object);
+	return NULL;
 }
 static void*
 H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
@@ -72,13 +280,71 @@ H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(JDBIterator) iterator = NULL;
+	g_autoptr(JDBSelector) selector = NULL;
+	JHDF5Object_t* object = NULL;
+	JHDF5Object_t* parent = obj;
+	JHDF5Object_t* file;
+
+	g_return_val_if_fail(name != NULL, NULL);
+	g_return_val_if_fail(parent != NULL, NULL);
+
+	switch (parent->type)
+	{
+	case J_HDF5_OBJECT_TYPE_FILE:
+		file = parent;
+		break;
+	case J_HDF5_OBJECT_TYPE_DATASET:
+		file = parent->dataset.file;
+		break;
+	case J_HDF5_OBJECT_TYPE_ATTR:
+		file = parent->attr.file;
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		break;
+	case J_HDF5_OBJECT_TYPE_DATATYPE:
+	case J_HDF5_OBJECT_TYPE_SPACE:
+	case _J_HDF5_OBJECT_TYPE_COUNT:
+	default:
+		g_assert_not_reached();
+		goto _error;
+	}
+
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
+		goto _error;
+	}
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_ATTR)))
+	{
+		goto _error;
+	}
+	if (!(object->attr.name = g_strdup(name)))
+	{
+		goto _error;
+	}
+	if (!(object->attr.file = H5VL_julea_db_object_ref(file)))
+	{
+		goto _error;
+	}
+	if (!H5VL_julea_db_link_get_helper(parent, object, name))
+		goto _error;
+	return object;
+_error:
+	H5VL_julea_db_error_handler(error);
+	H5VL_julea_db_object_unref(object);
+	return NULL;
 }
 static herr_t
 H5VL_julea_db_group_get(void* obj, H5VL_group_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_GROUP, 1);
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -89,6 +355,10 @@ H5VL_julea_db_group_specific(void* obj, H5VL_group_specific_t specific_type,
 {
 	J_TRACE_FUNCTION(NULL);
 
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_GROUP, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -97,16 +367,24 @@ H5VL_julea_db_group_optional(void* obj, hid_t dxpl_id, void** req, va_list argum
 {
 	J_TRACE_FUNCTION(NULL);
 
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_GROUP, 1);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
 static herr_t
-H5VL_julea_db_group_close(void* grp, hid_t dxpl_id, void** req)
+H5VL_julea_db_group_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_critical("%s NOT implemented !!", G_STRLOC);
-	abort();
+	JHDF5Object_t* object = obj;
+
+	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_GROUP, 1);
+
+	H5VL_julea_db_object_unref(object);
+	return 0;
 }
 
 #pragma GCC diagnostic pop

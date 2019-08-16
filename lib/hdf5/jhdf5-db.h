@@ -37,6 +37,7 @@ enum JHDF5ObjectType
 	J_HDF5_OBJECT_TYPE_ATTR,
 	J_HDF5_OBJECT_TYPE_DATATYPE,
 	J_HDF5_OBJECT_TYPE_SPACE,
+	J_HDF5_OBJECT_TYPE_GROUP,
 	_J_HDF5_OBJECT_TYPE_COUNT
 };
 
@@ -73,6 +74,11 @@ struct JHDF5Object_t
 			JDistribution* distribution;
 			JDistributedObject* object;
 		} attr;
+		struct
+		{
+			char* name;
+			JHDF5Object_t* file;
+		} group;
 		struct
 		{
 			void* data;

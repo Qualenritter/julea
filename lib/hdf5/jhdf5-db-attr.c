@@ -182,6 +182,10 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 		file = parent->attr.file;
 		g_debug("XXX create attr '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		g_debug("XXX create attr '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
+		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
 	case _J_HDF5_OBJECT_TYPE_COUNT:
@@ -333,6 +337,9 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
