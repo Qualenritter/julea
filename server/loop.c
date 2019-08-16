@@ -29,7 +29,7 @@
 static guint jd_thread_num = 0;
 
 gboolean
-jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk* memory_chunk, guint64 memory_chunk_size, JStatistics* statistics)
+jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChunk* memory_chunk, guint64 memory_chunk_size, JStatistics* statistics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -108,7 +108,8 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 		{
 			path = j_message_get_string(message);
 
-			if (j_backend_object_open(jd_object_backend, namespace, path, &object) && j_backend_object_delete(jd_object_backend, object))
+			if (j_backend_object_open(jd_object_backend, namespace, path, &object)
+			    && j_backend_object_delete(jd_object_backend, object))
 			{
 				j_statistics_add(statistics, J_STATISTICS_FILES_DELETED, 1);
 			}
@@ -359,8 +360,11 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 			j_message_append_string(reply, "object");
 		}
 
-				namespace = j_message_get_string(message);
-				j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
+				if (jd_kv_backend != NULL)
+				{
+					j_message_add_operation(reply, 3);
+					j_message_append_string(reply, "kv");
+				}
 
 		j_message_send(reply, connection);
 	}
@@ -376,7 +380,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 		}
 
 		namespace = j_message_get_string(message);
-		j_backend_kv_batch_start(jd_kv_backend, namespace, safety, &batch);
+		j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		for (i = 0; i < operation_count; i++)
 		{
@@ -397,8 +401,16 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 
 		j_backend_kv_batch_execute(jd_kv_backend, batch);
 
-				namespace = j_message_get_string(message);
-				j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
+	if (reply != NULL)
+                              {
+                                       j_message_send(reply, connection);
+                               }
+                       }
+                       break;
+               case J_MESSAGE_KV_DELETE:
+                       {
+                               g_autoptr(JMessage) reply = NULL;
+                               gpointer batch;
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
 		{
@@ -406,7 +418,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 		}
 
 		namespace = j_message_get_string(message);
-		j_backend_kv_batch_start(jd_kv_backend, namespace, safety, &batch);
+		j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		for (i = 0; i < operation_count; i++)
 		{
@@ -416,12 +428,9 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 
 			if (reply != NULL)
 			{
-				g_autoptr(JMessage) reply = NULL;
-				gpointer batch;
-
-				reply = j_message_new_reply(message);
-				namespace = j_message_get_string(message);
-				j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
+	j_message_add_operation(reply, 0);
+                                       }
+                               }
 
 		j_backend_kv_batch_execute(jd_kv_backend, batch);
 
@@ -438,7 +447,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 
 		reply = j_message_new_reply(message);
 		namespace = j_message_get_string(message);
-		j_backend_kv_batch_start(jd_kv_backend, namespace, safety, &batch);
+	j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		for (i = 0; i < operation_count; i++)
 		{
@@ -588,6 +597,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 			gboolean ret = TRUE;
 
 			reply = j_message_new_reply(message);
+
 			for (guint j = 0; j < backend_operation.out_param_count; j++)
 			{
 				if (backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_ERROR)
@@ -601,10 +611,12 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 					backend_operation.out_param[j].ptr = &backend_operation.out_param[j].bson;
 				}
 			}
+
 			if (operation_count)
 			{
 				j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
 			}
+
 			switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
 			{
 			case J_SEMANTICS_ATOMICITY_BATCH:
@@ -616,25 +628,29 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 			default:
 				g_warn_if_reached();
 			}
+
 			for (i = 0; i < operation_count; i++)
 			{
 				backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = NULL;
+
 				if (i)
 				{
 					j_backend_operation_from_message_static(message, backend_operation.in_param, backend_operation.in_param_count);
 				}
+
 				switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
 				{
 				case J_SEMANTICS_ATOMICITY_BATCH:
 					if (ret && !error)
 					{
-						//message must be read completly, and reply must answer all requests - but there should be no more executions in a failed 'J_SEMANTICS_ATOMICITY_BATCH'
+						//message must be read completely, and reply must answer all requests - but there should be no more executions in a failed 'J_SEMANTICS_ATOMICITY_BATCH'
 						ret = backend_operation.backend_func(jd_db_backend, batch, &backend_operation);
 					}
 					else
 					{
 						backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = g_error_copy(error);
 					}
+
 					break;
 				case J_SEMANTICS_ATOMICITY_OPERATION:
 				case J_SEMANTICS_ATOMICITY_NONE:
@@ -644,6 +660,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 				default:
 					g_warn_if_reached();
 				}
+
 				for (guint j = 0; j < backend_operation.out_param_count; j++)
 				{
 					if (ret && backend_operation.out_param[j].type == J_BACKEND_OPERATION_PARAM_TYPE_BSON)
@@ -651,6 +668,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 						backend_operation.out_param[j].bson_initialized = TRUE;
 					}
 				}
+
 				switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
 				{
 				case J_SEMANTICS_ATOMICITY_BATCH:
@@ -658,20 +676,25 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 				case J_SEMANTICS_ATOMICITY_OPERATION:
 				case J_SEMANTICS_ATOMICITY_NONE:
 					j_backend_db_batch_execute(jd_db_backend, batch, NULL);
+
 					if (error)
 					{
 						g_error_free(error);
 						error = NULL;
 					}
+
 					break;
 				default:
 					g_warn_if_reached();
 				}
+
 				if (error && !backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr)
 				{
 					backend_operation.out_param[backend_operation.out_param_count - 1].error_ptr = g_error_copy(error);
 				}
+
 				j_backend_operation_to_message(reply, backend_operation.out_param, backend_operation.out_param_count);
+
 				if (ret)
 				{
 					for (guint j = 0; j < backend_operation.out_param_count; j++)
@@ -683,15 +706,18 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 					}
 				}
 			}
+
 			switch (j_semantics_get(semantics, J_SEMANTICS_ATOMICITY))
 			{
 			case J_SEMANTICS_ATOMICITY_BATCH:
 				j_backend_db_batch_execute(jd_db_backend, batch, NULL);
+
 				if (error)
 				{
 					g_error_free(error);
 					error = NULL;
 				}
+
 				break;
 			case J_SEMANTICS_ATOMICITY_OPERATION:
 			case J_SEMANTICS_ATOMICITY_NONE:
@@ -699,6 +725,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 			default:
 				g_warn_if_reached();
 			}
+
 			j_message_send(reply, connection);
 		}
 		break;
@@ -706,7 +733,6 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 		g_warn_if_reached();
 		break;
 	}
-	j_semantics_unref(semantics);
 
 	return message_matched;
 }
