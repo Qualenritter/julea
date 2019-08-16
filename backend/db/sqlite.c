@@ -26,7 +26,7 @@
 #include <julea.h>
 #include <julea-db.h>
 
-#include <core/jbson-wrapper.h>
+#include "jbson.c"
 
 static sqlite3* backend_db = NULL;
 
@@ -58,7 +58,6 @@ j_sql_prepare(const char* sql, void* _stmt, GError** error)
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
-	g_debug("prepare %s %p", sql, *stmt);
 	return TRUE;
 _error:
 	j_sql_finalize(*stmt, NULL);
@@ -71,7 +70,6 @@ j_sql_bind_null(void* _stmt, guint idx, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
-	g_debug("bindnull idx=%d %p", idx, stmt);
 	if (G_UNLIKELY(sqlite3_bind_null(stmt, idx) != SQLITE_OK))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_BIND, "sql bind failed error was '%s'", sqlite3_errmsg(backend_db));
@@ -134,7 +132,6 @@ j_sql_bind_value(void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GErr
 	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
-	g_debug("bind idx=%d type=%d %p", idx, type, stmt);
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
@@ -209,7 +206,6 @@ j_sql_reset(void* _stmt, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt = _stmt;
-	g_debug("reset %p", stmt);
 	if (G_UNLIKELY(sqlite3_reset(stmt) != SQLITE_OK))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_RESET, "sql reset failed error was '%s'", sqlite3_errmsg(backend_db));
@@ -226,7 +222,6 @@ j_sql_exec(const char* sql, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt* stmt;
-	g_debug("exec %s", sql);
 	if (G_UNLIKELY(!j_sql_prepare(sql, &stmt, error)))
 	{
 		goto _error;
@@ -258,7 +253,7 @@ j_sql_step(void* _stmt, gboolean* found, GError** error)
 
 	sqlite3_stmt* stmt = _stmt;
 	guint ret;
-	g_debug("step %p", stmt);
+
 	ret = sqlite3_step(stmt);
 	*found = ret == SQLITE_ROW;
 	if (ret != SQLITE_ROW)

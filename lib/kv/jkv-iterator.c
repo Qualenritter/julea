@@ -70,7 +70,7 @@ fetch_reply (guint32 index, gchar const* namespace, gchar const* prefix)
 	g_autoptr(JMessage) message = NULL;
 	JMessage* reply;
 	JMessageType message_type;
-	GSocketConnection* kv_connection;
+	gpointer kv_connection;
 	gsize namespace_len;
 	gsize prefix_len;
 
@@ -95,13 +95,13 @@ fetch_reply (guint32 index, gchar const* namespace, gchar const* prefix)
 		j_message_append_n(message, prefix, prefix_len);
 	}
 
-	kv_connection = j_connection_pool_pop_kv(index);
+	kv_connection = j_connection_pool_pop(J_BACKEND_TYPE_KV, index);
 	j_message_send(message, kv_connection);
 
 	reply = j_message_new_reply(message);
 	j_message_receive(reply, kv_connection);
 
-	j_connection_pool_push_kv(index, kv_connection);
+	j_connection_pool_push(J_BACKEND_TYPE_KV, index, kv_connection);
 
 	return reply;
 }
@@ -126,12 +126,12 @@ j_kv_iterator_new (gchar const* namespace, gchar const* prefix)
 	//j_operation_cache_flush();
 
 	iterator = g_slice_new(JKVIterator);
-	iterator->kv_backend = j_kv_backend();
+	iterator->kv_backend = j_backend(J_BACKEND_TYPE_KV);
 	iterator->cursor = NULL;
 	iterator->key = NULL;
 	iterator->value = NULL;
 	iterator->len = 0;
-	iterator->replies_n = j_configuration_get_kv_server_count(configuration);
+	iterator->replies_n = j_configuration_get_server_count(configuration, J_BACKEND_TYPE_KV);
 	iterator->replies = g_new0(JMessage*, iterator->replies_n);
 	iterator->replies_cur = 0;
 
@@ -165,13 +165,13 @@ j_kv_iterator_new_for_index (guint32 index, gchar const* namespace, gchar const*
 	JConfiguration* configuration = j_configuration();
 
 	g_return_val_if_fail(namespace != NULL, NULL);
-	g_return_val_if_fail(index < j_configuration_get_kv_server_count(configuration), NULL);
+	g_return_val_if_fail(index < j_configuration_get_server_count(configuration, J_BACKEND_TYPE_KV), NULL);
 
 	/* FIXME still necessary? */
 	//j_operation_cache_flush();
 
 	iterator = g_slice_new(JKVIterator);
-	iterator->kv_backend = j_kv_backend();
+	iterator->kv_backend = j_backend(J_BACKEND_TYPE_KV);
 	iterator->cursor = NULL;
 	iterator->key = NULL;
 	iterator->value = NULL;

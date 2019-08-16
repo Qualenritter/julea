@@ -38,19 +38,26 @@
  **/
 
 GQuark
-j_backend_db_error_quark(void)
+j_backend_bson_error_quark (void)
+{
+	return g_quark_from_static_string("j-backend-bson-error-quark");
+}
+
+GQuark
+j_backend_db_error_quark (void)
 {
 	return g_quark_from_static_string("j-backend-db-error-quark");
 }
 
 GQuark
-j_backend_sql_error_quark(void)
+j_backend_sql_error_quark (void)
 {
-	return g_quark_from_static_string("j-sql-error-quark");
+	return g_quark_from_static_string("j-backend-sql-error-quark");
 }
 
-static GModule*
-j_backend_load(gchar const* name, JBackendComponent component, JBackendType type, JBackend** backend)
+static
+GModule*
+j_backend_load (gchar const* name, JBackendComponent component, JBackendType type, JBackend** backend)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -437,7 +444,7 @@ j_backend_kv_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_kv_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSafety safety, gpointer* batch)
+j_backend_kv_batch_start (JBackend* backend, gchar const* namespace, JSemantics* semantics, gpointer* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -446,11 +453,12 @@ j_backend_kv_batch_start(JBackend* backend, gchar const* namespace, JSemanticsSa
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(backend->type == J_BACKEND_TYPE_KV, FALSE);
 	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(semantics != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 
 	{
-		J_TRACE("backend_batch_start", "%s, %d, %p", namespace, safety, (gpointer)batch);
-		ret = backend->kv.backend_batch_start(namespace, safety, batch);
+		J_TRACE("backend_batch_start", "%s, %p, %p", namespace, (gpointer)semantics, (gpointer)batch);
+		ret = backend->kv.backend_batch_start(namespace, semantics, batch);
 	}
 
 	return ret;
@@ -634,7 +642,7 @@ j_backend_db_fini(JBackend* backend)
 }
 
 gboolean
-j_backend_db_batch_start(JBackend* backend, gchar const* namespace, JSemantics* semantics, gpointer* batch, GError** error)
+j_backend_db_batch_start (JBackend* backend, gchar const* namespace, JSemantics* semantics, gpointer* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

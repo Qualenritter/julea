@@ -183,7 +183,7 @@ j_object_create_exec (JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend == NULL)
 	{
@@ -226,10 +226,10 @@ j_object_create_exec (JList* operations, JSemantics* semantics)
 	{
 		JSemanticsSafety safety;
 
-		GSocketConnection* object_connection;
+		gpointer object_connection;
 
 		safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
-		object_connection = j_connection_pool_pop_object(index);
+		object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, index);
 		j_message_send(message, object_connection);
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
@@ -242,7 +242,7 @@ j_object_create_exec (JList* operations, JSemantics* semantics)
 			/* FIXME do something with reply */
 		}
 
-		j_connection_pool_push_object(index, object_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_OBJECT, index, object_connection);
 	}
 
 	return ret;
@@ -278,7 +278,7 @@ j_object_delete_exec (JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend == NULL)
 	{
@@ -313,10 +313,10 @@ j_object_delete_exec (JList* operations, JSemantics* semantics)
 	{
 		JSemanticsSafety safety;
 
-		GSocketConnection* object_connection;
+		gpointer object_connection;
 
 		safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
-		object_connection = j_connection_pool_pop_object(index);
+		object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, index);
 		j_message_send(message, object_connection);
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
@@ -329,7 +329,7 @@ j_object_delete_exec (JList* operations, JSemantics* semantics)
 			/* FIXME do something with reply */
 		}
 
-		j_connection_pool_push_object(index, object_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_OBJECT, index, object_connection);
 	}
 
 	return ret;
@@ -365,7 +365,7 @@ j_object_read_exec (JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend != NULL)
 	{
@@ -428,11 +428,11 @@ j_object_read_exec (JList* operations, JSemantics* semantics)
 	else
 	{
 		g_autoptr(JMessage) reply = NULL;
-		GSocketConnection* object_connection;
+		gpointer object_connection;
 		guint32 operations_done;
 		guint32 operation_count;
 
-		object_connection = j_connection_pool_pop_object(object->index);
+		object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, object->index);
 		j_message_send(message, object_connection);
 
 		reply = j_message_new_reply(message);
@@ -480,7 +480,7 @@ j_object_read_exec (JList* operations, JSemantics* semantics)
 
 		j_list_iterator_free(it);
 
-		j_connection_pool_push_object(object->index, object_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_OBJECT, object->index, object_connection);
 	}
 
 	/*
@@ -526,7 +526,7 @@ j_object_write_exec (JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend != NULL)
 	{
@@ -604,10 +604,10 @@ j_object_write_exec (JList* operations, JSemantics* semantics)
 	{
 		JSemanticsSafety safety;
 
-		GSocketConnection* object_connection;
+		gpointer object_connection;
 
 		safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
-		object_connection = j_connection_pool_pop_object(object->index);
+		object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, object->index);
 		j_message_send(message, object_connection);
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
@@ -632,7 +632,7 @@ j_object_write_exec (JList* operations, JSemantics* semantics)
 			j_list_iterator_free(it);
 		}
 
-		j_connection_pool_push_object(object->index, object_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_OBJECT, object->index, object_connection);
 	}
 
 	/*
@@ -679,7 +679,7 @@ j_object_status_exec (JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend == NULL)
 	{
@@ -719,9 +719,9 @@ j_object_status_exec (JList* operations, JSemantics* semantics)
 	if (object_backend == NULL)
 	{
 		g_autoptr(JMessage) reply = NULL;
-		GSocketConnection* object_connection;
+		gpointer object_connection;
 
-		object_connection = j_connection_pool_pop_object(index);
+		object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, index);
 		j_message_send(message, object_connection);
 
 		reply = j_message_new_reply(message);
@@ -753,7 +753,7 @@ j_object_status_exec (JList* operations, JSemantics* semantics)
 
 		j_list_iterator_free(it);
 
-		j_connection_pool_push_object(index, object_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_OBJECT, index, object_connection);
 	}
 
 	return ret;
@@ -785,7 +785,7 @@ j_object_new (gchar const* namespace, gchar const* name)
 	g_return_val_if_fail(name != NULL, NULL);
 
 	object = g_slice_new(JObject);
-	object->index = j_helper_hash(name) % j_configuration_get_object_server_count(configuration);
+	object->index = j_helper_hash(name) % j_configuration_get_server_count(configuration, J_BACKEND_TYPE_OBJECT);
 	object->namespace = g_strdup(namespace);
 	object->name = g_strdup(name);
 	object->ref_count = 1;
@@ -802,7 +802,7 @@ j_object_new (gchar const* namespace, gchar const* name)
  * i = j_object_new_for_index(index, "JULEA", "JULEA");
  * \endcode
  *
- * \param index        An object server index. Must be less than the return value of j_configuration_get_object_server_count().
+ * \param index        An object server index. Must be less than the return value of j_configuration_get_server_count(configuration, J_BACKEND_TYPE_OBJECT).
  * \param namespace    A namespace.
  * \param name         An object name.
  *
@@ -818,7 +818,7 @@ j_object_new_for_index (guint32 index, gchar const* namespace, gchar const* name
 
 	g_return_val_if_fail(namespace != NULL, NULL);
 	g_return_val_if_fail(name != NULL, NULL);
-	g_return_val_if_fail(index < j_configuration_get_object_server_count(configuration), NULL);
+	g_return_val_if_fail(index < j_configuration_get_server_count(configuration, J_BACKEND_TYPE_OBJECT), NULL);
 
 	object = g_slice_new(JObject);
 	object->index = index;

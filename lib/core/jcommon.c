@@ -162,17 +162,17 @@ j_init (void)
 		goto error;
 	}
 
-	object_backend = j_configuration_get_object_backend(common->configuration);
-	object_component = j_configuration_get_object_component(common->configuration);
-	object_path = j_configuration_get_object_path(common->configuration);
+	object_backend = j_configuration_get_backend(common->configuration, J_BACKEND_TYPE_OBJECT);
+	object_component = j_configuration_get_backend_component(common->configuration, J_BACKEND_TYPE_OBJECT);
+	object_path = j_configuration_get_backend_path(common->configuration, J_BACKEND_TYPE_OBJECT);
 
-	kv_backend = j_configuration_get_kv_backend(common->configuration);
-	kv_component = j_configuration_get_kv_component(common->configuration);
-	kv_path = j_configuration_get_kv_path(common->configuration);
+	kv_backend = j_configuration_get_backend(common->configuration, J_BACKEND_TYPE_KV);
+	kv_component = j_configuration_get_backend_component(common->configuration, J_BACKEND_TYPE_KV);
+	kv_path = j_configuration_get_backend_path(common->configuration, J_BACKEND_TYPE_KV);
 
-	db_backend = j_configuration_get_db_backend(common->configuration);
-	db_component = j_configuration_get_db_component(common->configuration);
-	db_path = j_configuration_get_db_path(common->configuration);
+	db_backend = j_configuration_get_backend(common->configuration, J_BACKEND_TYPE_DB);
+	db_component = j_configuration_get_backend_component(common->configuration, J_BACKEND_TYPE_DB);
+	db_path = j_configuration_get_backend_path(common->configuration, J_BACKEND_TYPE_DB);
 
 	if (j_backend_load_client(object_backend, object_component, J_BACKEND_TYPE_OBJECT, &(common->object_module), &(common->object_backend)))
 	{
@@ -311,14 +311,14 @@ j_configuration (void)
 }
 
 /**
- * Returns the object backend.
+ * Returns a backend.
  *
- * \private
+ * \param backend The backend to return.
  *
  * \return The object backend.
  */
 JBackend*
-j_object_backend (void)
+j_backend (JBackendType backend)
 {
 	JCommon* common;
 
@@ -326,45 +326,19 @@ j_object_backend (void)
 
 	common = g_atomic_pointer_get(&j_common);
 
-	return common->object_backend;
-}
+	switch (backend)
+	{
+		case J_BACKEND_TYPE_OBJECT:
+			return common->object_backend;
+		case J_BACKEND_TYPE_KV:
+			return common->kv_backend;
+		case J_BACKEND_TYPE_DB:
+			return common->db_backend;
+		default:
+			g_assert_not_reached();
+	}
 
-/**
- * Returns the kv backend.
- *
- * \private
- *
- * \return The kv backend.
- */
-JBackend*
-j_kv_backend (void)
-{
-	JCommon* common;
-
-	g_return_val_if_fail(j_is_initialized(), NULL);
-
-	common = g_atomic_pointer_get(&j_common);
-
-	return common->kv_backend;
-}
-
-/**
- * Returns the db backend.
- *
- * \private
- *
- * \return The db backend.
- */
-JBackend*
-j_db_backend (void)
-{
-	JCommon* common;
-
-	g_return_val_if_fail(j_is_initialized(), NULL);
-
-	common = g_atomic_pointer_get(&j_common);
-
-	return common->db_backend;
+	return NULL;
 }
 
 /**

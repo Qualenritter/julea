@@ -73,11 +73,11 @@ union JDBTypeValue
 	gint64 val_sint64;
 	gdouble val_float64;
 	gfloat val_float32;
-	const char* val_string;
+	gchar const* val_string;
 	struct
 	{
-		const char* val_blob;
-		guint val_blob_length;
+		gchar const* val_blob;
+		guint32 val_blob_length;
 	};
 };
 

@@ -29,6 +29,7 @@
 #include <jconnection-pool.h>
 #include <jconnection-pool-internal.h>
 
+#include <jbackend.h>
 #include <jhelper.h>
 #include <jhelper-internal.h>
 #include <jmessage.h>
@@ -80,11 +81,11 @@ j_connection_pool_init(JConfiguration* configuration)
 
 	pool = g_slice_new(JConnectionPool);
 	pool->configuration = j_configuration_ref(configuration);
-	pool->object_len = j_configuration_get_object_server_count(configuration);
+	pool->object_len = j_configuration_get_server_count(configuration, J_BACKEND_TYPE_OBJECT);
 	pool->object_queues = g_new(JConnectionPoolQueue, pool->object_len);
-	pool->kv_len = j_configuration_get_kv_server_count(configuration);
+	pool->kv_len = j_configuration_get_server_count(configuration, J_BACKEND_TYPE_KV);
 	pool->kv_queues = g_new(JConnectionPoolQueue, pool->kv_len);
-	pool->db_len = j_configuration_get_db_server_count(configuration);
+	pool->db_len = j_configuration_get_server_count(configuration, J_BACKEND_TYPE_DB);
 	pool->db_queues = g_new(JConnectionPoolQueue, pool->db_len);
 	pool->max_count = j_configuration_get_max_connections(configuration);
 
@@ -269,92 +270,65 @@ j_connection_pool_push_internal(GAsyncQueue* queue, GSocketConnection* connectio
 	g_async_queue_push(queue, connection);
 }
 
-GSocketConnection*
-j_connection_pool_pop_object(guint index)
+gpointer
+j_connection_pool_pop (JBackendType backend, guint index)
 {
 	J_TRACE_FUNCTION(NULL);
-
-	GSocketConnection* connection;
 
 	g_return_val_if_fail(j_connection_pool != NULL, NULL);
-	g_return_val_if_fail(index < j_connection_pool->object_len, NULL);
 
-	connection = j_connection_pool_pop_internal(j_connection_pool->object_queues[index].queue, &(j_connection_pool->object_queues[index].count), j_configuration_get_object_server(j_connection_pool->configuration, index));
-
-	return connection;
-}
-
-void
-j_connection_pool_push_object(guint index, GSocketConnection* connection)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	g_return_if_fail(j_connection_pool != NULL);
-	g_return_if_fail(index < j_connection_pool->object_len);
-	g_return_if_fail(connection != NULL);
-
-	j_connection_pool_push_internal(j_connection_pool->object_queues[index].queue, connection);
-}
-
-GSocketConnection*
-j_connection_pool_pop_kv(guint index)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	GSocketConnection* connection;
-
-	g_return_val_if_fail(j_connection_pool != NULL, NULL);
-	g_return_val_if_fail(index < j_connection_pool->kv_len, NULL);
-
-	connection = j_connection_pool_pop_internal(j_connection_pool->kv_queues[index].queue, &(j_connection_pool->kv_queues[index].count), j_configuration_get_kv_server(j_connection_pool->configuration, index));
-
-	return connection;
-}
-
-void
-j_connection_pool_push_kv(guint index, GSocketConnection* connection)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	g_return_if_fail(j_connection_pool != NULL);
-	g_return_if_fail(index < j_connection_pool->kv_len);
-	g_return_if_fail(connection != NULL);
-
-	j_connection_pool_push_internal(j_connection_pool->kv_queues[index].queue, connection);
-}
-
-GSocketConnection*
-j_connection_pool_pop_db(guint index)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	if (!JULEA_TEST_MOCKUP)
+	if (JULEA_TEST_MOCKUP)
 	{
-		GSocketConnection* connection;
-
-		g_return_val_if_fail(j_connection_pool != NULL, NULL);
-		g_return_val_if_fail(index < j_connection_pool->db_len, NULL);
-
-		connection = j_connection_pool_pop_internal(j_connection_pool->db_queues[index].queue, &(j_connection_pool->db_queues[index].count), j_configuration_get_db_server(j_connection_pool->configuration, index));
-
-		return connection;
+		return (void*)TRUE;
 	}
 
-	return (void*)TRUE;
+	switch (backend)
+	{
+		case J_BACKEND_TYPE_OBJECT:
+			g_return_val_if_fail(index < j_connection_pool->object_len, NULL);
+			return j_connection_pool_pop_internal(j_connection_pool->object_queues[index].queue, &(j_connection_pool->object_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_OBJECT, index));
+		case J_BACKEND_TYPE_KV:
+			g_return_val_if_fail(index < j_connection_pool->kv_len, NULL);
+			return j_connection_pool_pop_internal(j_connection_pool->kv_queues[index].queue, &(j_connection_pool->kv_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_KV, index));
+		case J_BACKEND_TYPE_DB:
+			g_return_val_if_fail(index < j_connection_pool->db_len, NULL);
+			return j_connection_pool_pop_internal(j_connection_pool->db_queues[index].queue, &(j_connection_pool->db_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_DB, index));
+		default:
+			g_assert_not_reached();
+	}
+
+	return NULL;
 }
 
 void
-j_connection_pool_push_db(guint index, GSocketConnection* connection)
+j_connection_pool_push (JBackendType backend, guint index, gpointer connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (!JULEA_TEST_MOCKUP)
-	{
-		g_return_if_fail(j_connection_pool != NULL);
-		g_return_if_fail(index < j_connection_pool->db_len);
-		g_return_if_fail(connection != NULL);
+	g_return_if_fail(j_connection_pool != NULL);
+	g_return_if_fail(connection != NULL);
 
-		j_connection_pool_push_internal(j_connection_pool->db_queues[index].queue, connection);
+	if (JULEA_TEST_MOCKUP)
+	{
+		return;
+	}
+
+	switch (backend)
+	{
+		case J_BACKEND_TYPE_OBJECT:
+			g_return_if_fail(index < j_connection_pool->object_len);
+			j_connection_pool_push_internal(j_connection_pool->object_queues[index].queue, connection);
+			break;
+		case J_BACKEND_TYPE_KV:
+			g_return_if_fail(index < j_connection_pool->kv_len);
+			j_connection_pool_push_internal(j_connection_pool->kv_queues[index].queue, connection);
+			break;
+		case J_BACKEND_TYPE_DB:
+			g_return_if_fail(index < j_connection_pool->db_len);
+			j_connection_pool_push_internal(j_connection_pool->db_queues[index].queue, connection);
+			break;
+		default:
+			g_assert_not_reached();
 	}
 }
 

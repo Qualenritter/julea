@@ -38,7 +38,7 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 	gchar const* path;
 	guint32 operation_count;
 	JBackendOperation backend_operation;
-	JSemantics* semantics;
+	g_autoptr(JSemantics) semantics;
 	JSemanticsSafety safety;
 	gboolean message_matched = FALSE;
 	guint i;
@@ -359,11 +359,8 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 			j_message_append_string(reply, "object");
 		}
 
-		if (jd_kv_backend != NULL)
-		{
-			j_message_add_operation(reply, 3);
-			j_message_append_string(reply, "kv");
-		}
+				namespace = j_message_get_string(message);
+				j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		j_message_send(reply, connection);
 	}
@@ -400,16 +397,8 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 
 		j_backend_kv_batch_execute(jd_kv_backend, batch);
 
-		if (reply != NULL)
-		{
-			j_message_send(reply, connection);
-		}
-	}
-	break;
-	case J_MESSAGE_KV_DELETE:
-	{
-		g_autoptr(JMessage) reply = NULL;
-		gpointer batch;
+				namespace = j_message_get_string(message);
+				j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
 		{
@@ -427,9 +416,12 @@ jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk
 
 			if (reply != NULL)
 			{
-				j_message_add_operation(reply, 0);
-			}
-		}
+				g_autoptr(JMessage) reply = NULL;
+				gpointer batch;
+
+				reply = j_message_new_reply(message);
+				namespace = j_message_get_string(message);
+				j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		j_backend_kv_batch_execute(jd_kv_backend, batch);
 

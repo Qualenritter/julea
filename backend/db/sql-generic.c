@@ -1455,6 +1455,9 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 			{
 				goto _error;
 			}
+			if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, index, type, &value, error)))
+			{
+				goto _error;
 		}
 		if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 		{

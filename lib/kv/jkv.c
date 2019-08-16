@@ -160,11 +160,11 @@ j_kv_put_exec (JList* operations, JSemantics* semantics)
 
 	safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
 	it = j_list_iterator_new(operations);
-	kv_backend = j_kv_backend();
+	kv_backend = j_backend(J_BACKEND_TYPE_KV);
 
 	if (kv_backend != NULL)
 	{
-		ret = j_backend_kv_batch_start(kv_backend, namespace, safety, &kv_batch);
+		ret = j_backend_kv_batch_start(kv_backend, namespace, semantics, &kv_batch);
 	}
 	else
 	{
@@ -208,9 +208,9 @@ j_kv_put_exec (JList* operations, JSemantics* semantics)
 	}
 	else
 	{
-		GSocketConnection* kv_connection;
+		gpointer kv_connection;
 
-		kv_connection = j_connection_pool_pop_kv(index);
+		kv_connection = j_connection_pool_pop(J_BACKEND_TYPE_KV, index);
 		j_message_send(message, kv_connection);
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
@@ -223,7 +223,7 @@ j_kv_put_exec (JList* operations, JSemantics* semantics)
 			/* FIXME do something with reply */
 		}
 
-		j_connection_pool_push_kv(index, kv_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_KV, index, kv_connection);
 	}
 
 	return ret;
@@ -262,11 +262,11 @@ j_kv_delete_exec (JList* operations, JSemantics* semantics)
 
 	safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
 	it = j_list_iterator_new(operations);
-	kv_backend = j_kv_backend();
+	kv_backend = j_backend(J_BACKEND_TYPE_KV);
 
 	if (kv_backend != NULL)
 	{
-		ret = j_backend_kv_batch_start(kv_backend, namespace, safety, &kv_batch);
+		ret = j_backend_kv_batch_start(kv_backend, namespace, semantics, &kv_batch);
 	}
 	else
 	{
@@ -300,9 +300,9 @@ j_kv_delete_exec (JList* operations, JSemantics* semantics)
 	}
 	else
 	{
-		GSocketConnection* kv_connection;
+		gpointer kv_connection;
 
-		kv_connection = j_connection_pool_pop_kv(index);
+		kv_connection = j_connection_pool_pop(J_BACKEND_TYPE_KV, index);
 		j_message_send(message, kv_connection);
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
@@ -315,7 +315,7 @@ j_kv_delete_exec (JList* operations, JSemantics* semantics)
 			/* FIXME do something with reply */
 		}
 
-		j_connection_pool_push_kv(index, kv_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_KV, index, kv_connection);
 	}
 
 	return ret;
@@ -332,7 +332,6 @@ j_kv_get_exec (JList* operations, JSemantics* semantics)
 	JBackend* kv_backend;
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) message = NULL;
-	JSemanticsSafety safety;
 	gchar const* namespace;
 	gpointer kv_batch = NULL;
 	gsize namespace_len;
@@ -352,13 +351,12 @@ j_kv_get_exec (JList* operations, JSemantics* semantics)
 		index = kop->get.kv->index;
 	}
 
-	safety = j_semantics_get(semantics, J_SEMANTICS_SAFETY);
 	it = j_list_iterator_new(operations);
-	kv_backend = j_kv_backend();
+	kv_backend = j_backend(J_BACKEND_TYPE_KV);
 
 	if (kv_backend != NULL)
 	{
-		ret = j_backend_kv_batch_start(kv_backend, namespace, safety, &kv_batch);
+		ret = j_backend_kv_batch_start(kv_backend, namespace, semantics, &kv_batch);
 	}
 	else
 	{
@@ -418,9 +416,9 @@ j_kv_get_exec (JList* operations, JSemantics* semantics)
 	{
 		g_autoptr(JListIterator) iter = NULL;
 		g_autoptr(JMessage) reply = NULL;
-		GSocketConnection* kv_connection;
+		gpointer kv_connection;
 
-		kv_connection = j_connection_pool_pop_kv(index);
+		kv_connection = j_connection_pool_pop(J_BACKEND_TYPE_KV, index);
 		j_message_send(message, kv_connection);
 
 		reply = j_message_new_reply(message);
@@ -458,7 +456,7 @@ j_kv_get_exec (JList* operations, JSemantics* semantics)
 			}
 		}
 
-		j_connection_pool_push_kv(index, kv_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_KV, index, kv_connection);
 	}
 
 	return ret;
@@ -490,7 +488,7 @@ j_kv_new (gchar const* namespace, gchar const* key)
 	g_return_val_if_fail(key != NULL, NULL);
 
 	kv = g_slice_new(JKV);
-	kv->index = j_helper_hash(key) % j_configuration_get_kv_server_count(configuration);
+	kv->index = j_helper_hash(key) % j_configuration_get_server_count(configuration, J_BACKEND_TYPE_KV);
 	kv->namespace = g_strdup(namespace);
 	kv->key = g_strdup(key);
 	kv->ref_count = 1;
@@ -522,7 +520,7 @@ j_kv_new_for_index (guint32 index, gchar const* namespace, gchar const* key)
 
 	g_return_val_if_fail(namespace != NULL, NULL);
 	g_return_val_if_fail(key != NULL, NULL);
-	g_return_val_if_fail(index < j_configuration_get_kv_server_count(configuration), NULL);
+	g_return_val_if_fail(index < j_configuration_get_server_count(configuration, J_BACKEND_TYPE_KV), NULL);
 
 	kv = g_slice_new(JKV);
 	kv->index = index;

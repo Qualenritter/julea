@@ -30,15 +30,16 @@
 struct JSQLiteBatch
 {
 	gchar* namespace;
-	JSemanticsSafety safety;
+	JSemantics* semantics;
 };
 
 typedef struct JSQLiteBatch JSQLiteBatch;
 
 static sqlite3* backend_db = NULL;
 
-static gboolean
-backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* data)
+static
+gboolean
+backend_batch_start (gchar const* namespace, JSemantics* semantics, gpointer* data)
 {
 	JSQLiteBatch* batch = NULL;
 
@@ -50,7 +51,7 @@ backend_batch_start(gchar const* namespace, JSemanticsSafety safety, gpointer* d
 		batch = g_slice_new(JSQLiteBatch);
 
 		batch->namespace = g_strdup(namespace);
-		batch->safety = safety;
+		batch->semantics = j_semantics_ref(semantics);
 	}
 
 	*data = batch;
@@ -67,13 +68,14 @@ backend_batch_execute(gpointer data)
 
 	g_return_val_if_fail(data != NULL, FALSE);
 
-	// FIXME do something with batch->safety
+	// FIXME do something with batch->semantics
 
 	if (sqlite3_exec(backend_db, "COMMIT;", NULL, NULL, NULL) == SQLITE_OK)
 	{
 		ret = TRUE;
 	}
 
+	j_semantics_unref(batch->semantics);
 	g_free(batch->namespace);
 	g_slice_free(JSQLiteBatch, batch);
 

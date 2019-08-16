@@ -205,10 +205,10 @@ j_distributed_object_create_background_operation(gpointer data)
 
 	JSemanticsSafety safety;
 
-	GSocketConnection* object_connection;
+	gpointer object_connection;
 
 	safety = j_semantics_get(background_data->semantics, J_SEMANTICS_SAFETY);
-	object_connection = j_connection_pool_pop_object(background_data->index);
+	object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, background_data->index);
 
 	j_message_send(background_data->message, object_connection);
 
@@ -223,7 +223,7 @@ j_distributed_object_create_background_operation(gpointer data)
 	}
 
 	j_message_unref(background_data->message);
-	j_connection_pool_push_object(background_data->index, object_connection);
+	j_connection_pool_push(J_BACKEND_TYPE_OBJECT, background_data->index, object_connection);
 
 	g_slice_free(JDistributedObjectBackgroundData, background_data);
 
@@ -246,10 +246,10 @@ j_distributed_object_delete_background_operation(gpointer data)
 
 	JSemanticsSafety safety;
 
-	GSocketConnection* object_connection;
+	gpointer object_connection;
 
 	safety = j_semantics_get(background_data->semantics, J_SEMANTICS_SAFETY);
-	object_connection = j_connection_pool_pop_object(background_data->index);
+	object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, background_data->index);
 
 	j_message_send(background_data->message, object_connection);
 
@@ -264,7 +264,7 @@ j_distributed_object_delete_background_operation(gpointer data)
 	}
 
 	j_message_unref(background_data->message);
-	j_connection_pool_push_object(background_data->index, object_connection);
+	j_connection_pool_push(J_BACKEND_TYPE_OBJECT, background_data->index, object_connection);
 
 	g_slice_free(JDistributedObjectBackgroundData, background_data);
 
@@ -287,11 +287,11 @@ j_distributed_object_read_background_operation(gpointer data)
 
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) reply = NULL;
-	GSocketConnection* object_connection;
+	gpointer object_connection;
 	guint32 operations_done;
 	guint32 operation_count;
 
-	object_connection = j_connection_pool_pop_object(background_data->index);
+	object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, background_data->index);
 	j_message_send(background_data->message, object_connection);
 
 	reply = j_message_new_reply(background_data->message);
@@ -341,7 +341,7 @@ j_distributed_object_read_background_operation(gpointer data)
 
 	j_message_unref(background_data->message);
 
-	j_connection_pool_push_object(background_data->index, object_connection);
+	j_connection_pool_push(J_BACKEND_TYPE_OBJECT, background_data->index, object_connection);
 
 	j_list_unref(background_data->read.buffers);
 
@@ -366,10 +366,10 @@ j_distributed_object_write_background_operation(gpointer data)
 
 	JSemanticsSafety safety;
 
-	GSocketConnection* object_connection;
+	gpointer object_connection;
 
 	safety = j_semantics_get(background_data->semantics, J_SEMANTICS_SAFETY);
-	object_connection = j_connection_pool_pop_object(background_data->index);
+	object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, background_data->index);
 	j_message_send(background_data->message, object_connection);
 
 	if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
@@ -394,7 +394,7 @@ j_distributed_object_write_background_operation(gpointer data)
 
 	j_message_unref(background_data->message);
 
-	j_connection_pool_push_object(background_data->index, object_connection);
+	j_connection_pool_push(J_BACKEND_TYPE_OBJECT, background_data->index, object_connection);
 
 	j_list_unref(background_data->write.bytes_written);
 
@@ -419,9 +419,9 @@ j_distributed_object_status_background_operation(gpointer data)
 
 	g_autoptr(JListIterator) it = NULL;
 	g_autoptr(JMessage) reply = NULL;
-	GSocketConnection* object_connection;
+	gpointer object_connection;
 
-	object_connection = j_connection_pool_pop_object(background_data->index);
+	object_connection = j_connection_pool_pop(J_BACKEND_TYPE_OBJECT, background_data->index);
 	j_message_send(background_data->message, object_connection);
 
 	reply = j_message_new_reply(background_data->message);
@@ -454,7 +454,7 @@ j_distributed_object_status_background_operation(gpointer data)
 
 	j_message_unref(background_data->message);
 
-	j_connection_pool_push_object(background_data->index, object_connection);
+	j_connection_pool_push(J_BACKEND_TYPE_OBJECT, background_data->index, object_connection);
 
 	g_slice_free(JDistributedObjectBackgroundData, background_data);
 
@@ -487,10 +487,11 @@ j_distributed_object_create_exec(JList* operations, JSemantics* semantics)
 		namespace_len = strlen(namespace) + 1;
 	}
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
+
 	if (object_backend == NULL)
 	{
-		server_count = j_configuration_get_object_server_count(j_configuration());
+		server_count = j_configuration_get_server_count(j_configuration(), J_BACKEND_TYPE_OBJECT);
 		messages = g_new(JMessage*, server_count);
 		// FIXME use actual distribution
 		for (guint i = 0; i < server_count; i++)
@@ -582,11 +583,11 @@ j_distributed_object_delete_exec(JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend == NULL)
 	{
-		server_count = j_configuration_get_object_server_count(j_configuration());
+		server_count = j_configuration_get_server_count(j_configuration(), J_BACKEND_TYPE_OBJECT);
 		messages = g_new(JMessage*, server_count);
 
 		// FIXME use actual distribution
@@ -682,7 +683,7 @@ j_distributed_object_read_exec(JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend != NULL)
 	{
@@ -690,7 +691,7 @@ j_distributed_object_read_exec(JList* operations, JSemantics* semantics)
 	}
 	else
 	{
-		server_count = j_configuration_get_object_server_count(j_configuration());
+		server_count = j_configuration_get_server_count(j_configuration(), J_BACKEND_TYPE_OBJECT);
 		messages = g_new(JMessage*, server_count);
 		br_lists = g_new(JList*, server_count);
 
@@ -855,7 +856,7 @@ j_distributed_object_write_exec(JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend != NULL)
 	{
@@ -863,7 +864,7 @@ j_distributed_object_write_exec(JList* operations, JSemantics* semantics)
 	}
 	else
 	{
-		server_count = j_configuration_get_object_server_count(j_configuration());
+		server_count = j_configuration_get_server_count(j_configuration(), J_BACKEND_TYPE_OBJECT);
 		messages = g_new(JMessage*, server_count);
 		bw_lists = g_new(JList*, server_count);
 
@@ -1026,11 +1027,11 @@ j_distributed_object_status_exec(JList* operations, JSemantics* semantics)
 	}
 
 	it = j_list_iterator_new(operations);
-	object_backend = j_object_backend();
+	object_backend = j_backend(J_BACKEND_TYPE_OBJECT);
 
 	if (object_backend == NULL)
 	{
-		server_count = j_configuration_get_object_server_count(j_configuration());
+		server_count = j_configuration_get_server_count(j_configuration(), J_BACKEND_TYPE_OBJECT);
 		messages = g_new(JMessage*, server_count);
 
 		// FIXME use actual distribution

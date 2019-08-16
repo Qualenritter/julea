@@ -784,7 +784,7 @@ j_message_get_string(JMessage* message)
  * \return TRUE on success, FALSE if an error occurred.
  **/
 gboolean
-j_message_receive(JMessage* message, GSocketConnection* connection)
+j_message_receive (JMessage* message, gpointer connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -809,7 +809,7 @@ j_message_receive(JMessage* message, GSocketConnection* connection)
  * \return TRUE on success, FALSE if an error occurred.
  **/
 gboolean
-j_message_send(JMessage* message, GSocketConnection* connection)
+j_message_send (JMessage* message, gpointer connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
