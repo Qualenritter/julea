@@ -68,7 +68,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	g_autoptr(JListIterator) iter_recieve = NULL;
 	g_autoptr(JMessage) message = NULL;
 	g_autoptr(JMessage) reply = NULL;
-	JBackend* db_backend = j_db_backend();
+	JBackend* db_backend = j_backend(J_BACKEND_TYPE_DB);
 	gpointer batch = NULL;
 	GError* error = NULL;
 
@@ -120,7 +120,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	}
 	else
 	{
-		db_connection = j_connection_pool_pop_db(0);
+		db_connection = j_connection_pool_pop(J_BACKEND_TYPE_DB,0);
 		j_message_send(message, db_connection);
 		reply = j_message_new_reply(message);
 		j_message_receive(reply, db_connection);
@@ -130,7 +130,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 			data = j_list_iterator_get(iter_recieve);
 			ret = j_backend_operation_from_message(reply, data->out_param, data->out_param_count) && ret;
 		}
-		j_connection_pool_push_db(0, db_connection);
+		j_connection_pool_push(J_BACKEND_TYPE_DB,0, db_connection);
 	}
 	return ret;
 }
