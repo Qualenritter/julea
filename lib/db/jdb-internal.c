@@ -31,7 +31,7 @@
 #include <db/jdb-internal.h>
 
 #include <julea.h>
-#include <core/jbson-wrapper.h>
+#include "../../backend/db/jbson.c"
 
 #define J_AFL_DEBUG_BSON(bson)                           \
 	do                                               \

@@ -31,7 +31,7 @@
 #include <julea.h>
 #include <db/jdb-internal.h>
 #include <julea-db.h>
-#include <core/jbson-wrapper.h>
+#include "../../backend/db/jbson.c"
 
 JDBSchema*
 j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
