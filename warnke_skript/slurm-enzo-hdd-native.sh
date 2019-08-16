@@ -27,6 +27,9 @@ name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
 builddir="hdf-julea"
 tmpdir=$(mktemp -d)
 
+rm -rf $tmpdir
+mkdir -p $tmpdir
+
 echo $scale
 echo $tmpdir
 echo $thepath
@@ -49,8 +52,13 @@ export JULEA_CONFIG=${HOME}/.config/julea/julea-${name}
 export J_BENCHMARK_SCALE=${scale}
 export J_BENCHMARK_TARGET=30;
 export HDF5_VOL_JULEA=0
+export HDF5_PLUGIN_PATH=/home/warnke/julea/prefix-hdf-julea/lib
+export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
+export SEGFAULT_SIGNALS="all"
 
 ./build-hdf-julea/server/julea-server &
-cp -r /home/warnke/enzo-dev/run/Hydro/Hydro-3D/CollapseTestNonCosmological $tmpdir
+cp -r /home/warnke/enzo-dev/run/Hydro/Hydro-3D/CollapseTestNonCosmological/* $tmpdir
 cd $tmpdir
-./enzo.exe -d CollapseTestNonCosmological.enzo
+echo $PWD
+ls -la
+time ./enzo.exe -d CollapseTestNonCosmological.enzo
