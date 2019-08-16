@@ -143,7 +143,7 @@ j_distribution_ref (JDistribution* distribution)
  * \param distribution A distribution.
  **/
 void
-j_distribution_unref(JDistribution* distribution)
+j_distribution_unref (JDistribution* distribution)
 {
 	J_TRACE_FUNCTION(NULL);
 

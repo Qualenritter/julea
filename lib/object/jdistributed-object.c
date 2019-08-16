@@ -476,8 +476,9 @@ j_distributed_object_status_background_operation (gpointer data)
 	return NULL;
 }
 
-static gboolean
-j_distributed_object_create_exec(JList* operations, JSemantics* semantics)
+static
+gboolean
+j_distributed_object_create_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -1209,7 +1210,7 @@ j_distributed_object_ref (JDistributedObject* object)
  * \param object An object.
  **/
 void
-j_distributed_object_unref(JDistributedObject* object)
+j_distributed_object_unref (JDistributedObject* object)
 {
 	J_TRACE_FUNCTION(NULL);
 

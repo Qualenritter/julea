@@ -271,7 +271,8 @@ backend_fini (void)
 	}
 }
 
-static JBackend sqlite_backend = {
+static
+JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_KV,
 	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.kv = {

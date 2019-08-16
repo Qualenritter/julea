@@ -393,7 +393,8 @@ backend_fini (void)
 	g_free(jd_backend_path);
 }
 
-static JBackend posix_backend = {
+static
+JBackend posix_backend = {
 	.type = J_BACKEND_TYPE_OBJECT,
 	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.object = {
