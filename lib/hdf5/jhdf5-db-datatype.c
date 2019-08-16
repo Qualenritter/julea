@@ -147,11 +147,6 @@ H5VL_julea_db_datatype_print_recoursive(hid_t type_id, guint level, const char* 
 		g_debug("%s  H5Tget_precision %ld", padding, H5Tget_precision(type_id));
 		g_debug("%s  H5Tget_offset %d", padding, H5Tget_offset(type_id));
 		g_debug("%s  H5Tget_sign %d", padding, H5Tget_sign(type_id));
-		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
-		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
-		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
-		g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
-		g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
 		break;
 	case H5T_FLOAT:
 		g_debug("%s  class H5T_FLOAT", padding);
@@ -162,8 +157,6 @@ H5VL_julea_db_datatype_print_recoursive(hid_t type_id, guint level, const char* 
 		g_debug("%s  H5Tget_ebias %ld", padding, H5Tget_ebias(type_id));
 		g_debug("%s  H5Tget_norm %d", padding, H5Tget_norm(type_id));
 		g_debug("%s  H5Tget_inpad %d", padding, H5Tget_inpad(type_id));
-		//              g_debug("%s  H5Tget_cset %d", padding, H5Tget_cset(type_id));
-		//              g_debug("%s  H5Tget_strpad %d", padding, H5Tget_strpad(type_id));
 		break;
 	case H5T_STRING:
 		g_debug("%s  class H5T_STRING", padding);
