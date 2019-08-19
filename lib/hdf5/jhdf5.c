@@ -59,6 +59,7 @@ static JHDF5Implementation hdf5_implementation_to_use = J_HDF5_IMPLEMENTATION_DB
 H5PL_type_t
 H5PLget_plugin_type(void)
 {
+	g_debug("H5PLget_plugin_type");
 	return H5PL_TYPE_VOL;
 }
 
@@ -68,6 +69,8 @@ H5PLget_plugin_type(void)
 const void*
 H5PLget_plugin_info(void)
 {
+	g_debug("H5PLget_plugin_info");
+
 	//FIXME override hdf5_implementation_to_use with environment variable?
 	//FIXME override hdf5_implementation_to_use within julea-test AT RUNTIME to test all (different) implementations?
 	switch (hdf5_implementation_to_use)

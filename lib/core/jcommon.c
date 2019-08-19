@@ -44,6 +44,10 @@
  * @{
  **/
 
+// FIXME copy and use GLib's G_DEFINE_CONSTRUCTOR/DESTRUCTOR
+void __attribute__((constructor)) j_init (void);
+void __attribute__((destructor)) j_fini (void);
+
 /**
  * Common structure.
  */
@@ -115,6 +119,7 @@ j_get_program_name (gchar const* default_name)
 	return program_name;
 }
 
+
 /**
  * Initializes JULEA.
  *
@@ -137,10 +142,13 @@ j_init (void)
 	gchar const* db_component;
 	gchar const* db_path;
 
+g_debug("j_init 1");
 	if (j_is_initialized())
 	{
 		return;
 	}
+
+g_debug("j_init 2");
 
 	basename = j_get_program_name("libjulea");
 
@@ -236,6 +244,7 @@ j_fini (void)
 	JCommon* common;
 	JTrace* trace;
 
+	g_debug("j_fini");
 	if (!j_is_initialized())
 	{
 		return;

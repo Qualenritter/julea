@@ -1,6 +1,6 @@
 /*
  * JULEA - Flexible storage framework
- * Copyright (C) 2010-2019 Michael Kuhn
+ * Copyright (C) 2019 Benjamin Warnke
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -16,37 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * \file
- **/
+#include <hdf5.h>
+#include <H5PLextern.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#ifndef JULEA_COMMON_H
-#define JULEA_COMMON_H
+#include <stdio.h>
 
-#if !defined(JULEA_H) && !defined(JULEA_COMPILATION)
-#error "Only <julea.h> can be included directly."
-#endif
+int
+main (int argc, char** argv)
+{
+	(void)argc;
+	(void)argv;
 
-#include <glib.h>
-
-G_BEGIN_DECLS
-
-struct JCommon;
-
-typedef struct JCommon JCommon;
-
-G_END_DECLS
-
-#include <core/jbackend.h>
-#include <core/jbatch.h>
-#include <core/jconfiguration.h>
-
-G_BEGIN_DECLS
-
-JConfiguration* j_configuration (void);
-
-JBackend* j_backend (JBackendType);
-
-G_END_DECLS
-
-#endif
+	hid_t julea_vol_id;
+	printf("XXX 1\n");
+	julea_vol_id = H5VLregister_connector_by_name("julea", H5P_DEFAULT);
+	printf("XXX 2\n");
+	H5VLinitialize(julea_vol_id, H5P_DEFAULT);
+	printf("XXX 3\n");
+	H5VLterminate(julea_vol_id);
+	printf("XXX 4\n");
+        H5VLunregister_connector(julea_vol_id);
+	printf("XXX 5\n");
+	return 0;
+}

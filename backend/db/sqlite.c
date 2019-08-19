@@ -314,6 +314,9 @@ J_TRACE_FUNCTION(NULL);
 	g_autofree gchar* dirname = NULL;
 
 	g_return_val_if_fail(path != NULL, FALSE);
+
+g_debug("db-backend-init");
+
 	if (strncmp("memory", path, 5))
 	{
 		dirname = g_path_get_dirname(path);
@@ -347,6 +350,8 @@ static void
 backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
+
+g_debug("db-backend-fini");
 
 	fini_sql();
 	sqlite3_close(backend_db);
