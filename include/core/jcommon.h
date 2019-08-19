@@ -43,9 +43,9 @@ G_END_DECLS
 
 G_BEGIN_DECLS
 
-JConfiguration* j_configuration (void);
+JConfiguration* j_configuration(void);
 
-JBackend* j_backend (JBackendType);
+JBackend* j_backend(JBackendType);
 
 G_END_DECLS
 

@@ -92,7 +92,7 @@ H5VL_julea_db_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
 
-g_debug("H5VL_julea_db_init start");
+	g_debug("H5VL_julea_db_init start");
 
 	if (H5VL_julea_db_file_init(vipl_id))
 	{
@@ -122,7 +122,7 @@ g_debug("H5VL_julea_db_init start");
 	{
 		goto _error_link;
 	}
-g_debug("H5VL_julea_db_init success");
+	g_debug("H5VL_julea_db_init success");
 
 	return 0;
 _error_link:
@@ -139,7 +139,7 @@ _error_dataset:
 	H5VL_julea_db_dataset_term();
 _error_file:
 	H5VL_julea_db_file_term();
-g_debug("H5VL_julea_db_init failed");
+	g_debug("H5VL_julea_db_init failed");
 
 	return 1;
 }
@@ -149,8 +149,7 @@ H5VL_julea_db_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-g_debug("H5VL_julea_db_term");
-
+	g_debug("H5VL_julea_db_term");
 
 	if (H5VL_julea_db_link_term())
 	{

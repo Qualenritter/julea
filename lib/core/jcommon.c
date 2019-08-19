@@ -45,8 +45,8 @@
  **/
 
 // FIXME copy and use GLib's G_DEFINE_CONSTRUCTOR/DESTRUCTOR
-void __attribute__((constructor)) j_init (void);
-void __attribute__((destructor)) j_fini (void);
+void __attribute__((constructor)) j_init(void);
+void __attribute__((destructor)) j_fini(void);
 
 /**
  * Common structure.
@@ -76,9 +76,8 @@ static JCommon* j_common = NULL;
  *
  * \return TRUE if JULEA has been initialized, FALSE otherwise.
  */
-static
-gboolean
-j_is_initialized (void)
+static gboolean
+j_is_initialized(void)
 {
 	JCommon* p;
 
@@ -96,9 +95,8 @@ j_is_initialized (void)
  *
  * \return The progran name if it can be determined, default_name otherwise.
  */
-static
-gchar*
-j_get_program_name (gchar const* default_name)
+static gchar*
+j_get_program_name(gchar const* default_name)
 {
 	gchar* program_name;
 
@@ -119,7 +117,6 @@ j_get_program_name (gchar const* default_name)
 	return program_name;
 }
 
-
 /**
  * Initializes JULEA.
  *
@@ -127,7 +124,7 @@ j_get_program_name (gchar const* default_name)
  * \param argv A pointer to \c argv.
  */
 void
-j_init (void)
+j_init(void)
 {
 	JCommon* common;
 	JTrace* trace;
@@ -142,13 +139,13 @@ j_init (void)
 	gchar const* db_component;
 	gchar const* db_path;
 
-g_debug("j_init 1");
+	g_debug("j_init 1");
 	if (j_is_initialized())
 	{
 		return;
 	}
 
-g_debug("j_init 2");
+	g_debug("j_init 2");
 
 	basename = j_get_program_name("libjulea");
 
@@ -239,7 +236,7 @@ error:
  * Shuts down JULEA.
  */
 void
-j_fini (void)
+j_fini(void)
 {
 	JCommon* common;
 	JTrace* trace;
@@ -308,7 +305,7 @@ j_fini (void)
  * \return The configuration.
  */
 JConfiguration*
-j_configuration (void)
+j_configuration(void)
 {
 	JCommon* common;
 
@@ -327,7 +324,7 @@ j_configuration (void)
  * \return The object backend.
  */
 JBackend*
-j_backend (JBackendType backend)
+j_backend(JBackendType backend)
 {
 	JCommon* common;
 
@@ -337,14 +334,14 @@ j_backend (JBackendType backend)
 
 	switch (backend)
 	{
-		case J_BACKEND_TYPE_OBJECT:
-			return common->object_backend;
-		case J_BACKEND_TYPE_KV:
-			return common->kv_backend;
-		case J_BACKEND_TYPE_DB:
-			return common->db_backend;
-		default:
-			g_assert_not_reached();
+	case J_BACKEND_TYPE_OBJECT:
+		return common->object_backend;
+	case J_BACKEND_TYPE_KV:
+		return common->kv_backend;
+	case J_BACKEND_TYPE_DB:
+		return common->db_backend;
+	default:
+		g_assert_not_reached();
 	}
 
 	return NULL;

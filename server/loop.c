@@ -29,7 +29,7 @@
 static guint jd_thread_num = 0;
 
 gboolean
-jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChunk* memory_chunk, guint64 memory_chunk_size, JStatistics* statistics)
+jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk* memory_chunk, guint64 memory_chunk_size, JStatistics* statistics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -108,8 +108,7 @@ jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChun
 		{
 			path = j_message_get_string(message);
 
-			if (j_backend_object_open(jd_object_backend, namespace, path, &object)
-			    && j_backend_object_delete(jd_object_backend, object))
+			if (j_backend_object_open(jd_object_backend, namespace, path, &object) && j_backend_object_delete(jd_object_backend, object))
 			{
 				j_statistics_add(statistics, J_STATISTICS_FILES_DELETED, 1);
 			}
@@ -360,11 +359,11 @@ jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChun
 			j_message_append_string(reply, "object");
 		}
 
-				if (jd_kv_backend != NULL)
-				{
-					j_message_add_operation(reply, 3);
-					j_message_append_string(reply, "kv");
-				}
+		if (jd_kv_backend != NULL)
+		{
+			j_message_add_operation(reply, 3);
+			j_message_append_string(reply, "kv");
+		}
 
 		j_message_send(reply, connection);
 	}
@@ -401,16 +400,16 @@ jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChun
 
 		j_backend_kv_batch_execute(jd_kv_backend, batch);
 
-	if (reply != NULL)
-                              {
-                                       j_message_send(reply, connection);
-                               }
-                       }
-                       break;
-               case J_MESSAGE_KV_DELETE:
-                       {
-                               g_autoptr(JMessage) reply = NULL;
-                               gpointer batch;
+		if (reply != NULL)
+		{
+			j_message_send(reply, connection);
+		}
+	}
+	break;
+	case J_MESSAGE_KV_DELETE:
+	{
+		g_autoptr(JMessage) reply = NULL;
+		gpointer batch;
 
 		if (safety == J_SEMANTICS_SAFETY_NETWORK || safety == J_SEMANTICS_SAFETY_STORAGE)
 		{
@@ -428,9 +427,9 @@ jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChun
 
 			if (reply != NULL)
 			{
-	j_message_add_operation(reply, 0);
-                                       }
-                               }
+				j_message_add_operation(reply, 0);
+			}
+		}
 
 		j_backend_kv_batch_execute(jd_kv_backend, batch);
 
@@ -447,7 +446,7 @@ jd_handle_message (JMessage* message, GSocketConnection* connection, JMemoryChun
 
 		reply = j_message_new_reply(message);
 		namespace = j_message_get_string(message);
-	j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
+		j_backend_kv_batch_start(jd_kv_backend, namespace, semantics, &batch);
 
 		for (i = 0; i < operation_count; i++)
 		{

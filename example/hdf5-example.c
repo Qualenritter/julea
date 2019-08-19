@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 int
-main (int argc, char** argv)
+main(int argc, char** argv)
 {
 	(void)argc;
 	(void)argv;
@@ -37,7 +37,7 @@ main (int argc, char** argv)
 	printf("XXX 3\n");
 	H5VLterminate(julea_vol_id);
 	printf("XXX 4\n");
-        H5VLunregister_connector(julea_vol_id);
+	H5VLunregister_connector(julea_vol_id);
 	printf("XXX 5\n");
 	return 0;
 }
