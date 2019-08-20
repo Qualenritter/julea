@@ -55,6 +55,7 @@ export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=/home/warnke/julea/prefix-hdf-julea/lib
 export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
+export J_TIMER_DB="/home/warnke/julea/slurm-enzo-hdd-julea.sqlite"
 
 ./build-hdf-julea/server/julea-server &
 cp -r /home/warnke/enzo-dev/run/Hydro/Hydro-3D/CollapseTestNonCosmological/* $tmpdir
