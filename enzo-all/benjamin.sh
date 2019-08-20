@@ -1,5 +1,17 @@
 rm slurm_*.sh
 echo "rm \${HOME}/.config/julea/*" >> slurm_all.sh
+for i in $(seq 10)
+do
+cat >> slurm_all.sh << EOF
+\${HOME}/julea/build-hdf-julea/tools/julea-config --user \
+  --object-servers="west${i}" --kv-servers="west${i}" \
+  --db-servers="west${i}" \
+  --object-backend=posix --object-component=server --object-path="\${tmpdir}/server-object" \
+  --kv-backend=sqlite --kv-component=server --kv-path="\${tmpdir}/server-kv" \
+  --db-backend=sqlite --db-component=server --db-path="memory"
+mv \${HOME}/.config/julea/julea \${HOME}/.config/julea/julea-west-${i}
+EOF
+done
 for f in $(find -name *.enzo \
 	 | grep "\.enzo" \
 	)
@@ -150,21 +162,13 @@ echo ${slurm_name}.sh
 echo \$tmpdir
 
 export LD_LIBRARY_PATH=\${HOME}/julea/prefix-hdf-julea/lib/:\$LD_LIBRARY_PATH
-export JULEA_CONFIG=\${HOME}/.config/julea/julea-${slurm_name}
+export JULEA_CONFIG=\${HOME}/.config/julea/julea-west-${i}
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=\${HOME}/julea/prefix-hdf-julea/lib
 export LD_PRELOAD="\$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="\${HOME}/julea/${slurm_name}.sqlite"
 export G_MESSAGES_DEBUG=all
-
-\${HOME}/julea/build-hdf-julea/tools/julea-config --user \
-  --object-servers="\$(hostname)" --kv-servers="\$(hostname)" \
-  --db-servers="\$(hostname)" \
-  --object-backend=posix --object-component=server --object-path="\${tmpdir}/server-object" \
-  --kv-backend=sqlite --kv-component=server --kv-path="\${tmpdir}/server-kv" \
-  --db-backend=sqlite --db-component=server --db-path="memory"
-mv \${HOME}/.config/julea/julea \${HOME}/.config/julea/julea-${slurm_name}
 
 sleep 10s
 

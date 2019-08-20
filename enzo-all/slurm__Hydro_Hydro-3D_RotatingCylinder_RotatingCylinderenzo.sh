@@ -14,16 +14,13 @@ echo slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo.sh
 echo $tmpdir
 
 export LD_LIBRARY_PATH=${HOME}/julea/prefix-hdf-julea/lib/:$LD_LIBRARY_PATH
-export JULEA_CONFIG=${HOME}/.config/julea/julea-slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo
+export JULEA_CONFIG=${HOME}/.config/julea/julea-west-10
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo.sqlite"
 export G_MESSAGES_DEBUG=all
-
-${HOME}/julea/build-hdf-julea/tools/julea-config --user   --object-servers="$(hostname)" --kv-servers="$(hostname)"   --db-servers="$(hostname)"   --object-backend=posix --object-component=server --object-path="${tmpdir}/server-object"   --kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv"   --db-backend=sqlite --db-component=server --db-path="memory"
-mv ${HOME}/.config/julea/julea ${HOME}/.config/julea/julea-slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo
 
 sleep 10s
 
