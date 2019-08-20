@@ -149,8 +149,14 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 }
 
 #include <sqlite3.h>
+struct H5VL_julea_db_timer
+{
+	GTimer* timer;
+	char* name;
+};
+typedef struct H5VL_julea_db_timer H5VL_julea_db_timer;
 static sqlite3* backend_db = NULL;
-
+static H5VL_julea_db_timer* global_timer = NULL;
 static gboolean
 j_sql_finalize(void* _stmt, GError** error)
 {
@@ -217,12 +223,6 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-struct H5VL_julea_db_timer
-{
-	GTimer* timer;
-	char* name;
-};
-typedef struct H5VL_julea_db_timer H5VL_julea_db_timer;
 static H5VL_julea_db_timer*
 H5VL_julea_db_timer_new(const char* name)
 {
@@ -246,19 +246,11 @@ H5VL_julea_db_timer_init()
 		g_debug("b");
 		goto _error;
 	}
+	global_timer = H5VL_julea_db_timer_new("total");
 	return;
 _error:
 	abort();
 }
-static void
-H5VL_julea_db_timer_fini()
-{
-	g_debug("H5VL_julea_db_timer_fini");
-	sqlite3_close(backend_db);
-}
-void __attribute__((constructor)) H5VL_julea_db_timer_init(void);
-void __attribute__((destructor)) H5VL_julea_db_timer_fini(void);
-
 static void
 H5VL_julea_db_timer_free(void* ptr)
 {
@@ -278,6 +270,16 @@ H5VL_julea_db_timer_free(void* ptr)
 _error:
 	abort();
 }
+static void
+H5VL_julea_db_timer_fini()
+{
+	H5VL_julea_db_timer_free(global_timer);
+	g_debug("H5VL_julea_db_timer_fini");
+	sqlite3_close(backend_db);
+}
+static void __attribute__((constructor)) H5VL_julea_db_timer_init(void);
+static void __attribute__((destructor)) H5VL_julea_db_timer_fini(void);
+
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
 #define H5VL_JULEA_TIMER() g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(G_STRFUNC);
 
