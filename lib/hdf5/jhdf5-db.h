@@ -108,4 +108,11 @@ H5VL_julea_db_object_ref(JHDF5Object_t* object);
 static void
 H5VL_julea_db_object_unref(JHDF5Object_t* object);
 
+#define j_goto_error()          \
+	do                      \
+	{                       \
+		G_DEBUG_HERE(); \
+		goto _error;    \
+	} while (0)
+
 #endif

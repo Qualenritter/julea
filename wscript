@@ -444,6 +444,7 @@ def build(ctx):
 			use_extra.append('lib/julea-object')
 		elif client == 'hdf5':
 			use_extra.append('HDF5')
+			use_extra.append('SQLITE')
 			use_extra.append('lib/julea-kv')
 			use_extra.append('lib/julea-object')
 			use_extra.append('lib/julea-db')

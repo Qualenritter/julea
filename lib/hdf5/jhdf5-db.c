@@ -96,30 +96,37 @@ H5VL_julea_db_init(hid_t vipl_id)
 
 	if (H5VL_julea_db_file_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_file;
 	}
 	if (H5VL_julea_db_dataset_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_dataset;
 	}
 	if (H5VL_julea_db_attr_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_attr;
 	}
 	if (H5VL_julea_db_datatype_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_datatype;
 	}
 	if (H5VL_julea_db_group_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_group;
 	}
 	if (H5VL_julea_db_space_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_space;
 	}
 	if (H5VL_julea_db_link_init(vipl_id))
 	{
+		G_DEBUG_HERE();
 		goto _error_link;
 	}
 	g_debug("H5VL_julea_db_init success");

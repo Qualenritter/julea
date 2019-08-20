@@ -148,5 +148,138 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 	}
 }
 
+#include <sqlite3.h>
+static sqlite3* backend_db = NULL;
+
+static gboolean
+j_sql_finalize(void* _stmt, GError** error)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	sqlite3_stmt* stmt = _stmt;
+
+	if (G_UNLIKELY(sqlite3_finalize(stmt) != SQLITE_OK))
+	{
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_FINALIZE, "sql finalize failed error was '%s'", sqlite3_errmsg(backend_db));
+		goto _error;
+	}
+	return TRUE;
+_error:
+	return FALSE;
+}
+
+static gboolean
+j_sql_prepare(const char* sql, void* _stmt, GError** error)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	sqlite3_stmt** stmt = _stmt;
+
+	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
+	{
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
+		goto _error;
+	}
+	return TRUE;
+_error:
+	j_sql_finalize(*stmt, NULL);
+	return FALSE;
+}
+static gboolean
+j_sql_exec(const char* sql, GError** error)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	sqlite3_stmt* stmt;
+
+	if (G_UNLIKELY(!j_sql_prepare(sql, &stmt, error)))
+	{
+		goto _error;
+	}
+	if (G_UNLIKELY(sqlite3_step(stmt) != SQLITE_DONE))
+	{
+		g_debug("%s", sqlite3_errmsg(backend_db));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
+		goto _error;
+	}
+	if (G_UNLIKELY(!j_sql_finalize(stmt, error)))
+	{
+		goto _error;
+	}
+	return TRUE;
+_error:
+	if (G_UNLIKELY(!j_sql_finalize(stmt, NULL)))
+	{
+		goto _error2;
+	}
+	return FALSE;
+_error2:
+	/*something failed very hard*/
+	return FALSE;
+}
+struct H5VL_julea_db_timer
+{
+	GTimer* timer;
+	char* name;
+};
+typedef struct H5VL_julea_db_timer H5VL_julea_db_timer;
+static H5VL_julea_db_timer*
+H5VL_julea_db_timer_new(const char* name)
+{
+	H5VL_julea_db_timer* timer;
+	timer = g_new(H5VL_julea_db_timer, 1);
+	timer->timer = g_timer_new();
+	timer->name = g_strdup(name);
+	return timer;
+}
+static void
+H5VL_julea_db_timer_init()
+{
+	g_debug("H5VL_julea_db_timer_init");
+	if (G_UNLIKELY(sqlite3_open(g_getenv("J_TIMER_DB"), &backend_db) != SQLITE_OK))
+	{
+		g_debug("a");
+		goto _error;
+	}
+	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name TEXT UNIQUE, count INTEGER, timer REAL);", NULL))
+	{
+		g_debug("b");
+		goto _error;
+	}
+	return;
+_error:
+	abort();
+}
+static void
+H5VL_julea_db_timer_fini()
+{
+	g_debug("H5VL_julea_db_timer_fini");
+	sqlite3_close(backend_db);
+}
+void __attribute__((constructor)) H5VL_julea_db_timer_init(void);
+void __attribute__((destructor)) H5VL_julea_db_timer_fini(void);
+
+static void
+H5VL_julea_db_timer_free(void* ptr)
+{
+	char buffer[512];
+	H5VL_julea_db_timer* timer = ptr;
+	if (timer)
+	{
+		gdouble elapsed = g_timer_elapsed(timer->timer, NULL);
+		snprintf(buffer, sizeof(buffer), "INSERT INTO tmp (name, count, timer) VALUES ('%s', 1, %f) ON CONFLICT (name) DO UPDATE SET count = count + 1, timer = timer + %f WHERE NAME = '%s';", timer->name, elapsed, elapsed, timer->name);
+		if (!j_sql_exec(buffer, NULL))
+			goto _error;
+		g_timer_destroy(timer->timer);
+		g_free(timer->name);
+		g_free(timer);
+	}
+	return;
+_error:
+	abort();
+}
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
+#define H5VL_JULEA_TIMER() g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(G_STRFUNC);
+
 #pragma GCC diagnostic pop
 #endif

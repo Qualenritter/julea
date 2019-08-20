@@ -309,6 +309,7 @@ static herr_t
 H5VL_julea_db_datatype_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	j_db_schema_unref(julea_db_schema_datatype);
 	julea_db_schema_datatype = NULL;
@@ -318,6 +319,7 @@ static herr_t
 H5VL_julea_db_datatype_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
@@ -380,6 +382,7 @@ static JHDF5Object_t*
 H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(GError) error = NULL;
@@ -435,6 +438,7 @@ static JHDF5Object_t*
 H5VL_julea_db_datatype_encode(hid_t* type_id)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBEntry) entry = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -525,6 +529,7 @@ H5VL_julea_db_datatype_commit(void* obj, const H5VL_loc_params_t* loc_params, co
 	hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -534,6 +539,7 @@ H5VL_julea_db_datatype_open(void* obj, const H5VL_loc_params_t* loc_params, cons
 	hid_t tapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -542,6 +548,7 @@ static herr_t
 H5VL_julea_db_datatype_get(void* obj, H5VL_datatype_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -551,6 +558,7 @@ H5VL_julea_db_datatype_specific(void* obj, H5VL_datatype_specific_t specific_typ
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -559,6 +567,7 @@ static herr_t
 H5VL_julea_db_datatype_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
@@ -567,6 +576,7 @@ static herr_t
 H5VL_julea_db_datatype_close(void* dt, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();

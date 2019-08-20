@@ -52,6 +52,7 @@ static herr_t
 H5VL_julea_db_space_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	j_db_schema_unref(julea_db_schema_space);
 	julea_db_schema_space = NULL;
@@ -61,6 +62,7 @@ static herr_t
 H5VL_julea_db_space_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
@@ -122,6 +124,7 @@ static JHDF5Object_t*
 H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(GError) error = NULL;
@@ -172,6 +175,7 @@ static JHDF5Object_t*
 H5VL_julea_db_space_encode(hid_t* type_id)
 {
 	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBEntry) entry = NULL;
 	g_autoptr(JBatch) batch = NULL;
