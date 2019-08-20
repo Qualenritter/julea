@@ -663,18 +663,22 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	{
 		j_goto_error();
 	}
-	data_count = 1;
-	for (i = 0; i < (guint)stored_ndims; i++)
-	{
-		data_count *= stored_dims[i];
-	}
-	local_buf_org = g_new(char, data_size* data_count);
 
-	local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
 	if (!(mem_space_arr = H5VL_julea_db_space_hdf5_to_range(mem_space_id, object->dataset.space->space.hdf5_id)))
 		j_goto_error();
 	if (!(file_space_arr = H5VL_julea_db_space_hdf5_to_range(file_space_id, object->dataset.space->space.hdf5_id)))
 		j_goto_error();
+
+	data_count = 0;
+	for (i = 0; i < mem_space_arr->len; i++)
+	{
+		mem_space_range = &g_array_index(mem_space_arr, JHDF5IndexRange, i);
+		data_count += mem_space_range->stop - mem_space_range->start;
+	}
+
+	local_buf_org = g_new(char, data_size* data_count);
+
+	local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
 	mem_space_idx = 0;
 	file_space_idx = 0;
 	while ((mem_space_idx < mem_space_arr->len) && (file_space_idx < file_space_arr->len))
@@ -748,17 +752,20 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	{
 		j_goto_error();
 	}
-	data_count = 1;
-	for (i = 0; i < (guint)stored_ndims; i++)
-	{
-		data_count *= stored_dims[i];
-	}
-	local_buf_org = g_new(char, data_size* data_count);
-
 	if (!(mem_space_arr = H5VL_julea_db_space_hdf5_to_range(mem_space_id, object->dataset.space->space.hdf5_id)))
 		j_goto_error();
 	if (!(file_space_arr = H5VL_julea_db_space_hdf5_to_range(file_space_id, object->dataset.space->space.hdf5_id)))
 		j_goto_error();
+
+	data_count = 0;
+	for (i = 0; i < mem_space_arr->len; i++)
+	{
+		mem_space_range = &g_array_index(mem_space_arr, JHDF5IndexRange, i);
+		data_count += mem_space_range->stop - mem_space_range->start;
+	}
+
+	local_buf_org = g_new(char, data_size* data_count);
+
 	mem_space_idx = 0;
 	file_space_idx = 0;
 	while ((mem_space_idx < mem_space_arr->len) && (file_space_idx < file_space_arr->len))
@@ -788,6 +795,7 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	{
 		j_goto_error();
 	}
+
 	local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
 	if (local_buf != buf)
 	{
