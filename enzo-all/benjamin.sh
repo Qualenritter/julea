@@ -3,6 +3,7 @@ echo "rm \${HOME}/.config/julea/*" >> slurm_all.sh
 for i in $(seq 10)
 do
 cat >> slurm_all.sh << EOF
+tmpdir=/dev/shm/warnke/julea
 \${HOME}/julea/build-hdf-julea/tools/julea-config --user \
   --object-servers="west${i}" --kv-servers="west${i}" \
   --db-servers="west${i}" \
@@ -10,6 +11,7 @@ cat >> slurm_all.sh << EOF
   --kv-backend=sqlite --kv-component=server --kv-path="\${tmpdir}/server-kv" \
   --db-backend=sqlite --db-component=server --db-path="memory"
 mv \${HOME}/.config/julea/julea \${HOME}/.config/julea/julea-west-${i}
+sleep 1s
 EOF
 done
 for f in $(find -name *.enzo \
@@ -158,6 +160,7 @@ tmpdir=/dev/shm/warnke/julea
 rm -rf \$tmpdir
 mkdir -p \$tmpdir
 
+echo $(hostname)
 echo ${slurm_name}.sh
 echo \$tmpdir
 
@@ -165,14 +168,14 @@ export LD_LIBRARY_PATH=\${HOME}/julea/prefix-hdf-julea/lib/:\$LD_LIBRARY_PATH
 export JULEA_CONFIG=\${HOME}/.config/julea/julea-west-${i}
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=\${HOME}/julea/prefix-hdf-julea/lib
-export LD_PRELOAD="\$(locate libSegFault.so | tail -n 1)"
-export SEGFAULT_SIGNALS="all"
+#export LD_PRELOAD="\$(locate libSegFault.so | tail -n 1)"
+#export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="\${HOME}/julea/${slurm_name}.sqlite"
-export G_MESSAGES_DEBUG=all
+#export G_MESSAGES_DEBUG=all
 
 sleep 10s
 
-cat \${HOME}/.config/julea/julea-${slurm_name}
+cat \${HOME}/.config/julea/julea-west-${i}
 
 \${HOME}/julea/build-hdf-julea/server/julea-server &
 
