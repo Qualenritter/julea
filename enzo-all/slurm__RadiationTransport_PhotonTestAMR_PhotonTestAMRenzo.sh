@@ -6,7 +6,7 @@
 #SBATCH --time=01:30:00
 
 thepath=${PWD}
-name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
+name=slurm__RadiationTransport_PhotonTestAMR_PhotonTestAMRenzo
 builddir="hdf-julea"
 tmpdir=/dev/shm/warnke/julea
 
@@ -32,7 +32,12 @@ export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="${HOME}/julea/slurm__RadiationTransport_PhotonTestAMR_PhotonTestAMRenzo.sqlite"
 
+sleep 0.5s
+
 ./build-hdf-julea/server/julea-server &
+
+sleep 0.5s
+
 cp -r ${HOME}/enzo-dev/run/./RadiationTransport/PhotonTestAMR/* $tmpdir
 cd $tmpdir
 echo $PWD

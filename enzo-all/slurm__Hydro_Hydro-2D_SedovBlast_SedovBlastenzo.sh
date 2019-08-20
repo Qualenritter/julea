@@ -6,7 +6,7 @@
 #SBATCH --time=01:30:00
 
 thepath=${PWD}
-name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
+name=slurm__Hydro_Hydro-2D_SedovBlast_SedovBlastenzo
 builddir="hdf-julea"
 tmpdir=/dev/shm/warnke/julea
 
@@ -32,7 +32,12 @@ export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-2D_SedovBlast_SedovBlastenzo.sqlite"
 
+sleep 0.5s
+
 ./build-hdf-julea/server/julea-server &
+
+sleep 0.5s
+
 cp -r ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/SedovBlast/* $tmpdir
 cd $tmpdir
 echo $PWD

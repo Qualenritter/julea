@@ -6,7 +6,7 @@
 #SBATCH --time=01:30:00
 
 thepath=${PWD}
-name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
+name=slurm__MHD_2D_LoopAdvection_CT_LoopAdvection_CTenzo
 builddir="hdf-julea"
 tmpdir=/dev/shm/warnke/julea
 
@@ -32,7 +32,12 @@ export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="${HOME}/julea/slurm__MHD_2D_LoopAdvection_CT_LoopAdvection_CTenzo.sqlite"
 
+sleep 0.5s
+
 ./build-hdf-julea/server/julea-server &
+
+sleep 0.5s
+
 cp -r ${HOME}/enzo-dev/run/./MHD/2D/LoopAdvection_CT/* $tmpdir
 cd $tmpdir
 echo $PWD

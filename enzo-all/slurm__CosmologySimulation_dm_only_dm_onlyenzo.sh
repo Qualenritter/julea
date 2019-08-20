@@ -6,7 +6,7 @@
 #SBATCH --time=01:30:00
 
 thepath=${PWD}
-name="$(hostname)-$(date +%d-%m-%y-%H-%M-%S)"
+name=slurm__CosmologySimulation_dm_only_dm_onlyenzo
 builddir="hdf-julea"
 tmpdir=/dev/shm/warnke/julea
 
@@ -32,7 +32,12 @@ export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
 export J_TIMER_DB="${HOME}/julea/slurm__CosmologySimulation_dm_only_dm_onlyenzo.sqlite"
 
+sleep 0.5s
+
 ./build-hdf-julea/server/julea-server &
+
+sleep 0.5s
+
 cp -r ${HOME}/enzo-dev/run/./CosmologySimulation/dm_only/* $tmpdir
 cd $tmpdir
 echo $PWD
