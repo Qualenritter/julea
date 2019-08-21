@@ -695,8 +695,6 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 
 	g_return_val_if_fail(buf != NULL, 1);
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
-	H5VL_julea_db_datatype_print(mem_type_id);
-	H5VL_julea_db_datatype_print(object->dataset.datatype->datatype.hdf5_id);
 
 	data_size = object->dataset.datatype->datatype.type_total_size;
 
@@ -779,8 +777,6 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 
 	g_return_val_if_fail(buf != NULL, 1);
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
-	H5VL_julea_db_datatype_print(mem_type_id);
-	H5VL_julea_db_datatype_print(object->dataset.datatype->datatype.hdf5_id);
 
 	data_size = object->dataset.datatype->datatype.type_total_size;
 
