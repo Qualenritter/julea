@@ -160,31 +160,31 @@ H5VL_julea_db_term(void)
 
 	if (H5VL_julea_db_link_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (H5VL_julea_db_space_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (H5VL_julea_db_group_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (H5VL_julea_db_datatype_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (H5VL_julea_db_attr_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (H5VL_julea_db_dataset_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (H5VL_julea_db_file_term())
 	{
-		goto _error;
+		j_goto_error();
 	}
 	return 0;
 _error:

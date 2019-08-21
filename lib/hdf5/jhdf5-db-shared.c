@@ -167,7 +167,7 @@ j_sql_finalize(void* _stmt, GError** error)
 	if (G_UNLIKELY(sqlite3_finalize(stmt) != SQLITE_OK))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_FINALIZE, "sql finalize failed error was '%s'", sqlite3_errmsg(backend_db));
-		goto _error;
+		j_goto_error();
 	}
 	return TRUE;
 _error:
@@ -184,7 +184,7 @@ j_sql_prepare(const char* sql, void* _stmt, GError** error)
 	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
-		goto _error;
+		j_goto_error();
 	}
 	return TRUE;
 _error:
@@ -200,17 +200,17 @@ j_sql_exec(const char* sql, GError** error)
 
 	if (G_UNLIKELY(!j_sql_prepare(sql, &stmt, error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (G_UNLIKELY(sqlite3_step(stmt) != SQLITE_DONE))
 	{
 		g_debug("%s", sqlite3_errmsg(backend_db));
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
-		goto _error;
+		j_goto_error();
 	}
 	if (G_UNLIKELY(!j_sql_finalize(stmt, error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	return TRUE;
 _error:
@@ -239,12 +239,12 @@ H5VL_julea_db_timer_init()
 	if (G_UNLIKELY(sqlite3_open(g_getenv("J_TIMER_DB"), &backend_db) != SQLITE_OK))
 	{
 		g_debug("a");
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name TEXT UNIQUE, count INTEGER, timer REAL);", NULL))
 	{
 		g_debug("b");
-		goto _error;
+		j_goto_error();
 	}
 	global_timer = H5VL_julea_db_timer_new("total");
 	return;
@@ -261,7 +261,7 @@ H5VL_julea_db_timer_free(void* ptr)
 		gdouble elapsed = g_timer_elapsed(timer->timer, NULL);
 		snprintf(buffer, sizeof(buffer), "INSERT INTO tmp (name, count, timer) VALUES ('%s', 1, %f) ON CONFLICT (name) DO UPDATE SET count = count + 1, timer = timer + %f WHERE NAME = '%s';", timer->name, elapsed, elapsed, timer->name);
 		if (!j_sql_exec(buffer, NULL))
-			goto _error;
+			j_goto_error();
 		g_timer_destroy(timer->timer);
 		g_free(timer->name);
 		g_free(timer);

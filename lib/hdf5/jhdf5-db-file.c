@@ -55,7 +55,6 @@ static herr_t
 H5VL_julea_db_file_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	j_db_schema_unref(julea_db_schema_file);
 	julea_db_schema_file = NULL;
@@ -66,7 +65,6 @@ static herr_t
 H5VL_julea_db_file_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;

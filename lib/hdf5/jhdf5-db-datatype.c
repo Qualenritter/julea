@@ -365,7 +365,6 @@ static herr_t
 H5VL_julea_db_datatype_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	j_db_schema_unref(julea_db_schema_datatype);
 	julea_db_schema_datatype = NULL;
@@ -375,19 +374,18 @@ static herr_t
 H5VL_julea_db_datatype_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 
 	if (!(julea_db_schema_datatype = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype", NULL)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(j_db_schema_get(julea_db_schema_datatype, batch, &error) && j_batch_execute(batch)))
 	{
@@ -400,31 +398,31 @@ H5VL_julea_db_datatype_init(hid_t vipl_id)
 				j_db_schema_unref(julea_db_schema_datatype);
 				if (!(julea_db_schema_datatype = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype", NULL)))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_datatype, "data", J_DB_TYPE_BLOB, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_create(julea_db_schema_datatype, batch, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_batch_execute(batch))
 				{
-					goto _error;
+					j_goto_error();
 				}
 			}
 			else
 			{
 				g_assert_not_reached();
-				goto _error;
+				j_goto_error();
 			}
 		}
 		else
 		{
 			g_assert_not_reached();
-			goto _error;
+			j_goto_error();
 		}
 	}
 	return 0;
@@ -438,7 +436,6 @@ static JHDF5Object_t*
 H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(GError) error = NULL;
@@ -449,39 +446,39 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(object->backend_id = g_new(char, backend_id_len)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	memcpy(object->backend_id, backend_id, backend_id_len);
 	object->backend_id_len = backend_id_len;
 
 	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, object->backend_id, object->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_iterator_next(iterator, NULL))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_iterator_get_field(iterator, "data", &type, &object->datatype.data, &length, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	if (!(object->datatype.hdf5_id = H5Tdecode(object->datatype.data)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	return object;
 _error:
@@ -494,7 +491,6 @@ static JHDF5Object_t*
 H5VL_julea_db_datatype_encode(hid_t* type_id)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBEntry) entry = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -511,18 +507,18 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 
 	//transform to binary
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATATYPE)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	H5Tencode(*type_id, NULL, &size);
 	if (!(object->datatype.data = g_new(char, size)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	H5Tencode(*type_id, object->datatype.data, &size);
 	object->datatype.hdf5_id = *type_id;
@@ -531,21 +527,21 @@ _check_type_exist:
 	//check if this datatype exists
 	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "data", J_DB_SELECTOR_OPERATOR_EQ, object->datatype.data, size, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (j_db_iterator_next(iterator, NULL))
 	{
 		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 		{
-			goto _error;
+			j_goto_error();
 		}
 		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;
@@ -556,19 +552,19 @@ _check_type_exist:
 	//create new datatype if it did not exist before
 	if (!(entry = j_db_entry_new(julea_db_schema_datatype, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "data", object->datatype.data, size, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_insert(entry, batch, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_batch_execute(batch))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	loop = TRUE;
 	goto _check_type_exist;

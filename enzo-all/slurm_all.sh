@@ -49,16 +49,10 @@ sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-2D_Athena-RayleighTaylor_Athena
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-2D_SedovBlast_SedovBlastenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-2D_DoubleMachReflection_DoubleMachReflectionenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_CollapseTestNonCosmological_CollapseTestNonCosmologicalenzo.sh
-sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_NohProblem3DAMR_NohProblem3DAMRenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_StripTest_StripTestenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_NFWCoolCoreCluster_NFWCoolCoreClusterenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_NohProblem3D_NohProblem3Denzo.sh
-sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-3D_Athena-RayleighTaylor3D_Athena-RayleighTaylor3Denzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__StarParticle_StarParticleSingleTest_TestStarParticleSingleenzo.sh
-sbatch ${HOME}/julea/enzo-all/slurm__MHD_3D_ShearingBox_ShearingBoxenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__MHD_3D_StochasticForcing_StochasticForcingenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__MHD_2D_SedovBlast-MHD-2D-Fryxell_SedovBlast-MHD-2D-Fryxellenzo.sh
-sbatch ${HOME}/julea/enzo-all/slurm__GravitySolver_BinaryCollapse_BinaryCollapseenzo.sh
-sbatch ${HOME}/julea/enzo-all/slurm__GravitySolver_BinaryCollapseMHDCT_BinaryCollapseenzo.sh
-sbatch ${HOME}/julea/enzo-all/slurm__GravitySolver_MaximumGravityRefinementTest_MaximumGravityRefinementTestenzo.sh

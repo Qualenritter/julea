@@ -52,7 +52,6 @@ static herr_t
 H5VL_julea_db_link_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	j_db_schema_unref(julea_db_schema_link);
 	julea_db_schema_link = NULL;
@@ -62,18 +61,17 @@ static herr_t
 H5VL_julea_db_link_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(julea_db_schema_link = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "link", NULL)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(j_db_schema_get(julea_db_schema_link, batch, &error) && j_batch_execute(batch)))
 	{
@@ -86,64 +84,64 @@ H5VL_julea_db_link_init(hid_t vipl_id)
 				j_db_schema_unref(julea_db_schema_link);
 				if (!(julea_db_schema_link = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "link", NULL)))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_link, "file", J_DB_TYPE_ID, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_link, "parent", J_DB_TYPE_ID, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_link, "parent_type", J_DB_TYPE_UINT32, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_link, "child", J_DB_TYPE_ID, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_link, "child_type", J_DB_TYPE_UINT32, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_add_field(julea_db_schema_link, "name", J_DB_TYPE_STRING, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_create(julea_db_schema_link, batch, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_batch_execute(batch))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				j_db_schema_unref(julea_db_schema_link);
 				if (!(julea_db_schema_link = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "link", NULL)))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_db_schema_get(julea_db_schema_link, batch, &error))
 				{
-					goto _error;
+					j_goto_error();
 				}
 				if (!j_batch_execute(batch))
 				{
-					goto _error;
+					j_goto_error();
 				}
 			}
 			else
 			{
 				g_assert_not_reached();
-				goto _error;
+				j_goto_error();
 			}
 		}
 		else
 		{
 			g_assert_not_reached();
-			goto _error;
+			j_goto_error();
 		}
 	}
 	return 0;
@@ -155,7 +153,6 @@ static herr_t
 H5VL_julea_db_link_truncate_file(void* obj)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBSelector) selector = NULL;
 	g_autoptr(GError) error = NULL;
@@ -168,23 +165,28 @@ H5VL_julea_db_link_truncate_file(void* obj)
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(selector = j_db_selector_new(julea_db_schema_link, J_DB_SELECTOR_MODE_AND, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(entry = j_db_entry_new(julea_db_schema_link, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_delete(entry, selector, batch, &error))
 	{
-		goto _error;
+		j_goto_error();
+	}
+	if (!j_batch_execute(batch))
+	{
+		if (!error || error->code != J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+			j_goto_error();
 	}
 	return 0;
 _error:
@@ -195,10 +197,8 @@ static gboolean
 H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const char* name)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(GError) error = NULL;
-	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDBEntry) entry = NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
@@ -232,7 +232,7 @@ H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const
 	case _J_HDF5_OBJECT_TYPE_COUNT:
 	default:
 		g_assert_not_reached();
-		goto _error;
+		j_goto_error();
 	}
 	switch (child->type)
 	{
@@ -251,40 +251,36 @@ H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const
 	case _J_HDF5_OBJECT_TYPE_COUNT:
 	default:
 		g_assert_not_reached();
-		goto _error;
+		j_goto_error();
 	}
 
-	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
-	{
-		goto _error;
-	}
 	if (!(selector = j_db_selector_new(julea_db_schema_link, J_DB_SELECTOR_MODE_AND, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "parent_type", J_DB_SELECTOR_OPERATOR_EQ, &parent->type, sizeof(parent->type), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_link, selector, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_iterator_next(iterator, &error))
 	{ //name must exist for parent before
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_iterator_get_field(iterator, "child", &type, &child->backend_id, &child->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	//TODO g_assert (iteartor->'child_type' == child->type)
 	g_assert(!j_db_iterator_next(iterator, NULL));
@@ -298,7 +294,6 @@ static gboolean
 H5VL_julea_db_link_create_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const char* name)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -334,7 +329,7 @@ H5VL_julea_db_link_create_helper(JHDF5Object_t* parent, JHDF5Object_t* child, co
 	case _J_HDF5_OBJECT_TYPE_COUNT:
 	default:
 		g_assert_not_reached();
-		goto _error;
+		j_goto_error();
 	}
 	switch (child->type)
 	{
@@ -353,72 +348,72 @@ H5VL_julea_db_link_create_helper(JHDF5Object_t* parent, JHDF5Object_t* child, co
 	case _J_HDF5_OBJECT_TYPE_COUNT:
 	default:
 		g_assert_not_reached();
-		goto _error;
+		j_goto_error();
 	}
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(selector = j_db_selector_new(julea_db_schema_link, J_DB_SELECTOR_MODE_AND, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "parent_type", J_DB_SELECTOR_OPERATOR_EQ, &parent->type, sizeof(parent->type), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(iterator = j_db_iterator_new(julea_db_schema_link, selector, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (j_db_iterator_next(iterator, NULL))
 	{ //name must not exist for parent before
-		goto _error;
+		j_goto_error();
 	}
 	if (!(entry = j_db_entry_new(julea_db_schema_link, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "parent", parent->backend_id, parent->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "parent_type", &parent->type, sizeof(parent->type), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "child", child->backend_id, child->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "child_type", &child->type, sizeof(child->type), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_set_field(entry, "name", name, strlen(name), &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_insert(entry, batch, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_batch_execute(batch))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	return TRUE;
 _error:

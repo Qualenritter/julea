@@ -1,0 +1,1319 @@
+diff --git a/run/Hydro/Hydro-3D/CollapseTestNonCosmological/CollapseTestNonCosmological.enzo b/run/Hydro/Hydro-3D/CollapseTestNonCosmological/CollapseTestNonCosmological.enzo
+index a864080..6aad109 100644
+--- a/run/Hydro/Hydro-3D/CollapseTestNonCosmological/CollapseTestNonCosmological.enzo
++++ b/run/Hydro/Hydro-3D/CollapseTestNonCosmological/CollapseTestNonCosmological.enzo
+@@ -84,4 +84,4 @@ MinimumMassForRefinementLevelExponent = -0.3  // see definition in user guide
+ GreensFunctionMaxNumber   = 10         // # of greens function at any one time
+ 
+ 
+-DatabaseLocation = /home/mturk/.enzo/my_runs.db
++DatabaseLocation = .enzo/my_runs.db
+diff --git a/src/enzo/AMRH5writer.C b/src/enzo/AMRH5writer.C
+index 346cc21..e26f7b0 100644
+--- a/src/enzo/AMRH5writer.C
++++ b/src/enzo/AMRH5writer.C
+@@ -26,6 +26,8 @@
+ #include "StarParticleData.h"
+ #include "phys_constants.h"
+ 
++#include "benjamin.h"
++
+ AMRHDF5Writer::AMRHDF5Writer() :
+   h5DataType(H5T_NATIVE_FLOAT),
+   staggerType(CELL_CENTERED),
+@@ -79,7 +81,7 @@ void AMRHDF5Writer::AMRHDF5Create( const char*      fileName,
+     }
+   }  
+ 
+-  fileId = H5Fcreate(fileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++  fileId = H5Fcreate(fileName, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+ 
+   if (fileId<0) {
+     fprintf(stderr,"Can't open file %s for writing.\n", fileName);
+@@ -857,7 +859,7 @@ void AMRHDF5Writer::AMRHDF5CreateSeparateParticles( const char*      fileName,
+ 
+   int i;
+     
+-  fileId_particle = H5Fcreate(fileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++  fileId_particle = H5Fcreate(fileName, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+ 
+   if (fileId_particle<0) {
+     fprintf(stderr,"Can't open file %s for writing.\n", fileName);
+diff --git a/src/enzo/AnalysisBaseClass_HDF5Utils.C b/src/enzo/AnalysisBaseClass_HDF5Utils.C
+index 7d8fd2f..4700bea 100644
+--- a/src/enzo/AnalysisBaseClass_HDF5Utils.C
++++ b/src/enzo/AnalysisBaseClass_HDF5Utils.C
+@@ -16,6 +16,7 @@
+ 
+ #include "AnalysisBaseClass.h"
+ 
++#include "benjamin.h"
+ void my_exit(int exit_status);
+ 
+ void AnalysisBaseClass::HDF5CreateFile( char *name ){
+@@ -31,7 +32,7 @@ void AnalysisBaseClass::HDF5CreateFile( char *name ){
+     return;
+   }
+ 
+-  file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++  file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+ 
+   if( file_id == h5_error ){
+     fprintf(stderr, "AnalysisBaseClass::HDF5CreateFile, cannot create file %s\n", name);
+@@ -52,7 +53,7 @@ hid_t AnalysisBaseClass::HDF5OpenFile( char *name ){
+   hid_t       file_id;
+   herr_t      h5_error = -1;
+ 
+-  file_id = H5Fopen(name, H5F_ACC_RDWR, H5P_DEFAULT);
++  file_id = H5Fopen(name, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+ 
+   if( file_id == h5_error ){
+     fprintf(stderr, "AnalysisBaseClass::HDF5OpenFile, cannot open file %s\n", name);
+diff --git a/src/enzo/DebugTools.C b/src/enzo/DebugTools.C
+index 07c172b..25e6d6f 100644
+--- a/src/enzo/DebugTools.C
++++ b/src/enzo/DebugTools.C
+@@ -17,6 +17,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ 
+ void RecursivelySetParticleCount(HierarchyEntry *GridPoint, PINT *Count);
+  
+@@ -180,11 +181,10 @@ void WriteSingleCube(float * array, int Dims[], char* string, int dNum, int gNum
+     }
+   
+   
+-  //file_id = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+-  file_id = H5Fcreate(filename, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
++  file_id = H5Fcreate(filename, H5F_ACC_EXCL, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+   if( file_id == -1 ){
+       fprintf(stderr,"ERROR IN ERROR: ignore previous warning.  Opening hdf5 file.\n");
+-      file_id = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
++      file_id = H5Fopen(filename, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+   }
+   for(int moo=0;moo<FieldRankOut;moo++)
+     DimsInv[moo]=Dims[FieldRankOut-moo-1];
+diff --git a/src/enzo/ExternalBoundary_ReadExternalBoundary.C b/src/enzo/ExternalBoundary_ReadExternalBoundary.C
+index 3a779da..f16d490 100644
+--- a/src/enzo/ExternalBoundary_ReadExternalBoundary.C
++++ b/src/enzo/ExternalBoundary_ReadExternalBoundary.C
+@@ -30,6 +30,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // This routine reads the external boundary from the provided file pointer
+@@ -237,7 +238,7 @@ int ExternalBoundary::ReadExternalBoundary(FILE *fptr, int ReadText, int ReadDat
+  
+     if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", hdfname);
+  
+-    file_id = H5Fopen(hdfname, H5F_ACC_RDONLY, H5P_DEFAULT);
++    file_id = H5Fopen(hdfname, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     //    if( file_id == h5_error ){return FAIL;}
+     if( file_id == h5_error ){return FAIL;}
+diff --git a/src/enzo/ExternalBoundary_WriteExternalBoundary.C b/src/enzo/ExternalBoundary_WriteExternalBoundary.C
+index be6ca7d..1f4595d 100644
+--- a/src/enzo/ExternalBoundary_WriteExternalBoundary.C
++++ b/src/enzo/ExternalBoundary_WriteExternalBoundary.C
+@@ -31,6 +31,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // This routine writes the external boundary to the provided file pointer
+@@ -213,7 +214,7 @@ int ExternalBoundary::WriteExternalBoundary(FILE *fptr, char *hdfname)
+  
+     if (io_log) fprintf(log_fptr, "H5Fcreate with Name = %s\n", hdfname);
+  
+-    file_id = H5Fcreate(hdfname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate(hdfname, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error )ENZO_FAIL("Could not create boundary file");
+  
+diff --git a/src/enzo/FOF.C b/src/enzo/FOF.C
+index 6dda524..9bd2561 100644
+--- a/src/enzo/FOF.C
++++ b/src/enzo/FOF.C
+@@ -39,7 +39,7 @@
+ #include "FOF_allvars.h"
+ #include "FOF_nrutil.h"
+ #include "FOF_proto.h"
+-
++#include "benjamin.h"
+ /************************************************************************/
+ void FOF_Initialize(TopGridData *MetaData, 
+ 		    LevelHierarchyEntry *LevelArray[], 
+@@ -272,7 +272,7 @@ void save_groups(FOFData &AllVars, int CycleNumber, FLOAT EnzoTime)
+ 	fprintf(stdout, "FOF: Saving halo particle list to %s\n", particle_fname);
+ 
+       file_id = H5Fcreate(particle_fname, H5F_ACC_TRUNC, H5P_DEFAULT, 
+-			  H5P_DEFAULT);
++			  getFileAccessPropertyListBenjaminDefault());
+       group_id = H5Gcreate(file_id, "/Parameters", 0);
+       writeScalarAttribute(group_id, HDF5_REAL, "Redshift", &redshift);
+       writeScalarAttribute(group_id, HDF5_PREC, "Time", &EnzoTime);
+diff --git a/src/enzo/FOF_subfind.C b/src/enzo/FOF_subfind.C
+index a2098a8..9fc8dfb 100644
+--- a/src/enzo/FOF_subfind.C
++++ b/src/enzo/FOF_subfind.C
+@@ -17,7 +17,7 @@
+ 
+ #include "FOF_allvars.h"
+ #include "FOF_proto.h"
+-
++#include "benjamin.h"
+ /************************************************************************/
+ 
+ void subfind(FOFData &D, int CycleNumber, FLOAT EnzoTime)
+@@ -114,7 +114,7 @@ void subfind(FOFData &D, int CycleNumber, FLOAT EnzoTime)
+ 		particle_fname);
+ 
+       file_id = H5Fcreate(particle_fname, H5F_ACC_TRUNC, H5P_DEFAULT, 
+-			  H5P_DEFAULT);
++			  getFileAccessPropertyListBenjaminDefault());
+       group_id = H5Gcreate(file_id, "/Parameters", 0);
+       writeScalarAttribute(group_id, HDF5_REAL, "Redshift", &redshift);
+       writeScalarAttribute(group_id, HDF5_PREC, "Time", &EnzoTime);
+diff --git a/src/enzo/Grid_CosmologySimulationInitializeGrid.C b/src/enzo/Grid_CosmologySimulationInitializeGrid.C
+index 928a7e6..b4d8f54 100644
+--- a/src/enzo/Grid_CosmologySimulationInitializeGrid.C
++++ b/src/enzo/Grid_CosmologySimulationInitializeGrid.C
+@@ -39,6 +39,7 @@
+ #include "Grid.h"
+ #include "CosmologyParameters.h"
+ #include "fortran.def"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ #ifdef PROTO  // Remove troublesome HDF PROTO declaration
+@@ -859,7 +860,7 @@ int grid::CosmologySimulationInitializeGrid(
+  
+   // Read attributes for parallel particle I/O
+  
+-  file_id = H5Fopen(PPos, H5F_ACC_RDONLY, H5P_DEFAULT);
++  file_id = H5Fopen(PPos, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+   fprintf(stderr, "H5Fopen %s on proc %"ISYM" status %"ISYM"\n", PPos, MyProcessorNumber, file_id);
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error){ENZO_FAIL("IO Problem");}
+@@ -997,7 +998,7 @@ int grid::CosmologySimulationInitializeGrid(
+     if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+     if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-  file_id = H5Fopen(PPos, H5F_ACC_RDWR, H5P_DEFAULT);
++  file_id = H5Fopen(PPos, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+   fprintf(stderr, "H5Fopen %s on proc %"ISYM" status %"ISYM"\n", PPos, MyProcessorNumber, file_id);
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+@@ -1105,7 +1106,7 @@ int grid::CosmologySimulationInitializeGrid(
+     if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+     if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-  file_id = H5Fopen(PVel, H5F_ACC_RDWR, H5P_DEFAULT);
++  file_id = H5Fopen(PVel, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+   fprintf(stderr, "H5Fopen %s on proc %"ISYM" status %"ISYM"\n", PVel, MyProcessorNumber, file_id);
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+@@ -1212,7 +1213,7 @@ int grid::CosmologySimulationInitializeGrid(
+     if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+     if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-  file_id = H5Fopen(PMass, H5F_ACC_RDWR, H5P_DEFAULT);
++  file_id = H5Fopen(PMass, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -1316,7 +1317,7 @@ int grid::CosmologySimulationInitializeGrid(
+     if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+     if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-  file_id = H5Fopen(PType, H5F_ACC_RDWR, H5P_DEFAULT);
++  file_id = H5Fopen(PType, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -1472,7 +1473,7 @@ if (PreSortedParticles == 0 && !CosmologySimulationCalculatePositions &&
+  
+         if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", CosmologySimulationParticlePositionName);
+  
+-        file_id = H5Fopen(CosmologySimulationParticlePositionName, H5F_ACC_RDONLY, H5P_DEFAULT);
++        file_id = H5Fopen(CosmologySimulationParticlePositionName, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+           if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+           if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -1742,7 +1743,7 @@ if (PreSortedParticles == 0 && !CosmologySimulationCalculatePositions &&
+  
+         if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", CosmologySimulationParticlePositionName);
+  
+-        file_id = H5Fopen(CosmologySimulationParticlePositionName, H5F_ACC_RDONLY, H5P_DEFAULT);
++        file_id = H5Fopen(CosmologySimulationParticlePositionName, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+           if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+           if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -1859,7 +1860,7 @@ if (PreSortedParticles == 0 && !CosmologySimulationCalculatePositions &&
+  
+         if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", CosmologySimulationParticleVelocityName);
+  
+-        file_id = H5Fopen(CosmologySimulationParticleVelocityName, H5F_ACC_RDONLY, H5P_DEFAULT);
++        file_id = H5Fopen(CosmologySimulationParticleVelocityName, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+           if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+           if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -2077,7 +2078,7 @@ if (PreSortedParticles == 0 && !CosmologySimulationCalculatePositions &&
+  
+         if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", CosmologySimulationParticleMassName);
+  
+-        file_id = H5Fopen(CosmologySimulationParticleMassName, H5F_ACC_RDONLY, H5P_DEFAULT);
++        file_id = H5Fopen(CosmologySimulationParticleMassName, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+           if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+           if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -2288,7 +2289,7 @@ if (PreSortedParticles == 0 && !CosmologySimulationCalculatePositions &&
+  
+         if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", CosmologySimulationParticleTypeName);
+  
+-        file_id = H5Fopen(CosmologySimulationParticleTypeName, H5F_ACC_RDONLY, H5P_DEFAULT);
++        file_id = H5Fopen(CosmologySimulationParticleTypeName, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+           if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+           if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+diff --git a/src/enzo/Grid_Group_ReadGrid.C b/src/enzo/Grid_Group_ReadGrid.C
+index 4d382c3..eec1260 100644
+--- a/src/enzo/Grid_Group_ReadGrid.C
++++ b/src/enzo/Grid_Group_ReadGrid.C
+@@ -31,6 +31,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ #ifdef PROTO /* Remove troublesome HDF PROTO declaration. */
+@@ -303,7 +304,7 @@ int grid::Group_ReadGrid(FILE *fptr, int GridID, HDF5_hid_t file_id,
+ 	
+ #ifndef SINGLE_HDF5_OPEN_ON_INPUT
+     if (io_log) fprintf(log_fptr, "H5Fopen with Name %s\n", procfilename);
+-    file_id = H5Fopen(procfilename,  H5F_ACC_RDONLY, H5P_DEFAULT);
++    file_id = H5Fopen(procfilename,  H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){ENZO_FAIL("Error in IO");}
+ 
+@@ -585,7 +586,7 @@ int grid::Group_ReadGrid(FILE *fptr, int GridID, HDF5_hid_t file_id,
+ #ifndef SINGLE_HDF5_OPEN_ON_INPUT 
+ 
+       if (io_log) fprintf(log_fptr, "H5Fopen with Name %s\n", procfilename);
+-      file_id = H5Fopen(procfilename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(procfilename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){ENZO_FAIL("Error in IO");}
+ 
+diff --git a/src/enzo/Grid_Group_WriteGrid.C b/src/enzo/Grid_Group_WriteGrid.C
+index 56fb97a..e9fb017 100644
+--- a/src/enzo/Grid_Group_WriteGrid.C
++++ b/src/enzo/Grid_Group_WriteGrid.C
+@@ -33,6 +33,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+diff --git a/src/enzo/Grid_NestedCosmologySimulationInitializeGrid.C b/src/enzo/Grid_NestedCosmologySimulationInitializeGrid.C
+index 6c727b8..350e7f1 100644
+--- a/src/enzo/Grid_NestedCosmologySimulationInitializeGrid.C
++++ b/src/enzo/Grid_NestedCosmologySimulationInitializeGrid.C
+@@ -41,6 +41,7 @@
+ #include "Grid.h"
+ #include "CosmologyParameters.h"
+ #include "fortran.def"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ #ifdef PROTO  // Remove troublesome HDF PROTO declaration
+@@ -235,7 +236,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+   if (ParallelRootGridIO == TRUE && TotalRefinement < 0) {
+ 
+     if (CosmologySimulationDensityName != NULL) {
+-      file_id = H5Fopen(CosmologySimulationDensityName, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(CosmologySimulationDensityName, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+       if( file_id == h5_error){ENZO_FAIL("IO Problem");}
+  
+@@ -244,7 +245,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+       if( dset_id == h5_error){ENZO_FAIL("IO Problem");}
+     } else if (CosmologySimulationParticleVelocityName != NULL) {
+       file_id = H5Fopen(CosmologySimulationParticleVelocityName, 
+-			H5F_ACC_RDONLY, H5P_DEFAULT);
++			H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+       if (file_id == h5_error){ENZO_FAIL("IO Problem");}
+       dset_id = H5Dopen(file_id, CosmologySimulationParticleVelocityName);
+@@ -252,7 +253,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+       if (dset_id == h5_error){ENZO_FAIL("IO Problem");}
+     } else if (CosmologySimulationParticleVelocityNames[0] != NULL) {
+       file_id = H5Fopen(CosmologySimulationParticleVelocityNames[0], 
+-			H5F_ACC_RDONLY, H5P_DEFAULT);
++			H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+       if (file_id == h5_error){ENZO_FAIL("IO Problem");}
+       dset_id = H5Dopen(file_id, CosmologySimulationParticleVelocityNames[0]);
+@@ -873,7 +874,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+  
+ 	// Read attributes for parallel particle I/O
+  
+-	file_id = H5Fopen(PPos, H5F_ACC_RDONLY, H5P_DEFAULT);
++	file_id = H5Fopen(PPos, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+ 	fprintf(stderr, "H5Fopen %s on proc %"ISYM" status %"ISYM"\n", PPos, MyProcessorNumber, file_id);
+ 	if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+ 	if( file_id == h5_error){ENZO_FAIL("IO Problem");}
+@@ -977,7 +978,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+ 	    if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+ 	    if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-	    file_id = H5Fopen(PPos, H5F_ACC_RDWR, H5P_DEFAULT);
++	    file_id = H5Fopen(PPos, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+ 	    fprintf(stderr, "H5Fopen %s on proc %"ISYM" status %"ISYM"\n", PPos, MyProcessorNumber, file_id);
+ 	    if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+ 	    if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+@@ -1079,7 +1080,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+ 	      if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+ 	      if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-	      file_id = H5Fopen(PVel, H5F_ACC_RDWR, H5P_DEFAULT);
++	      file_id = H5Fopen(PVel, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+ 	      fprintf(stderr, "H5Fopen %s on proc %"ISYM" status %"ISYM"\n", PVel, MyProcessorNumber, file_id);
+ 	      if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+ 	      if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+@@ -1184,7 +1185,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+ 	  if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+ 	  if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-	  file_id = H5Fopen(PMass, H5F_ACC_RDWR, H5P_DEFAULT);
++	  file_id = H5Fopen(PMass, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+ 	  if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+ 	  if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+@@ -1285,7 +1286,7 @@ int grid::NestedCosmologySimulationInitializeGrid(
+ 	  if (io_log) fprintf(log_fptr, "H5Sselect file slab: %"ISYM"\n", h5_status);
+ 	  if( h5_status == h5_error ){ENZO_FAIL("IO Problem");}
+  
+-	  file_id = H5Fopen(PType, H5F_ACC_RDWR, H5P_DEFAULT);
++	  file_id = H5Fopen(PType, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+ 	  if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+ 	  if( file_id == h5_error ){ENZO_FAIL("IO Problem");}
+  
+diff --git a/src/enzo/Grid_PhotonTestInitializeGrid.C b/src/enzo/Grid_PhotonTestInitializeGrid.C
+index 179eeea..5e0998f 100644
+--- a/src/enzo/Grid_PhotonTestInitializeGrid.C
++++ b/src/enzo/Grid_PhotonTestInitializeGrid.C
+@@ -26,7 +26,7 @@
+ #include "Grid.h"
+ #include "CosmologyParameters.h"
+ #include "phys_constants.h"
+-
++#include "benjamin.h"
+ /********************* PROTOTYPES *********************/
+ 
+ int GetUnits(float *DensityUnits, float *LengthUnits,
+@@ -291,7 +291,7 @@ int grid::PhotonTestInitializeGrid(int NumberOfSpheres,
+     data_filename = strtok(DensityFilename, delim);
+     dataset_name = strtok(NULL, delim);
+ 
+-    file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, H5P_DEFAULT);
++    file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if (file_id == -1) ENZO_FAIL("Error opening density field.");
+     for (dim = 0; dim < MAX_DIMENSION; dim++)
+       OutDims[GridRank-dim-1] = GridEndIndex[dim] - GridStartIndex[dim] + 1;
+@@ -306,7 +306,7 @@ int grid::PhotonTestInitializeGrid(int NumberOfSpheres,
+     if (HIIFractionFilename != NULL) {
+       data_filename = strtok(HIIFractionFilename, delim);
+       dataset_name = strtok(NULL, delim);
+-      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (file_id == -1) ENZO_FAIL("Error opening HII field.");
+       for (dim = 0; dim < MAX_DIMENSION; dim++)
+ 	OutDims[GridRank-dim-1] = GridEndIndex[dim] - GridStartIndex[dim] + 1;
+@@ -320,7 +320,7 @@ int grid::PhotonTestInitializeGrid(int NumberOfSpheres,
+     if (HeIIFractionFilename != NULL) {
+       data_filename = strtok(HeIIFractionFilename, delim);
+       dataset_name = strtok(NULL, delim);
+-      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (file_id == -1) ENZO_FAIL("Error opening HeII field.");
+       for (dim = 0; dim < MAX_DIMENSION; dim++)
+ 	OutDims[GridRank-dim-1] = GridEndIndex[dim] - GridStartIndex[dim] + 1;
+@@ -334,7 +334,7 @@ int grid::PhotonTestInitializeGrid(int NumberOfSpheres,
+     if (HeIIIFractionFilename != NULL) {
+       data_filename = strtok(HeIIIFractionFilename, delim);
+       dataset_name = strtok(NULL, delim);
+-      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (file_id == -1) ENZO_FAIL("Error opening HeIII field.");
+       for (dim = 0; dim < MAX_DIMENSION; dim++)
+ 	OutDims[GridRank-dim-1] = GridEndIndex[dim] - GridStartIndex[dim] + 1;
+@@ -348,7 +348,7 @@ int grid::PhotonTestInitializeGrid(int NumberOfSpheres,
+     if (TemperatureFilename != NULL) {
+       data_filename = strtok(TemperatureFilename, delim);
+       dataset_name = strtok(NULL, delim);
+-      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(data_filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (file_id == -1) ENZO_FAIL("Error opening temperature field.");
+       for (dim = 0; dim < MAX_DIMENSION; dim++)
+ 	OutDims[GridRank-dim-1] = GridEndIndex[dim] - GridStartIndex[dim] + 1;
+diff --git a/src/enzo/Grid_ReadGrid.C b/src/enzo/Grid_ReadGrid.C
+index 043574a..4c6fd4b 100644
+--- a/src/enzo/Grid_ReadGrid.C
++++ b/src/enzo/Grid_ReadGrid.C
+@@ -30,6 +30,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ #ifdef PROTO /* Remove troublesome HDF PROTO declaration. */
+@@ -309,7 +310,7 @@ int grid::ReadGrid(FILE *fptr, int GridID, char DataFilename[],
+       
+       if (io_log) fprintf(log_fptr,"H5Fopen with Name %s\n",name);
+  
+-      file_id = H5Fopen(name,  H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(name,  H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){ENZO_FAIL("line 305 Grid_ReadGrid.C \n");}
+       }
+@@ -610,7 +611,7 @@ int grid::ReadGrid(FILE *fptr, int GridID, char DataFilename[],
+ 	if (io_log) fprintf(log_fptr, "H5Fopen with Name %s\n", name);
+ 	
+ 	if(TryHDF5) {
+-	  file_id = H5Fopen(name, H5F_ACC_RDONLY, H5P_DEFAULT);
++	  file_id = H5Fopen(name, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+ 	  if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+ 	  if( file_id == h5_error ){ENZO_FAIL("line 484  Grid_ReadGrid \n");}
+ 	}
+diff --git a/src/enzo/Grid_ReadRandomForcingFields.C b/src/enzo/Grid_ReadRandomForcingFields.C
+index e8b0803..c8482b6 100644
+--- a/src/enzo/Grid_ReadRandomForcingFields.C
++++ b/src/enzo/Grid_ReadRandomForcingFields.C
+@@ -33,6 +33,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ #ifdef PROTO /* Remove troublesome HDF PROTO declaration. */
+@@ -176,7 +177,7 @@ int grid::ReadRandomForcingFields(FILE *fptr, char DataFilename[])
+     strcat(logname, ".hdf.log");
+     if (io_log) log_fptr = fopen(logname, "a");
+     if (io_log) fprintf(log_fptr,"H5Fopen with Name %s\n",name);
+-    file_id = H5Fopen(name,  H5F_ACC_RDONLY, H5P_DEFAULT);
++    file_id = H5Fopen(name,  H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+   }
+diff --git a/src/enzo/Grid_WriteCube.C b/src/enzo/Grid_WriteCube.C
+index 0606af1..11f2801 100644
+--- a/src/enzo/Grid_WriteCube.C
++++ b/src/enzo/Grid_WriteCube.C
+@@ -31,6 +31,7 @@
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
+ #include "CommunicationUtilities.h"
++#include "benjamin.h"
+ 
+ void my_exit(int status);
+  
+@@ -366,7 +367,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+     file_dsp_id = H5Screate_simple((Eint32) 3, OutDim, NULL);
+       if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-    file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++    file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+     h5_status = H5Pclose(file_access_template);
+@@ -506,7 +507,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+       file_dsp_id = H5Screate_simple((Eint32) 3, OutDim, NULL);
+         if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-      file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++      file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+       h5_status = H5Pclose(file_access_template);
+@@ -678,7 +679,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+       file_dsp_id = H5Screate_simple((Eint32) 3, OutDim, NULL);
+         if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-      file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++      file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+       h5_status = H5Pclose(file_access_template);
+@@ -847,7 +848,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+         file_dsp_id = H5Screate_simple((Eint32) 1, &m_size, NULL);
+           if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+           if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+         dset_id = H5Dcreate(file_id, PartName, FILE_type_id, file_dsp_id, H5P_DEFAULT);
+@@ -948,7 +949,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+         file_dsp_id = H5Screate_simple((Eint32) 1, &m_size, NULL);
+           if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+           if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+         dset_id = H5Dcreate(file_id, PartName, file_type_id, file_dsp_id, H5P_DEFAULT);
+@@ -1040,7 +1041,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+         file_dsp_id = H5Screate_simple((Eint32) 1, &m_size, NULL);
+           if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+           if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+         dset_id = H5Dcreate(file_id, PartName, file_type_id, file_dsp_id, H5P_DEFAULT);
+@@ -1129,7 +1130,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+         file_dsp_id = H5Screate_simple((Eint32) 1, &m_size, NULL);
+           if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+           if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+         dset_id = H5Dcreate(file_id, PartName, HDF5_FILE_PINT, file_dsp_id, H5P_DEFAULT);
+@@ -1216,7 +1217,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+         file_dsp_id = H5Screate_simple((Eint32) 1, &m_size, NULL);
+           if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_access_template));
+           if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+         dset_id = H5Dcreate(file_id, PartName, HDF5_FILE_INT, file_dsp_id, H5P_DEFAULT);
+@@ -1309,7 +1310,7 @@ int grid::WriteCube(char *base_name, int grid_id, int TGdims[])
+         file_dsp_id = H5Screate_simple((Eint32) 1, &m_size, NULL);
+           if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+-        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT, file_access_template);
++        file_id = H5Fcreate(GlueFile, H5F_ACC_TRUNC, H5P_DEFAULT,getFileAccessPropertyListBenjamin( file_access_template));
+           if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+         dset_id = H5Dcreate(file_id, PartName, file_type_id, file_dsp_id, H5P_DEFAULT);
+diff --git a/src/enzo/Grid_WriteGrid.C b/src/enzo/Grid_WriteGrid.C
+index bd61f51..5022ec0 100644
+--- a/src/enzo/Grid_WriteGrid.C
++++ b/src/enzo/Grid_WriteGrid.C
+@@ -31,6 +31,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+@@ -180,7 +181,7 @@ int grid::WriteGrid(FILE *fptr, char *base_name, int grid_id)
+   {
+     if (io_log) fprintf(log_fptr,"H5Fcreate with Name = %s\n",name);
+  
+-    file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+diff --git a/src/enzo/Grid_WriteGridX.C b/src/enzo/Grid_WriteGridX.C
+index eb0a731..f2710ea 100644
+--- a/src/enzo/Grid_WriteGridX.C
++++ b/src/enzo/Grid_WriteGridX.C
+@@ -32,6 +32,7 @@
+ #include "GridList.h"
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+@@ -284,7 +285,7 @@ int grid::WriteGridX(FILE *fptr, char *base_name, int grid_id)
+  
+       if (io_log) fprintf(log_fptr, "H5Fcreate with Name = %s\n", DataLabel[field]);
+  
+-      file_id = H5Fcreate(DataLabel[field], H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++      file_id = H5Fcreate(DataLabel[field], H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+         if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -355,7 +356,7 @@ int grid::WriteGridX(FILE *fptr, char *base_name, int grid_id)
+  
+       if (io_log) fprintf(log_fptr, "H5Fcreate with Name = Temperature\n");
+  
+-      file_id = H5Fcreate("Temperature", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++      file_id = H5Fcreate("Temperature", H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+         if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -443,7 +444,7 @@ int grid::WriteGridX(FILE *fptr, char *base_name, int grid_id)
+  
+       if (io_log) fprintf(log_fptr, "H5Fcreate with Name = Dark_Matter_Density\n");
+  
+-      file_id = H5Fcreate("Dark_Matter_Density", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++      file_id = H5Fcreate("Dark_Matter_Density", H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+         if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -548,7 +549,7 @@ if ( 0 == 1 )
+  
+       if (io_log) fprintf(log_fptr, "H5Fcreate with Name = %s\n", ParticlePositionLabel[dim]);
+  
+-      file_id = H5Fcreate(ParticlePositionLabel[dim], H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++      file_id = H5Fcreate(ParticlePositionLabel[dim], H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+         if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -593,7 +594,7 @@ if ( 0 == 1 )
+  
+       if (io_log) fprintf(log_fptr, "H5Fcreate with Name = %s\n", ParticleVelocityLabel[dim]);
+  
+-      file_id = H5Fcreate(ParticleVelocityLabel[dim], H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++      file_id = H5Fcreate(ParticleVelocityLabel[dim], H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+         if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -633,7 +634,7 @@ if ( 0 == 1 )
+  
+     if (io_log) fprintf(log_fptr, "H5Fcreate with Name = particle_mass\n");
+  
+-    file_id = H5Fcreate("particle_mass", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate("particle_mass", H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -673,7 +674,7 @@ if ( 0 == 1 )
+  
+     if (io_log) fprintf(log_fptr, "H5Fcreate with Name = particle_index\n");
+  
+-    file_id = H5Fcreate("particle_index", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate("particle_index", H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+@@ -713,7 +714,7 @@ if ( 0 == 1 )
+  
+       if (io_log) fprintf(log_fptr, "H5Fcreate with Name = %s\n", ParticleAttributeLabel[j]);
+  
+-      file_id = H5Fcreate(ParticleAttributeLabel[j], H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++      file_id = H5Fcreate(ParticleAttributeLabel[j], H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+         if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+         if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+diff --git a/src/enzo/Group_ReadAllData.C b/src/enzo/Group_ReadAllData.C
+index 6e147b4..fb07a1c 100644
+--- a/src/enzo/Group_ReadAllData.C
++++ b/src/enzo/Group_ReadAllData.C
+@@ -44,6 +44,7 @@
+ #include "Hierarchy.h"
+ #include "TopGridData.h"
+ #include "CommunicationUtilities.h"
++#include "benjamin.h"
+ void my_exit(int status);
+ 
+ // HDF5 function prototypes
+@@ -283,7 +284,7 @@ int Group_ReadAllData(char *name, HierarchyEntry *TopGrid, TopGridData &MetaData
+       log_fptr = fopen(logname,"w");
+     }
+     
+-    Hfile_id = H5Fopen(HDF5hierarchyname, H5F_ACC_RDONLY, H5P_DEFAULT);
++    Hfile_id = H5Fopen(HDF5hierarchyname, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if( Hfile_id == h5_error )
+       ENZO_VFAIL("Error opening HDF5 hierarchy file: %s",HDF5hierarchyname)
+ 
+@@ -350,10 +351,10 @@ int Group_ReadAllData(char *name, HierarchyEntry *TopGrid, TopGridData &MetaData
+     h5_status = H5Pset_fapl_core(file_acc_template, memory_increment, dump_flag);
+     if( h5_status == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+-    file_id = H5Fopen(groupfilename, H5F_ACC_RDWR, file_acc_template);
++    file_id = H5Fopen(groupfilename, H5F_ACC_RDWR, getFileAccessPropertyListBenjamin(file_acc_template));
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ #else
+-    file_id = H5Fopen(groupfilename, H5F_ACC_RDWR, H5P_DEFAULT);
++    file_id = H5Fopen(groupfilename, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+ #endif
+@@ -387,7 +388,7 @@ int Group_ReadAllData(char *name, HierarchyEntry *TopGrid, TopGridData &MetaData
+     if(CheckpointRestart == TRUE) {
+ #ifndef SINGLE_HDF5_OPEN_ON_INPUT
+ 
+-    file_id = H5Fopen(groupfilename, H5F_ACC_RDONLY, H5P_DEFAULT);
++    file_id = H5Fopen(groupfilename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if(file_id == h5_error)ENZO_VFAIL("Could not open %s", groupfilename)
+ 
+ #endif
+diff --git a/src/enzo/Group_WriteAllData.C b/src/enzo/Group_WriteAllData.C
+index 9b4e2c4..22558cf 100644
+--- a/src/enzo/Group_WriteAllData.C
++++ b/src/enzo/Group_WriteAllData.C
+@@ -50,7 +50,7 @@
+ #ifdef TRANSFER
+ #include "ImplicitProblemABC.h"
+ #endif
+-
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+@@ -638,12 +638,12 @@ int Group_WriteAllData(char *basename, int filenumber,
+   h5_status = H5Pset_fapl_core(file_acc_template, memory_increment, dump_flag);
+     if( h5_status == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+-  file_id = H5Fcreate(groupfilename, H5F_ACC_TRUNC, H5P_DEFAULT, file_acc_template);
++  file_id = H5Fcreate(groupfilename, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjamin(file_acc_template));
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+ #else
+ 
+-  file_id = H5Fcreate(groupfilename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++  file_id = H5Fcreate(groupfilename, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+   //  h5_status = H5Fclose(file_id);
+   //    if( h5_status == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+diff --git a/src/enzo/InitializeCloudyCooling.C b/src/enzo/InitializeCloudyCooling.C
+index 4dfc464..0fa97f5 100644
+--- a/src/enzo/InitializeCloudyCooling.C
++++ b/src/enzo/InitializeCloudyCooling.C
+@@ -30,7 +30,7 @@
+ #include "CosmologyParameters.h"
+ 
+ #include "phys_constants.h"
+-
++#include "benjamin.h"
+ #define SMALL_LOG_VALUE -99.0
+ 
+ /**************************** Functions Prototypes ******************************/
+@@ -110,7 +110,7 @@ int InitializeCloudyCooling(FLOAT Time)
+   herr_t      h5_error = -1;
+ 
+   if (debug) fprintf(stderr,"Reading Cloudy data from %s.\n", CloudyCoolingData.CloudyCoolingGridFile);
+-  file_id = H5Fopen(CloudyCoolingData.CloudyCoolingGridFile, H5F_ACC_RDONLY, H5P_DEFAULT);
++  file_id = H5Fopen(CloudyCoolingData.CloudyCoolingGridFile, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+ 
+   // Open cooling dataset and get grid dimensions.
+ 
+diff --git a/src/enzo/Make.mach.linux-gnu b/src/enzo/Make.mach.linux-gnu
+index d125a7b..9f162ed 100644
+--- a/src/enzo/Make.mach.linux-gnu
++++ b/src/enzo/Make.mach.linux-gnu
+@@ -78,7 +78,7 @@ MACH_OPT_AGGRESSIVE  = -O3 -g
+ #-----------------------------------------------------------------------
+ 
+ LOCAL_INCLUDES_MPI    = # MPI includes
+-LOCAL_INCLUDES_HDF5   = -I/usr/include/hdf5/serial # HDF5 includes
++LOCAL_INCLUDES_HDF5   = -I/usr/local/hdf5/include # HDF5 includes
+ LOCAL_INCLUDES_HYPRE  = -I$(LOCAL_HYPRE_INSTALL)/include
+ LOCAL_INCLUDES_PAPI   = # PAPI includes
+ LOCAL_INCLUDES_GRACKLE = -I$(LOCAL_GRACKLE_INSTALL)/include
+@@ -94,7 +94,7 @@ MACH_INCLUDES_GRACKLE  = $(LOCAL_INCLUDES_GRACKLE)
+ #-----------------------------------------------------------------------
+ 
+ LOCAL_LIBS_MPI    = # MPI libraries
+-LOCAL_LIBS_HDF5   = -L/usr/lib/x86_64-linux-gnu/ -lhdf5_serial -lz
++LOCAL_LIBS_HDF5   = -L/usr/local/hdf5/lib -lhdf5
+ LOCAL_LIBS_HYPRE  = -L$(LOCAL_HYPRE_INSTALL)/lib -lHYPRE
+ LOCAL_LIBS_PAPI   = # PAPI libraries
+ LOCAL_LIBS_MACH   = -lgfortran # Machine-dependent libraries
+@@ -104,4 +104,4 @@ MACH_LIBS         = $(LOCAL_LIBS_HDF5) $(LOCAL_LIBS_MACH)
+ MACH_LIBS_MPI     = $(LOCAL_LIBS_MPI)
+ MACH_LIBS_HYPRE   = $(LOCAL_LIBS_HYPRE)
+ MACH_LIBS_PAPI    = $(LOCAL_LIBS_PAPI)
+-MACH_LIBS_GRACKLE = $(LOCAL_LIBS_GRACKLE)
+\ No newline at end of file
++MACH_LIBS_GRACKLE = $(LOCAL_LIBS_GRACKLE)
+diff --git a/src/enzo/New_Grid_ReadGrid.C b/src/enzo/New_Grid_ReadGrid.C
+index 3395f35..1f5e88e 100644
+--- a/src/enzo/New_Grid_ReadGrid.C
++++ b/src/enzo/New_Grid_ReadGrid.C
+@@ -36,7 +36,7 @@
+ #include "ExternalBoundary.h"
+ #include "Grid.h"
+ #include "ActiveParticle.h"
+-
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ #ifdef PROTO /* Remove troublesome HDF PROTO declaration. */
+@@ -266,7 +266,7 @@ int grid::Group_ReadGrid(FILE *fptr, int GridID, HDF5_hid_t file_id,
+       (MyProcessorNumber == ProcessorNumber)) {
+ 
+ #ifndef SINGLE_HDF5_OPEN_ON_INPUT
+-    file_id = H5Fopen(procfilename,  H5F_ACC_RDONLY, H5P_DEFAULT);
++    file_id = H5Fopen(procfilename,  H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if( file_id == h5_error ) ENZO_VFAIL("Error opening %s", procfilename)
+ #endif
+  
+@@ -449,7 +449,7 @@ int grid::Group_ReadGrid(FILE *fptr, int GridID, HDF5_hid_t file_id,
+     if (NumberOfBaryonFields == 0 || ReadParticlesOnly) {
+  
+ #ifndef SINGLE_HDF5_OPEN_ON_INPUT 
+-      file_id = H5Fopen(procfilename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(procfilename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if( file_id == h5_error )ENZO_VFAIL("Error opening file %s", name)
+ #endif
+  
+@@ -561,7 +561,7 @@ int grid::Group_ReadGrid(FILE *fptr, int GridID, HDF5_hid_t file_id,
+     if ((NumberOfBaryonFields == 0 || ReadParticlesOnly) && NumberOfParticles == 0) {
+ 
+ #ifndef SINGLE_HDF5_OPEN_ON_INPUT
+-      file_id = H5Fopen(procfilename, H5F_ACC_RDONLY, H5P_DEFAULT);
++      file_id = H5Fopen(procfilename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+       if( file_id == h5_error )ENZO_VFAIL("Error opening file %s", name)
+ #endif
+ 
+diff --git a/src/enzo/OutputAsParticleData.C b/src/enzo/OutputAsParticleData.C
+index ab4cce8..dd7b0d1 100644
+--- a/src/enzo/OutputAsParticleData.C
++++ b/src/enzo/OutputAsParticleData.C
+@@ -31,6 +31,7 @@
+ #include "Hierarchy.h"
+ #include "LevelHierarchy.h"
+ #include "TopGridData.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+@@ -297,7 +298,7 @@ int OutputAsParticleData(TopGridData &MetaData,
+  
+     if (io_log) fprintf(log_fptr, "H5Fcreate with Name = %s\n", FileName);
+  
+-    file_id = H5Fcreate(FileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate(FileName, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+diff --git a/src/enzo/ParticleSplitter.C b/src/enzo/ParticleSplitter.C
+index bfec90d..21e8a26 100644
+--- a/src/enzo/ParticleSplitter.C
++++ b/src/enzo/ParticleSplitter.C
+@@ -38,7 +38,7 @@
+ #include "LevelHierarchy.h"
+ #include "CosmologyParameters.h"
+ #include "CommunicationUtilities.h"
+-
++#include "benjamin.h"
+ #define NO_DEBUG_PS
+ 
+ int RebuildHierarchy(TopGridData *MetaData,
+@@ -96,7 +96,7 @@ int ParticleSplitter(LevelHierarchyEntry *LevelArray[], int ThisLevel,
+     hsize_t dims[1], maxdims[1];
+     
+     file_id = H5Fopen(ParticleSplitterMustRefineIDFile,
+-		      H5F_ACC_RDONLY, H5P_DEFAULT);
++		      H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     dataset_id = H5Dopen2(file_id, "/particle_identifier", H5P_DEFAULT);
+     dataspace_id = H5Dget_space(dataset_id);
+     // Get number of particles and allocate variable
+diff --git a/src/enzo/ProjectToPlane.C b/src/enzo/ProjectToPlane.C
+index 4474104..1bf1834 100644
+--- a/src/enzo/ProjectToPlane.C
++++ b/src/enzo/ProjectToPlane.C
+@@ -29,6 +29,7 @@
+ #include "Hierarchy.h"
+ #include "LevelHierarchy.h"
+ #include "TopGridData.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+@@ -357,7 +358,7 @@ int ProjectToPlane(TopGridData &MetaData, LevelHierarchyEntry *LevelArray[],
+  
+   if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", ProjectionFileName);
+  
+-  file_id = H5Fcreate(ProjectionFileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++  file_id = H5Fcreate(ProjectionFileName, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fcreate id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+diff --git a/src/enzo/ProjectToPlane2.C b/src/enzo/ProjectToPlane2.C
+index baf7edd..4696403 100644
+--- a/src/enzo/ProjectToPlane2.C
++++ b/src/enzo/ProjectToPlane2.C
+@@ -39,7 +39,7 @@
+ #ifdef TRANSFER
+ #include "ImplicitProblemABC.h"
+ #endif
+-
++#include "benjamin.h"
+ /* function prototypes */
+ 
+ int ReadMetalCoolingRatios(char *filename);
+@@ -328,7 +328,7 @@ int ProjectToPlane2(char *ParameterFile, HierarchyEntry &TopGrid,
+     hid_t file_id, dset_id, dspace_id, group_id;
+     herr_t status;
+ 
+-    file_id = H5Fcreate(ProjectionFileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate(ProjectionFileName, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+     group_id = H5Gcreate(file_id, "/Parameters", 0);
+     dspace_id = H5Screate_simple(2, OutDims, NULL);
+ 
+diff --git a/src/enzo/ReadAllData.C b/src/enzo/ReadAllData.C
+index 44c403d..30babfa 100644
+--- a/src/enzo/ReadAllData.C
++++ b/src/enzo/ReadAllData.C
+@@ -38,6 +38,7 @@
+ #include "Hierarchy.h"
+ #include "TopGridData.h"
+ #include "CommunicationUtilities.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ /* function prototypes */
+@@ -249,7 +250,7 @@ int ReadAllData(char *name, HierarchyEntry *TopGrid, TopGridData &MetaData,
+       log_fptr = fopen(logname,"w");
+     }
+     
+-    Hfile_id = H5Fopen(HDF5hierarchyname, H5F_ACC_RDONLY, H5P_DEFAULT);
++    Hfile_id = H5Fopen(HDF5hierarchyname, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if( Hfile_id == h5_error )
+       ENZO_VFAIL("Error opening HDF5 hierarchy file: %s",HDF5hierarchyname)
+ 
+diff --git a/src/enzo/ReadAttr.C b/src/enzo/ReadAttr.C
+index 351bde0..4bca51b 100644
+--- a/src/enzo/ReadAttr.C
++++ b/src/enzo/ReadAttr.C
+@@ -19,6 +19,7 @@
+  
+ #include "ErrorExceptions.h"
+ #include "macros_and_parameters.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // HDF5 function prototypes
+@@ -50,7 +51,7 @@ int ReadAttr(char *Fname, int *Rank, int Dims[], int *NSeg, int *LSeg, FILE *log
+  
+   if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", Fname);
+  
+-  file_id = H5Fopen(Fname, H5F_ACC_RDONLY, H5P_DEFAULT);
++  file_id = H5Fopen(Fname, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+  
+diff --git a/src/enzo/ReadFile.C b/src/enzo/ReadFile.C
+index f352517..22b6227 100644
+--- a/src/enzo/ReadFile.C
++++ b/src/enzo/ReadFile.C
+@@ -27,6 +27,7 @@
+ #include "macros_and_parameters.h"
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // function prototypes
+@@ -133,7 +134,7 @@ int ReadFile(char *name, int Rank, int Dim[], int StartIndex[],
+   // Open the HDF5 file
+  
+   if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", name);
+-   file_id = H5Fopen(name, H5F_ACC_RDONLY, H5P_DEFAULT);
++   file_id = H5Fopen(name, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+   if (debug1)
+     fprintf(stderr, "RHDF H5Fopen %s on CPU %"ISYM"\n", name, MyProcessorNumber);
+   if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+diff --git a/src/enzo/ReadGridFile.C b/src/enzo/ReadGridFile.C
+index 6de9b5b..6516f55 100644
+--- a/src/enzo/ReadGridFile.C
++++ b/src/enzo/ReadGridFile.C
+@@ -26,6 +26,7 @@
+ #include "macros_and_parameters.h"
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // function prototypes
+@@ -129,7 +130,7 @@ int ReadGridFile(char *name, int Rank, int Dim[], int StartIndex[],
+  
+   if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", name);
+  
+-  file_id = H5Fopen(name, H5F_ACC_RDONLY, H5P_DEFAULT);
++  file_id = H5Fopen(name, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+   fprintf(stderr, "GR H5Fopen %s on CPU %"ISYM"\n", name, MyProcessorNumber);
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+     if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+diff --git a/src/enzo/ReadIntFile.C b/src/enzo/ReadIntFile.C
+index 38b53a1..ae84afc 100644
+--- a/src/enzo/ReadIntFile.C
++++ b/src/enzo/ReadIntFile.C
+@@ -31,6 +31,7 @@
+ #include "macros_and_parameters.h"
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+  
+ // function prototypes
+@@ -135,7 +136,7 @@ int ReadIntFile(char *name, int Rank, int Dim[], int StartIndex[],
+  
+   if (io_log) fprintf(log_fptr, "H5Fopen with Name = %s\n", name);
+  
+-  file_id = H5Fopen(name, H5F_ACC_RDONLY, H5P_DEFAULT);
++  file_id = H5Fopen(name, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+   if (debug1)
+     fprintf(stderr, "RHDF H5Fopen %s on CPU %"ISYM"\n", name, MyProcessorNumber);
+     if (io_log) fprintf(log_fptr, "H5Fopen id: %"ISYM"\n", file_id);
+diff --git a/src/enzo/WriteHDF5HierarchyFile.C b/src/enzo/WriteHDF5HierarchyFile.C
+index e2d0494..d434460 100644
+--- a/src/enzo/WriteHDF5HierarchyFile.C
++++ b/src/enzo/WriteHDF5HierarchyFile.C
+@@ -24,7 +24,7 @@
+ #include "Hierarchy.h"
+ #include "TopGridData.h"
+ #include "CosmologyParameters.h"
+-
++#include "benjamin.h"
+ int CosmologyComputeExpansionFactor(FLOAT time, FLOAT *a, FLOAT *dadt);
+ 
+ int SetGlobalGridID(int &GlobalID, HierarchyEntry *Grid);
+@@ -98,7 +98,7 @@ int WriteHDF5HierarchyFile(char *base_name, HierarchyEntry *TopGrid, TopGridData
+ 
+   // open the file
+   if (io_log) fprintf(log_fptr, "Calling H5Fcreate with Name = %s\n", FileName);
+-  file_id = H5Fcreate(FileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++  file_id = H5Fcreate(FileName, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+   if (io_log) fprintf(log_fptr, "H5Fcreate id: %d\n", file_id);
+ 
+   
+diff --git a/src/enzo/benjamin.h b/src/enzo/benjamin.h
+new file mode 100644
+index 0000000..40b8dae
+--- /dev/null
++++ b/src/enzo/benjamin.h
+@@ -0,0 +1,55 @@
++#include <hdf5.h>
++#include <H5PLextern.h>
++#include <stdio.h>
++#include <stdlib.h>
++#ifndef BENJAMIN_H
++#define BENJAMIN_H
++#ifdef BENJAMIN_MAIN
++int is_initializedBenjamin=0;
++hid_t volIDBenjamin;
++int useVOL;
++void initializeBenjamin(void){
++	fprintf(stderr, "initializeBenjamin 0\n");
++	if(!is_initializedBenjamin){
++		const char* s = getenv("HDF5_VOL_JULEA");
++		useVOL = (s!=NULL) && (*s=='1');
++		fprintf(stderr, "HDF5_VOL_JULEA %d\n",useVOL);
++		if(useVOL){
++			fprintf(stderr, "initializeBenjamin 1\n");
++			volIDBenjamin = H5VLregister_connector_by_name("julea", H5P_DEFAULT);
++			fprintf(stderr, "initializeBenjamin 2\n");
++			H5VLinitialize(volIDBenjamin, H5P_DEFAULT);
++			fprintf(stderr, "initializeBenjamin 3\n");
++		}
++		is_initializedBenjamin = 1;
++	}
++}
++void finalizeBenjamin(void)
++{
++	if(useVOL){
++		fprintf(stderr, "finalizeBenjamin 1\n");
++		H5VLterminate(volIDBenjamin);
++		fprintf(stderr, "finalizeBenjamin 2\n");
++		H5VLunregister_connector(volIDBenjamin);
++		fprintf(stderr, "finalizeBenjamin 3\n");
++	}
++}
++hid_t getFileAccessPropertyListBenjamin(hid_t acc_tpl){
++	fprintf(stderr, "getFileAccessPropertyListBenjamin\n");
++	initializeBenjamin();
++	if(useVOL)
++		H5Pset_vol(acc_tpl, volIDBenjamin, NULL);
++	return acc_tpl;
++}
++hid_t getFileAccessPropertyListBenjaminDefault(){
++	hid_t res;
++	fprintf(stderr, "getFileAccessPropertyListBenjaminDefault\n");
++	res = H5Pcreate(H5P_FILE_ACCESS);
++	res = getFileAccessPropertyListBenjamin(res);
++	return res;
++}
++#else
++hid_t getFileAccessPropertyListBenjamin(hid_t acc_tpl);
++hid_t getFileAccessPropertyListBenjaminDefault();
++#endif
++#endif
+diff --git a/src/enzo/enzo.C b/src/enzo/enzo.C
+index ebf1189..97015dd 100644
+--- a/src/enzo/enzo.C
++++ b/src/enzo/enzo.C
+@@ -60,6 +60,9 @@ int InitializePythonInterface(int argc, char **argv);
+ int FinalizePythonInterface();
+ #endif
+ 
++#define BENJAMIN_MAIN
++#include "benjamin.h"
++
+ // Function prototypes
+  
+ int InitializeNew(  char *filename, HierarchyEntry &TopGrid, TopGridData &tgd,
+@@ -267,7 +270,7 @@ Eint32 MAIN_NAME(Eint32 argc, char *argv[])
+   int i;
+ 
+   // Initialize Communications
+-
++initializeBenjamin();
+   CommunicationInitialize(&argc, &argv); 
+ 
+   //#define DEBUG_MPI
+@@ -909,7 +912,7 @@ void my_exit(int status)
+     }
+ 
+     CommunicationFinalize();
+-
++    finalizeBenjamin();
+     exit(status);
+ 
+   } else if (status == EXIT_FAILURE) {
+diff --git a/src/enzo/h5utilities.C b/src/enzo/h5utilities.C
+index 12729a2..de8836c 100644
+--- a/src/enzo/h5utilities.C
++++ b/src/enzo/h5utilities.C
+@@ -30,7 +30,7 @@
+ //#endif
+ 
+ #include "h5utilities.h"
+-
++#include "benjamin.h"
+ 
+ int checkErr(int arg, const char* name, const bool callAssert) {
+   if (arg<0) {
+@@ -58,7 +58,7 @@ hid_t openH5File(const char* filename)
+ #ifdef DOIT
+       
+   // try to open HDF5 files
+-  fileId = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
++  fileId = H5Fopen (filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjaminDefault());
+ 
+ #else
+ 
+@@ -71,7 +71,7 @@ hid_t openH5File(const char* filename)
+   }
+ 
+   if (!err) {
+-    fileId = H5Fopen (filename, H5F_ACC_RDONLY, prop);
++    fileId = H5Fopen (filename, H5F_ACC_RDONLY, getFileAccessPropertyListBenjamin(prop));
+     if (fileId<0) {
+       err = 3;
+     }
+diff --git a/src/enzo/read_bt.C b/src/enzo/read_bt.C
+index d55d40f..0f14c78 100644
+--- a/src/enzo/read_bt.C
++++ b/src/enzo/read_bt.C
+@@ -9,6 +9,7 @@
+ 
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+ 
+ // function prototypes
+@@ -94,7 +95,7 @@ int READ_BT(boundary_type *bt_buffer,
+ 
+     if (io_log) fprintf(stderr, "Calling H5Fopen with Name = %s\n", Name);
+ 
+-    file_id = H5Fopen(Name, H5F_ACC_RDWR, H5P_DEFAULT);
++    file_id = H5Fopen(Name, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(stderr, "H5Fopen id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+diff --git a/src/enzo/read_bv.C b/src/enzo/read_bv.C
+index 06d0904..6483828 100644
+--- a/src/enzo/read_bv.C
++++ b/src/enzo/read_bv.C
+@@ -9,6 +9,7 @@
+ 
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+ 
+ // function prototypes
+@@ -94,7 +95,7 @@ int READ_BV(float *bv_buffer,
+ 
+     if (io_log) fprintf(stderr, "Calling H5Fopen with Name = %s\n", Name);
+ 
+-    file_id = H5Fopen(Name, H5F_ACC_RDWR, H5P_DEFAULT);
++    file_id = H5Fopen(Name, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(stderr, "H5Fopen id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+diff --git a/src/enzo/write_bt.C b/src/enzo/write_bt.C
+index 785ae52..088de7c 100644
+--- a/src/enzo/write_bt.C
++++ b/src/enzo/write_bt.C
+@@ -9,6 +9,7 @@
+ 
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+ 
+ // function prototypes
+@@ -95,8 +96,7 @@ int WRITE_BT(boundary_type *bt_buffer,
+       if (io_log) fprintf(stderr, "H5Screate file_dsp_id: %"ISYM"\n", file_dsp_id);
+       if( file_dsp_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+-    if (io_log) fprintf(stderr, "Calling H5Fopen with Name = %s\n", Name);
+-
++//    if (io_log) fprintf(stderr, "Calling H5Fopen with Name = %s\n", Name);
+ //    file_id = H5Fopen(Name, H5F_ACC_RDWR, H5P_DEFAULT);
+ //      if (io_log) fprintf(stderr, "H5Fopen id: %"ISYM"\n", file_id);
+ 
+@@ -105,7 +105,7 @@ int WRITE_BT(boundary_type *bt_buffer,
+ 
+     if (io_log) fprintf(stderr, "Calling H5Fcreate with Name = %s\n", Name);
+ 
+-    file_id = H5Fcreate(Name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate(Name, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(stderr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 
+diff --git a/src/enzo/write_bv.C b/src/enzo/write_bv.C
+index dbfaf29..a3b5ce1 100644
+--- a/src/enzo/write_bv.C
++++ b/src/enzo/write_bv.C
+@@ -9,6 +9,7 @@
+ 
+ #include "typedefs.h"
+ #include "global_data.h"
++#include "benjamin.h"
+ void my_exit(int status);
+ 
+ // function prototypes
+@@ -97,14 +98,14 @@ int WRITE_BV(float *bv_buffer,
+ 
+     if (io_log) fprintf(stderr, "Calling H5Fopen with Name = %s\n", Name);
+ 
+-    file_id = H5Fopen(Name, H5F_ACC_RDWR, H5P_DEFAULT);
++    file_id = H5Fopen(Name, H5F_ACC_RDWR, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(stderr, "H5Fopen id: %"ISYM"\n", file_id);
+ 
+     if ( file_id < 0 ) {
+ 
+     if (io_log) fprintf(stderr, "Calling H5Fcreate with Name = %s\n", Name);
+ 
+-    file_id = H5Fcreate(Name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
++    file_id = H5Fcreate(Name, H5F_ACC_TRUNC, H5P_DEFAULT, getFileAccessPropertyListBenjaminDefault());
+       if (io_log) fprintf(stderr, "H5Fcreate id: %"ISYM"\n", file_id);
+       if( file_id == h5_error ){my_exit(EXIT_FAILURE);}
+ 

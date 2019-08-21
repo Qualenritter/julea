@@ -54,7 +54,6 @@ static herr_t
 H5VL_julea_db_dataset_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	j_db_schema_unref(julea_db_schema_dataset);
 	julea_db_schema_dataset = NULL;
@@ -65,7 +64,6 @@ static herr_t
 H5VL_julea_db_dataset_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GError) error = NULL;
@@ -154,7 +152,6 @@ static herr_t
 H5VL_julea_db_dataset_truncate_file(void* obj)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
 
 	g_autoptr(JDBSelector) selector = NULL;
 	g_autoptr(GError) error = NULL;
@@ -167,23 +164,28 @@ H5VL_julea_db_dataset_truncate_file(void* obj)
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
 	{
-		goto _error;
+		j_goto_error();
 	}
 	if (!j_db_entry_delete(entry, selector, batch, &error))
 	{
-		goto _error;
+		j_goto_error();
+	}
+	if (!j_batch_execute(batch))
+	{
+		if (!error || error->code != J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+			j_goto_error();
 	}
 	return 0;
 _error:

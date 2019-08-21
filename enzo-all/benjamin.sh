@@ -1,3 +1,8 @@
+cd ../src/enzo
+git diff eb48e3c04294d29da9dae930432a3c2b59235f35 > benjamin.patch
+cd ../../run
+mv ../src/enzo/benjamin.patch .
+
 rm slurm_*.sh
 echo "rm \${HOME}/.config/julea/*" >> slurm_all.sh
 for i in $(seq 10)
@@ -31,6 +36,9 @@ if [ "$slurm_name" == "slurm__Hydro_Hydro-3D_GalaxySimulation_GalaxySimulationen
 if [ "$slurm_name" == "slurm__Hydro_Hydro-3D_RotatingSphere_RotatingSphereenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__MHD_2D_Wengen2-CollidingFlow_Wengen2-CollidingFlowenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__GravitySolver_GravityStripTest_GravityStripTestenzo" ]; then continue;fi
+if [ "$slurm_name" == "slurm__Hydro_Hydro-3D_NohProblem3DAMR_NohProblem3DAMRenzo" ]; then continue;fi
+if [ "$slurm_name" == "slurm__Hydro_Hydro-3D_Athena-RayleighTaylor3D_Athena-RayleighTaylor3Denzo" ]; then continue;fi
+if [ "$slurm_name" == "slurm__MHD_3D_ShearingBox_ShearingBoxenzo" ]; then continue;fi
 #TOO FAST
 if [ "$slurm_name" == "slurm__FuzzyDarkMatter_FDMTestenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__Cosmology_MHDZeldovichPancake_MHDZeldovichPancakeenzo" ]; then continue;fi
@@ -146,6 +154,10 @@ if [ "$slurm_name" == "slurm__CosmologySimulation_amr_cosmology_amr_cosmologyenz
 if [ "$slurm_name" == "slurm__GravitySolver_TestOrbitMRP_TestOrbitMRPenzo" ]; then continue;fi
 #FAIL TopGridRank = -99999 ill defined
 if [ "$slurm_name" == "slurm__FLD_FLD_LWRadParametersenzo" ]; then continue;fi
+#FAIL other crash
+if [ "$slurm_name" == "slurm__GravitySolver_MaximumGravityRefinementTest_MaximumGravityRefinementTestenzo" ]; then continue;fi
+if [ "$slurm_name" == "slurm__GravitySolver_BinaryCollapseMHDCT_BinaryCollapseenzo" ]; then continue;fi
+if [ "$slurm_name" == "slurm__GravitySolver_BinaryCollapse_BinaryCollapseenzo" ]; then continue;fi
 
 cat > ${slurm_name}.sh << EOF
 #!/bin/bash
@@ -168,10 +180,9 @@ export LD_LIBRARY_PATH=\${HOME}/julea/prefix-hdf-julea/lib/:\$LD_LIBRARY_PATH
 export JULEA_CONFIG=\${HOME}/.config/julea/julea-\$(hostname)
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=\${HOME}/julea/prefix-hdf-julea/lib
-#export LD_PRELOAD="\$(locate libSegFault.so | tail -n 1)"
-#export SEGFAULT_SIGNALS="all"
+export J_TIMER_DB_RUN="\${HOME}/julea/${slurm_name}.sqlite"
 export J_TIMER_DB="\${HOME}/julea/${slurm_name}.sqlite"
-export G_MESSAGES_DEBUG=all
+#export G_MESSAGES_DEBUG=all
 
 cat \${HOME}/.config/julea/julea-\$(hostname)
 
@@ -183,7 +194,17 @@ cp -r \${HOME}/enzo-dev/run/${config_folder}* \$tmpdir
 cd \$tmpdir
 echo \$PWD
 ls -la
-time \${HOME}/enzo-dev/src/enzo/enzo.exe -d \${HOME}/enzo-dev/run/${config}
+
+rm $J_TIMER_DB
+
+cat \${HOME}/enzo-dev/run/${config} | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > \${HOME}/enzo-dev/run/${config}.tmp1
+echo "ResubmitOn = 1" >> \${HOME}/enzo-dev/run/${config}.tmp1
+echo "StopCPUTime = 1" >> \${HOME}/enzo-dev/run/${config}.tmp1
+echo "ResubmitCommand = \${HOME}/julea/enzo-all/run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tmp1
+
+
+time \${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/${config}
+
 du -sh *
 du -sh .
 EOF
@@ -191,3 +212,6 @@ chmod +x ${slurm_name}.sh
 echo "sbatch \${HOME}/julea/enzo-all/${slurm_name}.sh" >> slurm_all.sh
 done
 chmod +x slurm_all.sh
+
+cp slurm_* /src/julea/enzo-all
+cp benjamin* /src/julea/enzo-all
