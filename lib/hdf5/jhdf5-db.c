@@ -91,7 +91,7 @@ static herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
-
+	H5VL_julea_db_timer_init();
 	g_debug("H5VL_julea_db_init start");
 
 	if (H5VL_julea_db_file_init(vipl_id))
@@ -186,6 +186,7 @@ H5VL_julea_db_term(void)
 	{
 		j_goto_error();
 	}
+	H5VL_julea_db_timer_fini();
 	return 0;
 _error:
 	return 1;

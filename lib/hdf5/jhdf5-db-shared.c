@@ -235,6 +235,8 @@ H5VL_julea_db_timer_new(const char* name)
 static void
 H5VL_julea_db_timer_init()
 {
+	if (global_timer)
+		return;
 	g_debug("H5VL_julea_db_timer_init");
 	if (G_UNLIKELY(sqlite3_open(g_getenv("J_TIMER_DB"), &backend_db) != SQLITE_OK))
 	{
@@ -273,12 +275,13 @@ _error:
 static void
 H5VL_julea_db_timer_fini()
 {
+	if (!global_timer)
+		return;
 	H5VL_julea_db_timer_free(global_timer);
+	global_timer = NULL;
 	g_debug("H5VL_julea_db_timer_fini");
 	sqlite3_close(backend_db);
 }
-static void __attribute__((constructor)) H5VL_julea_db_timer_init(void);
-static void __attribute__((destructor)) H5VL_julea_db_timer_fini(void);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
 #define H5VL_JULEA_TIMER() g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(G_STRFUNC);
