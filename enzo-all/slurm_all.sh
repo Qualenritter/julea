@@ -39,6 +39,10 @@ tmpdir=/dev/shm/warnke/julea
 ${HOME}/julea/build-hdf-julea/tools/julea-config --user   --object-servers="west10" --kv-servers="west10"   --db-servers="west10"   --object-backend=posix --object-component=server --object-path="${tmpdir}/server-object"   --kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv"   --db-backend=sqlite --db-component=server --db-path="memory"
 mv ${HOME}/.config/julea/julea ${HOME}/.config/julea/julea-west10
 sleep 0.1s
+tmpdir=/dev/shm/warnke/julea
+${HOME}/julea/build-hdf-julea/tools/julea-config --user   --object-servers="benjamin0" --kv-servers="benjamin0"   --db-servers="benjamin0"   --object-backend=posix --object-component=server --object-path="${tmpdir}/server-object"   --kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv"   --db-backend=sqlite --db-component=server --db-path="${tmpdir}/server-db"
+mv ${HOME}/.config/julea/julea ${HOME}/.config/julea/julea-benjamin0
+sleep 0.1s
 sbatch ${HOME}/julea/enzo-all/slurm__Cosmology_MHDZeldovichPancake_2_CT_MHDZeldovichPancake_2_CTenzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__DrivenTurbulence3D_DrivenTurbulence3Denzo.sh
 sbatch ${HOME}/julea/enzo-all/slurm__Hydro_Hydro-2D_FreeExpansionAMR_FreeExpansionAMRenzo.sh

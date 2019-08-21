@@ -46,5 +46,6 @@ ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/Validat
 
 wait
 
+
 du -sh *
 du -sh .

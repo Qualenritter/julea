@@ -46,5 +46,6 @@ ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./StarParticle/StarParti
 
 wait
 
+
 du -sh *
 du -sh .

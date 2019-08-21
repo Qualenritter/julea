@@ -46,5 +46,6 @@ ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-
 
 wait
 
+
 du -sh *
 du -sh .

@@ -19,6 +19,17 @@ mv \${HOME}/.config/julea/julea \${HOME}/.config/julea/julea-west${i}
 sleep 0.1s
 EOF
 done
+cat >> slurm_all.sh << EOF
+tmpdir=/dev/shm/warnke/julea
+\${HOME}/julea/build-hdf-julea/tools/julea-config --user \
+  --object-servers="benjamin0" --kv-servers="benjamin0" \
+  --db-servers="benjamin0" \
+  --object-backend=posix --object-component=server --object-path="\${tmpdir}/server-object" \
+  --kv-backend=sqlite --kv-component=server --kv-path="\${tmpdir}/server-kv" \
+  --db-backend=sqlite --db-component=server --db-path="\${tmpdir}/server-db"
+mv \${HOME}/.config/julea/julea \${HOME}/.config/julea/julea-benjamin0
+sleep 0.1s
+EOF
 for f in $(find -name *.enzo \
 	 | grep "\.enzo" \
 	)
@@ -207,6 +218,7 @@ echo "ResubmitCommand = ./run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tm
 \${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/${config}.tmp >> \${J_TIMER_DB_RUN}.out
 
 wait
+
 
 du -sh *
 du -sh .
