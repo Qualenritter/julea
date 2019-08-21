@@ -1,16 +1,21 @@
 #!/bin/bash
+
+n_cpus=$1
+parameterfile=$PWD/$2
+
 export LD_LIBRARY_PATH=/src/julea/prefix-hdf-julea/lib/:$LD_LIBRARY_PATH
 export JULEA_CONFIG=/root/.config/julea/julea_enzo
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=/src/julea/prefix-hdf-julea/lib
-#export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
-#export SEGFAULT_SIGNALS="all"
-export J_TIMER_DB="/src/julea/slurm__MHD_3D_ShearingBox_ShearingBoxenzo.sqlite"
+export J_TIMER_DB="/src/julea/slurm__MHD_3D_ShearingBox_ShearingBoxenzo.sqlite$2"
 export G_MESSAGES_DEBUG=all
 
+echo n_cpus $n_cpus
+echo parameterfile $parameterfile
 
+rm $J_TIMER_DB
+nohup /src/applications_using_hdf5/enzo/enzo-dev/src/enzo/enzo.exe $parameterfile &
 
-/src/applications_using_hdf5/enzo/enzo-dev/src/enzo/enzo.exe FreeExpansionAMR.enzo
 exit
 
 j="XXXX"

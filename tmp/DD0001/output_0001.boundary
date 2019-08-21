@@ -1,7 +1,0 @@
-BoundaryRank         = 2
-BoundaryDimension    = 70 70 
-NumberOfBaryonFields = 6
-ParticleBoundaryType = 3
-BoundaryFieldType    = 0 1 2 4 5 6 
-BaryonFileName       = ./DD0001/output_0001.boundary.hdf
-BoundaryValuePresent = 0 0 0 0 

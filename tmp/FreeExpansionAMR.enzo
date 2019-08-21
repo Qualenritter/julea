@@ -53,3 +53,7 @@ tiny_number               = 1.0e-6
 DensityUnits = 1.673e-24
 LengthUnits = 3.086e18
 TimeUnits = 3.1557e7
+
+ResubmitOn = 1
+StopCPUTime = 1
+ResubmitCommand = ./run-continue.sh
