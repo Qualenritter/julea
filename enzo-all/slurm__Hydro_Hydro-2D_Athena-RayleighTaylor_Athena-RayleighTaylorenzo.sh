@@ -29,7 +29,7 @@ ${HOME}/julea/build-hdf-julea/server/julea-server &
 sleep 1s
 
 cp -r ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/Athena-RayleighTaylor/* $tmpdir
-cp ${HOME}/julea/enzo-all/run-continue.sh .
+cp ${HOME}/julea/enzo-all/run-continue.sh $tmpdir
 cd $tmpdir
 echo $PWD
 ls -la

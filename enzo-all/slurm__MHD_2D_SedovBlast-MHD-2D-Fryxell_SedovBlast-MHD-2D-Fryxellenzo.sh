@@ -29,7 +29,7 @@ ${HOME}/julea/build-hdf-julea/server/julea-server &
 sleep 1s
 
 cp -r ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/* $tmpdir
-cp ${HOME}/julea/enzo-all/run-continue.sh .
+cp ${HOME}/julea/enzo-all/run-continue.sh $tmpdir
 cd $tmpdir
 echo $PWD
 ls -la

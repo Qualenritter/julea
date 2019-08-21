@@ -191,7 +191,7 @@ cat \${HOME}/.config/julea/julea-\$(hostname)
 sleep 1s
 
 cp -r \${HOME}/enzo-dev/run/${config_folder}* \$tmpdir
-cp \${HOME}/julea/enzo-all/run-continue.sh .
+cp \${HOME}/julea/enzo-all/run-continue.sh \$tmpdir
 cd \$tmpdir
 echo \$PWD
 ls -la
