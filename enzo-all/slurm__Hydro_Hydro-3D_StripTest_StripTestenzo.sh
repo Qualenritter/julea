@@ -34,7 +34,7 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm $J_TIMER_DB .out
+rm $J_TIMER_DB ${J_TIMER_DB_RUN}.out
 
 cat ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
 echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
@@ -42,7 +42,7 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripT
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
 
 
-${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp >> .out
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 

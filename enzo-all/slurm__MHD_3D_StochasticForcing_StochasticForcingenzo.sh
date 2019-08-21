@@ -34,7 +34,7 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm $J_TIMER_DB .out
+rm $J_TIMER_DB ${J_TIMER_DB_RUN}.out
 
 cat ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
 echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
@@ -42,7 +42,7 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/Stocha
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
 
 
-${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp >> .out
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 

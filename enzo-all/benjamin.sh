@@ -196,7 +196,7 @@ cd \$tmpdir
 echo \$PWD
 ls -la
 
-rm \$J_TIMER_DB ${J_TIMER_DB_RUN}.out
+rm \$J_TIMER_DB \${J_TIMER_DB_RUN}.out
 
 cat \${HOME}/enzo-dev/run/${config} | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > \${HOME}/enzo-dev/run/${config}.tmp
 echo "ResubmitOn = 1" >> \${HOME}/enzo-dev/run/${config}.tmp
@@ -204,7 +204,7 @@ echo "StopCPUTime = 1" >> \${HOME}/enzo-dev/run/${config}.tmp
 echo "ResubmitCommand = ./run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tmp
 
 
-\${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/${config}.tmp >> ${J_TIMER_DB_RUN}.out
+\${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/${config}.tmp >> \${J_TIMER_DB_RUN}.out
 
 wait
 

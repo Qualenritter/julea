@@ -34,7 +34,7 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm $J_TIMER_DB .out
+rm $J_TIMER_DB ${J_TIMER_DB_RUN}.out
 
 cat ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
 echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
@@ -42,7 +42,7 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxel
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
 
 
-${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp >> .out
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 
