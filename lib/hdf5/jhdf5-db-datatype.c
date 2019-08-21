@@ -184,6 +184,7 @@ H5VL_julea_db_datatype_print_recoursive(hid_t type_id, guint level, const char* 
 	guint i;
 	gint j;
 	gchar* padding;
+	return;
 	padding = g_new(gchar, level + 1);
 	for (i = 0; i < level; i++)
 	{

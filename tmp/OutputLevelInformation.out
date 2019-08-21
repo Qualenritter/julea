@@ -1,0 +1,10 @@
+Cycle 2  Time 1  MaxDepth 2  Grids 22  Memory(MB) 0.447146  Ratio 1.38636
+  Level 0  Grids 1  Memory(MB) 0.224214  Coverage 1  Ratio 1  Flagged 0  Active 4096
+  Level 1  Grids 4  Memory(MB) 0.0528961  Coverage 0.0310059  Ratio 1.41667  Flagged 0  Active 508
+  Level 2  Grids 17  Memory(MB) 0.170036  Coverage 0.0204468  Ratio 1.40196  Flagged 0  Active 1340
+
+Cycle 3  Time 1.664556407246  MaxDepth 2  Grids 26  Memory(MB) 0.474601  Ratio 1.35733
+  Level 0  Grids 1  Memory(MB) 0.224214  Coverage 1  Ratio 1  Flagged 0  Active 4096
+  Level 1  Grids 4  Memory(MB) 0.0563737  Coverage 0.0349121  Ratio 1.29762  Flagged 0  Active 572
+  Level 2  Grids 21  Memory(MB) 0.194013  Coverage 0.0223999  Ratio 1.38571  Flagged 0  Active 1468
+

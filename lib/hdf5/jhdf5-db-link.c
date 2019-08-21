@@ -151,6 +151,46 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	return 1;
 }
+static herr_t
+H5VL_julea_db_link_truncate_file(void* obj)
+{
+	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
+
+	g_autoptr(JDBSelector) selector = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(JDBEntry) entry = NULL;
+	JHDF5Object_t* file = obj;
+
+	g_return_val_if_fail(file != NULL, NULL);
+	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, NULL);
+
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
+		goto _error;
+	}
+	if (!(selector = j_db_selector_new(julea_db_schema_link, J_DB_SELECTOR_MODE_AND, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!(entry = j_db_entry_new(julea_db_schema_link, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_delete(entry, selector, batch, &error))
+	{
+		goto _error;
+	}
+	return 0;
+_error:
+	H5VL_julea_db_error_handler(error);
+	return 1;
+}
 static gboolean
 H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const char* name)
 {
@@ -173,15 +213,19 @@ H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
 		file = parent;
+		g_debug("XXX get link '%s' (F '%s')", name, parent->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
+		g_debug("XXX get link '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
+		g_debug("XXX get link '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
+		g_debug("XXX get link '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:

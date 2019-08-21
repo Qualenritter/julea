@@ -150,6 +150,46 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	return 1;
 }
+static herr_t
+H5VL_julea_db_dataset_truncate_file(void* obj)
+{
+	J_TRACE_FUNCTION(NULL);
+	H5VL_JULEA_TIMER();
+
+	g_autoptr(JDBSelector) selector = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JBatch) batch = NULL;
+	g_autoptr(JDBEntry) entry = NULL;
+	JHDF5Object_t* file = obj;
+
+	g_return_val_if_fail(file != NULL, NULL);
+	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, NULL);
+
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
+		goto _error;
+	}
+	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+	{
+		goto _error;
+	}
+	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
+	{
+		goto _error;
+	}
+	if (!j_db_entry_delete(entry, selector, batch, &error))
+	{
+		goto _error;
+	}
+	return 0;
+_error:
+	H5VL_julea_db_error_handler(error);
+	return 1;
+}
 static void*
 H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,
@@ -336,15 +376,19 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
 		file = parent;
+		g_debug("XXX open dataset '%s' (F '%s')", name, parent->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
+		g_debug("XXX open dataset '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
+		g_debug("XXX open dataset '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
+		g_debug("XXX open dataset '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:

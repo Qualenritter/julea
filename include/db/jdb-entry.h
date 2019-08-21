@@ -116,7 +116,6 @@ gboolean j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error);
 gboolean j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
 /**
  * Delete the entry from the backend.
- * All variables defined in the schema, which are not explicitily set, are initialized to NULL.
  *
  * The entry must not be modified until the batch is executed.
  * The selector must not be modified until the batch is executed.
