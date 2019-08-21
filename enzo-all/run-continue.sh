@@ -7,14 +7,14 @@ parameterfile=$PWD/$2
 (
 sleep 5s
 
-if [ "${J_TIMER_DB}" != "${J_TIMER_DB_RUN}" ]; then
+if [ "${J_TIMER_DB}" != "${J_TIMER_DB_RUN}.sqlite" ]; then
 	for r in $(sqlite3 ${J_TIMER_DB} "select * from tmp;" | sed "s/|/,/g")
 	do
 		a=$(cut -d',' -f1 <<<"$r")
 		b=$(cut -d',' -f2 <<<"$r")
 		c=$(cut -d',' -f3 <<<"$r")
-		echo "sqlite3 ${J_TIMER_DB_RUN} \"insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'\""
-		sqlite3 ${J_TIMER_DB_RUN} "insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'"
+		echo "sqlite3 ${J_TIMER_DB_RUN}.sqlite \"insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'\""
+		sqlite3 ${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'"
 	done
 	rm ${J_TIMER_DB}
 fi
@@ -30,5 +30,5 @@ echo n_cpus $n_cpus
 echo parameterfile $parameterfile
 
 rm $J_TIMER_DB
-/src/applications_using_hdf5/enzo/enzo-dev/src/enzo/enzo.exe -r $parameterfile
+/src/applications_using_hdf5/enzo/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
 ) &
