@@ -5,7 +5,7 @@ n_cpus=$1
 parameterfile=${PWD}/$2
 
 (
-sleep 5s
+sleep 0.5s
 
 if [ "${J_TIMER_DB}" != "${J_TIMER_DB_RUN}.sqlite" ]; then
 	for r in $(sqlite3 ${J_TIMER_DB} "select * from tmp;" | sed "s/|/,/g")
