@@ -237,7 +237,7 @@ H5VL_julea_db_timer_init()
 {
 	if (global_timer)
 		return;
-	g_debug("H5VL_julea_db_timer_init");
+	printf("H5VL_julea_db_timer_init");
 	if (G_UNLIKELY(sqlite3_open(g_getenv("J_TIMER_DB"), &backend_db) != SQLITE_OK))
 	{
 		g_debug("a");
@@ -279,7 +279,7 @@ H5VL_julea_db_timer_fini()
 		return;
 	H5VL_julea_db_timer_free(global_timer);
 	global_timer = NULL;
-	g_debug("H5VL_julea_db_timer_fini");
+	printf("H5VL_julea_db_timer_fini");
 	sqlite3_close(backend_db);
 }
 
