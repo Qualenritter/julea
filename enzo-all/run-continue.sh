@@ -30,5 +30,5 @@ echo n_cpus $n_cpus
 echo parameterfile $parameterfile
 
 rm $J_TIMER_DB
-\${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
+${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
 ) &
