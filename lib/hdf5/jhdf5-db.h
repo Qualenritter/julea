@@ -83,12 +83,14 @@ struct JHDF5Object_t
 		{
 			void* data;
 			size_t data_size;
+			guint type_total_size;
 			hid_t hdf5_id;
 		} datatype;
 		struct
 		{
 			void* data;
 			size_t data_size;
+			guint dim_total_count;
 			hid_t hdf5_id;
 		} space;
 	};

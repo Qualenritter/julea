@@ -184,6 +184,7 @@ H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
 {
 	J_TRACE_FUNCTION(NULL);
 
+g_autofree guint32* tmp_uint32=NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
@@ -216,10 +217,15 @@ H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
 	{
 		j_goto_error();
 	}
-	if (!j_db_iterator_get_field(iterator, "dim_cache", &type, &object->space.data, &length, &error))
+	if (!j_db_iterator_get_field(iterator, "dim_cache", &type, &object->space.data, &object->space.data_size, &error))
 	{
 		j_goto_error();
 	}
+	if (!j_db_iterator_get_field(iterator, "dim_total_count", &type,(gpointer*)&tmp_uint32, &length, &error))
+        {
+                j_goto_error();
+        }
+object->space.dim_total_count=*tmp_uint32;
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	object->space.hdf5_id = H5Sdecode(object->space.data);
 	return object;
@@ -259,7 +265,7 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	stored_dims = g_new(hsize_t, stored_ndims);
 	H5Sget_simple_extent_dims(*type_id, stored_dims, NULL);
 	element_count = 1;
-	for (i = 0; i < stored_ndims; i++)
+	for (i = 0; i < (guint)stored_ndims; i++)
 	{
 		element_count *= stored_dims[i];
 	}
@@ -274,6 +280,7 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	}
 	H5Sencode(*type_id, object->space.data, &size);
 	object->space.hdf5_id = *type_id;
+	object->space.dim_total_count = element_count;
 
 _check_type_exist:
 	//check if this space exists
@@ -332,7 +339,7 @@ _done:
 	if (loop)
 	{
 		//new space defined
-		for (i = 0; i < stored_ndims; i++)
+		for (i = 0; i <(guint) stored_ndims; i++)
 		{
 			j_db_entry_unref(entry);
 			entry = NULL;

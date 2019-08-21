@@ -233,7 +233,7 @@ H5VL_julea_db_timer_new(const char* name)
 	return timer;
 }
 static void
-H5VL_julea_db_timer_init()
+H5VL_julea_db_timer_init(void)
 {
 	if (global_timer)
 		return;
@@ -273,7 +273,7 @@ _error:
 	abort();
 }
 static void
-H5VL_julea_db_timer_fini()
+H5VL_julea_db_timer_fini(void)
 {
 	if (!global_timer)
 		return;
@@ -284,7 +284,7 @@ H5VL_julea_db_timer_fini()
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
-#define H5VL_JULEA_TIMER() g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(G_STRFUNC);
+#define H5VL_JULEA_TIMER() g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(G_STRFUNC)
 
 #pragma GCC diagnostic pop
 #endif

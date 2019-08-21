@@ -160,8 +160,8 @@ H5VL_julea_db_link_truncate_file(void* obj)
 	g_autoptr(JDBEntry) entry = NULL;
 	JHDF5Object_t* file = obj;
 
-	g_return_val_if_fail(file != NULL, NULL);
-	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, NULL);
+	g_return_val_if_fail(file != NULL, 1);
+	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, 1);
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{

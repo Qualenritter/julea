@@ -159,8 +159,8 @@ H5VL_julea_db_dataset_truncate_file(void* obj)
 	g_autoptr(JDBEntry) entry = NULL;
 	JHDF5Object_t* file = obj;
 
-	g_return_val_if_fail(file != NULL, NULL);
-	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, NULL);
+	g_return_val_if_fail(file != NULL, 1);
+	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, 1);
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
@@ -676,14 +676,12 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	J_TRACE_FUNCTION(NULL);
 	H5VL_JULEA_TIMER();
 
-	g_autofree hsize_t* stored_dims = NULL;
 	g_autofree void* local_buf_org;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GArray) mem_space_arr = NULL;
 	g_autoptr(GArray) file_space_arr = NULL;
 	const void* local_buf;
 	guint64 bytes_written;
-	gint stored_ndims;
 	gsize data_size;
 	gsize data_count;
 	JHDF5Object_t* object = obj;
@@ -700,10 +698,7 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	H5VL_julea_db_datatype_print(mem_type_id);
 	H5VL_julea_db_datatype_print(object->dataset.datatype->datatype.hdf5_id);
 
-	data_size = H5Tget_size(object->dataset.datatype->datatype.hdf5_id);
-	stored_ndims = H5Sget_simple_extent_ndims(object->dataset.space->space.hdf5_id);
-	stored_dims = g_new(hsize_t, stored_ndims);
-	H5Sget_simple_extent_dims(object->dataset.space->space.hdf5_id, stored_dims, NULL);
+	data_size = object->dataset.datatype->datatype.type_total_size;
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
@@ -765,14 +760,12 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	J_TRACE_FUNCTION(NULL);
 	H5VL_JULEA_TIMER();
 
-	g_autofree hsize_t* stored_dims = NULL;
 	g_autofree void* local_buf_org;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GArray) mem_space_arr = NULL;
 	g_autoptr(GArray) file_space_arr = NULL;
 	const void* local_buf;
 	guint64 bytes_read;
-	gint stored_ndims;
 	gsize data_size;
 	gsize data_count;
 	JHDF5Object_t* object = obj;
@@ -789,10 +782,7 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	H5VL_julea_db_datatype_print(mem_type_id);
 	H5VL_julea_db_datatype_print(object->dataset.datatype->datatype.hdf5_id);
 
-	data_size = H5Tget_size(object->dataset.datatype->datatype.hdf5_id);
-	stored_ndims = H5Sget_simple_extent_ndims(object->dataset.space->space.hdf5_id);
-	stored_dims = g_new(hsize_t, stored_ndims);
-	H5Sget_simple_extent_dims(object->dataset.space->space.hdf5_id, stored_dims, NULL);
+	data_size = object->dataset.datatype->datatype.type_total_size;
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{

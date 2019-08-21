@@ -159,8 +159,8 @@ H5VL_julea_db_attr_truncate_file(void* obj)
 	g_autoptr(JDBEntry) entry = NULL;
 	JHDF5Object_t* file = obj;
 
-	g_return_val_if_fail(file != NULL, NULL);
-	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, NULL);
+	g_return_val_if_fail(file != NULL, 1);
+	g_return_val_if_fail(file->type == J_HDF5_OBJECT_TYPE_FILE, 1);
 
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
@@ -484,31 +484,21 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 	guint64 bytes_read;
 	gsize data_size;
 	JHDF5Object_t* object = obj;
-	hsize_t* dims;
-	gint ndims;
 
 	g_return_val_if_fail(buf != NULL, 1);
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_ATTR, 1);
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_read = 0;
-	data_size = H5Tget_size(object->attr.datatype->datatype.hdf5_id);
-	ndims = H5Sget_simple_extent_ndims(object->attr.space->space.hdf5_id);
-	dims = g_new(hsize_t, ndims);
-	H5Sget_simple_extent_dims(object->attr.space->space.hdf5_id, dims, NULL);
-	for (gint i = 0; i < ndims; i++)
-	{
-		data_size *= dims[i];
-	}
+data_size = object->dataset.datatype->datatype.type_total_size;
+	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_read(object->attr.object, buf, data_size, 0, &bytes_read, batch);
 	if (!j_batch_execute(batch))
 	{
 		j_goto_error();
 	}
-	g_free(dims);
 	return 0;
 _error:
-	g_free(dims);
 	return 1;
 }
 static herr_t
@@ -521,31 +511,21 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 	guint64 bytes_written;
 	gsize data_size;
 	JHDF5Object_t* object = obj;
-	hsize_t* dims;
-	gint ndims;
 
 	g_return_val_if_fail(buf != NULL, 1);
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_ATTR, 1);
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_written = 0;
-	data_size = H5Tget_size(object->attr.datatype->datatype.hdf5_id);
-	ndims = H5Sget_simple_extent_ndims(object->attr.space->space.hdf5_id);
-	dims = g_new(hsize_t, ndims);
-	H5Sget_simple_extent_dims(object->attr.space->space.hdf5_id, dims, NULL);
-	for (gint i = 0; i < ndims; i++)
-	{
-		data_size *= dims[i];
-	}
+data_size = object->dataset.datatype->datatype.type_total_size;
+	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_write(object->attr.object, buf, data_size, 0, &bytes_written, batch);
 	if (!j_batch_execute(batch))
 	{
 		j_goto_error();
 	}
-	g_free(dims);
 	return 0;
 _error:
-	g_free(dims);
 	return 1;
 }
 static herr_t

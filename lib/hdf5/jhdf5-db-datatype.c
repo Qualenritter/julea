@@ -45,7 +45,7 @@
 
 #define _GNU_SOURCE
 
-static JDBSchema* julea_db_schema_datatype = NULL;
+static JDBSchema* julea_db_schema_datatype_header = NULL;
 #define _bswap16(a, b) *(guint16*)b = (((*(const guint16*)a) & 0x00FF) << 8) | (((*(const guint16*)a) & 0xFF00) >> 8)
 #define _bswap32(a, b) *(guint32*)b = (((*(const guint32*)a) & 0x000000FF) << 24) | (((*(const guint32*)a) & 0x0000FF00) << 8) | (((*(const guint32*)a) & 0x00FF0000) >> 8) | (((*(const guint32*)a) & 0xFF000000) >> 24)
 #define _bswap64(a, b) *(guint64*)b = (((*(const guint64*)a) & 0x00000000000000FFULL) << 56) | (((*(const guint64*)a) & 0x000000000000FF00ULL) << 40) | (((*(const guint64*)a) & 0x0000000000FF0000ULL) << 24) | \
@@ -366,8 +366,8 @@ H5VL_julea_db_datatype_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	j_db_schema_unref(julea_db_schema_datatype);
-	julea_db_schema_datatype = NULL;
+	j_db_schema_unref(julea_db_schema_datatype_header);
+	julea_db_schema_datatype_header = NULL;
 	return 0;
 }
 static herr_t
@@ -383,11 +383,11 @@ H5VL_julea_db_datatype_init(hid_t vipl_id)
 		j_goto_error();
 	}
 
-	if (!(julea_db_schema_datatype = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype", NULL)))
+	if (!(julea_db_schema_datatype_header = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype_header", NULL)))
 	{
 		j_goto_error();
 	}
-	if (!(j_db_schema_get(julea_db_schema_datatype, batch, &error) && j_batch_execute(batch)))
+	if (!(j_db_schema_get(julea_db_schema_datatype_header, batch, &error) && j_batch_execute(batch)))
 	{
 		if (error)
 		{
@@ -395,16 +395,20 @@ H5VL_julea_db_datatype_init(hid_t vipl_id)
 			{
 				g_error_free(error);
 				error = NULL;
-				j_db_schema_unref(julea_db_schema_datatype);
-				if (!(julea_db_schema_datatype = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype", NULL)))
+				j_db_schema_unref(julea_db_schema_datatype_header);
+				if (!(julea_db_schema_datatype_header = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype_header", NULL)))
 				{
 					j_goto_error();
 				}
-				if (!j_db_schema_add_field(julea_db_schema_datatype, "data", J_DB_TYPE_BLOB, &error))
+				if (!j_db_schema_add_field(julea_db_schema_datatype_header, "type_cache", J_DB_TYPE_BLOB, &error))
 				{
 					j_goto_error();
 				}
-				if (!j_db_schema_create(julea_db_schema_datatype, batch, &error))
+				if (!j_db_schema_add_field(julea_db_schema_datatype_header, "type_size", J_DB_TYPE_UINT32, &error))
+				{
+					j_goto_error();
+				}
+				if (!j_db_schema_create(julea_db_schema_datatype_header, batch, &error))
 				{
 					j_goto_error();
 				}
@@ -437,6 +441,7 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	g_autofree guint32* tmp_uint32=NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
@@ -455,7 +460,7 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 	memcpy(object->backend_id, backend_id, backend_id_len);
 	object->backend_id_len = backend_id_len;
 
-	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_datatype_header, J_DB_SELECTOR_MODE_AND, &error)))
 	{
 		j_goto_error();
 	}
@@ -463,7 +468,7 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 	{
 		j_goto_error();
 	}
-	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
+	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype_header, selector, &error)))
 	{
 		j_goto_error();
 	}
@@ -471,10 +476,15 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 	{
 		j_goto_error();
 	}
-	if (!j_db_iterator_get_field(iterator, "data", &type, &object->datatype.data, &length, &error))
+	if (!j_db_iterator_get_field(iterator, "type_cache", &type, &object->datatype.data, &object->datatype.data_size, &error))
 	{
 		j_goto_error();
 	}
+	if (!j_db_iterator_get_field(iterator, "type_size", &type,(gpointer*) &tmp_uint32, &length, &error))
+	{
+		j_goto_error();
+	}
+	object->datatype.type_total_size=*tmp_uint32;
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	if (!(object->datatype.hdf5_id = H5Tdecode(object->datatype.data)))
 	{
@@ -515,6 +525,7 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 	{
 		j_goto_error();
 	}
+	object->datatype.type_total_size=H5Tget_size(*type_id);
 	H5Tencode(*type_id, NULL, &size);
 	if (!(object->datatype.data = g_new(char, size)))
 	{
@@ -525,15 +536,15 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 
 _check_type_exist:
 	//check if this datatype exists
-	if (!(selector = j_db_selector_new(julea_db_schema_datatype, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!(selector = j_db_selector_new(julea_db_schema_datatype_header, J_DB_SELECTOR_MODE_AND, &error)))
 	{
 		j_goto_error();
 	}
-	if (!j_db_selector_add_field(selector, "data", J_DB_SELECTOR_OPERATOR_EQ, object->datatype.data, size, &error))
+	if (!j_db_selector_add_field(selector, "type_cache", J_DB_SELECTOR_OPERATOR_EQ, object->datatype.data, size, &error))
 	{
 		j_goto_error();
 	}
-	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype, selector, &error)))
+	if (!(iterator = j_db_iterator_new(julea_db_schema_datatype_header, selector, &error)))
 	{
 		j_goto_error();
 	}
@@ -550,11 +561,15 @@ _check_type_exist:
 	g_return_val_if_fail(loop == FALSE, NULL);
 
 	//create new datatype if it did not exist before
-	if (!(entry = j_db_entry_new(julea_db_schema_datatype, &error)))
+	if (!(entry = j_db_entry_new(julea_db_schema_datatype_header, &error)))
 	{
 		j_goto_error();
 	}
-	if (!j_db_entry_set_field(entry, "data", object->datatype.data, size, &error))
+	if (!j_db_entry_set_field(entry, "type_cache", object->datatype.data, size, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_entry_set_field(entry, "type_size", &object->datatype.type_total_size, sizeof(object->datatype.type_total_size), &error))
 	{
 		j_goto_error();
 	}
