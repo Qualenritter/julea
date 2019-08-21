@@ -42,7 +42,9 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/Athena-RayleighT
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/Athena-RayleighTaylor/Athena-RayleighTaylor.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/Athena-RayleighTaylor/Athena-RayleighTaylor.enzo.tmp
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/Athena-RayleighTaylor/Athena-RayleighTaylor.enzo.tmp
+
+wait
 
 du -sh *
 du -sh .

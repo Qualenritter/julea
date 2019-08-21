@@ -42,7 +42,9 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/Stocha
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
+
+wait
 
 du -sh *
 du -sh .

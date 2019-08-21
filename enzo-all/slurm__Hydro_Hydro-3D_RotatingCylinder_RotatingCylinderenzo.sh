@@ -42,7 +42,9 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/RotatingCylinder
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/RotatingCylinder/RotatingCylinder.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/RotatingCylinder/RotatingCylinder.enzo.tmp
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/RotatingCylinder/RotatingCylinder.enzo.tmp
+
+wait
 
 du -sh *
 du -sh .

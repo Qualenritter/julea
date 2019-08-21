@@ -42,7 +42,9 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
+
+wait
 
 du -sh *
 du -sh .

@@ -42,7 +42,9 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelm
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
+
+wait
 
 du -sh *
 du -sh .

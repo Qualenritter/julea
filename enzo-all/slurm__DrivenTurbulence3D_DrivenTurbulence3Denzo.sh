@@ -42,7 +42,9 @@ echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./DrivenTurbulence3D/DrivenTurbul
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./DrivenTurbulence3D/DrivenTurbulence3D.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./DrivenTurbulence3D/DrivenTurbulence3D.enzo.tmp
+${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./DrivenTurbulence3D/DrivenTurbulence3D.enzo.tmp
+
+wait
 
 du -sh *
 du -sh .
