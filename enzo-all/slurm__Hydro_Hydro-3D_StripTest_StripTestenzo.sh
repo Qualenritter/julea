@@ -33,15 +33,15 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm 
+rm $J_TIMER_DB
 
-cat ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp1
-echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp1
-echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp1
-echo "ResubmitCommand = ${HOME}/julea/enzo-all/run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp1
+cat ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
+echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
+echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
+echo "ResubmitCommand = ${HOME}/julea/enzo-all/run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo
+time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/StripTest/StripTest.enzo.tmp
 
 du -sh *
 du -sh .

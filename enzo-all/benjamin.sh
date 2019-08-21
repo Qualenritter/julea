@@ -195,15 +195,15 @@ cd \$tmpdir
 echo \$PWD
 ls -la
 
-rm $J_TIMER_DB
+rm \$J_TIMER_DB
 
-cat \${HOME}/enzo-dev/run/${config} | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > \${HOME}/enzo-dev/run/${config}.tmp1
-echo "ResubmitOn = 1" >> \${HOME}/enzo-dev/run/${config}.tmp1
-echo "StopCPUTime = 1" >> \${HOME}/enzo-dev/run/${config}.tmp1
-echo "ResubmitCommand = \${HOME}/julea/enzo-all/run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tmp1
+cat \${HOME}/enzo-dev/run/${config} | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > \${HOME}/enzo-dev/run/${config}.tmp
+echo "ResubmitOn = 1" >> \${HOME}/enzo-dev/run/${config}.tmp
+echo "StopCPUTime = 1" >> \${HOME}/enzo-dev/run/${config}.tmp
+echo "ResubmitCommand = \${HOME}/julea/enzo-all/run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tmp
 
 
-time \${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/${config}
+time \${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/${config}.tmp
 
 du -sh *
 du -sh .

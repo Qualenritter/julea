@@ -33,15 +33,15 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm 
+rm $J_TIMER_DB
 
-cat ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp1
-echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp1
-echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp1
-echo "ResubmitCommand = ${HOME}/julea/enzo-all/run-continue.sh" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp1
+cat ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
+echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
+echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
+echo "ResubmitCommand = ${HOME}/julea/enzo-all/run-continue.sh" >> ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo
+time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./MHD/2D/SedovBlast-MHD-2D-Fryxell/SedovBlast-MHD-2D-Fryxell.enzo.tmp
 
 du -sh *
 du -sh .

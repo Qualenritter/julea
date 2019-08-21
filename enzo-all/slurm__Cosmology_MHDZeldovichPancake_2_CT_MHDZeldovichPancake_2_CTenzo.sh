@@ -33,15 +33,15 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm 
+rm $J_TIMER_DB
 
-cat ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp1
-echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp1
-echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp1
-echo "ResubmitCommand = ${HOME}/julea/enzo-all/run-continue.sh" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp1
+cat ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
+echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
+echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
+echo "ResubmitCommand = ${HOME}/julea/enzo-all/run-continue.sh" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
 
 
-time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo
+time ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
 
 du -sh *
 du -sh .
