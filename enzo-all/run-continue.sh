@@ -19,11 +19,11 @@ if [ "${J_TIMER_DB}" != "${J_TIMER_DB_RUN}.sqlite" ]; then
 	rm ${J_TIMER_DB}
 fi
 
-export LD_LIBRARY_PATH=\${HOME}/julea/prefix-hdf-julea/lib/:\$LD_LIBRARY_PATH
-export JULEA_CONFIG=\${HOME}/.config/julea/julea-\$(hostname)
+export LD_LIBRARY_PATH=${HOME}/julea/prefix-hdf-julea/lib/:\$LD_LIBRARY_PATH
+export JULEA_CONFIG=${HOME}/.config/julea/julea-\$(hostname)
 export HDF5_VOL_JULEA=1
-export HDF5_PLUGIN_PATH=\${HOME}/julea/prefix-hdf-julea/lib
-export J_TIMER_DB="\${HOME}/julea/${slurm_name}.sqlite"
+export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
+export J_TIMER_DB="${HOME}/julea/${slurm_name}.sqlite"
 #export G_MESSAGES_DEBUG=all
 
 echo n_cpus $n_cpus
