@@ -2,7 +2,7 @@
 #https://buildmedia.readthedocs.org/media/pdf/enzo/latest/enzo.pdf
 
 n_cpus=$1
-parameterfile=$PWD/$2
+parameterfile=${PWD}/$2
 
 (
 sleep 5s
@@ -23,11 +23,12 @@ export LD_LIBRARY_PATH=${HOME}/julea/prefix-hdf-julea/lib/:${LD_LIBRARY_PATH}
 export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
-export J_TIMER_DB="${HOME}/julea/${slurm_name}.sqlite"
+export J_TIMER_DB="${PWD}.sqlite"
 #export G_MESSAGES_DEBUG=all
 
-echo n_cpus $n_cpus
-echo parameterfile $parameterfile
+echo ${PWD} >> ${J_TIMER_DB_RUN}.out
+echo n_cpus $n_cpus >> ${J_TIMER_DB_RUN}.out
+echo parameterfile $parameterfile >> ${J_TIMER_DB_RUN}.out
 
 rm $J_TIMER_DB
 ${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
