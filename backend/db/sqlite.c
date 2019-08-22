@@ -28,6 +28,16 @@
 
 #include "jbson.c"
 
+/*
+ * sqlite supports multithread, but only for concurrent read. concurrent write requires manual retrys
+ * to remove errors due to concurrent access.
+ * if SQL_MODE is defined as SQL_MODE_SINGLE_THREAD, the sqlite-generic code uses a global lock to prevent concurrency errors.
+ * otherwise there is no lock
+ */
+#define SQL_MODE_SINGLE_THREAD 0
+#define SQL_MODE_MULTI_THREAD 1
+#define SQL_MODE SQL_MODE_SINGLE_THREAD
+
 static sqlite3* backend_db = NULL;
 
 static gboolean
@@ -315,7 +325,7 @@ backend_init(gchar const* path)
 
 	g_return_val_if_fail(path != NULL, FALSE);
 
-	g_debug("db-backend-init");
+	g_debug("db-backend-init %s %d", path, sqlite3_threadsafe());
 
 	if (strncmp("memory", path, 5))
 	{

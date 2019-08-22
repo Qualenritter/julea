@@ -226,7 +226,6 @@ g_autofree guint32* tmp_uint32=NULL;
                 j_goto_error();
         }
 object->space.dim_total_count=*tmp_uint32;
-	g_assert(!j_db_iterator_next(iterator, NULL));
 	object->space.hdf5_id = H5Sdecode(object->space.data);
 	return object;
 _error:
@@ -302,7 +301,6 @@ _check_type_exist:
 		{
 			j_goto_error();
 		}
-		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;
 	}
 

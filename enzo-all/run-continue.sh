@@ -7,7 +7,7 @@ parameterfile=${PWD}/$2
 (
 sleep 0.5s
 
-for f in find -name "${J_TIMER_DB}*"
+for f in $(find -name "${J_TIMER_DB}")
 do
 	for r in $(sqlite3 ${f} "select * from tmp;" | sed "s/|/,/g")
 	do
@@ -31,6 +31,5 @@ echo ${PWD} >> ${J_TIMER_DB_RUN}.out
 echo n_cpus $n_cpus >> ${J_TIMER_DB_RUN}.out
 echo parameterfile $parameterfile >> ${J_TIMER_DB_RUN}.out
 
-rm $J_TIMER_DB
 mpirun -np n_cpus ${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
 ) &

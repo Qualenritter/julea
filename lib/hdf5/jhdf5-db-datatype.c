@@ -342,7 +342,6 @@ H5VL_julea_db_datatype_decode(void* backend_id, guint64 backend_id_len)
 		j_goto_error();
 	}
 	object->datatype.type_total_size = *tmp_uint32;
-	g_assert(!j_db_iterator_next(iterator, NULL));
 	if (!(object->datatype.hdf5_id = H5Tdecode(object->datatype.data)))
 	{
 		j_goto_error();
@@ -413,7 +412,6 @@ _check_type_exist:
 		{
 			j_goto_error();
 		}
-		g_assert(!j_db_iterator_next(iterator, NULL));
 		goto _done;
 	}
 

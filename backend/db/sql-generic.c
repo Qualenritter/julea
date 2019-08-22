@@ -65,12 +65,6 @@ struct JSqlIterator
 };
 typedef struct JSqlIterator JSqlIterator;
 static JSqlCacheNamespaces* cacheNamespaces = NULL;
-static void* stmt_schema_structure_create = NULL;
-static void* stmt_schema_structure_get = NULL;
-static void* stmt_schema_structure_delete = NULL;
-static void* stmt_transaction_abort = NULL;
-static void* stmt_transaction_begin = NULL;
-static void* stmt_transaction_commit = NULL;
 static void
 freeJSqlIterator(gpointer ptr)
 {
@@ -238,7 +232,7 @@ init_sql(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	GError* error = NULL;
+	g_autoptr(GError) error = NULL;
 
 	if (G_UNLIKELY(!j_sql_exec(
 		    "CREATE TABLE IF NOT EXISTS schema_structure ("
@@ -252,33 +246,8 @@ init_sql(void)
 	{
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_prepare("INSERT INTO schema_structure(namespace, name, varname, vartype) VALUES (?1, ?2, ?3, ?4)", &stmt_schema_structure_create, &error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_prepare("SELECT varname, vartype FROM schema_structure WHERE namespace=?1 AND name=?2", &stmt_schema_structure_get, &error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_prepare("DELETE FROM schema_structure WHERE namespace=?1 AND name=?2", &stmt_schema_structure_delete, &error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_prepare("BEGIN TRANSACTION", &stmt_transaction_begin, &error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_prepare("COMMIT", &stmt_transaction_commit, &error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_prepare("ROLLBACK", &stmt_transaction_abort, &error)))
-	{
-		goto _error;
-	}
 	return TRUE;
 _error:
-	g_error_free(error);
 	return FALSE;
 }
 static void
@@ -287,21 +256,30 @@ fini_sql(void)
 	J_TRACE_FUNCTION(NULL);
 
 	freeJSqlCacheNamespaces(cacheNamespaces);
-	j_sql_finalize(stmt_schema_structure_create, NULL);
-	j_sql_finalize(stmt_schema_structure_get, NULL);
-	j_sql_finalize(stmt_schema_structure_delete, NULL);
-	j_sql_finalize(stmt_transaction_abort, NULL);
-	j_sql_finalize(stmt_transaction_begin, NULL);
-	j_sql_finalize(stmt_transaction_commit, NULL);
 }
 static gboolean
 _backend_batch_start(JSqlBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	JSqlCacheSQLPrepared* prepared = NULL;
+
 	g_return_val_if_fail(!batch->open, FALSE);
 
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_begin, error)))
+	prepared = getCachePrepared(batch->namespace, "_default", "_batch_start", error);
+	if (G_UNLIKELY(!prepared))
+	{
+		goto _error;
+	}
+	if (!prepared->initialized)
+	{
+		if (G_UNLIKELY(!j_sql_prepare("BEGIN TRANSACTION", &prepared->stmt, error)))
+		{
+			goto _error;
+		}
+		prepared->initialized = TRUE;
+	}
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 	{
 		goto _error;
 	}
@@ -316,10 +294,25 @@ _backend_batch_execute(JSqlBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	JSqlCacheSQLPrepared* prepared = NULL;
+
 	g_return_val_if_fail(batch->open || (!batch->open && batch->aborted), FALSE);
 
+	prepared = getCachePrepared(batch->namespace, "_default", "_batch_execute", error);
+	if (G_UNLIKELY(!prepared))
+	{
+		goto _error;
+	}
+	if (!prepared->initialized)
+	{
+		if (G_UNLIKELY(!j_sql_prepare("COMMIT", &prepared->stmt, error)))
+		{
+			goto _error;
+		}
+		prepared->initialized = TRUE;
+	}
 	batch->open = FALSE;
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_commit, error)))
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 	{
 		goto _error;
 	}
@@ -332,11 +325,26 @@ _backend_batch_abort(JSqlBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	JSqlCacheSQLPrepared* prepared = NULL;
+
 	g_return_val_if_fail(batch->open, FALSE);
 
+	prepared = getCachePrepared(batch->namespace, "_default", "_batch_abort", error);
+	if (G_UNLIKELY(!prepared))
+	{
+		goto _error;
+	}
+	if (!prepared->initialized)
+	{
+		if (G_UNLIKELY(!j_sql_prepare("ROLLBACK", &prepared->stmt, error)))
+		{
+			goto _error;
+		}
+		prepared->initialized = TRUE;
+	}
 	batch->open = FALSE;
 	batch->aborted = TRUE;
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_transaction_abort, error)))
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 	{
 		goto _error;
 	}
@@ -344,6 +352,10 @@ _backend_batch_abort(JSqlBatch* batch, GError** error)
 _error:
 	return FALSE;
 }
+
+#if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
+G_LOCK_DEFINE_STATIC(sql_backend_lock);
+#endif
 
 static gboolean
 backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _batch, GError** error)
@@ -355,6 +367,8 @@ backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _ba
 	g_return_val_if_fail(namespace != NULL, FALSE);
 	g_return_val_if_fail(semantics != NULL, FALSE);
 	g_return_val_if_fail(_batch != NULL, FALSE);
+	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
+		G_LOCK(sql_backend_lock);
 
 	batch = *_batch = g_slice_new(JSqlBatch);
 	batch->namespace = namespace;
@@ -368,6 +382,8 @@ backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _ba
 _error:
 	j_semantics_unref(batch->semantics);
 	g_slice_free(JSqlBatch, batch);
+	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
+		G_UNLOCK(sql_backend_lock);
 	return FALSE;
 }
 static gboolean
@@ -385,10 +401,14 @@ backend_batch_execute(gpointer _batch, GError** error)
 	}
 	j_semantics_unref(batch->semantics);
 	g_slice_free(JSqlBatch, batch);
+	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
+		G_UNLOCK(sql_backend_lock);
 	return TRUE;
 _error:
 	j_semantics_unref(batch->semantics);
 	g_slice_free(JSqlBatch, batch);
+	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
+		G_UNLOCK(sql_backend_lock);
 	return FALSE;
 }
 
@@ -397,6 +417,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 {
 	J_TRACE_FUNCTION(NULL);
 
+	JSqlCacheSQLPrepared* prepared = NULL;
 	JSqlBatch* batch = _batch;
 	bson_iter_t iter;
 	bson_iter_t iter_child;
@@ -416,6 +437,19 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(schema != NULL, FALSE);
 
+	prepared = getCachePrepared(batch->namespace, name, "_schema_create", error);
+	if (G_UNLIKELY(!prepared))
+	{
+		goto _error;
+	}
+	if (!prepared->initialized)
+	{
+		if (G_UNLIKELY(!j_sql_prepare("INSERT INTO schema_structure(namespace, name, varname, vartype) VALUES (?1, ?2, ?3, ?4)", &prepared->stmt, error)))
+		{
+			goto _error;
+		}
+		prepared->initialized = TRUE;
+	}
 	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
 	{
 		//no ddl in transaction - most databases wont support that - continue without any open transaction
@@ -573,26 +607,26 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 		}
 	}
 	value.val_string = batch->namespace;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 1, J_DB_TYPE_STRING, &value, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 1, J_DB_TYPE_STRING, &value, error)))
 	{
 		goto _error;
 	}
 	value.val_string = name;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 2, J_DB_TYPE_STRING, &value, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 2, J_DB_TYPE_STRING, &value, error)))
 	{
 		goto _error;
 	}
 	value.val_string = "_id";
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 3, J_DB_TYPE_STRING, &value, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 3, J_DB_TYPE_STRING, &value, error)))
 	{
 		goto _error;
 	}
 	value.val_uint32 = J_DB_TYPE_UINT32;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 4, J_DB_TYPE_UINT32, &value, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 4, J_DB_TYPE_UINT32, &value, error)))
 	{
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_schema_structure_create, error)))
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 	{
 		goto _error;
 	}
@@ -617,17 +651,17 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 		if (!equals)
 		{
 			value.val_string = batch->namespace;
-			if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 1, J_DB_TYPE_STRING, &value, error)))
+			if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 1, J_DB_TYPE_STRING, &value, error)))
 			{
 				goto _error;
 			}
 			value.val_string = name;
-			if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 2, J_DB_TYPE_STRING, &value, error)))
+			if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 2, J_DB_TYPE_STRING, &value, error)))
 			{
 				goto _error;
 			}
 			value.val_string = j_bson_iter_key(&iter, error);
-			if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 3, J_DB_TYPE_STRING, &value, error)))
+			if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 3, J_DB_TYPE_STRING, &value, error)))
 			{
 				goto _error;
 			}
@@ -639,11 +673,11 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 			{
 				value.val_uint32 = J_DB_TYPE_UINT32;
 			}
-			if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_create, 4, J_DB_TYPE_UINT32, &value, error)))
+			if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 4, J_DB_TYPE_UINT32, &value, error)))
 			{
 				goto _error;
 			}
-			if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_schema_structure_create, error)))
+			if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 			{
 				goto _error;
 			}
@@ -676,16 +710,32 @@ _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError**
 	guint found = FALSE;
 	gboolean sql_found;
 	gboolean bson_initialized = FALSE;
+	JSqlCacheSQLPrepared* prepared = NULL;
+
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 
+	prepared = getCachePrepared(batch->namespace, name, "_schema_get", error);
+	if (G_UNLIKELY(!prepared))
+	{
+		goto _error;
+	}
+	if (!prepared->initialized)
+	{
+		if (G_UNLIKELY(!j_sql_prepare("SELECT varname, vartype FROM schema_structure WHERE namespace=?1 AND name=?2", &prepared->stmt, error)))
+		{
+			goto _error;
+		}
+		prepared->initialized = TRUE;
+	}
+
 	value1.val_string = batch->namespace;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_get, 1, J_DB_TYPE_STRING, &value1, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 1, J_DB_TYPE_STRING, &value1, error)))
 	{
 		goto _error;
 	}
 	value1.val_string = name;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_get, 2, J_DB_TYPE_STRING, &value1, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 2, J_DB_TYPE_STRING, &value1, error)))
 	{
 		goto _error;
 	}
@@ -699,7 +749,7 @@ _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError**
 	bson_initialized = TRUE;
 	while (TRUE)
 	{
-		if (G_UNLIKELY(!j_sql_step(stmt_schema_structure_get, &sql_found, error)))
+		if (G_UNLIKELY(!j_sql_step(prepared->stmt, &sql_found, error)))
 		{
 			goto _error;
 		}
@@ -712,11 +762,11 @@ _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError**
 		{
 			break;
 		}
-		if (G_UNLIKELY(!j_sql_column(stmt_schema_structure_get, 0, J_DB_TYPE_STRING, &value1, error)))
+		if (G_UNLIKELY(!j_sql_column(prepared->stmt, 0, J_DB_TYPE_STRING, &value1, error)))
 		{
 			goto _error;
 		}
-		if (G_UNLIKELY(!j_sql_column(stmt_schema_structure_get, 1, J_DB_TYPE_UINT32, &value2, error)))
+		if (G_UNLIKELY(!j_sql_column(prepared->stmt, 1, J_DB_TYPE_UINT32, &value2, error)))
 		{
 			goto _error;
 		}
@@ -730,13 +780,13 @@ _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError**
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_SCHEMA_NOT_FOUND, "schema not found");
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_reset(stmt_schema_structure_get, error)))
+	if (G_UNLIKELY(!j_sql_reset(prepared->stmt, error)))
 	{
 		goto _error;
 	}
 	return TRUE;
 _error:
-	if (G_UNLIKELY(!j_sql_reset(stmt_schema_structure_get, NULL)))
+	if (G_UNLIKELY(!j_sql_reset(prepared->stmt, NULL)))
 	{
 		goto _error2;
 	}
@@ -768,10 +818,24 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	JDBTypeValue value;
 	JSqlBatch* batch = _batch;
 	GString* sql = g_string_new(NULL);
+	JSqlCacheSQLPrepared* prepared = NULL;
 
 	g_return_val_if_fail(name != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 
+	prepared = getCachePrepared(batch->namespace, name, "_schema_delete", error);
+	if (G_UNLIKELY(!prepared))
+	{
+		goto _error;
+	}
+	if (!prepared->initialized)
+	{
+		if (G_UNLIKELY(!j_sql_prepare("DELETE FROM schema_structure WHERE namespace=?1 AND name=?2", &prepared->stmt, error)))
+		{
+			goto _error;
+		}
+		prepared->initialized = TRUE;
+	}
 	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
 	{
 		//no ddl in transaction - most databases wont support that - continue without any open transaction
@@ -784,16 +848,16 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	}
 	g_string_append_printf(sql, "DROP TABLE %s_%s", batch->namespace, name);
 	value.val_string = batch->namespace;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_delete, 1, J_DB_TYPE_STRING, &value, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 1, J_DB_TYPE_STRING, &value, error)))
 	{
 		goto _error;
 	}
 	value.val_string = name;
-	if (G_UNLIKELY(!j_sql_bind_value(stmt_schema_structure_delete, 2, J_DB_TYPE_STRING, &value, error)))
+	if (G_UNLIKELY(!j_sql_bind_value(prepared->stmt, 2, J_DB_TYPE_STRING, &value, error)))
 	{
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(stmt_schema_structure_delete, error)))
+	if (G_UNLIKELY(!j_sql_step_and_reset_check_done(prepared->stmt, error)))
 	{
 		goto _error;
 	}
@@ -914,7 +978,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, GErro
 	{
 		goto _error;
 	}
-	prepared = getCachePrepared(batch->namespace, name, "insert", error);
+	prepared = getCachePrepared(batch->namespace, name, "_insert", error);
 	if (G_UNLIKELY(!prepared))
 	{
 		goto _error;
@@ -1537,7 +1601,7 @@ backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GErro
 	{
 		goto _error;
 	}
-	prepared = getCachePrepared(batch->namespace, name, "delete", error);
+	prepared = getCachePrepared(batch->namespace, name, "_delete", error);
 	if (G_UNLIKELY(!prepared))
 	{
 		goto _error;

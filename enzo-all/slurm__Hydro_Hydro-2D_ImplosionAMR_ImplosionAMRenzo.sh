@@ -7,8 +7,8 @@
 
 tmpdir=/dev/shm/warnke/julea
 
-rm -rf $tmpdir
-mkdir -p $tmpdir
+#rm -rf $tmpdir
+#mkdir -p $tmpdir
 
 echo $(hostname)
 echo slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo.sh
@@ -44,6 +44,7 @@ export J_TIMER_DB="${PWD}.sqlite"
 
 ${HOME}/julea/example/a.out
 
+#gdb --args ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp
 mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
