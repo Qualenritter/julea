@@ -497,7 +497,11 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	{
 		goto _error;
 	}
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	if (found_index)
 	{
 		i = 0;
@@ -560,7 +564,11 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 			{
 				goto _error;
 			}
-			g_string_free(sql, TRUE);
+			if (sql)
+			{
+				g_string_free(sql, TRUE);
+				sql = NULL;
+			}
 			i++;
 		}
 	}
@@ -647,11 +655,14 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 	}
 	return TRUE;
 _error:
-	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
+	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
 	{
 		goto _error;
 	}
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+	}
 	return FALSE;
 }
 static gboolean
@@ -790,18 +801,26 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	{
 		goto _error;
 	}
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
 	{
 		goto _error;
 	}
 	return TRUE;
 _error:
-	g_string_free(sql, TRUE);
-	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
+	if (sql)
 	{
-		goto _error;
+		g_string_free(sql, TRUE);
 	}
+	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
+	{
+		goto _error2;
+	}
+_error2:
 	return FALSE;
 }
 static gboolean
@@ -1302,11 +1321,18 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no more elements");
 		goto _error;
 	}
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	*iterator = iteratorOut;
 	return TRUE;
 _error:
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+	}
 	freeJSqlIterator(iteratorOut);
 	return FALSE;
 }
@@ -1467,14 +1493,20 @@ backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_
 		}
 	}
 	if (sql)
+	{
 		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	if (variables_index)
 		g_hash_table_destroy(variables_index);
 	freeJSqlIterator(iterator);
 	return TRUE;
 _error:
 	if (sql)
+	{
 		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	if (variables_index)
 		g_hash_table_destroy(variables_index);
 	freeJSqlIterator(iterator);
@@ -1695,14 +1727,22 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 		}
 	}
 	*iterator = prepared;
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	if (schema_initialized)
 	{
 		j_bson_destroy(&schema);
 	}
 	return TRUE;
 _error:
-	g_string_free(sql, TRUE);
+	if (sql)
+	{
+		g_string_free(sql, TRUE);
+		sql = NULL;
+	}
 	if (schema_initialized)
 	{
 		j_bson_destroy(&schema);

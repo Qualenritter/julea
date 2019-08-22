@@ -229,6 +229,7 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	}
 	return object;
 _error:
+	g_debug("file create error %s", name);
 	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
 	return NULL;
@@ -284,6 +285,7 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	return object;
 _error:
+	g_debug("file open error %s", name);
 	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
 	return NULL;

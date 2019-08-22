@@ -149,6 +149,8 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 }
 
 #include <sqlite3.h>
+#include <sys/types.h>
+#include <unistd.h>
 struct H5VL_julea_db_timer
 {
 	GTimer* timer;
@@ -235,17 +237,17 @@ H5VL_julea_db_timer_new(const char* name)
 static void
 H5VL_julea_db_timer_init(void)
 {
+	char buf[100];
 	if (global_timer)
 		return;
 	printf("H5VL_julea_db_timer_init");
-	if (G_UNLIKELY(sqlite3_open(g_getenv("J_TIMER_DB"), &backend_db) != SQLITE_OK))
+	snprintf(buf, sizeof(buf), "%s%d", g_getenv("J_TIMER_DB"), getpid());
+	if (G_UNLIKELY(sqlite3_open(buf, &backend_db) != SQLITE_OK))
 	{
-		g_debug("a");
 		j_goto_error();
 	}
 	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name TEXT UNIQUE, count INTEGER, timer REAL);", NULL))
 	{
-		g_debug("b");
 		j_goto_error();
 	}
 	global_timer = H5VL_julea_db_timer_new("total");

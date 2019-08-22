@@ -20,7 +20,12 @@ export G_MESSAGES_DEBUG=all
 
 cat ${HOME}/.config/julea/julea-$(hostname)
 
-#${HOME}/julea/build-hdf-julea/server/julea-server >> ${J_TIMER_DB_RUN}.out &
+export ASAN_OPTIONS=fast_unwind_on_malloc=0
+                export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
+                export G_MESSAGES_DEBUG=all
+                export G_SLICE=always-malloc
+               
+gdb ${HOME}/julea/build-hdf-julea/server/julea-server
 
 sleep 1s
 
@@ -42,9 +47,7 @@ export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="${HOME}/julea/slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo"
 export J_TIMER_DB="${PWD}.sqlite"
 
-${HOME}/julea/example/a.out
-
-mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
+#mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 
