@@ -25,11 +25,12 @@ export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB="${PWD}.sqlite"
-#export G_MESSAGES_DEBUG=all
+export G_MESSAGES_DEBUG=all
 
 echo ${PWD} >> ${J_TIMER_DB_RUN}.out
 echo n_cpus $n_cpus >> ${J_TIMER_DB_RUN}.out
 echo parameterfile $parameterfile >> ${J_TIMER_DB_RUN}.out
 
-mpirun -np n_cpus ${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
+mpirun -np ${n_cpus} ${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
+#${HOME}/enzo-dev/src/enzo/enzo.exe -r $parameterfile >> ${J_TIMER_DB_RUN}.out
 ) &
