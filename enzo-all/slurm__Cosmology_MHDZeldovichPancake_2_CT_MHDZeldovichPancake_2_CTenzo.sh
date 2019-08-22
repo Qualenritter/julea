@@ -41,8 +41,9 @@ echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_
 echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp
 
+${HOME}/julea/example/a.out
 
-${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp >> ${J_TIMER_DB_RUN}.out
+mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Cosmology/MHDZeldovichPancake_2_CT/MHDZeldovichPancake_2_CT.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 

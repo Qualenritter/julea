@@ -41,8 +41,9 @@ echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ValidatedNonlinea
 echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ValidatedNonlinearKelvinHelmholtz/2D-LongKH-AMR.enzo.tmp
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ValidatedNonlinearKelvinHelmholtz/2D-LongKH-AMR.enzo.tmp
 
+${HOME}/julea/example/a.out
 
-${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ValidatedNonlinearKelvinHelmholtz/2D-LongKH-AMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
+mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ValidatedNonlinearKelvinHelmholtz/2D-LongKH-AMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 

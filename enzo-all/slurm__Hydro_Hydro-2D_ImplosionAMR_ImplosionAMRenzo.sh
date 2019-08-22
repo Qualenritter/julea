@@ -7,8 +7,8 @@
 
 tmpdir=/dev/shm/warnke/julea
 
-#rm -rf $tmpdir
-#mkdir -p $tmpdir
+rm -rf $tmpdir
+mkdir -p $tmpdir
 
 echo $(hostname)
 echo slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo.sh
@@ -16,11 +16,15 @@ echo $tmpdir
 
 export LD_LIBRARY_PATH=${HOME}/julea/prefix-hdf-julea/lib/:$LD_LIBRARY_PATH
 export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
-export G_MESSAGES_DEBUG=all
+export HDF5_VOL_JULEA=1
+export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
+export J_TIMER_DB_RUN="${HOME}/julea/slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo"
+export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo.sqlite"
+#export G_MESSAGES_DEBUG=all
 
 cat ${HOME}/.config/julea/julea-$(hostname)
 
-#${HOME}/julea/build-hdf-julea/server/julea-server >> ${J_TIMER_DB_RUN}.out &
+${HOME}/julea/build-hdf-julea/server/julea-server &
 
 sleep 1s
 
@@ -37,14 +41,8 @@ echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/Impl
 echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp
 
-export HDF5_VOL_JULEA=1
-export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
-export J_TIMER_DB_RUN="${HOME}/julea/slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo"
-export J_TIMER_DB="${PWD}.sqlite"
-
 ${HOME}/julea/example/a.out
 
-#gdb --args ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp
 mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait

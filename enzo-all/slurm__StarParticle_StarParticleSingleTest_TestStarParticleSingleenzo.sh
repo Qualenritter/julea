@@ -41,8 +41,9 @@ echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleT
 echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleTest/TestStarParticleSingle.enzo.tmp
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleTest/TestStarParticleSingle.enzo.tmp
 
+${HOME}/julea/example/a.out
 
-${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleTest/TestStarParticleSingle.enzo.tmp >> ${J_TIMER_DB_RUN}.out
+mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleTest/TestStarParticleSingle.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 
 wait
 
