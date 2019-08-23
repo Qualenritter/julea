@@ -92,8 +92,9 @@ static GThreadPool* j_thread_pool = NULL;
  * \param data A background operations.
  * \param user_data User data.
  **/
-static void
-j_background_operation_thread(gpointer data, gpointer user_data)
+static
+void
+j_background_operation_thread (gpointer data, gpointer user_data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -119,7 +120,7 @@ j_background_operation_thread(gpointer data, gpointer user_data)
  * \endcode
  **/
 void
-j_background_operation_init(guint count)
+j_background_operation_init (guint count)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -144,7 +145,7 @@ j_background_operation_init(guint count)
  * \endcode
  **/
 void
-j_background_operation_fini(void)
+j_background_operation_fini (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -159,7 +160,7 @@ j_background_operation_fini(void)
 }
 
 guint
-j_background_operation_get_num_threads(void)
+j_background_operation_get_num_threads (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -188,7 +189,7 @@ j_background_operation_get_num_threads(void)
  * \return A new background operation. Should be freed with j_background_operation_unref().
  **/
 JBackgroundOperation*
-j_background_operation_new(JBackgroundOperationFunc func, gpointer data)
+j_background_operation_new (JBackgroundOperationFunc func, gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -225,7 +226,7 @@ j_background_operation_new(JBackgroundOperationFunc func, gpointer data)
  * \return #background_operation.
  **/
 JBackgroundOperation*
-j_background_operation_ref(JBackgroundOperation* background_operation)
+j_background_operation_ref (JBackgroundOperation* background_operation)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -249,11 +250,13 @@ j_background_operation_ref(JBackgroundOperation* background_operation)
  * \param background_operation A background operation.
  **/
 void
-j_background_operation_unref(JBackgroundOperation* background_operation)
+j_background_operation_unref (JBackgroundOperation* background_operation)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (background_operation && g_atomic_int_dec_and_test(&(background_operation->ref_count)))
+	g_return_if_fail(background_operation != NULL);
+
+	if (g_atomic_int_dec_and_test(&(background_operation->ref_count)))
 	{
 		g_cond_clear(background_operation->cond);
 		g_mutex_clear(background_operation->mutex);
@@ -276,7 +279,7 @@ j_background_operation_unref(JBackgroundOperation* background_operation)
  * \return The return value of the function given to j_background_operation_new().
  **/
 gpointer
-j_background_operation_wait(JBackgroundOperation* background_operation)
+j_background_operation_wait (JBackgroundOperation* background_operation)
 {
 	J_TRACE_FUNCTION(NULL);
 
