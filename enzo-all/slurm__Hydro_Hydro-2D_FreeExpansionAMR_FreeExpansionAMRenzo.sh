@@ -3,7 +3,7 @@
 #SBATCH --partition=west
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --time=01:30:00
+#SBATCH --time=02:00:00
 
 tmpdir=/dev/shm/warnke/julea
 
@@ -35,8 +35,6 @@ cd $tmpdir
 echo $PWD
 ls -la
 
-rm $J_TIMER_DB ${J_TIMER_DB_RUN}.out
-
 cat ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/FreeExpansionAMR/FreeExpansionAMR.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/FreeExpansionAMR/FreeExpansionAMR.enzo.tmp
 echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/FreeExpansionAMR/FreeExpansionAMR.enzo.tmp
 echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/FreeExpansionAMR/FreeExpansionAMR.enzo.tmp
@@ -44,13 +42,18 @@ echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro
 
 ${HOME}/julea/example/a.out
 
-truncate -s0 ${J_TIMER_DB_RUN}.parameter
+rm $J_TIMER_DB ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
+
+ENZO_TOTAL=0
+ENZO_START=$(date +%s.%N)
 (mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
 ENZO_PID=$!
 while true
 do
-	echo "wait for $ENZO_PID"
-	wait $ENZO_PID
+	echo "wait for ${ENZO_PID}"
+	wait ${ENZO_PID}
+	ENZO_END=$(date +%s.%N)
+	ENZO_TIME=$(echo "${ENZO_END} - ${ENZO_START}" | bc)
 	echo "going to restart"
 	for f in $(find "$(dirname ${J_TIMER_DB})/" -maxdepth 1 -name "$(echo "${J_TIMER_DB}*" | sed "s-.*/--g")")
 	do
@@ -64,20 +67,25 @@ do
 				a=$(cut -d',' -f1 <<<"$r")
 				b=$(cut -d',' -f2 <<<"$r")
 				c=$(cut -d',' -f3 <<<"$r")
-				echo "sqlite3 ${J_TIMER_DB_RUN}.sqlite \"insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'\""
 				sqlite3 ${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'"
 			done
 			rm ${f}
 		fi
 	done
+	sqlite3 ${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,${ENZO_TIME}) on conflict(name) do update set count=count+1, timer=timer+${ENZO_TIME} where name='bash_time'"
 	echo "merged timers"
+	ENZO_TOTAL=$(echo "${ENZO_TOTAL} + ${ENZO_TIME}" | bc)
+	if (( $(echo "${ENZO_TOTAL} > 120" | bc -l) )); then
+		break
+	fi
 	parameter=$(cat ${J_TIMER_DB_RUN}.parameter | head -n 1)
-	truncate -s0 ${J_TIMER_DB_RUN}.parameter
+	rm ${J_TIMER_DB_RUN}.parameter
 	if [ -z "$parameter" ]
 	then
 		break
 	fi
 	echo "continue with ${parameter}"
+	ENZO_START=$(date +%s.%N)
 	(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out) &
 	ENZO_PID=$!
 done
