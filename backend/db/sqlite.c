@@ -363,7 +363,7 @@ backend_init(gchar const* _path)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_debug("db-backend-init %s", path);
+	g_debug("db-backend-init %s", _path);
 
 	path = g_strdup(_path);
 	return TRUE;
