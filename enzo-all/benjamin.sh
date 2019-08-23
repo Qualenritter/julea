@@ -14,7 +14,7 @@ tmpdir=/dev/shm/warnke/julea
   --db-servers="west${i}" \
   --object-backend=posix --object-component=server --object-path="\${tmpdir}/server-object" \
   --kv-backend=sqlite --kv-component=server --kv-path="\${tmpdir}/server-kv" \
-  --db-backend=sqlite --db-component=server --db-path="memory"
+  --db-backend=sqlite --db-component=server --db-path="\${tmpdir}/server-db"
 mv \${HOME}/.config/julea/julea \${HOME}/.config/julea/julea-west${i}
 sleep 0.1s
 EOF
@@ -192,8 +192,8 @@ export JULEA_CONFIG=\${HOME}/.config/julea/julea-\$(hostname)
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=\${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="\${HOME}/julea/${slurm_name}"
-export J_TIMER_DB="\${HOME}/julea/${slurm_name}.tmp.sqlite"
-#export G_MESSAGES_DEBUG=all
+export J_TIMER_DB="\$tmpdir/tmp.sqlite"
+export G_MESSAGES_DEBUG=all
 
 cat \${HOME}/.config/julea/julea-\$(hostname)
 
