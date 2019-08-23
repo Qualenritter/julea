@@ -61,6 +61,8 @@ backend_file_unref(gpointer data)
 {
 	JBackendFile* file = data;
 
+	g_return_if_fail(file != NULL);
+
 	G_LOCK(jd_backend_file_cache);
 
 	if (file && g_atomic_int_dec_and_test(&(file->ref_count)))
