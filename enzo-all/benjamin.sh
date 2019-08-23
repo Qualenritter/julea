@@ -248,7 +248,7 @@ do
 	done
 	sqlite3 \${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,\${ENZO_END} - \${ENZO_START}) on conflict(name) do update set count=count + 1, timer=timer + \${ENZO_END} - \${ENZO_START} where name='bash_time'"
 	echo "merged timers"
-	ENZO_TOTAL=\$(echo\$(sqlite3 \${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'") | sed "s/\..*//g")
+	ENZO_TOTAL=\$(echo \$(sqlite3 \${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'") | sed "s/\..*//g")
 	if [ "\${ENZO_TOTAL}" -gt "120" ]
 	then
 		break
