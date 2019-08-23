@@ -40,9 +40,11 @@ echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleT
 echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleTest/TestStarParticleSingle.enzo.tmp
 echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./StarParticle/StarParticleSingleTest/TestStarParticleSingle.enzo.tmp
 
+rm ${J_TIMER_DB}*
+
 ${HOME}/julea/example/a.out
 
-rm $J_TIMER_DB* ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
+rm ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 
 ENZO_START=$(date +%s.%N)
 (mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
