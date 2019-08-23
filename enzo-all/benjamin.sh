@@ -170,9 +170,11 @@ if [ "$slurm_name" == "slurm__GravitySolver_MaximumGravityRefinementTest_Maximum
 if [ "$slurm_name" == "slurm__GravitySolver_BinaryCollapseMHDCT_BinaryCollapseenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__GravitySolver_BinaryCollapse_BinaryCollapseenzo" ]; then continue;fi
 slurm_name_backup=${slurm_name}
+for exec_limit in 100 300 100000
+do
 for use_julea in 0 1
 do
-slurm_name=${slurm_name_backup}-${use_julea}
+slurm_name=${slurm_name_backup}-${use_julea}-${exec_limit}
 cat > ${slurm_name}.sh << EOF
 #!/bin/bash
 #SBATCH -J enzo
@@ -218,7 +220,7 @@ echo "ResubmitCommand = ./run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tm
 
 \${HOME}/julea/example/a.out
 
-rm \$J_TIMER_DB \${J_TIMER_DB_RUN}.out \${J_TIMER_DB_RUN}.sqlite \${J_TIMER_DB_RUN}.parameter
+rm \$J_TIMER_DB* \${J_TIMER_DB_RUN}.out \${J_TIMER_DB_RUN}.sqlite \${J_TIMER_DB_RUN}.parameter
 
 ENZO_START=\$(date +%s.%N)
 (mpirun -np 6 \${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> \${J_TIMER_DB_RUN}.out) &
@@ -248,8 +250,13 @@ do
 	done
 	sqlite3 \${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,\${ENZO_END} - \${ENZO_START}) on conflict(name) do update set count=count + 1, timer=timer + \${ENZO_END} - \${ENZO_START} where name='bash_time'"
 	echo "merged timers"
-	ENZO_TOTAL=\$(echo \$(sqlite3 \${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'") | sed "s/\..*//g")
-	if [ "\${ENZO_TOTAL}" -gt "120" ]
+	ENZO_TOTAL_TIME=\$(echo \$(sqlite3 \${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'") | sed "s/\..*//g")
+	ENZO_TOTAL_COUNT=\$(echo \$(sqlite3 \${J_TIMER_DB_RUN}.sqlite "select count from tmp where name='bash_time'") | sed "s/\..*//g")
+	if [ "\${ENZO_TOTAL_TIME}" -gt "3600" ]
+	then
+		break
+	fi
+	if [ "\${ENZO_TOTAL_COUNT}" -gt "${exec_limit}" ]
 	then
 		break
 	fi
@@ -272,6 +279,7 @@ du -sh .
 EOF
 chmod +x ${slurm_name}.sh
 echo "sbatch \${HOME}/julea/enzo-all/${slurm_name}.sh" >> slurm_all.sh
+done
 done
 done
 chmod +x slurm_all.sh
