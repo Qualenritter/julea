@@ -20,7 +20,7 @@ export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="${HOME}/julea/slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo"
 export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-2D_ImplosionAMR_ImplosionAMRenzo.sqlite"
-export G_MESSAGES_DEBUG=all
+#export G_MESSAGES_DEBUG=all
 
 cat ${HOME}/.config/julea/julea-$(hostname)
 
@@ -44,10 +44,8 @@ echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro
 
 ${HOME}/julea/example/a.out
 
-#${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
-
 truncate -s0 ${J_TIMER_DB_RUN}.parameter
-(mpirun -np 2 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
+(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
 ENZO_PID=$!
 while true
 do
@@ -80,7 +78,7 @@ do
 		break
 	fi
 	echo "continue with ${parameter}"
-	(mpirun -np 2 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out) &
+	(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out) &
 	ENZO_PID=$!
 done
 echo "done"

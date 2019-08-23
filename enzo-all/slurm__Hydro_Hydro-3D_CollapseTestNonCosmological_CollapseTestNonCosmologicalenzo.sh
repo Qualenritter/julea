@@ -24,6 +24,7 @@ export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-3D_CollapseTestNonCosmologic
 
 cat ${HOME}/.config/julea/julea-$(hostname)
 
+pkill julea-server
 ${HOME}/julea/build-hdf-julea/server/julea-server &
 
 sleep 1s
@@ -43,9 +44,44 @@ echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro
 
 ${HOME}/julea/example/a.out
 
-mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-3D/CollapseTestNonCosmological/CollapseTestNonCosmological.enzo.tmp >> ${J_TIMER_DB_RUN}.out
-
-wait
+truncate -s0 ${J_TIMER_DB_RUN}.parameter
+(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
+ENZO_PID=$!
+while true
+do
+	echo "wait for $ENZO_PID"
+	wait $ENZO_PID
+	echo "going to restart"
+	for f in $(find "$(dirname ${J_TIMER_DB})/" -maxdepth 1 -name "$(echo "${J_TIMER_DB}*" | sed "s-.*/--g")")
+	do
+		echo "$f"
+		if [ ! -f ${J_TIMER_DB_RUN}.sqlite ]
+		then
+			mv $f ${J_TIMER_DB_RUN}.sqlite
+		else
+			for r in $(sqlite3 ${f} "select * from tmp;" | sed "s/|/,/g")
+			do
+				a=$(cut -d',' -f1 <<<"$r")
+				b=$(cut -d',' -f2 <<<"$r")
+				c=$(cut -d',' -f3 <<<"$r")
+				echo "sqlite3 ${J_TIMER_DB_RUN}.sqlite \"insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'\""
+				sqlite3 ${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('$a',$b,$c) on conflict(name) do update set count=count+$b, timer=timer+$c where name='$a'"
+			done
+			rm ${f}
+		fi
+	done
+	echo "merged timers"
+	parameter=$(cat ${J_TIMER_DB_RUN}.parameter | head -n 1)
+	truncate -s0 ${J_TIMER_DB_RUN}.parameter
+	if [ -z "$parameter" ]
+	then
+		break
+	fi
+	echo "continue with ${parameter}"
+	(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out) &
+	ENZO_PID=$!
+done
+echo "done"
 
 
 du -sh *
