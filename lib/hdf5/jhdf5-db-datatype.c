@@ -450,12 +450,14 @@ _check_type_exist:
 	{
 		j_goto_error();
 	}
-if((clazz != H5T_FLOAT)){
-	i = H5Tget_sign(*type_id);
-	if (!j_db_entry_set_field(entry, "type_sign", &i, sizeof(i), &error))
+	if ((clazz != H5T_FLOAT))
 	{
-		j_goto_error();
-	}}
+		i = H5Tget_sign(*type_id);
+		if (!j_db_entry_set_field(entry, "type_sign", &i, sizeof(i), &error))
+		{
+			j_goto_error();
+		}
+	}
 	if ((clazz != H5T_INTEGER))
 	{
 		i = H5Tget_ebias(*type_id);

@@ -71,7 +71,7 @@ j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GError** error)
 	}
 	return TRUE;
 _error:
-	j_sql_finalize(backend_db,*stmt, NULL);
+	j_sql_finalize(backend_db, *stmt, NULL);
 	return FALSE;
 }
 
@@ -238,7 +238,7 @@ j_sql_exec(sqlite3* backend_db, const char* sql, GError** error)
 
 	sqlite3_stmt* stmt;
 
-	if (G_UNLIKELY(!j_sql_prepare(backend_db,sql, &stmt, error)))
+	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, error)))
 	{
 		goto _error;
 	}
@@ -247,13 +247,13 @@ j_sql_exec(sqlite3* backend_db, const char* sql, GError** error)
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_finalize(backend_db,stmt, error)))
+	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
 	{
 		goto _error;
 	}
 	return TRUE;
 _error:
-	if (G_UNLIKELY(!j_sql_finalize(backend_db,stmt, NULL)))
+	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, NULL)))
 	{
 		goto _error2;
 	}
@@ -296,17 +296,17 @@ j_sql_step_and_reset_check_done(sqlite3* backend_db, void* _stmt, GError** error
 
 	gboolean sql_found;
 
-	if (G_UNLIKELY(!j_sql_step(backend_db,_stmt, &sql_found, error)))
+	if (G_UNLIKELY(!j_sql_step(backend_db, _stmt, &sql_found, error)))
 	{
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_reset(backend_db,_stmt, error)))
+	if (G_UNLIKELY(!j_sql_reset(backend_db, _stmt, error)))
 	{
 		goto _error;
 	}
 	return TRUE;
 _error:
-	if (G_UNLIKELY(!j_sql_reset(backend_db,_stmt, NULL)))
+	if (G_UNLIKELY(!j_sql_reset(backend_db, _stmt, NULL)))
 	{
 		goto _error2;
 	}

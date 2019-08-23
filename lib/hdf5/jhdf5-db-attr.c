@@ -490,7 +490,7 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_read = 0;
-data_size = object->dataset.datatype->datatype.type_total_size;
+	data_size = object->dataset.datatype->datatype.type_total_size;
 	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_read(object->attr.object, buf, data_size, 0, &bytes_read, batch);
 	if (!j_batch_execute(batch))
@@ -517,7 +517,7 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	bytes_written = 0;
-data_size = object->dataset.datatype->datatype.type_total_size;
+	data_size = object->dataset.datatype->datatype.type_total_size;
 	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_write(object->attr.object, buf, data_size, 0, &bytes_written, batch);
 	if (!j_batch_execute(batch))

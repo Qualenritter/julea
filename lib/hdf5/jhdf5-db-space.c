@@ -184,7 +184,7 @@ H5VL_julea_db_space_decode(void* backend_id, guint64 backend_id_len)
 {
 	J_TRACE_FUNCTION(NULL);
 
-g_autofree guint32* tmp_uint32=NULL;
+	g_autofree guint32* tmp_uint32 = NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
@@ -221,11 +221,11 @@ g_autofree guint32* tmp_uint32=NULL;
 	{
 		j_goto_error();
 	}
-	if (!j_db_iterator_get_field(iterator, "dim_total_count", &type,(gpointer*)&tmp_uint32, &length, &error))
-        {
-                j_goto_error();
-        }
-object->space.dim_total_count=*tmp_uint32;
+	if (!j_db_iterator_get_field(iterator, "dim_total_count", &type, (gpointer*)&tmp_uint32, &length, &error))
+	{
+		j_goto_error();
+	}
+	object->space.dim_total_count = *tmp_uint32;
 	object->space.hdf5_id = H5Sdecode(object->space.data);
 	return object;
 _error:
@@ -337,7 +337,7 @@ _done:
 	if (loop)
 	{
 		//new space defined
-		for (i = 0; i <(guint) stored_ndims; i++)
+		for (i = 0; i < (guint)stored_ndims; i++)
 		{
 			j_db_entry_unref(entry);
 			entry = NULL;

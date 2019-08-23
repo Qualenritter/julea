@@ -377,7 +377,7 @@ backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _ba
 	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
 		G_LOCK(sql_backend_lock);
 
-	batch = *_batch = g_new(JSqlBatch,1);
+	batch = *_batch = g_new(JSqlBatch, 1);
 	batch->namespace = namespace;
 	batch->semantics = j_semantics_ref(semantics);
 	batch->open = FALSE;
