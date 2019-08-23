@@ -571,10 +571,7 @@ j_distributed_object_delete_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
-<<<<<<< HEAD
-=======
 	// FIXME check return value for messages
->>>>>>> master
 	gboolean ret = TRUE;
 
 	JBackend* object_backend;
@@ -671,10 +668,7 @@ j_distributed_object_read_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
-<<<<<<< HEAD
-=======
 	// FIXME check return value for messages
->>>>>>> master
 	gboolean ret = TRUE;
 
 	JBackend* object_backend;
@@ -848,10 +842,7 @@ j_distributed_object_write_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
-<<<<<<< HEAD
-=======
 	// FIXME check return value for messages
->>>>>>> master
 	gboolean ret = TRUE;
 
 	JBackend* object_backend;
@@ -1026,10 +1017,7 @@ j_distributed_object_status_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
-<<<<<<< HEAD
-=======
 	// FIXME check return value for messages
->>>>>>> master
 	gboolean ret = TRUE;
 
 	JBackend* object_backend;
