@@ -43,9 +43,13 @@ G_END_DECLS
 
 G_BEGIN_DECLS
 
-JConfiguration* j_configuration(void);
+// FIXME copy and use GLib's G_DEFINE_CONSTRUCTOR/DESTRUCTOR
+void __attribute__((constructor)) j_init (void);
+void __attribute__((destructor)) j_fini (void);
 
-JBackend* j_backend(JBackendType);
+JConfiguration* j_configuration (void);
+
+JBackend* j_backend (JBackendType);
 
 G_END_DECLS
 

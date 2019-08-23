@@ -93,7 +93,8 @@ struct JItem
 		 * Stored in microseconds since the Epoch.
 		 */
 		gint64 modification_time;
-	} status;
+	}
+	status;
 
 	/**
 	 * The parent collection.
@@ -120,7 +121,7 @@ struct JItem
  * \return #item.
  **/
 JItem*
-j_item_ref(JItem* item)
+j_item_ref (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -141,11 +142,13 @@ j_item_ref(JItem* item)
  * \param item An item.
  **/
 void
-j_item_unref(JItem* item)
+j_item_unref (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (item && g_atomic_int_dec_and_test(&(item->ref_count)))
+	g_return_if_fail(item != NULL);
+
+	if (g_atomic_int_dec_and_test(&(item->ref_count)))
 	{
 		if (item->kv != NULL)
 		{
@@ -182,7 +185,7 @@ j_item_unref(JItem* item)
  * \return The name.
  **/
 gchar const*
-j_item_get_name(JItem* item)
+j_item_get_name (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -205,7 +208,7 @@ j_item_get_name(JItem* item)
  * \return A new item. Should be freed with j_item_unref().
  **/
 JItem*
-j_item_create(JCollection* collection, gchar const* name, JDistribution* distribution, JBatch* batch)
+j_item_create (JCollection* collection, gchar const* name, JDistribution* distribution, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -231,8 +234,9 @@ j_item_create(JCollection* collection, gchar const* name, JDistribution* distrib
 	return item;
 }
 
-static void
-j_item_get_callback(gpointer value, guint32 len, gpointer data_)
+static
+void
+j_item_get_callback (gpointer value, guint32 len, gpointer data_)
 {
 	JItemGetData* data = data_;
 	bson_t tmp[1];
@@ -258,7 +262,7 @@ j_item_get_callback(gpointer value, guint32 len, gpointer data_)
  * \param batch      A batch.
  **/
 void
-j_item_get(JCollection* collection, JItem** item, gchar const* name, JBatch* batch)
+j_item_get (JCollection* collection, JItem** item, gchar const* name, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -290,7 +294,7 @@ j_item_get(JCollection* collection, JItem** item, gchar const* name, JBatch* bat
  * \param batch      A batch.
  **/
 void
-j_item_delete(JItem* item, JBatch* batch)
+j_item_delete (JItem* item, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -315,7 +319,7 @@ j_item_delete(JItem* item, JBatch* batch)
  * \param batch      A batch.
  **/
 void
-j_item_read(JItem* item, gpointer data, guint64 length, guint64 offset, guint64* bytes_read, JBatch* batch)
+j_item_read (JItem* item, gpointer data, guint64 length, guint64 offset, guint64* bytes_read, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -343,7 +347,7 @@ j_item_read(JItem* item, gpointer data, guint64 length, guint64 offset, guint64*
  * \param batch         A batch.
  **/
 void
-j_item_write(JItem* item, gconstpointer data, guint64 length, guint64 offset, guint64* bytes_written, JBatch* batch)
+j_item_write (JItem* item, gconstpointer data, guint64 length, guint64 offset, guint64* bytes_written, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -365,7 +369,7 @@ j_item_write(JItem* item, gconstpointer data, guint64 length, guint64 offset, gu
  * \param batch     A batch.
  **/
 void
-j_item_get_status(JItem* item, JBatch* batch)
+j_item_get_status (JItem* item, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -386,7 +390,7 @@ j_item_get_status(JItem* item, JBatch* batch)
  * \return A size.
  **/
 guint64
-j_item_get_size(JItem* item)
+j_item_get_size (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -406,7 +410,7 @@ j_item_get_size(JItem* item)
  * \return A modification time.
  **/
 gint64
-j_item_get_modification_time(JItem* item)
+j_item_get_modification_time (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -433,7 +437,7 @@ j_item_get_modification_time(JItem* item)
  * \return An access size.
  */
 guint64
-j_item_get_optimal_access_size(JItem* item)
+j_item_get_optimal_access_size (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -460,7 +464,7 @@ j_item_get_optimal_access_size(JItem* item)
  * \return A new item. Should be freed with j_item_unref().
  **/
 JItem*
-j_item_new(JCollection* collection, gchar const* name, JDistribution* distribution)
+j_item_new (JCollection* collection, gchar const* name, JDistribution* distribution)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -512,7 +516,7 @@ j_item_new(JCollection* collection, gchar const* name, JDistribution* distributi
  * \return A new item. Should be freed with j_item_unref().
  **/
 JItem*
-j_item_new_from_bson(JCollection* collection, bson_t const* b)
+j_item_new_from_bson (JCollection* collection, bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -554,7 +558,7 @@ j_item_new_from_bson(JCollection* collection, bson_t const* b)
  * \return A collection.
  **/
 JCollection*
-j_item_get_collection(JItem* item)
+j_item_get_collection (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -576,7 +580,7 @@ j_item_get_collection(JItem* item)
  * \return A collection.
  **/
 JCredentials*
-j_item_get_credentials(JItem* item)
+j_item_get_credentials (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -599,7 +603,7 @@ j_item_get_credentials(JItem* item)
  * \return A new BSON object. Should be freed with g_slice_free().
  **/
 bson_t*
-j_item_serialize(JItem* item, JSemantics* semantics)
+j_item_serialize (JItem* item, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -642,8 +646,9 @@ j_item_serialize(JItem* item, JSemantics* semantics)
 	return b;
 }
 
-static void
-j_item_deserialize_status(JItem* item, bson_t const* b)
+static
+void
+j_item_deserialize_status (JItem* item, bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -685,7 +690,7 @@ j_item_deserialize_status(JItem* item, bson_t const* b)
  * \param b    A BSON object.
  **/
 void
-j_item_deserialize(JItem* item, bson_t const* b)
+j_item_deserialize (JItem* item, bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -765,7 +770,7 @@ j_item_deserialize(JItem* item, bson_t const* b)
  * \return An ID.
  **/
 bson_oid_t const*
-j_item_get_id(JItem* item)
+j_item_get_id (JItem* item)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -784,7 +789,7 @@ j_item_get_id(JItem* item)
  * \param modification_time A modification time.
  **/
 void
-j_item_set_modification_time(JItem* item, gint64 modification_time)
+j_item_set_modification_time (JItem* item, gint64 modification_time)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -804,7 +809,7 @@ j_item_set_modification_time(JItem* item, gint64 modification_time)
  * \param size A size.
  **/
 void
-j_item_set_size(JItem* item, guint64 size)
+j_item_set_size (JItem* item, guint64 size)
 {
 	J_TRACE_FUNCTION(NULL);
 

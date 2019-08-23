@@ -73,7 +73,8 @@ struct JConfiguration
 		 * The number of db servers.
 		 */
 		guint32 db_len;
-	} servers;
+	}
+	servers;
 
 	/**
 	 * The object configuration.
@@ -94,7 +95,8 @@ struct JConfiguration
 		 * The path.
 		 */
 		gchar* path;
-	} object;
+	}
+	object;
 
 	/**
 	 * The kv configuration.
@@ -115,7 +117,8 @@ struct JConfiguration
 		 * The path.
 		 */
 		gchar* path;
-	} kv;
+	}
+	kv;
 
 	/**
 	 * The db configuration.
@@ -157,7 +160,7 @@ struct JConfiguration
  * \return A new configuration. Should be freed with j_configuration_unref().
  **/
 JConfiguration*
-j_configuration_new(void)
+j_configuration_new (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -246,7 +249,7 @@ out:
  * \return A new configuration. Should be freed with j_configuration_unref().
  **/
 JConfiguration*
-j_configuration_new_for_data(GKeyFile* key_file)
+j_configuration_new_for_data (GKeyFile* key_file)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -285,7 +288,18 @@ j_configuration_new_for_data(GKeyFile* key_file)
 	db_component = g_key_file_get_string(key_file, "db", "component", NULL);
 	db_path = g_key_file_get_string(key_file, "db", "path", NULL);
 
-	if (servers_object == NULL || servers_object[0] == NULL || servers_kv == NULL || servers_kv[0] == NULL || servers_db == NULL || servers_db[0] == NULL || object_backend == NULL || object_component == NULL || object_path == NULL || kv_backend == NULL || kv_component == NULL || kv_path == NULL || db_backend == NULL || db_component == NULL || db_path == NULL)
+	if (servers_object == NULL || servers_object[0] == NULL
+	    || servers_kv == NULL || servers_kv[0] == NULL
+	    || servers_db == NULL || servers_db[0] == NULL
+	    || object_backend == NULL
+	    || object_component == NULL
+	    || object_path == NULL
+	    || kv_backend == NULL
+	    || kv_component == NULL
+	    || kv_path == NULL
+	    || db_backend == NULL
+	    || db_component == NULL
+	    || db_path == NULL)
 	{
 		g_free(db_backend);
 		g_free(db_component);
@@ -356,7 +370,7 @@ j_configuration_new_for_data(GKeyFile* key_file)
  * \return #configuration.
  **/
 JConfiguration*
-j_configuration_ref(JConfiguration* configuration)
+j_configuration_ref (JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -377,7 +391,7 @@ j_configuration_ref(JConfiguration* configuration)
  * \param configuration A configuration.
  **/
 void
-j_configuration_unref(JConfiguration* configuration)
+j_configuration_unref (JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -406,7 +420,7 @@ j_configuration_unref(JConfiguration* configuration)
 }
 
 gchar const*
-j_configuration_get_server(JConfiguration* configuration, JBackendType backend, guint32 index)
+j_configuration_get_server (JConfiguration* configuration, JBackendType backend, guint32 index)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -414,24 +428,24 @@ j_configuration_get_server(JConfiguration* configuration, JBackendType backend, 
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		g_return_val_if_fail(index < configuration->servers.object_len, NULL);
-		return configuration->servers.object[index];
-	case J_BACKEND_TYPE_KV:
-		g_return_val_if_fail(index < configuration->servers.kv_len, NULL);
-		return configuration->servers.kv[index];
-	case J_BACKEND_TYPE_DB:
-		g_return_val_if_fail(index < configuration->servers.db_len, NULL);
-		return configuration->servers.db[index];
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			g_return_val_if_fail(index < configuration->servers.object_len, NULL);
+			return configuration->servers.object[index];
+		case J_BACKEND_TYPE_KV:
+			g_return_val_if_fail(index < configuration->servers.kv_len, NULL);
+			return configuration->servers.kv[index];
+		case J_BACKEND_TYPE_DB:
+			g_return_val_if_fail(index < configuration->servers.db_len, NULL);
+			return configuration->servers.db[index];
+		default:
+			g_assert_not_reached();
 	}
 
 	return NULL;
 }
 
 guint32
-j_configuration_get_server_count(JConfiguration* configuration, JBackendType backend)
+j_configuration_get_server_count (JConfiguration* configuration, JBackendType backend)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -439,21 +453,21 @@ j_configuration_get_server_count(JConfiguration* configuration, JBackendType bac
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		return configuration->servers.object_len;
-	case J_BACKEND_TYPE_KV:
-		return configuration->servers.kv_len;
-	case J_BACKEND_TYPE_DB:
-		return configuration->servers.db_len;
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			return configuration->servers.object_len;
+		case J_BACKEND_TYPE_KV:
+			return configuration->servers.kv_len;
+		case J_BACKEND_TYPE_DB:
+			return configuration->servers.db_len;
+		default:
+			g_assert_not_reached();
 	}
 
 	return 0;
 }
 
 gchar const*
-j_configuration_get_backend(JConfiguration* configuration, JBackendType backend)
+j_configuration_get_backend (JConfiguration* configuration, JBackendType backend)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -461,21 +475,21 @@ j_configuration_get_backend(JConfiguration* configuration, JBackendType backend)
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		return configuration->object.backend;
-	case J_BACKEND_TYPE_KV:
-		return configuration->kv.backend;
-	case J_BACKEND_TYPE_DB:
-		return configuration->db.backend;
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			return configuration->object.backend;
+		case J_BACKEND_TYPE_KV:
+			return configuration->kv.backend;
+		case J_BACKEND_TYPE_DB:
+			return configuration->db.backend;
+		default:
+			g_assert_not_reached();
 	}
 
 	return NULL;
 }
 
 gchar const*
-j_configuration_get_backend_component(JConfiguration* configuration, JBackendType backend)
+j_configuration_get_backend_component (JConfiguration* configuration, JBackendType backend)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -483,21 +497,21 @@ j_configuration_get_backend_component(JConfiguration* configuration, JBackendTyp
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		return configuration->object.component;
-	case J_BACKEND_TYPE_KV:
-		return configuration->kv.component;
-	case J_BACKEND_TYPE_DB:
-		return configuration->db.component;
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			return configuration->object.component;
+		case J_BACKEND_TYPE_KV:
+			return configuration->kv.component;
+		case J_BACKEND_TYPE_DB:
+			return configuration->db.component;
+		default:
+			g_assert_not_reached();
 	}
 
 	return NULL;
 }
 
 gchar const*
-j_configuration_get_backend_path(JConfiguration* configuration, JBackendType backend)
+j_configuration_get_backend_path (JConfiguration* configuration, JBackendType backend)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -505,21 +519,21 @@ j_configuration_get_backend_path(JConfiguration* configuration, JBackendType bac
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		return configuration->object.path;
-	case J_BACKEND_TYPE_KV:
-		return configuration->kv.path;
-	case J_BACKEND_TYPE_DB:
-		return configuration->db.path;
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			return configuration->object.path;
+		case J_BACKEND_TYPE_KV:
+			return configuration->kv.path;
+		case J_BACKEND_TYPE_DB:
+			return configuration->db.path;
+		default:
+			g_assert_not_reached();
 	}
 
 	return NULL;
 }
 
 guint64
-j_configuration_get_max_operation_size(JConfiguration* configuration)
+j_configuration_get_max_operation_size (JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -529,7 +543,7 @@ j_configuration_get_max_operation_size(JConfiguration* configuration)
 }
 
 guint32
-j_configuration_get_max_connections(JConfiguration* configuration)
+j_configuration_get_max_connections (JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -539,7 +553,7 @@ j_configuration_get_max_connections(JConfiguration* configuration)
 }
 
 guint64
-j_configuration_get_stripe_size(JConfiguration* configuration)
+j_configuration_get_stripe_size (JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 

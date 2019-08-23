@@ -51,7 +51,7 @@ struct JCredentials
 };
 
 JCredentials*
-j_credentials_new(void)
+j_credentials_new (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -66,7 +66,7 @@ j_credentials_new(void)
 }
 
 JCredentials*
-j_credentials_ref(JCredentials* credentials)
+j_credentials_ref (JCredentials* credentials)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -78,18 +78,20 @@ j_credentials_ref(JCredentials* credentials)
 }
 
 void
-j_credentials_unref(JCredentials* credentials)
+j_credentials_unref (JCredentials* credentials)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (credentials && g_atomic_int_dec_and_test(&(credentials->ref_count)))
+	g_return_if_fail(credentials != NULL);
+
+	if (g_atomic_int_dec_and_test(&(credentials->ref_count)))
 	{
 		g_slice_free(JCredentials, credentials);
 	}
 }
 
 guint32
-j_credentials_get_user(JCredentials* credentials)
+j_credentials_get_user (JCredentials* credentials)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -99,7 +101,7 @@ j_credentials_get_user(JCredentials* credentials)
 }
 
 guint32
-j_credentials_get_group(JCredentials* credentials)
+j_credentials_get_group (JCredentials* credentials)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -123,7 +125,7 @@ j_credentials_get_group(JCredentials* credentials)
  * \return A new BSON object. Should be freed with g_slice_free().
  **/
 bson_t*
-j_credentials_serialize(JCredentials* credentials)
+j_credentials_serialize (JCredentials* credentials)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -152,7 +154,7 @@ j_credentials_serialize(JCredentials* credentials)
  * \param b           A BSON object.
  **/
 void
-j_credentials_deserialize(JCredentials* credentials, bson_t const* b)
+j_credentials_deserialize (JCredentials* credentials, bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 

@@ -82,7 +82,7 @@ struct JCollection
  * \return #collection.
  **/
 JCollection*
-j_collection_ref(JCollection* collection)
+j_collection_ref (JCollection* collection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -103,11 +103,13 @@ j_collection_ref(JCollection* collection)
  * \param collection A collection.
  **/
 void
-j_collection_unref(JCollection* collection)
+j_collection_unref (JCollection* collection)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (collection && g_atomic_int_dec_and_test(&(collection->ref_count)))
+	g_return_if_fail(collection != NULL);
+
+	if (g_atomic_int_dec_and_test(&(collection->ref_count)))
 	{
 		j_kv_unref(collection->kv);
 		j_credentials_unref(collection->credentials);
@@ -129,7 +131,7 @@ j_collection_unref(JCollection* collection)
  * \return A collection name.
  **/
 gchar const*
-j_collection_get_name(JCollection* collection)
+j_collection_get_name (JCollection* collection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -148,7 +150,7 @@ j_collection_get_name(JCollection* collection)
  * \param batch      A batch.
  **/
 JCollection*
-j_collection_create(gchar const* name, JBatch* batch)
+j_collection_create (gchar const* name, JBatch* batch)
 {
 	JCollection* collection;
 	bson_t* tmp;
@@ -171,8 +173,9 @@ end:
 	return collection;
 }
 
-static void
-j_collection_get_callback(gpointer value, guint32 len, gpointer data)
+static
+void
+j_collection_get_callback (gpointer value, guint32 len, gpointer data)
 {
 	JCollection** collection = data;
 	bson_t tmp[1];
@@ -194,7 +197,7 @@ j_collection_get_callback(gpointer value, guint32 len, gpointer data)
  * \param batch      A batch.
  **/
 void
-j_collection_get(JCollection** collection, gchar const* name, JBatch* batch)
+j_collection_get (JCollection** collection, gchar const* name, JBatch* batch)
 {
 	g_autoptr(JKV) kv = NULL;
 
@@ -215,7 +218,7 @@ j_collection_get(JCollection** collection, gchar const* name, JBatch* batch)
  * \param batch      A batch.
  **/
 void
-j_collection_delete(JCollection* collection, JBatch* batch)
+j_collection_delete (JCollection* collection, JBatch* batch)
 {
 	g_return_if_fail(collection != NULL);
 	g_return_if_fail(batch != NULL);
@@ -239,7 +242,7 @@ j_collection_delete(JCollection* collection, JBatch* batch)
  * \return A new collection. Should be freed with j_collection_unref().
  **/
 JCollection*
-j_collection_new(gchar const* name)
+j_collection_new (gchar const* name)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -279,7 +282,7 @@ j_collection_new(gchar const* name)
  * \return A new collection. Should be freed with j_collection_unref().
  **/
 JCollection*
-j_collection_new_from_bson(bson_t const* b)
+j_collection_new_from_bson (bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -315,7 +318,7 @@ j_collection_new_from_bson(bson_t const* b)
  * \return A new BSON object. Should be freed with g_slice_free().
  **/
 bson_t*
-j_collection_serialize(JCollection* collection)
+j_collection_serialize (JCollection* collection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -354,7 +357,7 @@ j_collection_serialize(JCollection* collection)
  * \param b          A BSON object.
  **/
 void
-j_collection_deserialize(JCollection* collection, bson_t const* b)
+j_collection_deserialize (JCollection* collection, bson_t const* b)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -414,7 +417,7 @@ j_collection_deserialize(JCollection* collection, bson_t const* b)
  * \return An ID.
  **/
 bson_oid_t const*
-j_collection_get_id(JCollection* collection)
+j_collection_get_id (JCollection* collection)
 {
 	J_TRACE_FUNCTION(NULL);
 

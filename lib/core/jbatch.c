@@ -78,8 +78,9 @@ struct JOperationAsync
 
 typedef struct JOperationAsync JOperationAsync;
 
-static gpointer
-j_batch_background_operation(gpointer data)
+static
+gpointer
+j_batch_background_operation (gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -111,7 +112,7 @@ j_batch_background_operation(gpointer data)
  * \return A new batch. Should be freed with j_batch_unref().
  **/
 JBatch*
-j_batch_new(JSemantics* semantics)
+j_batch_new (JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -142,7 +143,7 @@ j_batch_new(JSemantics* semantics)
  * \return A new batch. Should be freed with j_batch_unref().
  **/
 JBatch*
-	j_batch_new_for_template(JSemanticsTemplate template)
+j_batch_new_for_template (JSemanticsTemplate template)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -163,7 +164,7 @@ JBatch*
  * \return The batch.
  **/
 JBatch*
-j_batch_ref(JBatch* batch)
+j_batch_ref (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -184,11 +185,13 @@ j_batch_ref(JBatch* batch)
  * \param batch A batch.
  **/
 void
-j_batch_unref(JBatch* batch)
+j_batch_unref (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (batch && g_atomic_int_dec_and_test(&(batch->ref_count)))
+	g_return_if_fail(batch != NULL);
+
+	if (g_atomic_int_dec_and_test(&(batch->ref_count)))
 	{
 		if (batch->background_operation != NULL)
 		{
@@ -217,8 +220,9 @@ j_batch_unref(JBatch* batch)
  * \param type An operation type.
  * \param list A list of batch parts.
  **/
-static gboolean
-j_batch_execute_same(JBatch* batch, JOperationExecFunc exec_func, JList* list)
+static
+gboolean
+j_batch_execute_same (JBatch* batch, JOperationExecFunc exec_func, JList* list)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -253,7 +257,7 @@ j_batch_execute_same(JBatch* batch, JOperationExecFunc exec_func, JList* list)
  * \return TRUE on success, FALSE if an error occurred.
  **/
 gboolean
-j_batch_execute(JBatch* batch)
+j_batch_execute (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -266,7 +270,8 @@ j_batch_execute(JBatch* batch)
 		return FALSE;
 	}
 
-	if (j_semantics_get(batch->semantics, J_SEMANTICS_PERSISTENCY) == J_SEMANTICS_PERSISTENCY_EVENTUAL && j_operation_cache_add(batch))
+	if (j_semantics_get(batch->semantics, J_SEMANTICS_PERSISTENCY) == J_SEMANTICS_PERSISTENCY_EVENTUAL
+	    && j_operation_cache_add(batch))
 	{
 		return TRUE;
 	}
@@ -291,7 +296,7 @@ j_batch_execute(JBatch* batch)
  * \return TRUE on success, FALSE if an error occurred.
  **/
 void
-j_batch_execute_async(JBatch* batch, JOperationCompletedFunc func, gpointer user_data)
+j_batch_execute_async (JBatch* batch, JOperationCompletedFunc func, gpointer user_data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -309,7 +314,7 @@ j_batch_execute_async(JBatch* batch, JOperationCompletedFunc func, gpointer user
 }
 
 void
-j_batch_wait(JBatch* batch)
+j_batch_wait (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -338,7 +343,7 @@ j_batch_wait(JBatch* batch)
  * \return A new batch.
  */
 JBatch*
-j_batch_new_from_batch(JBatch* old_batch)
+j_batch_new_from_batch (JBatch* old_batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -370,7 +375,7 @@ j_batch_new_from_batch(JBatch* old_batch)
  * \return A list of parts.
  **/
 JList*
-j_batch_get_operations(JBatch* batch)
+j_batch_get_operations (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -392,7 +397,7 @@ j_batch_get_operations(JBatch* batch)
  * \return A semantics object.
  **/
 JSemantics*
-j_batch_get_semantics(JBatch* batch)
+j_batch_get_semantics (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -413,7 +418,7 @@ j_batch_get_semantics(JBatch* batch)
  * \param operation An operation.
  **/
 void
-j_batch_add(JBatch* batch, JOperation* operation)
+j_batch_add (JBatch* batch, JOperation* operation)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -436,7 +441,7 @@ j_batch_add(JBatch* batch, JOperation* operation)
  * \return TRUE on success, FALSE if an error occurred.
  **/
 gboolean
-j_batch_execute_internal(JBatch* batch)
+j_batch_execute_internal (JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 

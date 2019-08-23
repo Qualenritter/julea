@@ -71,7 +71,7 @@ typedef struct JConnectionPool JConnectionPool;
 static JConnectionPool* j_connection_pool = NULL;
 
 void
-j_connection_pool_init(JConfiguration* configuration)
+j_connection_pool_init (JConfiguration* configuration)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -111,7 +111,7 @@ j_connection_pool_init(JConfiguration* configuration)
 }
 
 void
-j_connection_pool_fini(void)
+j_connection_pool_fini (void)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -170,8 +170,9 @@ j_connection_pool_fini(void)
 	g_slice_free(JConnectionPool, pool);
 }
 
-static GSocketConnection*
-j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* server)
+static
+GSocketConnection*
+j_connection_pool_pop_internal (GAsyncQueue* queue, guint* count, gchar const* server)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -259,8 +260,9 @@ j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* se
 	return connection;
 }
 
-static void
-j_connection_pool_push_internal(GAsyncQueue* queue, GSocketConnection* connection)
+static
+void
+j_connection_pool_push_internal (GAsyncQueue* queue, GSocketConnection* connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -271,7 +273,7 @@ j_connection_pool_push_internal(GAsyncQueue* queue, GSocketConnection* connectio
 }
 
 gpointer
-j_connection_pool_pop(JBackendType backend, guint index)
+j_connection_pool_pop (JBackendType backend, guint index)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -284,24 +286,24 @@ j_connection_pool_pop(JBackendType backend, guint index)
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		g_return_val_if_fail(index < j_connection_pool->object_len, NULL);
-		return j_connection_pool_pop_internal(j_connection_pool->object_queues[index].queue, &(j_connection_pool->object_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_OBJECT, index));
-	case J_BACKEND_TYPE_KV:
-		g_return_val_if_fail(index < j_connection_pool->kv_len, NULL);
-		return j_connection_pool_pop_internal(j_connection_pool->kv_queues[index].queue, &(j_connection_pool->kv_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_KV, index));
-	case J_BACKEND_TYPE_DB:
-		g_return_val_if_fail(index < j_connection_pool->db_len, NULL);
-		return j_connection_pool_pop_internal(j_connection_pool->db_queues[index].queue, &(j_connection_pool->db_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_DB, index));
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			g_return_val_if_fail(index < j_connection_pool->object_len, NULL);
+			return j_connection_pool_pop_internal(j_connection_pool->object_queues[index].queue, &(j_connection_pool->object_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_OBJECT, index));
+		case J_BACKEND_TYPE_KV:
+			g_return_val_if_fail(index < j_connection_pool->kv_len, NULL);
+			return j_connection_pool_pop_internal(j_connection_pool->kv_queues[index].queue, &(j_connection_pool->kv_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_KV, index));
+		case J_BACKEND_TYPE_DB:
+			g_return_val_if_fail(index < j_connection_pool->db_len, NULL);
+			return j_connection_pool_pop_internal(j_connection_pool->db_queues[index].queue, &(j_connection_pool->db_queues[index].count), j_configuration_get_server(j_connection_pool->configuration, J_BACKEND_TYPE_DB, index));
+		default:
+			g_assert_not_reached();
 	}
 
 	return NULL;
 }
 
 void
-j_connection_pool_push(JBackendType backend, guint index, gpointer connection)
+j_connection_pool_push (JBackendType backend, guint index, gpointer connection)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -315,20 +317,20 @@ j_connection_pool_push(JBackendType backend, guint index, gpointer connection)
 
 	switch (backend)
 	{
-	case J_BACKEND_TYPE_OBJECT:
-		g_return_if_fail(index < j_connection_pool->object_len);
-		j_connection_pool_push_internal(j_connection_pool->object_queues[index].queue, connection);
-		break;
-	case J_BACKEND_TYPE_KV:
-		g_return_if_fail(index < j_connection_pool->kv_len);
-		j_connection_pool_push_internal(j_connection_pool->kv_queues[index].queue, connection);
-		break;
-	case J_BACKEND_TYPE_DB:
-		g_return_if_fail(index < j_connection_pool->db_len);
-		j_connection_pool_push_internal(j_connection_pool->db_queues[index].queue, connection);
-		break;
-	default:
-		g_assert_not_reached();
+		case J_BACKEND_TYPE_OBJECT:
+			g_return_if_fail(index < j_connection_pool->object_len);
+			j_connection_pool_push_internal(j_connection_pool->object_queues[index].queue, connection);
+			break;
+		case J_BACKEND_TYPE_KV:
+			g_return_if_fail(index < j_connection_pool->kv_len);
+			j_connection_pool_push_internal(j_connection_pool->kv_queues[index].queue, connection);
+			break;
+		case J_BACKEND_TYPE_DB:
+			g_return_if_fail(index < j_connection_pool->db_len);
+			j_connection_pool_push_internal(j_connection_pool->db_queues[index].queue, connection);
+			break;
+		default:
+			g_assert_not_reached();
 	}
 }
 

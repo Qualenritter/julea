@@ -28,10 +28,11 @@
 #include <jtrace.h>
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_init(bson_iter_t* iter, const bson_t* bson, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -54,10 +55,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_next(bson_iter_t* iter, gboolean* has_next, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -76,10 +78,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_key_equals(bson_iter_t* iter, const char* key, gboolean* equals, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -98,10 +101,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static const char*
+static
+const char*
 j_bson_iter_key(bson_iter_t* iter, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -114,10 +118,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBTypeValue* value, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -215,7 +220,8 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBTypeValue* value, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -336,10 +342,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static char*
+static
+char*
 j_bson_as_json(const bson_t* bson, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -352,19 +359,21 @@ _error:
 }
 
 G_GNUC_UNUSED
-static void
+static
+void
 j_bson_free_json(char* json)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	bson_free(json);
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_find(bson_iter_t* iter, const char* key, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -387,10 +396,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_not_find(bson_iter_t* iter, const char* key, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -412,10 +422,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_recurse_array(bson_iter_t* iter, bson_iter_t* iter_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter || !iter_child))
 	{
@@ -438,10 +449,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_recurse_document(bson_iter_t* iter, bson_iter_t* iter_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter || !iter_child))
 	{
@@ -464,13 +476,14 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_copy_document(bson_iter_t* iter, bson_t* bson, GError** error)
 {
 	const uint8_t* data;
 	uint32_t length;
 
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -493,10 +506,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_init_from_json(bson_t* bson, const char* json, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -519,10 +533,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_iter_type_db(bson_iter_t* iter, JDBType* type, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!iter))
 	{
@@ -580,10 +595,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_has_enough_keys(const bson_t* bson, guint32 min_keys, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -601,10 +617,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static void
+static
+void
 j_bson_destroy(bson_t* bson)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (bson)
 	{
@@ -613,10 +630,11 @@ j_bson_destroy(bson_t* bson)
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_init(bson_t* bson, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -629,10 +647,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_has_field(bson_t* bson, gchar const* name, gboolean* has_field, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -651,10 +670,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_count_keys(bson_t* bson, guint32* count, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson))
 	{
@@ -674,10 +694,11 @@ _error:
 
 // FIXME does more or less the same as j_helper_get_number_string
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_array_generate_key(guint32 index, const char** key, char* buf, guint buf_length, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!key))
 	{
@@ -695,10 +716,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_array(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson || !bson_child))
 	{
@@ -720,10 +742,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_array_begin(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson || !bson_child))
 	{
@@ -745,10 +768,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_array_end(bson_t* bson, bson_t* bson_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson || !bson_child))
 	{
@@ -766,10 +790,11 @@ _error:
 }
 
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_document(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson || !bson_child))
 	{
@@ -791,10 +816,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_document_begin(bson_t* bson, const char* key, bson_t* bson_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson || !bson_child))
 	{
@@ -816,10 +842,11 @@ _error:
 	return FALSE;
 }
 G_GNUC_UNUSED
-static gboolean
+static
+gboolean
 j_bson_append_document_end(bson_t* bson, bson_t* bson_child, GError** error)
 {
-	J_TRACE_FUNCTION(NULL);
+J_TRACE_FUNCTION(NULL);
 
 	if (G_UNLIKELY(!bson || !bson_child))
 	{
