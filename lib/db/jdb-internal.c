@@ -28,7 +28,7 @@
 
 #include <bson.h>
 
-#include <db/jdb-internal.h>
+#include "jdb-internal.h"
 
 #include <julea.h>
 #include "../../backend/db/jbson.c"

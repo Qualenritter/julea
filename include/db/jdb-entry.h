@@ -34,12 +34,7 @@
 #include <db/jdb-selector.h>
 #include <db/jdb-schema.h>
 
-struct JDBEntry
-{
-	gint ref_count;
-	JDBSchema* schema;
-	bson_t bson;
-};
+struct JDBEntry;
 typedef struct JDBEntry JDBEntry;
 
 /**

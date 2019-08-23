@@ -21,6 +21,7 @@
  **/
 
 #include "db.h"
+#include "../../lib/db/jdb-internal.h"
 
 static gdouble target_time = 0;
 static guint global_n = 0;
