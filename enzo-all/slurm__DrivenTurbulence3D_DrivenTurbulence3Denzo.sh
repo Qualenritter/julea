@@ -20,7 +20,7 @@ export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="${HOME}/julea/slurm__DrivenTurbulence3D_DrivenTurbulence3Denzo"
 export J_TIMER_DB="$tmpdir/tmp.sqlite"
-export G_MESSAGES_DEBUG=all
+#export G_MESSAGES_DEBUG=all
 
 cat ${HOME}/.config/julea/julea-$(hostname)
 
