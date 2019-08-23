@@ -19,7 +19,7 @@ export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="${HOME}/julea/slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo"
-export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo.sqlite"
+export J_TIMER_DB="${HOME}/julea/slurm__Hydro_Hydro-3D_RotatingCylinder_RotatingCylinderenzo.tmp.sqlite"
 #export G_MESSAGES_DEBUG=all
 
 cat ${HOME}/.config/julea/julea-$(hostname)
