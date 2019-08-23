@@ -11,14 +11,14 @@ rm -rf $tmpdir
 mkdir -p $tmpdir
 
 echo $(hostname)
-echo slurm__MHD_3D_StochasticForcing_StochasticForcingenzo.sh
+echo slurm__Hydro_Hydro-2D_RampedKelvinHelmholtz2D_RampedKelvinHelmholtz2Denzo-1.sh
 echo $tmpdir
 
 export LD_LIBRARY_PATH=${HOME}/julea/prefix-hdf-julea/lib/:$LD_LIBRARY_PATH
 export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
 export HDF5_VOL_JULEA=1
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
-export J_TIMER_DB_RUN="${HOME}/julea/slurm__MHD_3D_StochasticForcing_StochasticForcingenzo"
+export J_TIMER_DB_RUN="${HOME}/julea/slurm__Hydro_Hydro-2D_RampedKelvinHelmholtz2D_RampedKelvinHelmholtz2Denzo-1"
 export J_TIMER_DB="$tmpdir/tmp.sqlite"
 #export G_MESSAGES_DEBUG=all
 
@@ -29,22 +29,21 @@ ${HOME}/julea/build-hdf-julea/server/julea-server &
 
 sleep 1s
 
-cp -r ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/* $tmpdir
+cp -r ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/* $tmpdir
 cp ${HOME}/julea/enzo-all/run-continue.sh $tmpdir
 cd $tmpdir
 echo $PWD
 ls -la
 
-cat ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
-echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
-echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
-echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./MHD/3D/StochasticForcing/StochasticForcing.enzo.tmp
+cat ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo | grep -v "ResubmitOn" | grep -v "StopCPUTime" | grep -v "ResubmitCommand" > ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
+echo "ResubmitOn = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
+echo "StopCPUTime = 1" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
+echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/RampedKelvinHelmholtz2D/RampedKelvinHelmholtz2D.enzo.tmp
 
 ${HOME}/julea/example/a.out
 
 rm $J_TIMER_DB ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 
-ENZO_TOTAL=0
 ENZO_START=$(date +%s.%N)
 (mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
 ENZO_PID=$!
@@ -53,7 +52,6 @@ do
 	echo "wait for ${ENZO_PID}"
 	wait ${ENZO_PID}
 	ENZO_END=$(date +%s.%N)
-	ENZO_TIME=$(echo "${ENZO_END} - ${ENZO_START}" | bc)
 	echo "going to restart"
 	for f in $(find "$(dirname ${J_TIMER_DB})/" -maxdepth 1 -name "$(echo "${J_TIMER_DB}*" | sed "s-.*/--g")")
 	do
@@ -72,9 +70,9 @@ do
 			rm ${f}
 		fi
 	done
-	sqlite3 ${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,${ENZO_TIME}) on conflict(name) do update set count=count+1, timer=timer+${ENZO_TIME} where name='bash_time'"
+	sqlite3 ${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,${ENZO_END} - ${ENZO_START}) on conflict(name) do update set count=count+1, timer=timer+${ENZO_TIME} where name='bash_time'"
 	echo "merged timers"
-	ENZO_TOTAL=$(echo "${ENZO_TOTAL} + ${ENZO_TIME}" | bc)
+	ENZO_TOTAL=$(sqlite3 ${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'")
 	if (( $(echo "${ENZO_TOTAL} > 120" | bc -l) )); then
 		break
 	fi

@@ -169,7 +169,10 @@ if [ "$slurm_name" == "slurm__FLD_FLD_LWRadParametersenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__GravitySolver_MaximumGravityRefinementTest_MaximumGravityRefinementTestenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__GravitySolver_BinaryCollapseMHDCT_BinaryCollapseenzo" ]; then continue;fi
 if [ "$slurm_name" == "slurm__GravitySolver_BinaryCollapse_BinaryCollapseenzo" ]; then continue;fi
-
+slurm_name_backup=${slurm_name}
+for use_julea in 0 1
+do
+slurm_name=${slurm_name_backup}-${use_julea}
 cat > ${slurm_name}.sh << EOF
 #!/bin/bash
 #SBATCH -J enzo
@@ -189,7 +192,7 @@ echo \$tmpdir
 
 export LD_LIBRARY_PATH=\${HOME}/julea/prefix-hdf-julea/lib/:\$LD_LIBRARY_PATH
 export JULEA_CONFIG=\${HOME}/.config/julea/julea-\$(hostname)
-export HDF5_VOL_JULEA=1
+export HDF5_VOL_JULEA=${use_julea}
 export HDF5_PLUGIN_PATH=\${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="\${HOME}/julea/${slurm_name}"
 export J_TIMER_DB="\$tmpdir/tmp.sqlite"
@@ -217,7 +220,6 @@ echo "ResubmitCommand = ./run-continue.sh" >> \${HOME}/enzo-dev/run/${config}.tm
 
 rm \$J_TIMER_DB \${J_TIMER_DB_RUN}.out \${J_TIMER_DB_RUN}.sqlite \${J_TIMER_DB_RUN}.parameter
 
-ENZO_TOTAL=0
 ENZO_START=\$(date +%s.%N)
 (mpirun -np 6 \${HOME}/enzo-dev/src/enzo/enzo.exe \${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> \${J_TIMER_DB_RUN}.out) &
 ENZO_PID=\$!
@@ -226,7 +228,6 @@ do
 	echo "wait for \${ENZO_PID}"
 	wait \${ENZO_PID}
 	ENZO_END=\$(date +%s.%N)
-	ENZO_TIME=\$(echo "\${ENZO_END} - \${ENZO_START}" | bc)
 	echo "going to restart"
 	for f in \$(find "\$(dirname \${J_TIMER_DB})/" -maxdepth 1 -name "\$(echo "\${J_TIMER_DB}*" | sed "s-.*/--g")")
 	do
@@ -245,9 +246,9 @@ do
 			rm \${f}
 		fi
 	done
-	sqlite3 \${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,\${ENZO_TIME}) on conflict(name) do update set count=count+1, timer=timer+\${ENZO_TIME} where name='bash_time'"
+	sqlite3 \${J_TIMER_DB_RUN}.sqlite "insert into tmp (name,count,timer) values('bash_time',1,\${ENZO_END} - \${ENZO_START}) on conflict(name) do update set count=count+1, timer=timer+\${ENZO_TIME} where name='bash_time'"
 	echo "merged timers"
-	ENZO_TOTAL=\$(echo "\${ENZO_TOTAL} + \${ENZO_TIME}" | bc)
+	ENZO_TOTAL=\$(sqlite3 \${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'")
 	if (( \$(echo "\${ENZO_TOTAL} > 120" | bc -l) )); then
 		break
 	fi
@@ -270,6 +271,7 @@ du -sh .
 EOF
 chmod +x ${slurm_name}.sh
 echo "sbatch \${HOME}/julea/enzo-all/${slurm_name}.sh" >> slurm_all.sh
+done
 done
 chmod +x slurm_all.sh
 
