@@ -362,9 +362,7 @@ _error:
 	return FALSE;
 }
 
-#if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
 G_LOCK_DEFINE_STATIC(sql_backend_lock);
-#endif
 
 static gboolean
 backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _batch, GError** error)
@@ -379,7 +377,7 @@ backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _ba
 	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
 		G_LOCK(sql_backend_lock);
 
-	batch = *_batch = g_slice_new(JSqlBatch);
+	batch = *_batch = g_new(JSqlBatch,1);
 	batch->namespace = namespace;
 	batch->semantics = j_semantics_ref(semantics);
 	batch->open = FALSE;
@@ -390,7 +388,7 @@ backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _ba
 	return TRUE;
 _error:
 	j_semantics_unref(batch->semantics);
-	g_slice_free(JSqlBatch, batch);
+	g_free(batch);
 	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
 		G_UNLOCK(sql_backend_lock);
 	return FALSE;
@@ -409,13 +407,13 @@ backend_batch_execute(gpointer _batch, GError** error)
 		goto _error;
 	}
 	j_semantics_unref(batch->semantics);
-	g_slice_free(JSqlBatch, batch);
+	g_free(batch);
 	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
 		G_UNLOCK(sql_backend_lock);
 	return TRUE;
 _error:
 	j_semantics_unref(batch->semantics);
-	g_slice_free(JSqlBatch, batch);
+	g_free(batch);
 	if (SQL_MODE == SQL_MODE_SINGLE_THREAD)
 		G_UNLOCK(sql_backend_lock);
 	return FALSE;
