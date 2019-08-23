@@ -1322,7 +1322,7 @@ _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoin
 	guint variables_count;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GString* sql = g_string_new(NULL);
-	JSqlIterator* iteratorOut;
+	JSqlIterator* iteratorOut = NULL;
 	JThreadVariables* thread_variables = NULL;
 
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
