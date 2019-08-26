@@ -61,9 +61,9 @@ struct mysql_stmt_wrapper
 	bool* is_error; //reused for in AND out
 	unsigned long* length; //output
 	gboolean active;
-	guint wrapper->param_count_in ;
-	guint wrapper->param_count_out ;
-	guint wrapper->param_count_total ;
+	guint param_count_in;
+	guint param_count_out;
+	guint param_count_total;
 };
 typedef struct mysql_stmt_wrapper mysql_stmt_wrapper;
 
@@ -72,7 +72,6 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	guint wrapper->param_count_out = 0;
 	guint i;
 	gint status;
 	mysql_stmt_wrapper* wrapper = _stmt;
@@ -121,7 +120,7 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		j_goto_s(_error, wrapper->stmt, status);
 	if (!(wrapper->meta = mysql_stmt_result_metadata(wrapper->stmt)))
 		j_goto(_error, wrapper->stmt);
-	if (!(wrapper->param_count_in = mysql_stmt_wrapper->param_count(wrapper->stmt)))
+	if (!(wrapper->param_count_in = mysql_stmt_param_count(wrapper->stmt)))
 		j_goto(_error, wrapper->stmt);
 	if (!(wrapper->param_count_out = mysql_num_fields(wrapper->meta)))
 		j_goto(_error, wrapper->stmt);
