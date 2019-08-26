@@ -27,7 +27,7 @@ mkdir -p ${basepath}
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
-gdb	./build/test/julea-test
+	./build/test/julea-test
 	echo "kill ${server_pid}"
 	kill -9 ${server_pid}
 )
