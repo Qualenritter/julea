@@ -18,10 +18,10 @@
 
 mkdir -p log/scan-build
 rm -rf build
-scan-build -o log/scan-build ./waf.sh configure --debug
+scan-build -o log/scan-build ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 scan-build -o log/scan-build ./waf.sh build
 rm -rf build
-./waf.sh configure --debug
+./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 
 #for f in $(git diff --name-only HEAD | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
 for f in $(git diff --name-only master | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do

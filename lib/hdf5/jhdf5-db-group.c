@@ -326,7 +326,6 @@ H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 	J_TRACE_FUNCTION(NULL);
 	H5VL_JULEA_TIMER(H5VL_julea_db_group_open);
 
-	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
@@ -383,7 +382,6 @@ H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 		j_goto_error();
 	return object;
 _error:
-	H5VL_julea_db_error_handler(error);
 	H5VL_julea_db_object_unref(object);
 	return NULL;
 }

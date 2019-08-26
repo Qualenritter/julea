@@ -117,7 +117,9 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	wrapper = *_wrapper = g_new0(mysql_stmt_wrapper, 1);
 	g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
+	{
 		j_goto(_error, wrapper->stmt);
+	}
 	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
 	{
 		j_goto_s(_error, wrapper->stmt, status);
@@ -362,7 +364,7 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 		g_debug("bind_param [%d]= %s", idx, value->val_string);
 		wrapper->is_null[idx] = value->val_string == NULL;
 		wrapper->bind_in[idx].buffer = value->val_string;
-		wrapper->bind_in[idx].buffer_length = strlen(value->val_string);
+		wrapper->bind_in[idx].buffer_length = value->val_string != 0 ? strlen(value->val_string) : 0;
 		wrapper->length[idx] = wrapper->bind_in[idx].buffer_length;
 		break;
 	case J_DB_TYPE_BLOB:
@@ -414,7 +416,7 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 		j_goto_s(_error, stmt->stmt, status);
 	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
 	{
-		goto _error;
+		goto _error2;
 	}
 	return TRUE;
 _error:

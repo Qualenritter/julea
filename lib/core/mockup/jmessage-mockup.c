@@ -123,7 +123,7 @@ j_message_new_reply(JMessage* message_input)
 
 	if (!jd_db_backend)
 	{
-		jd_db_backend = j_db_backend();
+		jd_db_backend = j_backend(J_BACKEND_TYPE_DB);
 	}
 
 	if (message_input->client_side)
@@ -247,14 +247,14 @@ j_message_get_string(JMessage* message)
 	return j_message_get_n(message, ptr - message->current + 1);
 }
 gboolean
-j_message_send(JMessage* message, GSocketConnection* connection)
+j_message_send(JMessage* message, gpointer connection)
 {
 	myabort(!message);
 	myabort(!connection);
 	return TRUE;
 }
 gboolean
-j_message_receive(JMessage* message, GSocketConnection* connection)
+j_message_receive(JMessage* message, gpointer connection)
 {
 	myabort(!message);
 	myabort(!connection);
