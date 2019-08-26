@@ -457,8 +457,8 @@ j_sql_open(void)
 		    "root", //username
 		    "1234", //password
 		    "julea", //database name
-		    0, //port number
-		    NULL, //unix socket
+		    3306, //port number
+		    "/var/run/mysqld/mysqld.sock", //unix socket
 		    0 //client flags
 		    ))
 	{

@@ -5,11 +5,13 @@ rm -rf build
 ./waf.sh build
 ./waf.sh install
 basepath="/mnt2/juleatest"
+for db_backend in mysql sqlite
+do
 julea-config --user \
 	--object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" \
 	--object-backend=posix --object-component=server --object-path=${basepath}/object \
 	--kv-backend=sqlite --kv-component=server --kv-path=${basepath}/kv \
-	--db-backend=sqlite --db-component=server --db-path=${basepath}/db
+	--db-backend=${db_backend} --db-component=server --db-path=${basepath}/db
 rm -rf ${basepath}
 mkdir -p ${basepath}
 (
@@ -33,3 +35,4 @@ mkdir -p ${basepath}
 	export G_SLICE=always-malloc
 	./scripts/test.sh
 )
+done
