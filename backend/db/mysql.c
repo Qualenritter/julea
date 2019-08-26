@@ -37,8 +37,16 @@
 #define j_goto(label, stmt)                            \
 	do                                             \
 	{                                              \
+		G_DEBUG_HERE();                        \
 		g_debug("%s", mysql_stmt_error(stmt)); \
 		goto label;                            \
+	} while (0)
+#define j_goto_s(label, stmt, status)                                \
+	do                                                           \
+	{                                                            \
+		G_DEBUG_HERE();                                      \
+		g_debug("%d :: %s", status, mysql_stmt_error(stmt)); \
+		goto label;                                          \
 	} while (0)
 
 static gchar* path;
@@ -53,6 +61,9 @@ struct mysql_stmt_wrapper
 	bool* is_error; //reused for in AND out
 	unsigned long* length; //output
 	gboolean active;
+	guint wrapper->param_count_in ;
+	guint wrapper->param_count_out ;
+	guint wrapper->param_count_total ;
 };
 typedef struct mysql_stmt_wrapper mysql_stmt_wrapper;
 
@@ -61,18 +72,18 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	guint param_count_out = 0;
+	guint wrapper->param_count_out = 0;
 	guint i;
+	gint status;
 	mysql_stmt_wrapper* wrapper = _stmt;
 
 	(void)backend_db;
 	(void)error;
 
 	mysql_free_result(wrapper->meta);
-	if (!mysql_stmt_close(wrapper->stmt))
-		j_goto(_error, wrapper->stmt);
-	param_count_out = mysql_num_fields(wrapper->meta);
-	for (i = 0; i < param_count_out; i++)
+	if ((status = mysql_stmt_close(wrapper->stmt)))
+		j_goto_s(_error, wrapper->stmt, status);
+	for (i = 0; i < wrapper->param_count_out; i++)
 	{
 		if (wrapper->bind_out[i].buffer_type == MYSQL_TYPE_STRING)
 			g_free(wrapper->bind_out[i].buffer);
@@ -96,35 +107,37 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 {
 	J_TRACE_FUNCTION(NULL);
 
-	guint param_count_in = 0;
-	guint param_count_out = 0;
-	guint param_count_total = 0;
 	guint i;
 	JDBType type;
+	gint status;
 
 	mysql_stmt_wrapper** _wrapper = _stmt;
 	mysql_stmt_wrapper* wrapper;
 
-	wrapper = *_wrapper = g_new(mysql_stmt_wrapper, 1);
-	wrapper->stmt = mysql_stmt_init(backend_db);
-	if (!mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql)))
+	wrapper = *_wrapper = g_new0(mysql_stmt_wrapper, 1);
+	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 		j_goto(_error, wrapper->stmt);
-	wrapper->meta = mysql_stmt_result_metadata(wrapper->stmt);
-	param_count_in = mysql_stmt_param_count(wrapper->stmt);
-	param_count_out = mysql_num_fields(wrapper->meta);
-	param_count_total = param_count_in > param_count_out ? param_count_in : param_count_out;
-	wrapper->bind_in = g_new0(MYSQL_BIND, param_count_in);
-	wrapper->bind_out = g_new0(MYSQL_BIND, param_count_out);
-	wrapper->buffer = g_new0(JDBTypeValue, param_count_total);
-	wrapper->is_null = g_new0(bool, param_count_total);
-	wrapper->is_error = g_new0(bool, param_count_total);
-	wrapper->length = g_new0(unsigned long, param_count_total);
+	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
+		j_goto_s(_error, wrapper->stmt, status);
+	if (!(wrapper->meta = mysql_stmt_result_metadata(wrapper->stmt)))
+		j_goto(_error, wrapper->stmt);
+	if (!(wrapper->param_count_in = mysql_stmt_wrapper->param_count(wrapper->stmt)))
+		j_goto(_error, wrapper->stmt);
+	if (!(wrapper->param_count_out = mysql_num_fields(wrapper->meta)))
+		j_goto(_error, wrapper->stmt);
+	wrapper->param_count_total = wrapper->param_count_in > wrapper->param_count_out ? wrapper->param_count_in : wrapper->param_count_out;
+	wrapper->bind_in = g_new0(MYSQL_BIND, wrapper->param_count_in);
+	wrapper->bind_out = g_new0(MYSQL_BIND, wrapper->param_count_out);
+	wrapper->buffer = g_new0(JDBTypeValue, wrapper->param_count_total);
+	wrapper->is_null = g_new0(bool, wrapper->param_count_total);
+	wrapper->is_error = g_new0(bool, wrapper->param_count_total);
+	wrapper->length = g_new0(unsigned long, wrapper->param_count_total);
 	wrapper->active = FALSE;
-	if (!mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in))
-		j_goto(_error, wrapper->stmt);
-	if (!mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out))
-		j_goto(_error, wrapper->stmt);
-	for (i = 0; i < param_count_in; i++)
+	if ((status = mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in)))
+		j_goto_s(_error, wrapper->stmt, status);
+	if ((status = mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out)))
+		j_goto_s(_error, wrapper->stmt, status);
+	for (i = 0; i < wrapper->param_count_in; i++)
 	{
 		wrapper->bind_in[i].is_null = &wrapper->is_null[i];
 		wrapper->bind_in[i].error = &wrapper->is_error[i];
@@ -175,7 +188,7 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 			goto _error;
 		}
 	}
-	for (i = 0; i < param_count_out; i++)
+	for (i = 0; i < wrapper->param_count_out; i++)
 	{
 		wrapper->bind_out[i].is_null = &wrapper->is_null[i];
 		wrapper->bind_out[i].error = &wrapper->is_error[i];
@@ -367,6 +380,7 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* stmt;
+	gint status;
 
 	(void)backend_db;
 	(void)error;
@@ -374,8 +388,8 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 	{
 		goto _error;
 	}
-	if (!mysql_stmt_execute(stmt->stmt))
-		j_goto(_error, stmt->stmt);
+	if ((status = mysql_stmt_execute(stmt->stmt)))
+		j_goto_s(_error, stmt->stmt, status);
 	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
 	{
 		goto _error;
@@ -397,15 +411,16 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
+	gint status;
 
 	(void)backend_db;
 	(void)error;
 	if (!wrapper->active)
 	{
-		if (!mysql_stmt_execute(wrapper->stmt))
-			j_goto(_error, wrapper->stmt);
-		if (!mysql_stmt_store_result(wrapper->stmt))
-			j_goto(_error, wrapper->stmt);
+		if ((status = mysql_stmt_execute(wrapper->stmt)))
+			j_goto_s(_error, wrapper->stmt, status);
+		if ((status = mysql_stmt_store_result(wrapper->stmt)))
+			j_goto_s(_error, wrapper->stmt, status);
 		wrapper->active = TRUE;
 	}
 	*found = mysql_stmt_fetch(wrapper->stmt) == 0;
@@ -450,7 +465,9 @@ j_sql_open(void)
 
 	g_return_val_if_fail(path != NULL, FALSE);
 
-	backend_db = mysql_init(NULL);
+	if (!(backend_db = mysql_init(NULL)))
+		goto _error;
+
 	//FIXME use the path variable
 	if (!mysql_real_connect(backend_db,
 		    "localhost", //hostname
@@ -463,10 +480,6 @@ j_sql_open(void)
 		    ))
 	{
 		g_debug("%s", mysql_error(backend_db));
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_exec(backend_db, "PRAGMA foreign_keys = ON", NULL)))
-	{
 		goto _error;
 	}
 	return backend_db;

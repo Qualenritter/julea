@@ -11,7 +11,7 @@ julea-config --user \
 	--object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" \
 	--object-backend=posix --object-component=server --object-path=${basepath}/object \
 	--kv-backend=sqlite --kv-component=server --kv-path=${basepath}/kv \
-	--db-backend=${db_backend} --db-component=server --db-path=${basepath}/db
+	--db-backend=${db_backend} --db-component=client --db-path=${basepath}/db
 rm -rf ${basepath}
 mkdir -p ${basepath}
 (
@@ -22,7 +22,7 @@ mkdir -p ${basepath}
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
-	./build/test/julea-test
+	gdb ./build/test/julea-test
 	echo "kill ${server_pid}"
 	kill -9 ${server_pid}
 )
