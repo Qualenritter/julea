@@ -34,61 +34,61 @@
 
 struct JDBEntry
 {
-        gint ref_count;
-        JDBSchema* schema;
-        bson_t bson;
+	gint ref_count;
+	JDBSchema* schema;
+	bson_t bson;
 };
 struct JDBIterator
 {
-        JDBSchema* schema;
-        JDBSelector* selector;
-        gpointer iterator;
-        gint ref_count;
-        gboolean valid;
-        gboolean bson_valid;
-        bson_t bson;
+	JDBSchema* schema;
+	JDBSelector* selector;
+	gpointer iterator;
+	gint ref_count;
+	gboolean valid;
+	gboolean bson_valid;
+	bson_t bson;
 };
 struct JDBSchemaIndex
 {
-        guint variable_count;
-        GHashTable* variables;
+	guint variable_count;
+	GHashTable* variables;
 };
 struct JDBSchema
 {
-        gchar* namespace;
-        gchar* name;
-        gboolean bson_initialized;
-        bson_t bson;
-        gboolean bson_index_initialized;
-        GHashTable* variables; //contains char*
-        GArray* index; //contains GHashTable * which contain char*
-        bson_t bson_index;
-        guint bson_index_count;
-        gint ref_count;
-        gboolean server_side;
+	gchar* namespace;
+	gchar* name;
+	gboolean bson_initialized;
+	bson_t bson;
+	gboolean bson_index_initialized;
+	GHashTable* variables; //contains char*
+	GArray* index; //contains GHashTable * which contain char*
+	bson_t bson_index;
+	guint bson_index_count;
+	gint ref_count;
+	gboolean server_side;
 };
 struct JDBSelector
 {
-        JDBSelectorMode mode;
-        JDBSchema* schema;
-        gint ref_count;
-        bson_t bson;
-        guint bson_count;
+	JDBSelectorMode mode;
+	JDBSchema* schema;
+	gint ref_count;
+	bson_t bson;
+	guint bson_count;
 };
 union JDBTypeValue
 {
-        guint32 val_uint32;
-        gint32 val_sint32;
-        guint64 val_uint64;
-        gint64 val_sint64;
-        gdouble val_float64;
-        gfloat val_float32;
-        gchar const* val_string;
-        struct
-        {
-                gchar const* val_blob;
-                guint32 val_blob_length;
-        };
+	guint32 val_uint32;
+	gint32 val_sint32;
+	guint64 val_uint64;
+	gint64 val_sint64;
+	gdouble val_float64;
+	gfloat val_float32;
+	gchar const* val_string;
+	struct
+	{
+		gchar const* val_blob;
+		guint32 val_blob_length;
+	};
 };
 
 //client side wrappers for backend functions
