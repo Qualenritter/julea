@@ -32,7 +32,7 @@
 
 #define SQL_MODE_SINGLE_THREAD 0
 #define SQL_MODE_MULTI_THREAD 1
-#define SQL_MODE SQL_MODE_SINGLE_THREAD
+#define SQL_MODE SQL_MODE_MULTI_THREAD
 
 #define sql_autoincrement_string "NOT NULL AUTO_INCREMENT"
 
