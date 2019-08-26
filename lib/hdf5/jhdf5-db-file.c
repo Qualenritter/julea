@@ -127,7 +127,7 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	hid_t fapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_file_create);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -238,7 +238,7 @@ static void*
 H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_file_open);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -294,7 +294,7 @@ static herr_t
 H5VL_julea_db_file_get(void* obj, H5VL_file_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_file_get);
 
 	JHDF5Object_t* object = obj;
 
@@ -308,7 +308,7 @@ H5VL_julea_db_file_specific(void* obj, H5VL_file_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_file_specific);
 
 	JHDF5Object_t* object = obj;
 
@@ -321,7 +321,7 @@ static herr_t
 H5VL_julea_db_file_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_file_optional);
 
 	JHDF5Object_t* object = obj;
 
@@ -334,7 +334,7 @@ static herr_t
 H5VL_julea_db_file_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_file_close);
 
 	JHDF5Object_t* object = obj;
 

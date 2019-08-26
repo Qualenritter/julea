@@ -151,14 +151,7 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 #include <sqlite3.h>
 #include <sys/types.h>
 #include <unistd.h>
-struct H5VL_julea_db_timer
-{
-	GTimer* timer;
-	char* name;
-};
-typedef struct H5VL_julea_db_timer H5VL_julea_db_timer;
 static sqlite3* backend_db = NULL;
-static H5VL_julea_db_timer* global_timer = NULL;
 static gboolean
 j_sql_finalize(void* _stmt, GError** error)
 {
@@ -225,15 +218,70 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
+enum H5VL_julea_db_timer_func_names
+{
+	H5VL_julea_db_attr_close_timers = 0,
+	H5VL_julea_db_attr_create_timers,
+	H5VL_julea_db_attr_get_timers,
+	H5VL_julea_db_attr_open_timers,
+	H5VL_julea_db_attr_optional_timers,
+	H5VL_julea_db_attr_read_timers,
+	H5VL_julea_db_attr_specific_timers,
+	H5VL_julea_db_attr_write_timers,
+	H5VL_julea_db_dataset_close_timers,
+	H5VL_julea_db_dataset_create_timers,
+	H5VL_julea_db_dataset_get_timers,
+	H5VL_julea_db_dataset_open_timers,
+	H5VL_julea_db_dataset_optional_timers,
+	H5VL_julea_db_dataset_read_timers,
+	H5VL_julea_db_dataset_specific_timers,
+	H5VL_julea_db_dataset_write_timers,
+	H5VL_julea_db_datatype_close_timers,
+	H5VL_julea_db_datatype_commit_timers,
+	H5VL_julea_db_datatype_get_timers,
+	H5VL_julea_db_datatype_open_timers,
+	H5VL_julea_db_datatype_optional_timers,
+	H5VL_julea_db_datatype_specific_timers,
+	H5VL_julea_db_file_close_timers,
+	H5VL_julea_db_file_create_timers,
+	H5VL_julea_db_file_get_timers,
+	H5VL_julea_db_file_open_timers,
+	H5VL_julea_db_file_optional_timers,
+	H5VL_julea_db_file_specific_timers,
+	H5VL_julea_db_group_close_timers,
+	H5VL_julea_db_group_create_timers,
+	H5VL_julea_db_group_get_timers,
+	H5VL_julea_db_group_open_timers,
+	H5VL_julea_db_group_optional_timers,
+	H5VL_julea_db_group_specific_timers,
+	H5VL_julea_db_link_copy_timers,
+	H5VL_julea_db_link_create_timers,
+	H5VL_julea_db_link_get_timers,
+	H5VL_julea_db_link_move_timers,
+	H5VL_julea_db_link_optional_timers,
+	H5VL_julea_db_link_specific_timers,
+	total_timers,
+	_H5VL_julea_db_func_count
+};
+typedef enum H5VL_julea_db_timer_func_names H5VL_julea_db_timer_func_names;
+struct H5VL_julea_db_timer
+{
+	GTimer* timer;
+	H5VL_julea_db_timer_func_names func_name;
+};
+typedef struct H5VL_julea_db_timer H5VL_julea_db_timer;
 static H5VL_julea_db_timer*
-H5VL_julea_db_timer_new(const char* name)
+H5VL_julea_db_timer_new(H5VL_julea_db_timer_func_names func_name)
 {
 	H5VL_julea_db_timer* timer;
 	timer = g_new(H5VL_julea_db_timer, 1);
 	timer->timer = g_timer_new();
-	timer->name = g_strdup(name);
+	timer->func_name = func_name;
 	return timer;
 }
+static gdouble all_timers[_H5VL_julea_db_func_count];
+static guint all_timers_counter[_H5VL_julea_db_func_count];
+static H5VL_julea_db_timer* global_timer = NULL;
 static void
 H5VL_julea_db_timer_init(void)
 {
@@ -245,11 +293,13 @@ H5VL_julea_db_timer_init(void)
 	{
 		j_goto_error();
 	}
-	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name TEXT UNIQUE, count INTEGER, timer REAL);", NULL))
+	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name INTEGER UNIQUE, count INTEGER, timer REAL);", NULL))
 	{
 		j_goto_error();
 	}
-	global_timer = H5VL_julea_db_timer_new("total");
+	global_timer = H5VL_julea_db_timer_new(total_timers);
+	memset(all_timers, 0, sizeof(all_timers));
+	memset(all_timers_counter, 0, sizeof(all_timers_counter));
 	return;
 _error:
 	abort();
@@ -257,34 +307,41 @@ _error:
 static void
 H5VL_julea_db_timer_free(void* ptr)
 {
-	char buffer[512];
 	H5VL_julea_db_timer* timer = ptr;
 	if (timer)
 	{
 		gdouble elapsed = g_timer_elapsed(timer->timer, NULL);
-		snprintf(buffer, sizeof(buffer), "INSERT INTO tmp (name, count, timer) VALUES ('%s', 1, %f) ON CONFLICT (name) DO UPDATE SET count = count + 1, timer = timer + %f WHERE NAME = '%s';", timer->name, elapsed, elapsed, timer->name);
-		if (!j_sql_exec(buffer, NULL))
-			j_goto_error();
+		all_timers[timer->func_name] += elapsed;
+		all_timers_counter[timer->func_name]++;
 		g_timer_destroy(timer->timer);
-		g_free(timer->name);
 		g_free(timer);
 	}
-	return;
-_error:
-	abort();
 }
 static void
 H5VL_julea_db_timer_fini(void)
 {
+	char buffer[512];
+	guint i;
 	if (!global_timer)
 		return;
 	H5VL_julea_db_timer_free(global_timer);
 	global_timer = NULL;
+	for (i = 0; i < _H5VL_julea_db_func_count; i++)
+	{
+		snprintf(buffer, sizeof(buffer), "INSERT INTO tmp (name, count, timer) VALUES ('%d', %d, %f) ON CONFLICT (name) DO UPDATE SET count = count + %d, timer = timer + %f WHERE NAME = '%d';",
+			i,
+			all_timers_counter[i],
+			all_timers[i],
+			all_timers_counter[i],
+			all_timers[i],
+			i);
+		j_sql_exec(buffer, NULL);
+	}
 	sqlite3_close(backend_db);
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
-#define H5VL_JULEA_TIMER() g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(G_STRFUNC)
+#define H5VL_JULEA_TIMER(func_name) g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(func_name##_timers)
 
 #pragma GCC diagnostic pop
 #endif

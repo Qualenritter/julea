@@ -198,7 +198,7 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_create);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -355,7 +355,7 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 	hid_t aapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_open);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -478,7 +478,7 @@ static herr_t
 H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_read);
 
 	g_autoptr(JBatch) batch = NULL;
 	guint64 bytes_read;
@@ -505,7 +505,7 @@ static herr_t
 H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_write);
 
 	g_autoptr(JBatch) batch = NULL;
 	guint64 bytes_written;
@@ -532,7 +532,7 @@ static herr_t
 H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_get);
 
 	JHDF5Object_t* object = obj;
 
@@ -561,7 +561,7 @@ H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_specific);
 
 	JHDF5Object_t* object = obj;
 
@@ -574,7 +574,7 @@ static herr_t
 H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_optional);
 
 	JHDF5Object_t* object = obj;
 
@@ -587,7 +587,7 @@ static herr_t
 H5VL_julea_db_attr_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER();
+	H5VL_JULEA_TIMER(H5VL_julea_db_attr_close);
 
 	JHDF5Object_t* object = obj;
 
