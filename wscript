@@ -36,7 +36,7 @@ leveldb_version = '1.20'
 lmdb_version = '0.9.21'
 libmongoc_version = '1.9.0'
 sqlite_version = '3.23.0'
-mysql_version = '0.0.0'
+mysql_version = '8.0.15'
 
 
 def check_cfg_rpath(ctx, **kwargs):
@@ -282,8 +282,8 @@ def configure(ctx):
 	ctx.env.JULEA_MYSQL = \
 		check_cfg_rpath(
 			ctx,
-			package='mysql',
-			args=['--cflags', '--libs', 'mysql >= {0}'.format(mysql_version)],
+			package='mysqlclient',
+			args=['--cflags', '--libs', 'mysqlclient >= {0}'.format(mysql_version)],
 			uselib_store='MYSQL',
 			pkg_config_path=get_pkg_config_path(ctx.options.mysql),
 			mandatory=False

@@ -58,11 +58,13 @@ _error:
 }
 
 static gboolean
-j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GError** error)
+j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GArray* types_in, GArray* types_out, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
 	sqlite3_stmt** stmt = _stmt;
+	(void)types_in;
+	(void)types_out;
 
 	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 	{
@@ -238,7 +240,7 @@ j_sql_exec(sqlite3* backend_db, const char* sql, GError** error)
 
 	sqlite3_stmt* stmt;
 
-	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, error)))
+	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
 	{
 		goto _error;
 	}

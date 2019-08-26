@@ -21,7 +21,6 @@
 #include <glib.h>
 #include <gmodule.h>
 
-#include <my_global.h>
 #include <mysql.h>
 
 #include <julea.h>
@@ -35,6 +34,13 @@
 #define SQL_MODE_MULTI_THREAD 1
 #define SQL_MODE SQL_MODE_SINGLE_THREAD
 
+#define j_goto(label, stmt)                            \
+	do                                             \
+	{                                              \
+		g_debug("%s", mysql_stmt_error(stmt)); \
+		goto label;                            \
+	} while (0)
+
 static gchar* path;
 struct mysql_stmt_wrapper
 {
@@ -43,8 +49,8 @@ struct mysql_stmt_wrapper
 	MYSQL_BIND* bind_out; //output
 	MYSQL_RES* meta;
 	JDBTypeValue* buffer; //reused for in AND out
-	my_bool* is_null; //reused for in AND out
-	my_bool* is_error; //reused for in AND out
+	bool* is_null; //reused for in AND out
+	bool* is_error; //reused for in AND out
 	unsigned long* length; //output
 	gboolean active;
 };
@@ -55,17 +61,24 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
-guint param_count_out = 0;
-guint i;
-
+	guint param_count_out = 0;
+	guint i;
 	mysql_stmt_wrapper* wrapper = _stmt;
-	status = mysql_free_result(wrapper->meta);
-	status = mysql_stmt_close(wrapper->stmt);
-param_count_out = mysql_num_fields(wrapper->meta);
-for(i=0;i<param_count_out;i++){
-if(wrapper->bind_out[i].buffer_type==MYSQL_TYPE_STRING)g_free(wrapper->bind_out[i].buffer);
-if(wrapper->bind_out[i].buffer_type==MYSQL_TYPE_BLOB)g_free(wrapper->bind_out[i].buffer);
-}
+
+	(void)backend_db;
+	(void)error;
+
+	mysql_free_result(wrapper->meta);
+	if (!mysql_stmt_close(wrapper->stmt))
+		j_goto(_error, wrapper->stmt);
+	param_count_out = mysql_num_fields(wrapper->meta);
+	for (i = 0; i < param_count_out; i++)
+	{
+		if (wrapper->bind_out[i].buffer_type == MYSQL_TYPE_STRING)
+			g_free(wrapper->bind_out[i].buffer);
+		if (wrapper->bind_out[i].buffer_type == MYSQL_TYPE_BLOB)
+			g_free(wrapper->bind_out[i].buffer);
+	}
 	g_free(wrapper->bind_in);
 	g_free(wrapper->bind_out);
 	g_free(wrapper->buffer);
@@ -92,9 +105,10 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	mysql_stmt_wrapper** _wrapper = _stmt;
 	mysql_stmt_wrapper* wrapper;
 
-wrapper=	*_wrapper = g_new(mysql_stmt_wrapper, 1);
+	wrapper = *_wrapper = g_new(mysql_stmt_wrapper, 1);
 	wrapper->stmt = mysql_stmt_init(backend_db);
-	status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql));
+	if (!mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql)))
+		j_goto(_error, wrapper->stmt);
 	wrapper->meta = mysql_stmt_result_metadata(wrapper->stmt);
 	param_count_in = mysql_stmt_param_count(wrapper->stmt);
 	param_count_out = mysql_num_fields(wrapper->meta);
@@ -102,55 +116,57 @@ wrapper=	*_wrapper = g_new(mysql_stmt_wrapper, 1);
 	wrapper->bind_in = g_new0(MYSQL_BIND, param_count_in);
 	wrapper->bind_out = g_new0(MYSQL_BIND, param_count_out);
 	wrapper->buffer = g_new0(JDBTypeValue, param_count_total);
-	wrapper->is_null = g_new0(my_bool, param_count_total);
-	wrapper->is_error = g_new0(my_bool, param_count_total);
+	wrapper->is_null = g_new0(bool, param_count_total);
+	wrapper->is_error = g_new0(bool, param_count_total);
 	wrapper->length = g_new0(unsigned long, param_count_total);
 	wrapper->active = FALSE;
-	status = mysql_stmt_bind_in_param(wrapper->stmt, wrapper->bind_in);
-	status = mysql_stmt_bind_result(wrapper->stmt, bind_out);
+	if (!mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in))
+		j_goto(_error, wrapper->stmt);
+	if (!mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out))
+		j_goto(_error, wrapper->stmt);
 	for (i = 0; i < param_count_in; i++)
 	{
 		wrapper->bind_in[i].is_null = &wrapper->is_null[i];
-		wrapper->bind_in[i].error = &wrapper->error[i];
+		wrapper->bind_in[i].error = &wrapper->is_error[i];
 		type = g_array_index(types_in, JDBType, i);
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_LONG;
-			wrapper->bind_in[idx].is_unsigned = 0;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_sint32;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONG;
+			wrapper->bind_in[i].is_unsigned = 0;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint32;
 			break;
 		case J_DB_TYPE_UINT32:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_LONG;
-			wrapper->bind_in[idx].is_unsigned = 1;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_uint32;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONG;
+			wrapper->bind_in[i].is_unsigned = 1;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_uint32;
 			break;
 		case J_DB_TYPE_SINT64:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_LONG_LONG;
-			wrapper->bind_in[idx].is_unsigned = 0;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_sint64;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONGLONG;
+			wrapper->bind_in[i].is_unsigned = 0;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_UINT64:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_LONG_LONG;
-			wrapper->bind_in[idx].is_unsigned = 1;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_uint64;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONGLONG;
+			wrapper->bind_in[i].is_unsigned = 1;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_uint64;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_FLOAT;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_float32;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_FLOAT;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_float32;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_DOUBLE;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_sint64;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_DOUBLE;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_STRING:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_STRING;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_string;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_STRING;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_string;
 			break;
 		case J_DB_TYPE_BLOB:
-			wrapper->bind_in[idx].buffer_type = MYSQL_TYPE_BLOB;
-			wrapper->bind_in[idx].buffer = &wrapper->buffer[i].val_blob;
-			wrapper->bind_in[idx].buffer_length = &wrapper->buffer[i].val_blob_length;
+			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_BLOB;
+			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_blob;
+			wrapper->bind_in[i].buffer_length = wrapper->buffer[i].val_blob_length;
 			break;
 		case J_DB_TYPE_ID:
 		case _J_DB_TYPE_COUNT:
@@ -162,48 +178,48 @@ wrapper=	*_wrapper = g_new(mysql_stmt_wrapper, 1);
 	for (i = 0; i < param_count_out; i++)
 	{
 		wrapper->bind_out[i].is_null = &wrapper->is_null[i];
-		wrapper->bind_out[i].error = &wrapper->error[i];
+		wrapper->bind_out[i].error = &wrapper->is_error[i];
 		wrapper->bind_out[i].length = &wrapper->length[i];
 		type = g_array_index(types_out, JDBType, i);
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_LONG;
-			wrapper->bind_out[idx].is_unsigned = 0;
-			wrapper->bind_out[idx].buffer = &wrapper->buffer[i].val_sint32;
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONG;
+			wrapper->bind_out[i].is_unsigned = 0;
+			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint32;
 			break;
 		case J_DB_TYPE_UINT32:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_LONG;
-			wrapper->bind_out[idx].is_unsigned = 1;
-			wrapper->bind_out[idx].buffer = &wrapper->buffer[i].val_uint32;
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONG;
+			wrapper->bind_out[i].is_unsigned = 1;
+			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_uint32;
 			break;
 		case J_DB_TYPE_SINT64:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_LONG_LONG;
-			wrapper->bind_out[idx].is_unsigned = 0;
-			wrapper->bind_out[idx].buffer = &wrapper->buffer[i].val_sint64;
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONGLONG;
+			wrapper->bind_out[i].is_unsigned = 0;
+			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_UINT64:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_LONG_LONG;
-			wrapper->bind_out[idx].is_unsigned = 1;
-			wrapper->bind_out[idx].buffer = &wrapper->buffer[i].val_uint64;
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONGLONG;
+			wrapper->bind_out[i].is_unsigned = 1;
+			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_uint64;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_FLOAT;
-			wrapper->bind_out[idx].buffer = &wrapper->buffer[i].val_float32;
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_FLOAT;
+			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_float32;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_DOUBLE;
-			wrapper->bind_out[idx].buffer = &wrapper->buffer[i].val_sint64;
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_DOUBLE;
+			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_STRING:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_STRING;
-			wrapper->bind_out[idx].buffer_length = MAX_BUF_SIZE;
-			wrapper->bind_out[idx].buffer = g_new(char,MAX_BUF_SIZE);
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_STRING;
+			wrapper->bind_out[i].buffer_length = MAX_BUF_SIZE;
+			wrapper->bind_out[i].buffer = g_new(char, MAX_BUF_SIZE);
 			break;
 		case J_DB_TYPE_BLOB:
-			wrapper->bind_out[idx].buffer_type = MYSQL_TYPE_BLOB;
-			wrapper->bind_out[idx].buffer_length = MAX_BUF_SIZE;
-			wrapper->bind_out[idx].buffer = g_new(char,MAX_BUF_SIZE);
+			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_BLOB;
+			wrapper->bind_out[i].buffer_length = MAX_BUF_SIZE;
+			wrapper->bind_out[i].buffer = g_new(char, MAX_BUF_SIZE);
 			break;
 		case J_DB_TYPE_ID:
 		case _J_DB_TYPE_COUNT:
@@ -214,22 +230,22 @@ wrapper=	*_wrapper = g_new(mysql_stmt_wrapper, 1);
 	}
 	return TRUE;
 _error:
-	j_sql_finalize(backend_db, *stmt, NULL);
+	j_sql_finalize(backend_db, wrapper, NULL);
 	return FALSE;
 }
 
 static gboolean
-j_sql_bind_in_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
+j_sql_bind_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 
+	(void)backend_db;
+	(void)error;
 	wrapper->is_null[idx] = 1;
 
 	return TRUE;
-_error:
-	return FALSE;
 }
 
 static gboolean
@@ -244,29 +260,29 @@ j_sql_column(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeVal
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
-		value->val_sint32 = wrapper->buffer[idx]->val_sint32;
+		value->val_sint32 = wrapper->buffer[idx].val_sint32;
 		break;
 	case J_DB_TYPE_UINT32:
-		value->val_uint32 =wrapper->buffer[idx]->val_uint32;
+		value->val_uint32 = wrapper->buffer[idx].val_uint32;
 		break;
 	case J_DB_TYPE_SINT64:
-		value->val_sint64 =wrapper->buffer[idx]->val_sint64;
+		value->val_sint64 = wrapper->buffer[idx].val_sint64;
 		break;
 	case J_DB_TYPE_UINT64:
-		value->val_uint64 =wrapper->buffer[idx]->val_uint64;
+		value->val_uint64 = wrapper->buffer[idx].val_uint64;
 		break;
 	case J_DB_TYPE_FLOAT32:
-		value->val_float32 =wrapper->buffer[idx]->val_float32;
+		value->val_float32 = wrapper->buffer[idx].val_float32;
 		break;
 	case J_DB_TYPE_FLOAT64:
-		value->val_float64 =wrapper->buffer[idx]->val_float64;
+		value->val_float64 = wrapper->buffer[idx].val_float64;
 		break;
 	case J_DB_TYPE_STRING:
 		value->val_string = wrapper->bind_out[idx].buffer;
 		break;
 	case J_DB_TYPE_BLOB:
-		value->val_blob =wrapper->bind_out[idx].buffer;
-		value->val_blob_length =wrapper->length[idx];
+		value->val_blob = wrapper->bind_out[idx].buffer;
+		value->val_blob_length = wrapper->length[idx];
 		break;
 	case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
@@ -280,12 +296,13 @@ _error:
 }
 
 static gboolean
-j_sql_bind_in_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
+j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 
+	(void)backend_db;
 	wrapper->is_null[idx] = 0;
 
 	memcpy(&wrapper->buffer[idx], value, sizeof(JDBTypeValue));
@@ -293,22 +310,26 @@ j_sql_bind_in_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDB
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
-		wrapper->buffer[idx]->val_sint32=value->val_sint32;
+		wrapper->buffer[idx].val_sint32 = value->val_sint32;
 		break;
 	case J_DB_TYPE_UINT32:
-		wrapper->buffer[idx]->val_uint32=value->val_uint32;
+		wrapper->buffer[idx].val_uint32 = value->val_uint32;
 		break;
-	case J_DB_TYPE_SINT64:wrapper->buffer[idx]->val_sint64=value->val_sint64;
+	case J_DB_TYPE_SINT64:
+		wrapper->buffer[idx].val_sint64 = value->val_sint64;
 		break;
-	case J_DB_TYPE_UINT64:wrapper->buffer[idx]->val_uint64=value->val_uint64;
-		 break;
-	case J_DB_TYPE_FLOAT32:wrapper->buffer[idx]->val_float32=value->val_float32;
+	case J_DB_TYPE_UINT64:
+		wrapper->buffer[idx].val_uint64 = value->val_uint64;
 		break;
-	case J_DB_TYPE_FLOAT64:wrapper->buffer[idx]->val_float64=value->val_float64;
+	case J_DB_TYPE_FLOAT32:
+		wrapper->buffer[idx].val_float32 = value->val_float32;
+		break;
+	case J_DB_TYPE_FLOAT64:
+		wrapper->buffer[idx].val_float64 = value->val_float64;
 		break;
 	case J_DB_TYPE_STRING:
 		wrapper->is_null[idx] = value->val_string == NULL;
-		wrapper->bind_in[idx].buffer=value->val_string;
+		wrapper->bind_in[idx].buffer = value->val_string;
 		wrapper->bind_in[idx].buffer_length = strlen(value->val_string);
 		break;
 	case J_DB_TYPE_BLOB:
@@ -333,6 +354,8 @@ j_sql_reset(MYSQL* backend_db, void* _stmt, GError** error)
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 
+	(void)backend_db;
+	(void)error;
 	wrapper->active = FALSE;
 
 	return TRUE;
@@ -343,13 +366,16 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
-mysql_stmt_wrapper*stmt;
+	mysql_stmt_wrapper* stmt;
 
-	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, error)))
+	(void)backend_db;
+	(void)error;
+	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
 	{
 		goto _error;
 	}
-status=	mysql_stmt_execute(stmt->stmt);
+	if (!mysql_stmt_execute(stmt->stmt))
+		j_goto(_error, stmt->stmt);
 	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
 	{
 		goto _error;
@@ -371,17 +397,22 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
-	guint ret;
+
+	(void)backend_db;
+	(void)error;
 	if (!wrapper->active)
 	{
-		status = mysql_stmt_execute(wrapper->stmt);
-		status = mysql_stmt_store_result(wrapper->stmt);
+		if (!mysql_stmt_execute(wrapper->stmt))
+			j_goto(_error, wrapper->stmt);
+		if (!mysql_stmt_store_result(wrapper->stmt))
+			j_goto(_error, wrapper->stmt);
 		wrapper->active = TRUE;
 	}
-	status = mysql_stmt_fetch(wrapper->stmt);
+	*found = mysql_stmt_fetch(wrapper->stmt) == 0;
 
-	*found = status == 0;
 	return TRUE;
+_error:
+	return FALSE;
 }
 static gboolean
 j_sql_step_and_reset_check_done(MYSQL* backend_db, void* _stmt, GError** error)
@@ -421,22 +452,26 @@ j_sql_open(void)
 
 	backend_db = mysql_init(NULL);
 	//FIXME use the path variable
-	status = mysql_real_connect(backend_db,
-		"localhost", //hostname
-		"root", //username
-		"1234", //password
-		NULL, //database name
-		0, //port number
-		NULL, //unix socket
-		0 //client flags
-	);
+	if (!mysql_real_connect(backend_db,
+		    "localhost", //hostname
+		    "root", //username
+		    "1234", //password
+		    "julea", //database name
+		    0, //port number
+		    NULL, //unix socket
+		    0 //client flags
+		    ))
+	{
+		g_debug("%s", mysql_error(backend_db));
+		goto _error;
+	}
 	if (G_UNLIKELY(!j_sql_exec(backend_db, "PRAGMA foreign_keys = ON", NULL)))
 	{
 		goto _error;
 	}
 	return backend_db;
 _error:
-	status = mysql_close(backend_db);
+	mysql_close(backend_db);
 	return NULL;
 }
 static void
@@ -444,7 +479,7 @@ j_sql_close(MYSQL* backend_db)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	status = mysql_close(backend_db);
+	mysql_close(backend_db);
 }
 #include "sql-generic.c"
 static gboolean

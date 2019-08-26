@@ -166,7 +166,15 @@ spack_install_dependencies ()
 	then
 		for dependency in $(spack_get_dependencies "install-${mode}")
 		do
-			spack_install "${dependency}"
+			if test ${dependency} = 'mysql'
+			then
+				(
+					cd "${SPACK_DIR}"
+					./bin/spack install mysql +client_only build_type=Release cxxstd=11
+				)
+			else
+				spack_install "${dependency}"
+			fi
 		done
 	fi
 }
