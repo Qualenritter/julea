@@ -359,6 +359,15 @@ j_sql_close(sqlite3* backend_db)
 
 	sqlite3_close(backend_db);
 }
+static gboolean j_sql_start_transaction(sqlite3* backend_db,GError** error){
+	return j_sql_exec(backend_db,"BEGIN_TRANSACTION",error);
+}
+static gboolean j_sql_commit_transaction(sqlite3* backend_db,GError** error){
+	return j_sql_exec(backend_db,"COMMIT",error);
+}
+static gboolean j_sql_abort_transaction(sqlite3* backend_db,GError** error){
+	return j_sql_exec(backend_db,"ROLLBACK",error);
+}
 #include "sql-generic.c"
 static gboolean
 backend_init(gchar const* _path)

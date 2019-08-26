@@ -55,7 +55,6 @@ struct mysql_stmt_wrapper
 	MYSQL_STMT* stmt;
 	MYSQL_BIND* bind_in; //input
 	MYSQL_BIND* bind_out; //output
-	MYSQL_RES* meta;
 	JDBTypeValue* buffer; //reused for in AND out
 	bool* is_null; //reused for in AND out
 	bool* is_error; //reused for in AND out
@@ -76,10 +75,11 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 	gint status;
 	mysql_stmt_wrapper* wrapper = _stmt;
 
+	g_debug("%s %p", G_STRFUNC, wrapper);
+
 	(void)backend_db;
 	(void)error;
 
-	mysql_free_result(wrapper->meta);
 	if ((status = mysql_stmt_close(wrapper->stmt)))
 		j_goto_s(_error, wrapper->stmt, status);
 	for (i = 0; i < wrapper->param_count_out; i++)
@@ -109,21 +109,19 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	guint i;
 	JDBType type;
 	gint status;
-
 	mysql_stmt_wrapper** _wrapper = _stmt;
 	mysql_stmt_wrapper* wrapper;
 
 	wrapper = *_wrapper = g_new0(mysql_stmt_wrapper, 1);
+	g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 		j_goto(_error, wrapper->stmt);
 	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
+	{
 		j_goto_s(_error, wrapper->stmt, status);
-	if (!(wrapper->meta = mysql_stmt_result_metadata(wrapper->stmt)))
-		j_goto(_error, wrapper->stmt);
-	if (!(wrapper->param_count_in = mysql_stmt_param_count(wrapper->stmt)))
-		j_goto(_error, wrapper->stmt);
-	if (!(wrapper->param_count_out = mysql_num_fields(wrapper->meta)))
-		j_goto(_error, wrapper->stmt);
+	}
+	wrapper->param_count_in = types_in ? types_in->len : 0;
+	wrapper->param_count_out = types_out ? types_out->len : 0;
 	wrapper->param_count_total = wrapper->param_count_in > wrapper->param_count_out ? wrapper->param_count_in : wrapper->param_count_out;
 	wrapper->bind_in = g_new0(MYSQL_BIND, wrapper->param_count_in);
 	wrapper->bind_out = g_new0(MYSQL_BIND, wrapper->param_count_out);
@@ -132,10 +130,6 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	wrapper->is_error = g_new0(bool, wrapper->param_count_total);
 	wrapper->length = g_new0(unsigned long, wrapper->param_count_total);
 	wrapper->active = FALSE;
-	if ((status = mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in)))
-		j_goto_s(_error, wrapper->stmt, status);
-	if ((status = mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out)))
-		j_goto_s(_error, wrapper->stmt, status);
 	for (i = 0; i < wrapper->param_count_in; i++)
 	{
 		wrapper->bind_in[i].is_null = &wrapper->is_null[i];
@@ -240,6 +234,12 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 			goto _error;
 		}
 	}
+	if (wrapper->param_count_in)
+		if ((status = mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in)))
+			j_goto_s(_error, wrapper->stmt, status);
+	if (wrapper->bind_out)
+		if ((status = mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out)))
+			j_goto_s(_error, wrapper->stmt, status);
 	return TRUE;
 _error:
 	j_sql_finalize(backend_db, wrapper, NULL);
@@ -253,6 +253,7 @@ j_sql_bind_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 
+	g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
 	wrapper->is_null[idx] = 1;
@@ -266,7 +267,7 @@ j_sql_column(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeVal
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
-
+	g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	memset(value, 0, sizeof(*value));
 	switch (type)
@@ -316,7 +317,7 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 
 	(void)backend_db;
 	wrapper->is_null[idx] = 0;
-
+	g_debug("%s %p", G_STRFUNC, wrapper);
 	memcpy(&wrapper->buffer[idx], value, sizeof(JDBTypeValue));
 
 	switch (type)
@@ -343,11 +344,13 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 		wrapper->is_null[idx] = value->val_string == NULL;
 		wrapper->bind_in[idx].buffer = value->val_string;
 		wrapper->bind_in[idx].buffer_length = strlen(value->val_string);
+		wrapper->length[idx] = wrapper->bind_in[idx].buffer_length;
 		break;
 	case J_DB_TYPE_BLOB:
 		wrapper->is_null[idx] = value->val_blob == NULL;
 		wrapper->bind_in[idx].buffer = value->val_blob;
 		wrapper->bind_in[idx].buffer_length = value->val_blob_length;
+		wrapper->length[idx] = wrapper->bind_in[idx].buffer_length;
 		break;
 	case J_DB_TYPE_ID:
 	case _J_DB_TYPE_COUNT:
@@ -365,7 +368,7 @@ j_sql_reset(MYSQL* backend_db, void* _stmt, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
-
+	g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
 	wrapper->active = FALSE;
@@ -380,7 +383,7 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 
 	mysql_stmt_wrapper* stmt;
 	gint status;
-
+	g_debug("%s", G_STRFUNC);
 	(void)backend_db;
 	(void)error;
 	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
@@ -411,7 +414,7 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 	gint status;
-
+	g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
 	if (!wrapper->active)
@@ -434,7 +437,7 @@ j_sql_step_and_reset_check_done(MYSQL* backend_db, void* _stmt, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	gboolean sql_found;
-
+	g_debug("%s %p", G_STRFUNC,_stmt);
 	if (G_UNLIKELY(!j_sql_step(backend_db, _stmt, &sql_found, error)))
 	{
 		goto _error;
@@ -463,7 +466,7 @@ j_sql_open(void)
 	g_autofree gchar* dirname = NULL;
 
 	g_return_val_if_fail(path != NULL, FALSE);
-
+	g_debug("%s", G_STRFUNC);
 	if (!(backend_db = mysql_init(NULL)))
 		goto _error;
 
@@ -490,8 +493,17 @@ static void
 j_sql_close(MYSQL* backend_db)
 {
 	J_TRACE_FUNCTION(NULL);
-
+	g_debug("%s", G_STRFUNC);
 	mysql_close(backend_db);
+}
+static gboolean j_sql_start_transaction(MYSQL* backend_db,GError** error){
+return TRUE;
+}
+static gboolean j_sql_commit_transaction(MYSQL* backend_db,GError** error){
+return TRUE;
+}
+static gboolean j_sql_abort_transaction(MYSQL* backend_db,GError** error){
+return TRUE;
 }
 #include "sql-generic.c"
 static gboolean
