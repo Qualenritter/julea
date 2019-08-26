@@ -364,7 +364,7 @@ j_sql_close(sqlite3* backend_db)
 static gboolean
 j_sql_start_transaction(sqlite3* backend_db, GError** error)
 {
-	return j_sql_exec(backend_db, "BEGIN_TRANSACTION", error);
+	return j_sql_exec(backend_db, "BEGIN TRANSACTION", error);
 }
 static gboolean
 j_sql_commit_transaction(sqlite3* backend_db, GError** error)
