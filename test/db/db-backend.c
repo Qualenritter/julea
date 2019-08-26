@@ -33,6 +33,7 @@ static void
 test_db_schema_create(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
+	random_values.schema_create.variable_count = 1;
 	event = AFL_EVENT_DB_SCHEMA_CREATE;
 	test_db_backend_exec();
 	test_db_backend_cleanup();

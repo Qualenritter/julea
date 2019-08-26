@@ -271,7 +271,8 @@ _backend_batch_start(JSqlBatch* batch, GError** error)
 
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
 		goto _error;
-	if(!j_sql_start_transaction(thread_variables->sql_backend,error))goto _error;
+	if (!j_sql_start_transaction(thread_variables->sql_backend, error))
+		goto _error;
 	batch->open = TRUE;
 	batch->aborted = FALSE;
 	return TRUE;
@@ -289,7 +290,8 @@ _backend_batch_execute(JSqlBatch* batch, GError** error)
 
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
 		goto _error;
-	if(!j_sql_commit_transaction(thread_variables->sql_backend,error))goto _error;
+	if (!j_sql_commit_transaction(thread_variables->sql_backend, error))
+		goto _error;
 	batch->open = FALSE;
 	return TRUE;
 _error:
@@ -306,7 +308,8 @@ _backend_batch_abort(JSqlBatch* batch, GError** error)
 
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
 		goto _error;
-	if(!j_sql_abort_transaction(thread_variables->sql_backend,error))goto _error;
+	if (!j_sql_abort_transaction(thread_variables->sql_backend, error))
+		goto _error;
 	batch->open = FALSE;
 	batch->aborted = TRUE;
 	return TRUE;
@@ -427,7 +430,7 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 		//no ddl in transaction - most databases wont support that - continue without any open transaction
 		goto _error;
 	}
-	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER PRIMARY KEY", batch->namespace, name);
+	g_string_append_printf(sql, "CREATE TABLE %s_%s ( _id INTEGER " sql_autoincrement_string " PRIMARY KEY", batch->namespace, name);
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, schema, error)))
 	{
 		goto _error;
@@ -838,7 +841,6 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 		//no ddl in transaction - most databases wont support that - continue without any open transaction
 		goto _error;
 	}
-	deleteCachePrepared(batch->namespace, name);
 	if (G_UNLIKELY(!_backend_schema_get(batch, name, NULL, error)))
 	{
 		goto _error;
@@ -871,6 +873,7 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	{
 		goto _error;
 	}
+	deleteCachePrepared(batch->namespace, name);
 	return TRUE;
 _error:
 	if (sql)

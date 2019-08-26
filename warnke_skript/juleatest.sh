@@ -5,13 +5,17 @@ rm -rf build
 ./waf.sh build
 ./waf.sh install
 basepath="/mnt2/juleatest"
-for db_backend in mysql sqlite
-do
+
+function exec_tests()
+{
+db_backend=$1
+db_component=$2
+echo ${db_backend} ${db_component}
 julea-config --user \
 	--object-servers="$(hostname)" --kv-servers="$(hostname)" --db-servers="$(hostname)" \
 	--object-backend=posix --object-component=server --object-path=${basepath}/object \
 	--kv-backend=sqlite --kv-component=server --kv-path=${basepath}/kv \
-	--db-backend=${db_backend} --db-component=client --db-path=${basepath}/db
+	--db-backend=${db_backend} --db-component=${db_component} --db-path=${basepath}/db
 rm -rf ${basepath}
 mkdir -p ${basepath}
 (
@@ -19,6 +23,7 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
+	mysql -Nse 'show tables' julea | while read table; do mysql -e "drop table $table" julea; done
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
@@ -33,6 +38,10 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
+	mysql -Nse 'show tables' julea | while read table; do mysql -e "drop table $table" julea; done
 	./scripts/test.sh
 )
-done
+}
+
+exec_tests mysql client
+exec_tests sqlite server

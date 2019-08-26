@@ -38,6 +38,8 @@
 #define SQL_MODE_MULTI_THREAD 1
 #define SQL_MODE SQL_MODE_SINGLE_THREAD
 
+#define sql_autoincrement_string ""
+
 static gchar* path;
 
 static gboolean
@@ -359,14 +361,20 @@ j_sql_close(sqlite3* backend_db)
 
 	sqlite3_close(backend_db);
 }
-static gboolean j_sql_start_transaction(sqlite3* backend_db,GError** error){
-	return j_sql_exec(backend_db,"BEGIN_TRANSACTION",error);
+static gboolean
+j_sql_start_transaction(sqlite3* backend_db, GError** error)
+{
+	return j_sql_exec(backend_db, "BEGIN_TRANSACTION", error);
 }
-static gboolean j_sql_commit_transaction(sqlite3* backend_db,GError** error){
-	return j_sql_exec(backend_db,"COMMIT",error);
+static gboolean
+j_sql_commit_transaction(sqlite3* backend_db, GError** error)
+{
+	return j_sql_exec(backend_db, "COMMIT", error);
 }
-static gboolean j_sql_abort_transaction(sqlite3* backend_db,GError** error){
-	return j_sql_exec(backend_db,"ROLLBACK",error);
+static gboolean
+j_sql_abort_transaction(sqlite3* backend_db, GError** error)
+{
+	return j_sql_exec(backend_db, "ROLLBACK", error);
 }
 #include "sql-generic.c"
 static gboolean
