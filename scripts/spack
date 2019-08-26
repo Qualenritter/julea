@@ -170,7 +170,7 @@ spack_install_dependencies ()
 			then
 				(
 					cd "${SPACK_DIR}"
-					./bin/spack install mysql +client_only build_type=Release cxxstd=11
+					./bin/spack install mysql build_type=Release cxxstd=11
 				)
 			else
 				spack_install "${dependency}"
