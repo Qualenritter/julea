@@ -213,6 +213,7 @@ main(int argc, char** argv)
 */
 
 	// HDF5 client
+	benchmark_hdf2();
 	benchmark_hdf();
 
 	g_timer_destroy(j_benchmark_timer);
