@@ -98,6 +98,7 @@ thread_variables_get(GError** error)
 	thread_variables = g_private_get(&thread_variables_global);
 	if (!thread_variables)
 	{
+		g_debug("!thread_variables");
 		thread_variables = g_new0(JThreadVariables, 1);
 		thread_variables->sql_backend = j_sql_open();
 		if (G_UNLIKELY(!j_sql_exec(thread_variables->sql_backend,
@@ -113,7 +114,7 @@ thread_variables_get(GError** error)
 			goto _error;
 		}
 		thread_variables->namespaces = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheNames);
-		g_private_replace(&thread_variables_global, thread_variables);
+		g_private_set(&thread_variables_global, thread_variables);
 	}
 	return thread_variables;
 _error:
