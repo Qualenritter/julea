@@ -1,0 +1,18 @@
+HDF5-DIAG: Error detected in HDF5 (1.11.6) thread 0:
+  #000: H5VLcallback.c line 251 in H5VLterminate(): not a VOL connector ID
+    major: Invalid arguments to routine
+    minor: Inappropriate type
+HDF5-DIAG: Error detected in HDF5 (1.11.6) thread 0:
+  #000: H5VL.c line 377 in H5VLunregister_connector(): not a VOL connector ID
+    major: Virtual Object Layer
+    minor: Inappropriate type
+/hdf5/dataset/create/1:                            20.000 seconds (114949/s) [0.000 seconds]
+/hdf5/dataset/open/1:                              20.000 seconds (290693/s) [0.000 seconds]
+/hdf5/dataset/close/1:                             10.942 seconds (741412/s) [0.000 seconds]
+/hdf5/dataset/write/1:                             20.000 seconds (2349/s) (9.9 GB/s) [0.000 seconds]
+/hdf5/dataset/read/1:                              20.000 seconds (5172/s) (21.7 GB/s) [0.000 seconds]
+/hdf5/attr/create/1:                               20.000 seconds (220298/s) [0.000 seconds]
+/hdf5/attr/open/1:                                 20.000 seconds (3710218/s) [0.000 seconds]
+/hdf5/attr/close/1:                                12.153 seconds (6468233/s) [0.000 seconds]
+/hdf5/attr/write/1:                                20.000 seconds (3225877/s) (13.2 GB/s) [0.000 seconds]
+/hdf5/attr/read/1:                                 20.000 seconds (6260117/s) (25.6 GB/s) [0.000 seconds]
