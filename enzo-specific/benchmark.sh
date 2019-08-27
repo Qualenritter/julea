@@ -28,7 +28,7 @@ export HDF5_VOL_JULEA=$use_julea
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="${HOME}/julea/enzo-specific/benchmark-${tmp_dir_type}-${use_julea}-${iteration_limit}-${db_backend}"
 export J_TIMER_DB="$tmpdir/tmp.sqlite"
-export G_MESSAGES_DEBUG=all
+#export G_MESSAGES_DEBUG=all
 
 ${HOME}/julea/build-hdf-julea/tools/julea-config --user --object-servers="benjamin0" --kv-servers="benjamin0" --db-servers="benjamin0" \
 	--object-backend=posix --object-component=server --object-path="${tmpdir}/server-object" \
@@ -112,7 +112,7 @@ echo "done"
 cd /src/julea/enzo-specific
 (
 	cd ..
-	./waf.sh configure  --out build-hdf-julea --prefix=prefix-hdf-julea --libdir=prefix-hdf-julea --bindir=prefix-hdf-julea --destdir=prefix-hdf-julea --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
+	./waf.sh configure  --out build-hdf-julea --prefix=prefix-hdf-julea --libdir=prefix-hdf-julea --bindir=prefix-hdf-julea --destdir=prefix-hdf-julea --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 	./waf.sh build
 	./waf.sh install
 )
