@@ -448,7 +448,7 @@ H5VL_julea_db_link_create(H5VL_link_create_type_t create_type, void* obj, const 
 	hid_t lcpl_id, hid_t lapl_id, hid_t dxpl_id, void** req, va_list argumenmts)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_link_create);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -458,7 +458,7 @@ H5VL_julea_db_link_copy(void* src_obj, const H5VL_loc_params_t* loc_params1,
 	hid_t lcpl, hid_t lapl, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_link_copy);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -468,7 +468,7 @@ H5VL_julea_db_link_move(void* src_obj, const H5VL_loc_params_t* loc_params1,
 	hid_t lcpl, hid_t lapl, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_link_move);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -477,7 +477,7 @@ H5VL_julea_db_link_get(void* obj, const H5VL_loc_params_t* loc_params, H5VL_link
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_link_get);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -486,7 +486,7 @@ H5VL_julea_db_link_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_link_specific);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
@@ -494,7 +494,7 @@ static herr_t
 H5VL_julea_db_link_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_link_optional);
+
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }

@@ -210,7 +210,6 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_create);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -350,12 +349,9 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 		j_goto_error();
 	}
 	j_distributed_object_create(object->attr.object, batch);
+	if (!j_batch_execute(batch))
 	{
-		H5VL_JULEA_TIMER(j_distributed_object_create);
-		if (!j_batch_execute(batch))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
 	if (!H5VL_julea_db_link_create_helper(parent, object, name))
 		j_goto_error();
@@ -370,7 +366,6 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 	hid_t aapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_open);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -488,7 +483,6 @@ static herr_t
 H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_read);
 
 	g_autoptr(JBatch) batch = NULL;
 	guint64 bytes_read;
@@ -503,12 +497,9 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 	data_size = object->dataset.datatype->datatype.type_total_size;
 	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_read(object->attr.object, buf, data_size, 0, &bytes_read, batch);
+	if (!j_batch_execute(batch))
 	{
-		H5VL_JULEA_TIMER(j_distributed_object_read);
-		if (!j_batch_execute(batch))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
 	return 0;
 _error:
@@ -518,7 +509,6 @@ static herr_t
 H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_write);
 
 	g_autoptr(JBatch) batch = NULL;
 	guint64 bytes_written;
@@ -533,12 +523,9 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 	data_size = object->dataset.datatype->datatype.type_total_size;
 	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_write(object->attr.object, buf, data_size, 0, &bytes_written, batch);
+	if (!j_batch_execute(batch))
 	{
-		H5VL_JULEA_TIMER(j_distributed_object_write);
-		if (!j_batch_execute(batch))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
 	return 0;
 _error:
@@ -548,7 +535,6 @@ static herr_t
 H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_get);
 
 	JHDF5Object_t* object = obj;
 
@@ -577,7 +563,6 @@ H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_specific);
 
 	JHDF5Object_t* object = obj;
 
@@ -590,7 +575,6 @@ static herr_t
 H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_optional);
 
 	JHDF5Object_t* object = obj;
 
@@ -603,7 +587,6 @@ static herr_t
 H5VL_julea_db_attr_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_attr_close);
 
 	JHDF5Object_t* object = obj;
 

@@ -210,7 +210,6 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	hid_t dapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_create);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -225,223 +224,139 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 
 	g_return_val_if_fail(name != NULL, NULL);
 	g_return_val_if_fail(parent != NULL, NULL);
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		switch (parent->type)
-		{
-		case J_HDF5_OBJECT_TYPE_FILE:
-			g_debug("XXX create dataset '%s' (F '%s')", name, parent->file.name);
-			file = parent;
-			break;
-		case J_HDF5_OBJECT_TYPE_DATASET:
-			file = parent->dataset.file;
-			g_debug("XXX create dataset '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
-			break;
-		case J_HDF5_OBJECT_TYPE_ATTR:
-			file = parent->attr.file;
-			g_debug("XXX create dataset '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
-			break;
-		case J_HDF5_OBJECT_TYPE_GROUP:
-			file = parent->group.file;
-			g_debug("XXX create dataset '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
-			break;
-		case J_HDF5_OBJECT_TYPE_DATATYPE:
-		case J_HDF5_OBJECT_TYPE_SPACE:
-		case _J_HDF5_OBJECT_TYPE_COUNT:
-		default:
-			g_assert_not_reached();
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
 
-		if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
-		{
-			j_goto_error();
-		}
-	}
+	switch (parent->type)
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATASET)))
-		{
-			j_goto_error();
-		}
+	case J_HDF5_OBJECT_TYPE_FILE:
+		g_debug("XXX create dataset '%s' (F '%s')", name, parent->file.name);
+		file = parent;
+		break;
+	case J_HDF5_OBJECT_TYPE_DATASET:
+		file = parent->dataset.file;
+		g_debug("XXX create dataset '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
+		break;
+	case J_HDF5_OBJECT_TYPE_ATTR:
+		file = parent->attr.file;
+		g_debug("XXX create dataset '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
+		break;
+	case J_HDF5_OBJECT_TYPE_GROUP:
+		file = parent->group.file;
+		g_debug("XXX create dataset '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
+		break;
+	case J_HDF5_OBJECT_TYPE_DATATYPE:
+	case J_HDF5_OBJECT_TYPE_SPACE:
+	case _J_HDF5_OBJECT_TYPE_COUNT:
+	default:
+		g_assert_not_reached();
+		j_goto_error();
 	}
+
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object->dataset.name = g_strdup(name)))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_DATASET)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object->dataset.file = H5VL_julea_db_object_ref(file)))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!(object->dataset.name = g_strdup(name)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object->dataset.datatype = H5VL_julea_db_datatype_encode(&type_id)))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!(object->dataset.file = H5VL_julea_db_object_ref(file)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object->dataset.space = H5VL_julea_db_space_encode(&space_id)))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!(object->dataset.datatype = H5VL_julea_db_datatype_encode(&type_id)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!(object->dataset.space = H5VL_julea_db_space_encode(&space_id)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_entry_set_field(entry, "xxx_parent", parent->backend_id, parent->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!j_db_entry_set_field(entry, "file", file->backend_id, file->backend_id_len, &error))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_entry_set_field(entry, "xxx_name", name, strlen(name), &error))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!j_db_entry_set_field(entry, "xxx_parent", parent->backend_id, parent->backend_id_len, &error))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_entry_set_field(entry, "datatype", object->dataset.datatype->backend_id, object->dataset.datatype->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!j_db_entry_set_field(entry, "xxx_name", name, strlen(name), &error))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_entry_set_field(entry, "space", object->dataset.space->backend_id, object->dataset.space->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!j_db_entry_set_field(entry, "datatype", object->dataset.datatype->backend_id, object->dataset.datatype->backend_id_len, &error))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_entry_insert(entry, batch, &error))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
+	if (!j_db_entry_set_field(entry, "space", object->dataset.space->backend_id, object->dataset.space->backend_id_len, &error))
 	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
+		j_goto_error();
+	}
+	if (!j_db_entry_insert(entry, batch, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_batch_execute(batch))
+	{
+		j_goto_error();
+	}
+	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
+	{
+		j_goto_error();
+	}
+	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_selector_add_field(selector, "xxx_parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_selector_add_field(selector, "xxx_name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
+	{
+		j_goto_error();
+	}
+	if (!(iterator = j_db_iterator_new(julea_db_schema_dataset, selector, &error)))
+	{
+		j_goto_error();
+	}
+	if (!j_db_iterator_next(iterator, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+	{
+		j_goto_error();
+	}
+	g_assert(!j_db_iterator_next(iterator, NULL));
+	if (!(object->dataset.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
+	{
+		j_goto_error();
+	}
+	if (!(hex_buf = H5VL_julea_db_buf_to_hex("dataset", object->backend_id, object->backend_id_len)))
+	{
+		j_goto_error();
+	}
+	if (!(object->dataset.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->dataset.distribution)))
+	{
+		j_goto_error();
+	}
+	j_distributed_object_create(object->dataset.object, batch);
+	{
 		if (!j_batch_execute(batch))
 		{
 			j_goto_error();
 		}
 	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_selector_add_field(selector, "xxx_parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_selector_add_field(selector, "xxx_name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(iterator = j_db_iterator_new(julea_db_schema_dataset, selector, &error)))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_iterator_next(iterator, &error))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		g_assert(!j_db_iterator_next(iterator, NULL));
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object->dataset.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(hex_buf = H5VL_julea_db_buf_to_hex("dataset", object->backend_id, object->backend_id_len)))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!(object->dataset.object = j_distributed_object_new(JULEA_HDF5_DB_NAMESPACE, hex_buf, object->dataset.distribution)))
-		{
-			j_goto_error();
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		j_distributed_object_create(object->dataset.object, batch);
-		{
-			H5VL_JULEA_TIMER(j_distributed_object_create);
-			if (!j_batch_execute(batch))
-			{
-				j_goto_error();
-			}
-		}
-	}
-	{
-		H5VL_JULEA_TIMER_INT(__LINE__);
-		if (!H5VL_julea_db_link_create_helper(parent, object, name))
-			j_goto_error();
-	}
+	if (!H5VL_julea_db_link_create_helper(parent, object, name))
+		j_goto_error();
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -453,7 +368,6 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	hid_t dapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_open);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -774,7 +688,6 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	hid_t xfer_plist_id, const void* buf, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_write);
 
 	g_autofree void* local_buf_org;
 	g_autoptr(JBatch) batch = NULL;
@@ -843,12 +756,9 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 		if (file_space_range->start + current_count1 == file_space_range->stop)
 			file_space_range = NULL;
 	}
+	if (!j_batch_execute(batch))
 	{
-		H5VL_JULEA_TIMER(j_distributed_object_write);
-		if (!j_batch_execute(batch))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
 	return 0;
 _error:
@@ -859,7 +769,6 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 	hid_t xfer_plist_id, void* buf, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_read);
 
 	g_autofree void* local_buf_org;
 	g_autoptr(JBatch) batch = NULL;
@@ -926,12 +835,9 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		if (file_space_range->start + current_count1 == file_space_range->stop)
 			file_space_range = NULL;
 	}
+	if (!j_batch_execute(batch))
 	{
-		H5VL_JULEA_TIMER(j_distributed_object_read);
-		if (!j_batch_execute(batch))
-		{
-			j_goto_error();
-		}
+		j_goto_error();
 	}
 
 	local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
@@ -947,7 +853,6 @@ static herr_t
 H5VL_julea_db_dataset_get(void* obj, H5VL_dataset_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_get);
 
 	JHDF5Object_t* object = obj;
 
@@ -977,7 +882,6 @@ H5VL_julea_db_dataset_specific(void* obj, H5VL_dataset_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_specific);
 
 	JHDF5Object_t* object = obj;
 
@@ -990,7 +894,6 @@ static herr_t
 H5VL_julea_db_dataset_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_optional);
 
 	JHDF5Object_t* object = obj;
 
@@ -1003,7 +906,6 @@ static herr_t
 H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_dataset_close);
 
 	JHDF5Object_t* object = obj;
 

@@ -199,7 +199,6 @@ H5VL_julea_db_group_create(void* obj, const H5VL_loc_params_t* loc_params, const
 	hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_group_create);
 
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -323,7 +322,6 @@ H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 	hid_t gapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_group_open);
 
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
@@ -388,7 +386,6 @@ static herr_t
 H5VL_julea_db_group_get(void* obj, H5VL_group_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_group_get);
 
 	JHDF5Object_t* object = obj;
 
@@ -402,7 +399,6 @@ H5VL_julea_db_group_specific(void* obj, H5VL_group_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_group_specific);
 
 	JHDF5Object_t* object = obj;
 
@@ -415,7 +411,6 @@ static herr_t
 H5VL_julea_db_group_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_group_optional);
 
 	JHDF5Object_t* object = obj;
 
@@ -428,7 +423,6 @@ static herr_t
 H5VL_julea_db_group_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
-	H5VL_JULEA_TIMER(H5VL_julea_db_group_close);
 
 	JHDF5Object_t* object = obj;
 

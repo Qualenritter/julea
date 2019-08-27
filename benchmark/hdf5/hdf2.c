@@ -37,7 +37,7 @@
 static gdouble target_time = 30.0;
 
 static guint n;
-
+static gboolean useVOL = 1;
 struct result_sets
 {
 	BenchmarkResult dataset_create;
@@ -81,11 +81,14 @@ benchmark_hdf_main()
 		}
 		data_attr[i] = i * 10;
 	}
-	h5vl_julea = H5PLget_plugin_info();
-	julea_vol_id = H5VLregister_connector(h5vl_julea, H5P_DEFAULT);
-	H5VLinitialize(julea_vol_id, H5P_DEFAULT);
 	acc_tpl = H5Pcreate(H5P_FILE_ACCESS);
-	H5Pset_vol(acc_tpl, julea_vol_id, NULL);
+	if (useVOL)
+	{
+		h5vl_julea = H5PLget_plugin_info();
+		julea_vol_id = H5VLregister_connector(h5vl_julea, H5P_DEFAULT);
+		H5VLinitialize(julea_vol_id, H5P_DEFAULT);
+		H5Pset_vol(acc_tpl, julea_vol_id, NULL);
+	}
 	dims_ds[0] = dim_size;
 	dims_ds[1] = dim_size;
 	dims_attr[0] = dim_size;
@@ -295,6 +298,8 @@ benchmark_hdf2(void)
 	const char* target_str;
 	int ret;
 	double target = 0.0;
+	const char* s = getenv("J_BENCHMARK_VOL");
+	useVOL = (s != NULL) && (*s == '1');
 	memset(&shared_result, 0, sizeof(shared_result));
 	target_str = g_getenv("J_BENCHMARK_TARGET");
 	if (target_str)
