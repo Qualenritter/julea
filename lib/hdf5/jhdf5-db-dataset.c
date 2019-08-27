@@ -577,6 +577,8 @@ typedef struct JHDF5IndexRange JHDF5IndexRange;
 static GArray*
 H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	g_autofree hsize_t* stored_dims = NULL;
 	JHDF5IndexRange range;
 	JHDF5IndexRange range_tmp;

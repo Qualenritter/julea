@@ -238,6 +238,7 @@ static JHDF5Object_t*
 H5VL_julea_db_space_encode(hid_t* type_id)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_autofree hsize_t* stored_dims = NULL;
 	g_autoptr(JDBEntry) entry = NULL;
 	g_autoptr(JBatch) batch = NULL;
@@ -260,10 +261,12 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 		j_goto_error();
 	}
 	//transform to binary
+{J_TRACE("H5Sget_simple_extent_ndims");
 	stored_ndims = H5Sget_simple_extent_ndims(*type_id);
+}
 	stored_dims = g_new(hsize_t, stored_ndims);
-	H5Sget_simple_extent_dims(*type_id, stored_dims, NULL);
-	element_count = 1;
+{J_TRACE("H5Sget_simple_extent_dims");	H5Sget_simple_extent_dims(*type_id, stored_dims, NULL);
+}	element_count = 1;
 	for (i = 0; i < (guint)stored_ndims; i++)
 	{
 		element_count *= stored_dims[i];
@@ -271,14 +274,16 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_SPACE)))
 	{
 		j_goto_error();
-	}
+	}{
+J_TRACE("H5SencodeNULL");
 	H5Sencode(*type_id, NULL, &size);
+}
 	if (!(object->space.data = g_new(char, size)))
 	{
 		j_goto_error();
 	}
-	H5Sencode(*type_id, object->space.data, &size);
-	object->space.hdf5_id = *type_id;
+{J_TRACE("H5Sencode");	H5Sencode(*type_id, object->space.data, &size);
+}	object->space.hdf5_id = *type_id;
 	object->space.dim_total_count = element_count;
 
 _check_type_exist:

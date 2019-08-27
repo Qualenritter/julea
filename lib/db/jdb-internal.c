@@ -53,6 +53,8 @@ typedef struct J_db_iterator_helper J_db_iterator_helper;
 GQuark
 j_frontend_db_error_quark(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return g_quark_from_static_string("j-frontend-db-error-quark");
 }
 
@@ -137,6 +139,8 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 static void
 j_backend_db_func_free(gpointer _data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JBackendOperation* data = _data;
 	if (data)
 	{
@@ -147,6 +151,8 @@ j_backend_db_func_free(gpointer _data)
 static gboolean
 j_db_schema_create_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_CREATE);
 }
 gboolean
@@ -176,6 +182,8 @@ j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t co
 static gboolean
 j_db_schema_get_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_GET);
 }
 gboolean
@@ -203,6 +211,8 @@ j_db_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* sche
 static gboolean
 j_db_schema_delete_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_DELETE);
 }
 gboolean
@@ -229,6 +239,8 @@ j_db_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* b
 static gboolean
 j_db_insert_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_INSERT);
 }
 gboolean
@@ -256,6 +268,8 @@ j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* me
 static gboolean
 j_db_update_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_UPDATE);
 }
 gboolean
@@ -287,6 +301,8 @@ j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* se
 static gboolean
 j_db_delete_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_DELETE);
 }
 gboolean
@@ -314,6 +330,8 @@ j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* se
 static gboolean
 j_db_query_exec(JList* operations, JSemantics* semantics)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_QUERY);
 }
 gboolean

@@ -54,6 +54,8 @@ static JDBSchema* julea_db_schema_datatype_header = NULL;
 static const void*
 H5VL_julea_db_datatype_convert_type_change(hid_t type_id_from, hid_t type_id_to, const char* from_buf, char* target_buf, guint count)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	guint i;
 	size_t size;
 	const char* from_buf_ptr;
@@ -174,6 +176,8 @@ H5VL_julea_db_datatype_convert_type_change(hid_t type_id_from, hid_t type_id_to,
 static const void*
 H5VL_julea_db_datatype_convert_type(hid_t type_id_from, hid_t type_id_to, const char* from_buf, char* tmp_buf, guint count)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	if (H5Tequal(type_id_from, type_id_to))
 		return from_buf;
 	return H5VL_julea_db_datatype_convert_type_change(type_id_from, type_id_to, from_buf, tmp_buf, count);

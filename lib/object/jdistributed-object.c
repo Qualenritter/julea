@@ -152,6 +152,8 @@ static
 void
 j_distributed_object_create_free (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObject* object = data;
 
 	j_distributed_object_unref(object);
@@ -161,6 +163,8 @@ static
 void
 j_distributed_object_delete_free (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObject* object = data;
 
 	j_distributed_object_unref(object);
@@ -170,6 +174,8 @@ static
 void
 j_distributed_object_status_free (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectOperation* operation = data;
 
 	j_distributed_object_unref(operation->status.object);
@@ -181,6 +187,8 @@ static
 void
 j_distributed_object_read_free (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectOperation* operation = data;
 
 	j_distributed_object_unref(operation->read.object);
@@ -192,6 +200,8 @@ static
 void
 j_distributed_object_write_free (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectOperation* operation = data;
 
 	j_distributed_object_unref(operation->write.object);
@@ -212,6 +222,8 @@ static
 gpointer
 j_distributed_object_create_background_operation (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectBackgroundData* background_data = data;
 
 	JSemanticsSafety safety;
@@ -254,6 +266,8 @@ static
 gpointer
 j_distributed_object_delete_background_operation (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectBackgroundData* background_data = data;
 
 	JSemanticsSafety safety;
@@ -296,6 +310,8 @@ static
 gpointer
 j_distributed_object_read_background_operation (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectBackgroundData* background_data = data;
 
 	g_autoptr(JListIterator) it = NULL;
@@ -376,6 +392,8 @@ static
 gpointer
 j_distributed_object_write_background_operation (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectBackgroundData* background_data = data;
 
 	JSemanticsSafety safety;
@@ -430,6 +448,8 @@ static
 gpointer
 j_distributed_object_status_background_operation (gpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JDistributedObjectBackgroundData* background_data = data;
 
 	g_autoptr(JListIterator) it = NULL;

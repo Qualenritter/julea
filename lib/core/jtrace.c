@@ -59,6 +59,12 @@ struct JTraceStack
 	guint64 enter_time;
 };
 typedef struct JTraceStack JTraceStack;
+struct JTraceTime
+{
+	gdouble time;
+	guint count;
+};
+typedef struct JTraceTime JTraceTime;
 /**
  * A trace thread.
  **/
@@ -499,11 +505,11 @@ j_trace_fini(void)
 	{
 		GHashTableIter iter;
 		gchar* key;
-		gdouble* value;
+		JTraceTime* value;
 		g_hash_table_iter_init(&iter, j_trace_combined_timers);
 		while (g_hash_table_iter_next(&iter, &key, &value))
 		{
-			g_printerr("func (%s) duration (%f)\n", key, *value);
+			g_printerr("duration (%f) count (%d) func (%s)\n", value->time,value->count, key);
 		}
 		g_hash_table_unref(j_trace_combined_timers);
 	}
@@ -687,7 +693,7 @@ j_trace_leave(JTrace* trace)
 	if (j_trace_flags & J_TRACE_COMBINED)
 	{
 		guint64 duration;
-		gdouble* combined_duration;
+		JTraceTime* combined_duration;
 		JTraceStack* top_stack = NULL;
 		g_assert(trace_thread->stack->len > 0);
 		top_stack = &g_array_index(trace_thread->stack, JTraceStack, trace_thread->stack->len - 1);
@@ -695,13 +701,15 @@ j_trace_leave(JTrace* trace)
 		combined_duration = g_hash_table_lookup(j_trace_combined_timers, top_stack->name);
 		if (!combined_duration)
 		{
-			combined_duration = g_new(gdouble, 1);
-			*combined_duration = duration/G_USEC_PER_SEC;
+			combined_duration = g_new(JTraceTime, 1);
+			combined_duration->time = ((gdouble)duration)/((gdouble)G_USEC_PER_SEC);
+			combined_duration->count=1;
 			g_hash_table_insert(j_trace_combined_timers, g_strdup(top_stack->name), combined_duration);
 		}
 		else
 		{
-			*combined_duration += duration/G_USEC_PER_SEC;
+			combined_duration->time += duration/G_USEC_PER_SEC;
+			combined_duration->count++;
 		}
 		g_free(top_stack->name);
 		g_array_set_size(trace_thread->stack, trace_thread->stack->len - 1);
