@@ -21,41 +21,35 @@ export J_BENCHMARK_SCALE=100
 
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
-./warnke_skript/format.sh
 ./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 ./waf.sh install
 thepath=$(pwd)
 mkdir -p log
 rm -rf ${mountpoint}/julea/*
-(
-	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
-	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	./build-gcc-benchmark/tools/julea-config --user \
-		  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
-		  --db-servers="$(hostname)" \
-		  --object-backend=posix --object-component=server --object-path=${mountpoint}/julea/object-benchmark \
-		  --kv-backend=sqlite --kv-component=server --kv-path=${mountpoint}/julea/kv-benchmark \
-		  --db-backend=sqlite --db-component=server --db-path=${mountpoint}/julea/db-benchmark
-)
+export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
+export JULEA_CONFIG=~/.config/julea/julea-benchmark
+export J_TRACE="combined"
+
+./build-gcc-benchmark/tools/julea-config --user \
+	  --object-servers="$(hostname)" --kv-servers="$(hostname)" \
+	  --db-servers="$(hostname)" \
+	  --object-backend=posix --object-component=server --object-path=${mountpoint}/julea/object-benchmark \
+	  --kv-backend=sqlite --kv-component=server --kv-path=${mountpoint}/julea/kv-benchmark \
+	  --db-backend=mysql --db-component=client --db-path=${mountpoint}/julea/db-benchmark
+
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 githash=$(git log --pretty=format:'%H' -n 1)
-(
-	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
-	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	./build-gcc-benchmark/server/julea-server
-)&
+
+mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+./build-gcc-benchmark/server/julea-server >> server_log 2>&1 &
 server_pid=$!
+
 sleep 2
-(
-	rm -rf benchmark_values/warnke-${githash}
-	mkdir -p benchmark_values/warnke-${githash}
-	cd benchmark_values/warnke-${githash}
-	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
-	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	export J_BENCHMARK_TARGET=10;
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
-	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
-	kill -9 ${server_pid}
-)
-wait
+
+rm -rf benchmark_values/warnke-${githash}
+mkdir -p benchmark_values/warnke-${githash}
+cd benchmark_values/warnke-${githash}
+export J_BENCHMARK_TARGET=10;
+../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values 2>&1
+kill -9 ${server_pid}
