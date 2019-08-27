@@ -61,12 +61,9 @@ ${HOME}/julea/example/a.out
 rm ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 
 ENZO_START=$(date +%s.%N)
-(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out) &
-ENZO_PID=$!
+sudo -u benjamin mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 while true
 do
-	echo "wait for ${ENZO_PID}"
-	wait ${ENZO_PID}
 	ENZO_END=$(date +%s.%N)
 	echo "going to restart"
 	for f in $(find "$(dirname ${J_TIMER_DB})/" -maxdepth 1 -name "$(echo "${J_TIMER_DB}*" | sed "s-.*/--g")")
@@ -106,8 +103,7 @@ do
 	fi
 	echo "continue with ${parameter}"
 	ENZO_START=$(date +%s.%N)
-	(mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out) &
-	ENZO_PID=$!
+	sudo -u benjamin mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out
 done
 kill -9 ${SERVER_PID}
 echo "done"
@@ -116,13 +112,25 @@ echo "done"
 cd /src/julea/enzo-specific
 (
 	cd ..
-	./waf.sh configure  --out build-hdf-julea --prefix=prefix-hdf-julea --libdir=prefix-hdf-julea --bindir=prefix-hdf-julea --destdir=prefix-hdf-julea --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
+	./waf.sh configure  --out build-hdf-julea --prefix=prefix-hdf-julea --libdir=prefix-hdf-julea --bindir=prefix-hdf-julea --destdir=prefix-hdf-julea --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
 	./waf.sh build
 	./waf.sh install
 )
-benchmark /dev/shm/warnke/julea	1 100000 mysql  client memory
+
+sudo chown -R benjamin:benjamin /home/benjamin/enzo-dev/run
+sudo chown -R benjamin:benjamin /mnt/julea
+sudo chown -R benjamin:benjamin /mnt2
+sudo chown -R benjamin:benjamin /src/julea
+sudo chown -R benjamin:benjamin /root/enzo-dev
+sudo chown -R benjamin:benjamin /root/enzo-dev/src/enzo/enzo.exe
+
+export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
+#export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
+export SEGFAULT_SIGNALS="all"
+
+benchmark /dev/shm/warnke/julea	1 100000 mysql  client mem
 benchmark /mnt/julea		1 100000 mysql  client hdd
-benchmark /dev/shm/warnke/julea	1 100000 sqlite server memory
+benchmark /dev/shm/warnke/julea	1 100000 sqlite server mem
 benchmark /mnt/julea		1 100000 sqlite server hdd
-benchmark /dev/shm/warnke/julea	0 100000 native server memory
-benchmark /mnt/julea		0 100000 native server hdd
+benchmark /dev/shm/warnke/julea	0 100000 sqlite server mem
+benchmark /mnt/julea		0 100000 sqlite server hdd
