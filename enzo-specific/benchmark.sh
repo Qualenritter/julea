@@ -61,7 +61,7 @@ ${HOME}/julea/example/a.out
 rm ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 
 ENZO_START=$(date +%s.%N)
-sudo -u benjamin mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
+mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 while true
 do
 	ENZO_END=$(date +%s.%N)
@@ -103,7 +103,7 @@ do
 	fi
 	echo "continue with ${parameter}"
 	ENZO_START=$(date +%s.%N)
-	sudo -u benjamin mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out
+	mpirun -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out
 done
 kill -9 ${SERVER_PID}
 echo "done"
@@ -124,6 +124,7 @@ sudo chown -R benjamin:benjamin /src/julea
 sudo chown -R benjamin:benjamin /root/enzo-dev
 sudo chown -R benjamin:benjamin /root/enzo-dev/src/enzo/enzo.exe
 
+#export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libunwind.so.8"
 export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
 #export LD_PRELOAD="$(locate libSegFault.so | tail -n 1)"
 export SEGFAULT_SIGNALS="all"
