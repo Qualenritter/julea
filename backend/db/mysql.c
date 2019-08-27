@@ -36,21 +36,6 @@
 
 #define sql_autoincrement_string "NOT NULL AUTO_INCREMENT"
 
-#define j_goto(label, stmt)                                \
-	do                                                 \
-	{                                                  \
-		/*G_DEBUG_HERE(); */                       \
-		/*g_debug("%s", mysql_stmt_error(stmt));*/ \
-		goto label;                                \
-	} while (0)
-#define j_goto_s(label, stmt, status)                                     \
-	do                                                                \
-	{                                                                 \
-		/*G_DEBUG_HERE();                                      */ \
-		/*g_debug("%d :: %s", status, mysql_stmt_error(stmt)); */ \
-		goto label;                                               \
-	} while (0)
-
 static gchar* path;
 struct mysql_stmt_wrapper
 {
@@ -83,7 +68,10 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 	(void)error;
 
 	if ((status = mysql_stmt_close(wrapper->stmt)))
-		j_goto_s(_error, wrapper->stmt, status);
+	{
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_FINALIZE, "sql finalize failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+		goto _error;
+	}
 	for (i = 0; i < wrapper->param_count_out; i++)
 	{
 		if (wrapper->bind_out[i].buffer_type == MYSQL_TYPE_STRING)
@@ -118,11 +106,13 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	//g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 	{
-		j_goto(_error, wrapper->stmt);
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+		goto _error;
 	}
 	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
 	{
-		j_goto_s(_error, wrapper->stmt, status);
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+		goto _error;
 	}
 	wrapper->param_count_in = types_in ? types_in->len : 0;
 	wrapper->param_count_out = types_out ? types_out->len : 0;
@@ -414,7 +404,10 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 		goto _error;
 	}
 	if ((status = mysql_stmt_execute(stmt->stmt)))
-		j_goto_s(_error, stmt->stmt, status);
+	{
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(stmt->stmt));
+		goto _error;
+	}
 	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
 	{
 		goto _error2;
@@ -444,18 +437,33 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 	{
 		if (wrapper->param_count_in)
 			if ((status = mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in)))
-				j_goto_s(_error, wrapper->stmt, status);
-		if (wrapper->bind_out)
+			{
+				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+				goto _error;
+			}
+		if (wrapper->param_count_out)
 			if ((status = mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out)))
-				j_goto_s(_error, wrapper->stmt, status);
+			{
+				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+				goto _error;
+			}
 		if ((status = mysql_stmt_execute(wrapper->stmt)))
-			j_goto_s(_error, wrapper->stmt, status);
-		if ((status = mysql_stmt_store_result(wrapper->stmt)))
-			j_goto_s(_error, wrapper->stmt, status);
+		{
+			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+			goto _error;
+		}
+		if (wrapper->param_count_out)
+			if ((status = mysql_stmt_store_result(wrapper->stmt)))
+			{
+				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+				goto _error;
+			}
 		wrapper->active = TRUE;
 	}
-	*found = mysql_stmt_fetch(wrapper->stmt) == 0;
-
+	if (wrapper->param_count_out)
+		*found = mysql_stmt_fetch(wrapper->stmt) == 0;
+	else
+		*found = TRUE;
 	return TRUE;
 _error:
 	return FALSE;
