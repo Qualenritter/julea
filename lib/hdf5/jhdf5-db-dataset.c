@@ -109,6 +109,18 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
+				{
+					const gchar* index[] = {
+						"file",
+						"xxx_name",
+						"xxx_parent",
+						NULL,
+					};
+					if (!j_db_schema_add_index(julea_db_schema_dataset, index, &error))
+					{
+						j_goto_error();
+					}
+				}
 				if (!j_db_schema_create(julea_db_schema_dataset, batch, &error))
 				{
 					j_goto_error();
@@ -338,10 +350,13 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 		j_goto_error();
 	}
 	j_distributed_object_create(object->dataset.object, batch);
+{
+H5VL_JULEA_TIMER(j_distributed_object_create);
 	if (!j_batch_execute(batch))
 	{
 		j_goto_error();
 	}
+}
 	if (!H5VL_julea_db_link_create_helper(parent, object, name))
 		j_goto_error();
 	return object;
@@ -743,10 +758,13 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 		if (file_space_range->start + current_count1 == file_space_range->stop)
 			file_space_range = NULL;
 	}
+{
+H5VL_JULEA_TIMER(j_distributed_object_write);
 	if (!j_batch_execute(batch))
 	{
 		j_goto_error();
 	}
+}
 	return 0;
 _error:
 	return 1;
@@ -823,10 +841,12 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		if (file_space_range->start + current_count1 == file_space_range->stop)
 			file_space_range = NULL;
 	}
+{
+H5VL_JULEA_TIMER(j_distributed_object_read);
 	if (!j_batch_execute(batch))
 	{
 		j_goto_error();
-	}
+	}}
 
 	local_buf = H5VL_julea_db_datatype_convert_type(mem_type_id, object->dataset.datatype->datatype.hdf5_id, buf, local_buf_org, data_count);
 	if (local_buf != buf)

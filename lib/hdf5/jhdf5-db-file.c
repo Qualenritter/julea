@@ -94,6 +94,16 @@ H5VL_julea_db_file_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
+				{
+					const gchar* index[] = {
+						"name",
+						NULL,
+					};
+					if (!j_db_schema_add_index(julea_db_schema_file, index, &error))
+					{
+						j_goto_error();
+					}
+				}
 				if (!j_db_schema_create(julea_db_schema_file, batch, &error))
 				{
 					j_goto_error();
@@ -210,23 +220,26 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 			j_goto_error();
 		}
 	}
+	else
+	{
+		if (flags & H5F_ACC_TRUNC)
+		{
+			g_debug("truncateing file");
+			if (H5VL_julea_db_group_truncate_file(object))
+				j_goto_error();
+			if (H5VL_julea_db_attr_truncate_file(object))
+				j_goto_error();
+			if (H5VL_julea_db_dataset_truncate_file(object))
+				j_goto_error();
+			if (H5VL_julea_db_link_truncate_file(object))
+				j_goto_error();
+		}
+	}
 	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
 	{
 		j_goto_error();
 	}
 	g_assert(!j_db_iterator_next(iterator, NULL));
-	if (flags & H5F_ACC_TRUNC)
-	{
-		g_debug("truncateing file");
-		if (H5VL_julea_db_group_truncate_file(object))
-			j_goto_error();
-		if (H5VL_julea_db_attr_truncate_file(object))
-			j_goto_error();
-		if (H5VL_julea_db_dataset_truncate_file(object))
-			j_goto_error();
-		if (H5VL_julea_db_link_truncate_file(object))
-			j_goto_error();
-	}
 	return object;
 _error:
 	g_debug("file create error %s", name);

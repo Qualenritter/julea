@@ -110,6 +110,28 @@ H5VL_julea_db_link_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
+				{
+					const gchar* index[] = {
+						"parent",
+						"parent_type",
+						"name",
+						NULL,
+					};
+					if (!j_db_schema_add_index(julea_db_schema_link, index, &error))
+					{
+						j_goto_error();
+					}
+				}
+				{
+					const gchar* index[] = {
+						"file",
+						NULL,
+					};
+					if (!j_db_schema_add_index(julea_db_schema_link, index, &error))
+					{
+						j_goto_error();
+					}
+				}
 				if (!j_db_schema_create(julea_db_schema_link, batch, &error))
 				{
 					j_goto_error();

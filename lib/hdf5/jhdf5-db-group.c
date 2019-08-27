@@ -99,20 +99,19 @@ H5VL_julea_db_group_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
+				{
+					const gchar* index[] = {
+						"file",
+						"xxx_parent",
+						"xxx_name",
+						NULL,
+					};
+					if (!j_db_schema_add_index(julea_db_schema_group, index, &error))
+					{
+						j_goto_error();
+					}
+				}
 				if (!j_db_schema_create(julea_db_schema_group, batch, &error))
-				{
-					j_goto_error();
-				}
-				if (!j_batch_execute(batch))
-				{
-					j_goto_error();
-				}
-				j_db_schema_unref(julea_db_schema_group);
-				if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
-				{
-					j_goto_error();
-				}
-				if (!j_db_schema_get(julea_db_schema_group, batch, &error))
 				{
 					j_goto_error();
 				}

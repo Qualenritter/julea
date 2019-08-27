@@ -13,7 +13,7 @@ db_backend=$4
 db_component=$5
 tmp_dir_type=$6
 
-sudo mysql -Nse 'show tables' julea | while read table; do sudo mysql -e "drop table $table" julea; done
+mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 
 rm -rf $tmpdir
 mkdir -p $tmpdir
@@ -87,7 +87,7 @@ do
 	echo "merged timers"
 	ENZO_TOTAL_TIME=$(echo $(sqlite3 ${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'") | sed "s/\..*//g")
 	ENZO_TOTAL_COUNT=$(echo $(sqlite3 ${J_TIMER_DB_RUN}.sqlite "select count from tmp where name='bash_time'") | sed "s/\..*//g")
-	if [ "${ENZO_TOTAL_TIME}" -gt "600" ]
+	if [ "${ENZO_TOTAL_TIME}" -gt "120" ]
 	then
 		break
 	fi

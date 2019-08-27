@@ -260,8 +260,11 @@ enum H5VL_julea_db_timer_func_names
 	H5VL_julea_db_link_move_timers, //37
 	H5VL_julea_db_link_optional_timers, //38
 	H5VL_julea_db_link_specific_timers, //39
-	total_timers, //40
-	_H5VL_julea_db_func_count //41
+j_distributed_object_create_timers,//40
+j_distributed_object_read_timers,//41
+j_distributed_object_write_timers,//42
+	total_timers, //43
+	_H5VL_julea_db_func_count //44
 };
 typedef enum H5VL_julea_db_timer_func_names H5VL_julea_db_timer_func_names;
 struct H5VL_julea_db_timer
@@ -341,7 +344,7 @@ H5VL_julea_db_timer_fini(void)
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
-#define H5VL_JULEA_TIMER(func_name) g_autoptr(H5VL_julea_db_timer) H5VL_julea_db_timer_local = H5VL_julea_db_timer_new(func_name##_timers)
+#define H5VL_JULEA_TIMER(func_name) g_autoptr(H5VL_julea_db_timer) func_name##_timers##local = H5VL_julea_db_timer_new(func_name##_timers)
 
 #pragma GCC diagnostic pop
 #endif
