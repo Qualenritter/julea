@@ -221,47 +221,47 @@ _error2:
 enum H5VL_julea_db_timer_func_names
 {
 	H5VL_julea_db_attr_close_timers = 0,
-	H5VL_julea_db_attr_create_timers,
-	H5VL_julea_db_attr_get_timers,
-	H5VL_julea_db_attr_open_timers,
-	H5VL_julea_db_attr_optional_timers,
-	H5VL_julea_db_attr_read_timers,
-	H5VL_julea_db_attr_specific_timers,
-	H5VL_julea_db_attr_write_timers,
-	H5VL_julea_db_dataset_close_timers,
-	H5VL_julea_db_dataset_create_timers,
-	H5VL_julea_db_dataset_get_timers,
-	H5VL_julea_db_dataset_open_timers,
-	H5VL_julea_db_dataset_optional_timers,
-	H5VL_julea_db_dataset_read_timers,
-	H5VL_julea_db_dataset_specific_timers,
-	H5VL_julea_db_dataset_write_timers,
-	H5VL_julea_db_datatype_close_timers,
-	H5VL_julea_db_datatype_commit_timers,
-	H5VL_julea_db_datatype_get_timers,
-	H5VL_julea_db_datatype_open_timers,
-	H5VL_julea_db_datatype_optional_timers,
-	H5VL_julea_db_datatype_specific_timers,
-	H5VL_julea_db_file_close_timers,
-	H5VL_julea_db_file_create_timers,
-	H5VL_julea_db_file_get_timers,
-	H5VL_julea_db_file_open_timers,
-	H5VL_julea_db_file_optional_timers,
-	H5VL_julea_db_file_specific_timers,
-	H5VL_julea_db_group_close_timers,
-	H5VL_julea_db_group_create_timers,
-	H5VL_julea_db_group_get_timers,
-	H5VL_julea_db_group_open_timers,
-	H5VL_julea_db_group_optional_timers,
-	H5VL_julea_db_group_specific_timers,
-	H5VL_julea_db_link_copy_timers,
-	H5VL_julea_db_link_create_timers,
-	H5VL_julea_db_link_get_timers,
-	H5VL_julea_db_link_move_timers,
-	H5VL_julea_db_link_optional_timers,
-	H5VL_julea_db_link_specific_timers,
-	total_timers,
-	_H5VL_julea_db_func_count
+	H5VL_julea_db_attr_create_timers, //1
+	H5VL_julea_db_attr_get_timers, //2
+	H5VL_julea_db_attr_open_timers, //3
+	H5VL_julea_db_attr_optional_timers, //4
+	H5VL_julea_db_attr_read_timers, //5
+	H5VL_julea_db_attr_specific_timers, //6
+	H5VL_julea_db_attr_write_timers, //7
+	H5VL_julea_db_dataset_close_timers, //8
+	H5VL_julea_db_dataset_create_timers, //9
+	H5VL_julea_db_dataset_get_timers, //10
+	H5VL_julea_db_dataset_open_timers, //11
+	H5VL_julea_db_dataset_optional_timers, //12
+	H5VL_julea_db_dataset_read_timers, //13
+	H5VL_julea_db_dataset_specific_timers, //14
+	H5VL_julea_db_dataset_write_timers, //15
+	H5VL_julea_db_datatype_close_timers, //16
+	H5VL_julea_db_datatype_commit_timers, //17
+	H5VL_julea_db_datatype_get_timers, //18
+	H5VL_julea_db_datatype_open_timers, //19
+	H5VL_julea_db_datatype_optional_timers, //20
+	H5VL_julea_db_datatype_specific_timers, //21
+	H5VL_julea_db_file_close_timers, //22
+	H5VL_julea_db_file_create_timers, //23
+	H5VL_julea_db_file_get_timers, //24
+	H5VL_julea_db_file_open_timers, //25
+	H5VL_julea_db_file_optional_timers, //26
+	H5VL_julea_db_file_specific_timers, //27
+	H5VL_julea_db_group_close_timers, //28
+	H5VL_julea_db_group_create_timers, //29
+	H5VL_julea_db_group_get_timers, //30
+	H5VL_julea_db_group_open_timers, //31
+	H5VL_julea_db_group_optional_timers, //32
+	H5VL_julea_db_group_specific_timers, //33
+	H5VL_julea_db_link_copy_timers, //34
+	H5VL_julea_db_link_create_timers, //35
+	H5VL_julea_db_link_get_timers, //36
+	H5VL_julea_db_link_move_timers, //37
+	H5VL_julea_db_link_optional_timers, //38
+	H5VL_julea_db_link_specific_timers, //39
+	total_timers, //40
+	_H5VL_julea_db_func_count //41
 };
 typedef enum H5VL_julea_db_timer_func_names H5VL_julea_db_timer_func_names;
 struct H5VL_julea_db_timer

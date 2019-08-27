@@ -20,7 +20,6 @@
  * \file
  **/
 
-
 #include <julea-config.h>
 #include <math.h>
 #include <glib.h>
@@ -58,10 +57,11 @@ static void
 benchmark_hdf_main()
 {
 	const guint dim_size = 1024;
-	hsize_t dims_ds[2];hsize_t dims_attr[1];
+	hsize_t dims_ds[2];
+	hsize_t dims_attr[1];
 	hid_t dataspace_ds;
 	hid_t dataspace_attr;
- hid_t attribute;
+	hid_t attribute;
 	int data_attr[dim_size];
 	int data_ds[dim_size][dim_size];
 	hid_t dataset;
@@ -102,7 +102,7 @@ benchmark_hdf_main()
 			H5Dwrite(dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data_ds);
 			shared_result.dataset_write.elapsed_time += j_benchmark_timer_elapsed();
 			shared_result.dataset_write.operations++;
-			shared_result.dataset_write.bytes+=dim_size*dim_size*sizeof(guint);
+			shared_result.dataset_write.bytes += dim_size * dim_size * sizeof(guint);
 		}
 		j_benchmark_timer_start();
 		H5Dclose(dataset);
@@ -120,7 +120,7 @@ benchmark_hdf_main()
 				H5Dread(dataset, H5T_NATIVE_INT, dataspace_ds, H5S_ALL, H5P_DEFAULT, data_ds);
 				shared_result.dataset_read.elapsed_time += j_benchmark_timer_elapsed();
 				shared_result.dataset_read.operations++;
-				shared_result.dataset_read.bytes+=dim_size*dim_size*sizeof(guint);
+				shared_result.dataset_read.bytes += dim_size * dim_size * sizeof(guint);
 			}
 			j_benchmark_timer_start();
 			H5Dclose(dataset);
@@ -142,7 +142,7 @@ benchmark_hdf_main()
 			H5Awrite(attribute, H5T_NATIVE_INT, data_attr);
 			shared_result.attr_write.elapsed_time += j_benchmark_timer_elapsed();
 			shared_result.attr_write.operations++;
-			shared_result.attr_write.bytes+=dim_size*sizeof(guint);
+			shared_result.attr_write.bytes += dim_size * sizeof(guint);
 		}
 		j_benchmark_timer_start();
 		H5Aclose(attribute);
@@ -160,7 +160,7 @@ benchmark_hdf_main()
 				H5Aread(attribute, H5T_NATIVE_INT, data_attr);
 				shared_result.attr_read.elapsed_time += j_benchmark_timer_elapsed();
 				shared_result.attr_read.operations++;
-				shared_result.attr_read.bytes+=dim_size*sizeof(guint);
+				shared_result.attr_read.bytes += dim_size * sizeof(guint);
 			}
 			j_benchmark_timer_start();
 			H5Aclose(attribute);
@@ -303,7 +303,7 @@ benchmark_hdf2(void)
 			target_time = target;
 		}
 	}
-//#ifdef JULEA_DEBUG
+	//#ifdef JULEA_DEBUG
 	exec_tree1(0, 1, 5);
 /*#else
 	guint i;

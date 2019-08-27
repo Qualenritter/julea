@@ -68,7 +68,7 @@ j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GArray* types_i
 	(void)types_in;
 	(void)types_out;
 
-	g_debug("sql = %s", sql);
+	//g_debug("sql = %s", sql);
 
 	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 	{
@@ -384,7 +384,7 @@ backend_init(gchar const* _path)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_debug("db-backend-init %s", _path);
+	//g_debug("db-backend-init %s", _path);
 
 	path = g_strdup(_path);
 	return TRUE;
@@ -394,7 +394,7 @@ backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_debug("db-backend-fini");
+	//g_debug("db-backend-fini");
 
 	g_free(path);
 }

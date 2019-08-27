@@ -36,19 +36,19 @@
 
 #define sql_autoincrement_string "NOT NULL AUTO_INCREMENT"
 
-#define j_goto(label, stmt)                            \
-	do                                             \
-	{                                              \
-		G_DEBUG_HERE();                        \
-		g_debug("%s", mysql_stmt_error(stmt)); \
-		goto label;                            \
+#define j_goto(label, stmt)                                \
+	do                                                 \
+	{                                                  \
+		/*G_DEBUG_HERE(); */                       \
+		/*g_debug("%s", mysql_stmt_error(stmt));*/ \
+		goto label;                                \
 	} while (0)
-#define j_goto_s(label, stmt, status)                                \
-	do                                                           \
-	{                                                            \
-		G_DEBUG_HERE();                                      \
-		g_debug("%d :: %s", status, mysql_stmt_error(stmt)); \
-		goto label;                                          \
+#define j_goto_s(label, stmt, status)                                     \
+	do                                                                \
+	{                                                                 \
+		/*G_DEBUG_HERE();                                      */ \
+		/*g_debug("%d :: %s", status, mysql_stmt_error(stmt)); */ \
+		goto label;                                               \
 	} while (0)
 
 static gchar* path;
@@ -77,7 +77,7 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 	gint status;
 	mysql_stmt_wrapper* wrapper = _stmt;
 
-	g_debug("%s %p", G_STRFUNC, wrapper);
+	//g_debug("%s %p", G_STRFUNC, wrapper);
 
 	(void)backend_db;
 	(void)error;
@@ -115,7 +115,7 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	mysql_stmt_wrapper* wrapper;
 
 	wrapper = *_wrapper = g_new0(mysql_stmt_wrapper, 1);
-	g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
+	//g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 	{
 		j_goto(_error, wrapper->stmt);
@@ -142,46 +142,46 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			g_debug("param_type_in[%d]=J_DB_TYPE_SINT32", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_SINT32", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_in[i].is_unsigned = 0;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint32;
 			break;
 		case J_DB_TYPE_UINT32:
-			g_debug("param_type_in[%d]=J_DB_TYPE_UINT32", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_UINT32", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_in[i].is_unsigned = 1;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_uint32;
 			break;
 		case J_DB_TYPE_SINT64:
-			g_debug("param_type_in[%d]=J_DB_TYPE_SINT64", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_SINT64", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_in[i].is_unsigned = 0;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_UINT64:
-			g_debug("param_type_in[%d]=J_DB_TYPE_UINT64", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_UINT64", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_in[i].is_unsigned = 1;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_uint64;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			g_debug("param_type_in[%d]=J_DB_TYPE_FLOAT32", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_FLOAT32", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_FLOAT;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_float32;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			g_debug("param_type_in[%d]=J_DB_TYPE_FLOAT64", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_FLOAT64", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_DOUBLE;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_STRING:
-			g_debug("param_type_in[%d]=J_DB_TYPE_STRING", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_STRING", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_STRING;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_string;
 			break;
 		case J_DB_TYPE_BLOB:
-			g_debug("param_type_in[%d]=J_DB_TYPE_BLOB", i);
+			//g_debug("param_type_in[%d]=J_DB_TYPE_BLOB", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_BLOB;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_blob;
 			wrapper->bind_in[i].buffer_length = wrapper->buffer[i].val_blob_length;
@@ -202,47 +202,47 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			g_debug("param_type_out[%d]=J_DB_TYPE_SINT32", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_SINT32", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_out[i].is_unsigned = 0;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint32;
 			break;
 		case J_DB_TYPE_UINT32:
-			g_debug("param_type_out[%d]=J_DB_TYPE_UINT32", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_UINT32", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_out[i].is_unsigned = 1;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_uint32;
 			break;
 		case J_DB_TYPE_SINT64:
-			g_debug("param_type_out[%d]=J_DB_TYPE_SINT64", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_SINT64", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_out[i].is_unsigned = 0;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_UINT64:
-			g_debug("param_type_out[%d]=J_DB_TYPE_UINT64", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_UINT64", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_out[i].is_unsigned = 1;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_uint64;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			g_debug("param_type_out[%d]=J_DB_TYPE_FLOAT32", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_FLOAT32", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_FLOAT;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_float32;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			g_debug("param_type_out[%d]=J_DB_TYPE_FLOAT64", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_FLOAT64", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_DOUBLE;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_STRING:
-			g_debug("param_type_out[%d]=J_DB_TYPE_STRING", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_STRING", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_STRING;
 			wrapper->bind_out[i].buffer_length = MAX_BUF_SIZE;
 			wrapper->bind_out[i].buffer = g_new(char, MAX_BUF_SIZE);
 			break;
 		case J_DB_TYPE_BLOB:
-			g_debug("param_type_out[%d]=J_DB_TYPE_BLOB", i);
+			//g_debug("param_type_out[%d]=J_DB_TYPE_BLOB", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_BLOB;
 			wrapper->bind_out[i].buffer_length = MAX_BUF_SIZE;
 			wrapper->bind_out[i].buffer = g_new(char, MAX_BUF_SIZE);
@@ -267,7 +267,7 @@ j_sql_bind_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 
-	g_debug("%s %p", G_STRFUNC, wrapper);
+	//g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
 	wrapper->is_null[idx] = 1;
@@ -281,7 +281,7 @@ j_sql_column(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeVal
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
-	g_debug("%s %p", G_STRFUNC, wrapper);
+	//g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	memset(value, 0, sizeof(*value));
 	switch (type)
@@ -332,43 +332,43 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 	(void)backend_db;
 	idx--; //sqlite index start with 1, mysql index start with 0
 	wrapper->is_null[idx] = 0;
-	g_debug("%s %p", G_STRFUNC, wrapper);
+	//g_debug("%s %p", G_STRFUNC, wrapper);
 
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
-		g_debug("bind_param [%d]= %d", idx, value->val_sint32);
+		//g_debug("bind_param [%d]= %d", idx, value->val_sint32);
 		wrapper->buffer[idx].val_sint32 = value->val_sint32;
 		break;
 	case J_DB_TYPE_UINT32:
-		g_debug("bind_param [%d]= %d", idx, value->val_uint32);
+		//g_debug("bind_param [%d]= %d", idx, value->val_uint32);
 		wrapper->buffer[idx].val_uint32 = value->val_uint32;
 		break;
 	case J_DB_TYPE_SINT64:
-		g_debug("bind_param [%d]= %lld", idx, value->val_sint64);
+		//g_debug("bind_param [%d]= %lld", idx, value->val_sint64);
 		wrapper->buffer[idx].val_sint64 = value->val_sint64;
 		break;
 	case J_DB_TYPE_UINT64:
-		g_debug("bind_param [%d]= %lld", idx, value->val_uint64);
+		//g_debug("bind_param [%d]= %lld", idx, value->val_uint64);
 		wrapper->buffer[idx].val_uint64 = value->val_uint64;
 		break;
 	case J_DB_TYPE_FLOAT32:
-		g_debug("bind_param [%d]= %f", idx, value->val_float32);
+		//g_debug("bind_param [%d]= %f", idx, value->val_float32);
 		wrapper->buffer[idx].val_float32 = value->val_float32;
 		break;
 	case J_DB_TYPE_FLOAT64:
-		g_debug("bind_param [%d]= %f", idx, value->val_float64);
+		//g_debug("bind_param [%d]= %f", idx, value->val_float64);
 		wrapper->buffer[idx].val_float64 = value->val_float64;
 		break;
 	case J_DB_TYPE_STRING:
-		g_debug("bind_param [%d]= %s", idx, value->val_string);
+		//g_debug("bind_param [%d]= %s", idx, value->val_string);
 		wrapper->is_null[idx] = value->val_string == NULL;
 		wrapper->bind_in[idx].buffer = value->val_string;
 		wrapper->bind_in[idx].buffer_length = value->val_string != 0 ? strlen(value->val_string) : 0;
 		wrapper->length[idx] = wrapper->bind_in[idx].buffer_length;
 		break;
 	case J_DB_TYPE_BLOB:
-		g_debug("bind_param [%d]= %p", idx, value->val_blob);
+		//g_debug("bind_param [%d]= %p", idx, value->val_blob);
 		wrapper->is_null[idx] = value->val_blob == NULL;
 		wrapper->bind_in[idx].buffer = value->val_blob;
 		wrapper->bind_in[idx].buffer_length = value->val_blob_length;
@@ -390,7 +390,7 @@ j_sql_reset(MYSQL* backend_db, void* _stmt, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	mysql_stmt_wrapper* wrapper = _stmt;
-	g_debug("%s %p", G_STRFUNC, wrapper);
+	//g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
 	wrapper->active = FALSE;
@@ -405,7 +405,7 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 
 	mysql_stmt_wrapper* stmt;
 	gint status;
-	g_debug("%s", G_STRFUNC);
+	//g_debug("%s", G_STRFUNC);
 	(void)backend_db;
 	(void)error;
 	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
@@ -436,7 +436,7 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 
 	mysql_stmt_wrapper* wrapper = _stmt;
 	gint status;
-	g_debug("%s %p", G_STRFUNC, wrapper);
+	//g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
 	if (!wrapper->active)
@@ -465,7 +465,7 @@ j_sql_step_and_reset_check_done(MYSQL* backend_db, void* _stmt, GError** error)
 	J_TRACE_FUNCTION(NULL);
 
 	gboolean sql_found;
-	g_debug("%s %p", G_STRFUNC, _stmt);
+	//g_debug("%s %p", G_STRFUNC, _stmt);
 	if (G_UNLIKELY(!j_sql_step(backend_db, _stmt, &sql_found, error)))
 	{
 		goto _error;
@@ -494,7 +494,7 @@ j_sql_open(void)
 	g_autofree gchar* dirname = NULL;
 
 	g_return_val_if_fail(path != NULL, FALSE);
-	g_debug("%s", G_STRFUNC);
+	//g_debug("%s", G_STRFUNC);
 	if (!(backend_db = mysql_init(NULL)))
 		goto _error;
 
@@ -509,7 +509,7 @@ j_sql_open(void)
 		    0 //client flags
 		    ))
 	{
-		g_debug("%s", mysql_error(backend_db));
+		//g_debug("%s", mysql_error(backend_db));
 		goto _error;
 	}
 	return backend_db;
@@ -521,7 +521,7 @@ static void
 j_sql_close(MYSQL* backend_db)
 {
 	J_TRACE_FUNCTION(NULL);
-	g_debug("%s", G_STRFUNC);
+	//g_debug("%s", G_STRFUNC);
 	mysql_close(backend_db);
 }
 static gboolean
@@ -545,7 +545,7 @@ backend_init(gchar const* _path)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_debug("db-backend-init %s", _path);
+	//g_debug("db-backend-init %s", _path);
 
 	path = g_strdup(_path);
 	return TRUE;
@@ -555,7 +555,7 @@ backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_debug("db-backend-fini");
+	//g_debug("db-backend-fini");
 
 	g_free(path);
 }
