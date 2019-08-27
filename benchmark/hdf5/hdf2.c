@@ -62,8 +62,8 @@ benchmark_hdf_main()
 	hid_t dataspace_ds;
 	hid_t dataspace_attr;
 	hid_t attribute;
-	int data_attr[dim_size];
-	int data_ds[dim_size][dim_size];
+	int* data_attr;
+	int* data_ds;
 	hid_t dataset;
 	hid_t acc_tpl;
 	hid_t julea_vol_id;
@@ -71,11 +71,13 @@ benchmark_hdf_main()
 	const H5VL_class_t* h5vl_julea;
 	guint j;
 	guint i;
+	data_attr = g_new(int, dim_size);
+	data_ds = g_new(int, dim_size* dim_size);
 	for (i = 0; i < dim_size; i++)
 	{
 		for (j = 0; j < dim_size; j++)
 		{
-			data_ds[i][j] = i + j;
+			data_ds[i * dim_size + j] = i + j;
 		}
 		data_attr[i] = i * 10;
 	}
@@ -169,6 +171,8 @@ benchmark_hdf_main()
 		}
 		H5Fclose(file);
 	}
+	g_free(data_ds);
+	g_free(data_attr);
 	H5Sclose(dataspace_ds);
 	H5Pclose(acc_tpl);
 	H5VLterminate(julea_vol_id);

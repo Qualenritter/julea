@@ -54,6 +54,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=30;
+	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
 	kill -9 ${server_pid}
 )

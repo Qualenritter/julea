@@ -270,6 +270,7 @@ j_sql_bind_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
 	//g_debug("%s %p", G_STRFUNC, wrapper);
 	(void)backend_db;
 	(void)error;
+	idx--; //sqlite index start with 1, mysql index start with 0
 	wrapper->is_null[idx] = 1;
 
 	return TRUE;
@@ -556,7 +557,7 @@ backend_fini(void)
 	J_TRACE_FUNCTION(NULL);
 
 	//g_debug("db-backend-fini");
-
+	g_private_replace(&thread_variables_global, NULL);
 	g_free(path);
 }
 static JBackend mysql_backend = {

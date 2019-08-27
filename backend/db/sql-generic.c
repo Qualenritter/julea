@@ -114,7 +114,7 @@ thread_variables_get(GError** error)
 			goto _error;
 		}
 		thread_variables->namespaces = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, freeJSqlCacheNames);
-		g_private_set(&thread_variables_global, thread_variables);
+		g_private_replace(&thread_variables_global, thread_variables);
 	}
 	return thread_variables;
 _error:
