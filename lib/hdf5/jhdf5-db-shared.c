@@ -293,7 +293,7 @@ H5VL_julea_db_timer_init(void)
 	{
 		j_goto_error();
 	}
-	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name INTEGER UNIQUE, count INTEGER, timer REAL);", NULL))
+	if (!j_sql_exec("CREATE TABLE IF NOT EXISTS tmp(name TEXT UNIQUE, count INTEGER, timer REAL);", NULL))
 	{
 		j_goto_error();
 	}

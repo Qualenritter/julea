@@ -20,6 +20,7 @@
  * \file
  **/
 
+
 #include <julea-config.h>
 #include <math.h>
 #include <glib.h>
@@ -29,10 +30,13 @@
 #include "benchmark.h"
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef HAVE_HDF5
+
+#include <hdf5.h>
+#include <H5PLextern.h>
 
 static gdouble target_time = 30.0;
 
-static guint scale_factor = SCALE_FACTOR_HDD;
 static guint n;
 
 struct result_sets
@@ -54,10 +58,10 @@ static void
 benchmark_hdf_main()
 {
 	const guint dim_size = 1024;
-	hsize_t dims_ds[2];
+	hsize_t dims_ds[2];hsize_t dims_attr[1];
 	hid_t dataspace_ds;
 	hid_t dataspace_attr;
-	hssize_t elements;
+ hid_t attribute;
 	int data_attr[dim_size];
 	int data_ds[dim_size][dim_size];
 	hid_t dataset;
@@ -67,7 +71,6 @@ benchmark_hdf_main()
 	const H5VL_class_t* h5vl_julea;
 	guint j;
 	guint i;
-	hid_t native_vol_id;
 	for (i = 0; i < dim_size; i++)
 	{
 		for (j = 0; j < dim_size; j++)
@@ -76,7 +79,6 @@ benchmark_hdf_main()
 		}
 		data_attr[i] = i * 10;
 	}
-	native_vol_id = H5VLget_connector_id("native");
 	h5vl_julea = H5PLget_plugin_info();
 	julea_vol_id = H5VLregister_connector(h5vl_julea, H5P_DEFAULT);
 	H5VLinitialize(julea_vol_id, H5P_DEFAULT);
@@ -91,7 +93,7 @@ benchmark_hdf_main()
 	{
 		file = H5Fcreate("JULEA.h5", H5F_ACC_TRUNC, H5P_DEFAULT, acc_tpl);
 		j_benchmark_timer_start();
-		dataset = H5Dcreate2(file, name, H5T_NATIVE_INT, dataspace_ds, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		dataset = H5Dcreate2(file, "BenchmarkDataset", H5T_NATIVE_INT, dataspace_ds, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		shared_result.dataset_create.elapsed_time += j_benchmark_timer_elapsed();
 		shared_result.dataset_create.operations++;
 		while (shared_result.dataset_write.operations == 0 || shared_result.dataset_write.elapsed_time < target_time)
@@ -109,7 +111,7 @@ benchmark_hdf_main()
 		while (shared_result.dataset_open.operations == 0 || shared_result.dataset_open.elapsed_time < target_time)
 		{
 			j_benchmark_timer_start();
-			dataset = H5Dopen2(file, name, H5P_DEFAULT);
+			dataset = H5Dopen2(file, "BenchmarkDataset", H5P_DEFAULT);
 			shared_result.dataset_open.elapsed_time += j_benchmark_timer_elapsed();
 			shared_result.dataset_open.operations++;
 			while (shared_result.dataset_read.operations == 0 || shared_result.dataset_read.elapsed_time < target_time)
@@ -131,7 +133,7 @@ benchmark_hdf_main()
 	{
 		file = H5Fcreate("JULEA.h5", H5F_ACC_TRUNC, H5P_DEFAULT, acc_tpl);
 		j_benchmark_timer_start();
-		attribute = H5Acreate2(dataset, "BenchmarkAttribute", H5T_NATIVE_INT, dataspace_attr, H5P_DEFAULT, H5P_DEFAULT);
+		attribute = H5Acreate2(file, "BenchmarkAttribute", H5T_NATIVE_INT, dataspace_attr, H5P_DEFAULT, H5P_DEFAULT);
 		shared_result.attr_create.elapsed_time += j_benchmark_timer_elapsed();
 		shared_result.attr_create.operations++;
 		while (shared_result.attr_write.operations == 0 || shared_result.attr_write.elapsed_time < target_time)
@@ -149,7 +151,7 @@ benchmark_hdf_main()
 		while (shared_result.attr_open.operations == 0 || shared_result.attr_open.elapsed_time < target_time)
 		{
 			j_benchmark_timer_start();
-			attribute = H5Aopen(dataset, "BenchmarkAttribute", H5P_DEFAULT);
+			attribute = H5Aopen(file, "BenchmarkAttribute", H5P_DEFAULT);
 			shared_result.attr_open.elapsed_time += j_benchmark_timer_elapsed();
 			shared_result.attr_open.operations++;
 			while (shared_result.attr_read.operations == 0 || shared_result.attr_read.elapsed_time < target_time)
@@ -175,52 +177,52 @@ benchmark_hdf_main()
 static void
 benchmark_hdf_dataset_create(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.dataset_create, sizeof(result));
+	memcpy(result, &shared_result.dataset_create, sizeof(*result));
 }
 static void
 benchmark_hdf_dataset_open(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.dataset_open, sizeof(result));
+	memcpy(result, &shared_result.dataset_open, sizeof(*result));
 }
 static void
 benchmark_hdf_dataset_close(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.dataset_close, sizeof(result));
+	memcpy(result, &shared_result.dataset_close, sizeof(*result));
 }
 static void
 benchmark_hdf_dataset_write(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.dataset_write, sizeof(result));
+	memcpy(result, &shared_result.dataset_write, sizeof(*result));
 }
 static void
 benchmark_hdf_dataset_read(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.dataset_read, sizeof(result));
+	memcpy(result, &shared_result.dataset_read, sizeof(*result));
 }
 static void
 benchmark_hdf_attr_create(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.attr_create, sizeof(result));
+	memcpy(result, &shared_result.attr_create, sizeof(*result));
 }
 static void
 benchmark_hdf_attr_open(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.attr_open, sizeof(result));
+	memcpy(result, &shared_result.attr_open, sizeof(*result));
 }
 static void
 benchmark_hdf_attr_close(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.attr_close, sizeof(result));
+	memcpy(result, &shared_result.attr_close, sizeof(*result));
 }
 static void
 benchmark_hdf_attr_write(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.attr_write, sizeof(result));
+	memcpy(result, &shared_result.attr_write, sizeof(*result));
 }
 static void
 benchmark_hdf_attr_read(BenchmarkResult* result)
 {
-	memcpy(result, &shared_result.attr_read, sizeof(result));
+	memcpy(result, &shared_result.attr_read, sizeof(*result));
 }
 static void
 exec_tests(guint _n)
@@ -281,15 +283,15 @@ exec_tree1(guint depth, gfloat min, gfloat max)
 	}
 	exec_tree(depth, pow(min, 1.0f / 10.0f), pow(max, 1.0f / 10.0f));
 }
+#endif
 void
 benchmark_hdf2(void)
 {
+#ifdef HAVE_HDF5
 	const char* target_str;
-	const char* scale_str;
 	int ret;
 	double target = 0.0;
-	double scale = 0.0;
-	memset(shared_result, 0, sizeof(shared_result));
+	memset(&shared_result, 0, sizeof(shared_result));
 	target_str = g_getenv("J_BENCHMARK_TARGET");
 	if (target_str)
 	{
@@ -301,17 +303,6 @@ benchmark_hdf2(void)
 			target_time = target;
 		}
 	}
-	scale_str = g_getenv("J_BENCHMARK_SCALE");
-	if (scale_str)
-	{
-		g_debug("J_BENCHMARK_SCALE %s", scale_str);
-		ret = sscanf(scale_str, "%lf", &scale);
-		if (ret == 1)
-		{
-			g_debug("J_BENCHMARK_SCALE %s %f", scale_str, scale);
-			scale_factor = scale;
-		}
-	}
 #ifdef JULEA_DEBUG
 	exec_tree1(0, 1, 5);
 #else
@@ -320,5 +311,6 @@ benchmark_hdf2(void)
 	{
 		exec_tree1(i, 1, 1000000);
 	}
+#endif
 #endif
 }

@@ -90,7 +90,7 @@ do
 	echo "merged timers"
 	ENZO_TOTAL_TIME=$(echo $(sqlite3 ${J_TIMER_DB_RUN}.sqlite "select timer from tmp where name='bash_time'") | sed "s/\..*//g")
 	ENZO_TOTAL_COUNT=$(echo $(sqlite3 ${J_TIMER_DB_RUN}.sqlite "select count from tmp where name='bash_time'") | sed "s/\..*//g")
-	if [ "${ENZO_TOTAL_TIME}" -gt "3600" ]
+	if [ "${ENZO_TOTAL_TIME}" -gt "600" ]
 	then
 		break
 	fi
@@ -120,9 +120,9 @@ cd /src/julea/enzo-specific
 	./waf.sh build
 	./waf.sh install
 )
-benchmark /dev/shm/warnke/julea	0 100000 native server memory
-benchmark /mnt/julea		0 100000 native server hdd
+benchmark /dev/shm/warnke/julea	1 100000 mysql  client memory
+benchmark /mnt/julea		1 100000 mysql  client hdd
 benchmark /dev/shm/warnke/julea	1 100000 sqlite server memory
 benchmark /mnt/julea		1 100000 sqlite server hdd
-benchmark /dev/shm/warnke/julea	2 100000 mysql  client memory
-benchmark /mnt/julea		2 100000 mysql  client hdd
+benchmark /dev/shm/warnke/julea	0 100000 native server memory
+benchmark /mnt/julea		0 100000 native server hdd
