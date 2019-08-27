@@ -13,7 +13,7 @@ db_backend=$4
 db_component=$5
 tmp_dir_type=$6
 
-mysql -Nse 'show tables' julea | while read table; do mysql -e "drop table $table" julea; done
+sudo mysql -Nse 'show tables' julea | while read table; do sudo mysql -e "drop table $table" julea; done
 
 rm -rf $tmpdir
 mkdir -p $tmpdir
@@ -28,15 +28,15 @@ export HDF5_VOL_JULEA=$use_julea
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
 export J_TIMER_DB_RUN="${HOME}/julea/enzo-specific/benchmark-${tmp_dir_type}-${use_julea}-${iteration_limit}-${db_backend}"
 export J_TIMER_DB="$tmpdir/tmp.sqlite"
-#export G_MESSAGES_DEBUG=all
-
-cat ${HOME}/.config/julea/julea-$(hostname)
+export G_MESSAGES_DEBUG=all
 
 ${HOME}/julea/build-hdf-julea/tools/julea-config --user --object-servers="benjamin0" --kv-servers="benjamin0" --db-servers="benjamin0" \
 	--object-backend=posix --object-component=server --object-path="${tmpdir}/server-object" \
 	--kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv" \
 	--db-backend=${db_backend} --db-component=${db_component} --db-path="${tmpdir}/server-db"
 mv ${HOME}/.config/julea/julea ${JULEA_CONFIG}
+
+cat ${JULEA_CONFIG}
 
 pkill julea-server
 ${HOME}/julea/build-hdf-julea/server/julea-server &
