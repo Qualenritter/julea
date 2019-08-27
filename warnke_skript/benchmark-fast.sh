@@ -52,4 +52,4 @@ mkdir -p benchmark_values/warnke-${githash}
 cd benchmark_values/warnke-${githash}
 export J_BENCHMARK_TARGET=20;
 ../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values 2>&1
-kill -9 ${server_pid}
+kill ${server_pid}

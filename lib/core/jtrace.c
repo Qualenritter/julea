@@ -509,7 +509,7 @@ j_trace_fini(void)
 		g_hash_table_iter_init(&iter, j_trace_combined_timers);
 		while (g_hash_table_iter_next(&iter, &key, &value))
 		{
-			g_printerr("duration (%f) count (%d) func (%s)\n", value->time,value->count, key);
+			g_printerr("duration (%f) count (%d) func (%s)\n", value->time, value->count, key);
 		}
 		g_hash_table_unref(j_trace_combined_timers);
 	}
@@ -702,13 +702,13 @@ j_trace_leave(JTrace* trace)
 		if (!combined_duration)
 		{
 			combined_duration = g_new(JTraceTime, 1);
-			combined_duration->time = ((gdouble)duration)/((gdouble)G_USEC_PER_SEC);
-			combined_duration->count=1;
+			combined_duration->time = ((gdouble)duration) / ((gdouble)G_USEC_PER_SEC);
+			combined_duration->count = 1;
 			g_hash_table_insert(j_trace_combined_timers, g_strdup(top_stack->name), combined_duration);
 		}
 		else
 		{
-			combined_duration->time += duration/G_USEC_PER_SEC;
+			combined_duration->time += ((gdouble)duration) / ((gdouble)G_USEC_PER_SEC);
 			combined_duration->count++;
 		}
 		g_free(top_stack->name);
