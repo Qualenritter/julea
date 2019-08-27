@@ -372,18 +372,24 @@ def configure(ctx):
 			'-Wuninitialized',
 			'-Wwrite-strings'
 		], False)
+		check_and_add_flags(ctx, '-funit-at-a-time')
 		check_and_add_flags(ctx, '-fstack-protector-all')
 		check_and_add_flags(ctx, '-fno-omit-frame-pointer')
 		check_and_add_flags(ctx, '-ggdb')
 		check_and_add_flags(ctx, '-export-dynamic')
 		check_and_add_flags(ctx, '-rdynamic')
 		check_and_add_flags(ctx, '-D_FORTIFY_SOURCE=2')
+		check_and_add_flags(ctx, '-g')
+		check_and_add_flags(ctx, '-pg')
 
 		ctx.define('G_DISABLE_DEPRECATED', 1)
 		ctx.define('GLIB_VERSION_MIN_REQUIRED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
 		ctx.define('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
 	else:
+		check_and_add_flags(ctx, '-funit-at-a-time')
 		check_and_add_flags(ctx, '-O2')
+		check_and_add_flags(ctx, '-g')
+		check_and_add_flags(ctx, '-pg')
 		ctx.define('G_DISABLE_ASSERT', 1)
 		ctx.define('G_DISABLE_CHECKS', 1)
 

@@ -303,9 +303,10 @@ benchmark_hdf2(void)
 			target_time = target;
 		}
 	}
-	//#ifdef JULEA_DEBUG
+	exec_tests(1);
+/*#ifdef JULEA_DEBUG
 	exec_tree1(0, 1, 5);
-/*#else
+#else
 	guint i;
 	for (i = 0; i < 7; i++)
 	{

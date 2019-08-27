@@ -350,11 +350,13 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 		j_goto_error();
 	}
 	j_distributed_object_create(object->attr.object, batch);
-{H5VL_JULEA_TIMER(j_distributed_object_create);
-	if (!j_batch_execute(batch))
 	{
-		j_goto_error();
-	}}
+		H5VL_JULEA_TIMER(j_distributed_object_create);
+		if (!j_batch_execute(batch))
+		{
+			j_goto_error();
+		}
+	}
 	if (!H5VL_julea_db_link_create_helper(parent, object, name))
 		j_goto_error();
 	return object;
@@ -501,12 +503,14 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 	data_size = object->dataset.datatype->datatype.type_total_size;
 	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_read(object->attr.object, buf, data_size, 0, &bytes_read, batch);
-{H5VL_JULEA_TIMER(j_distributed_object_read);
-	if (!j_batch_execute(batch))
 	{
-		j_goto_error();
+		H5VL_JULEA_TIMER(j_distributed_object_read);
+		if (!j_batch_execute(batch))
+		{
+			j_goto_error();
+		}
 	}
-}	return 0;
+	return 0;
 _error:
 	return 1;
 }
@@ -529,11 +533,13 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 	data_size = object->dataset.datatype->datatype.type_total_size;
 	data_size *= object->attr.space->space.dim_total_count;
 	j_distributed_object_write(object->attr.object, buf, data_size, 0, &bytes_written, batch);
-{H5VL_JULEA_TIMER(j_distributed_object_write);
-	if (!j_batch_execute(batch))
 	{
-		j_goto_error();
-}	}
+		H5VL_JULEA_TIMER(j_distributed_object_write);
+		if (!j_batch_execute(batch))
+		{
+			j_goto_error();
+		}
+	}
 	return 0;
 _error:
 	return 1;

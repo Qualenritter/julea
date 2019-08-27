@@ -22,9 +22,9 @@ export J_BENCHMARK_SCALE=100
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
 ./warnke_skript/format.sh
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh build && ./waf.sh install
-./waf.sh configure --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh build && ./waf.sh install
-./waf.sh configure --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh build && ./waf.sh install
+./waf.sh configure --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark && ./waf.sh build && ./waf.sh install
+./waf.sh configure --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug --out build-gcc-benchmark-debug --prefix=prefix-gcc-benchmark-debug --libdir=prefix-gcc-benchmark-debug --bindir=prefix-gcc-benchmark-debug --destdir=prefix-gcc-benchmark-debug && ./waf.sh build && ./waf.sh install
+./waf.sh configure --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --testmockup --debug --out build-gcc-benchmark-mock --prefix=prefix-gcc-benchmark-mock --libdir=prefix-gcc-benchmark-mock --bindir=prefix-gcc-benchmark-mock --destdir=prefix-gcc-benchmark-mock && ./waf.sh build && ./waf.sh install
 thepath=$(pwd)
 mkdir -p log
 rm -rf ${mountpoint}/julea/*
@@ -36,7 +36,7 @@ rm -rf ${mountpoint}/julea/*
 		  --db-servers="$(hostname)" \
 		  --object-backend=posix --object-component=server --object-path=${mountpoint}/julea/object-benchmark \
 		  --kv-backend=sqlite --kv-component=server --kv-path=${mountpoint}/julea/kv-benchmark \
-		  --db-backend=sqlite --db-component=server --db-path=${mountpoint}/julea/db-benchmark
+		  --db-backend=mysql --db-component=client --db-path=${mountpoint}/julea/db-benchmark
 )
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 (
@@ -47,7 +47,7 @@ mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 		  --db-servers="$(hostname)" \
 		  --object-backend=posix --object-component=client --object-path=${mountpoint}/julea/object-benchmark \
 		  --kv-backend=sqlite --kv-component=client --kv-path=${mountpoint}/julea/kv-benchmark \
-		  --db-backend=sqlite --db-component=client --db-path=:memory:
+		  --db-backend=mysql --db-component=client --db-path=:memory:
 )
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark-debug
 githash=$(git log --pretty=format:'%H' -n 1)
@@ -69,6 +69,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
 	export J_BENCHMARK_TARGET=0.001
+	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x1 2>&1
@@ -93,6 +94,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
 	export J_BENCHMARK_TARGET=0.001
+	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../log/x2 2>&1
@@ -113,6 +115,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=0.001
+	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 	../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x3
 )
 sleep 2
@@ -123,6 +126,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=30;
+	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
 	kill -9 ${server_pid}
 )

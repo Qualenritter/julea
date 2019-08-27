@@ -260,21 +260,21 @@ enum H5VL_julea_db_timer_func_names
 	H5VL_julea_db_link_move_timers, //37
 	H5VL_julea_db_link_optional_timers, //38
 	H5VL_julea_db_link_specific_timers, //39
-j_distributed_object_create_timers,//40
-j_distributed_object_read_timers,//41
-j_distributed_object_write_timers,//42
+	j_distributed_object_create_timers, //40
+	j_distributed_object_read_timers, //41
+	j_distributed_object_write_timers, //42
 	total_timers, //43
-	_H5VL_julea_db_func_count //44
+	_H5VL_julea_db_func_count = 1500 //44
 };
 typedef enum H5VL_julea_db_timer_func_names H5VL_julea_db_timer_func_names;
 struct H5VL_julea_db_timer
 {
 	GTimer* timer;
-	H5VL_julea_db_timer_func_names func_name;
+	guint func_name;
 };
 typedef struct H5VL_julea_db_timer H5VL_julea_db_timer;
 static H5VL_julea_db_timer*
-H5VL_julea_db_timer_new(H5VL_julea_db_timer_func_names func_name)
+H5VL_julea_db_timer_new(guint func_name)
 {
 	H5VL_julea_db_timer* timer;
 	timer = g_new(H5VL_julea_db_timer, 1);
@@ -331,20 +331,24 @@ H5VL_julea_db_timer_fini(void)
 	global_timer = NULL;
 	for (i = 0; i < _H5VL_julea_db_func_count; i++)
 	{
-		snprintf(buffer, sizeof(buffer), "INSERT INTO tmp (name, count, timer) VALUES ('%d', %d, %f) ON CONFLICT (name) DO UPDATE SET count = count + %d, timer = timer + %f WHERE NAME = '%d';",
-			i,
-			all_timers_counter[i],
-			all_timers[i],
-			all_timers_counter[i],
-			all_timers[i],
-			i);
-		j_sql_exec(buffer, NULL);
+		if (all_timers_counter[i] > 0)
+		{
+			snprintf(buffer, sizeof(buffer), "INSERT INTO tmp (name, count, timer) VALUES ('%d', %d, %f) ON CONFLICT (name) DO UPDATE SET count = count + %d, timer = timer + %f WHERE NAME = '%d';",
+				i,
+				all_timers_counter[i],
+				all_timers[i],
+				all_timers_counter[i],
+				all_timers[i],
+				i);
+			j_sql_exec(buffer, NULL);
+		}
 	}
 	sqlite3_close(backend_db);
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(H5VL_julea_db_timer, H5VL_julea_db_timer_free)
 #define H5VL_JULEA_TIMER(func_name) g_autoptr(H5VL_julea_db_timer) func_name##_timers##local = H5VL_julea_db_timer_new(func_name##_timers)
+#define H5VL_JULEA_TIMER_INT(func_name) g_autoptr(H5VL_julea_db_timer) _timers##local = H5VL_julea_db_timer_new(func_name)
 
 #pragma GCC diagnostic pop
 #endif
