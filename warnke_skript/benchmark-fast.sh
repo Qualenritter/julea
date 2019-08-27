@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-mountpoint=/mnt
+mountpoint=/mnt2
 export J_BENCHMARK_SCALE=100
 
 rm -rf build* prefix*
@@ -53,7 +53,7 @@ sleep 2
 	cd benchmark_values/warnke-${githash}
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
-	export J_BENCHMARK_TARGET=30;
+	export J_BENCHMARK_TARGET=10;
 	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
 	kill -9 ${server_pid}

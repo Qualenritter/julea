@@ -380,7 +380,7 @@ def configure(ctx):
 		check_and_add_flags(ctx, '-rdynamic')
 		check_and_add_flags(ctx, '-D_FORTIFY_SOURCE=2')
 		check_and_add_flags(ctx, '-g')
-		check_and_add_flags(ctx, '-pg')
+		check_and_add_flags(ctx, '-pg',False, type=['cflags', 'ldflags'])
 
 		ctx.define('G_DISABLE_DEPRECATED', 1)
 		ctx.define('GLIB_VERSION_MIN_REQUIRED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
@@ -389,7 +389,7 @@ def configure(ctx):
 		check_and_add_flags(ctx, '-funit-at-a-time')
 		check_and_add_flags(ctx, '-O2')
 		check_and_add_flags(ctx, '-g')
-		check_and_add_flags(ctx, '-pg')
+		check_and_add_flags(ctx, '-pg',False, type=['cflags', 'ldflags'])
 		ctx.define('G_DISABLE_ASSERT', 1)
 		ctx.define('G_DISABLE_CHECKS', 1)
 
