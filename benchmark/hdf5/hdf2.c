@@ -178,8 +178,10 @@ benchmark_hdf_main()
 	g_free(data_attr);
 	H5Sclose(dataspace_ds);
 	H5Pclose(acc_tpl);
-	H5VLterminate(julea_vol_id);
+if (useVOL)
+{	H5VLterminate(julea_vol_id);
 	H5VLunregister_connector(julea_vol_id);
+}
 }
 static void
 benchmark_hdf_dataset_create(BenchmarkResult* result)
