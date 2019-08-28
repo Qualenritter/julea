@@ -191,7 +191,8 @@ main(int argc, char** argv)
 		g_print("name%selapsed%soperations%sbytes%stotal_elapsed\n", opt_machine_separator, opt_machine_separator, opt_machine_separator, opt_machine_separator);
 	}
 
-	/*	benchmark_db();
+	benchmark_db();
+	/*
 
 	// Core
 	benchmark_background_operation();
@@ -213,7 +214,7 @@ main(int argc, char** argv)
 */
 
 	// HDF5 client
-	benchmark_hdf2();
+//	benchmark_hdf2();
 	//	benchmark_hdf();
 
 	g_timer_destroy(j_benchmark_timer);
