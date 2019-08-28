@@ -71,26 +71,22 @@ _benchmark_db_schema_create(BenchmarkResult* result, gboolean use_batch, const g
 	semantics = j_benchmark_get_semantics();
 	batch = j_batch_new(semantics);
 	schema_array = g_new0(JDBSchema*, n);
-	for (i = 0; i < n; i++)
-	{
-		sprintf(name, "name%d", i);
-		schema_array[i] = j_db_schema_new(namespace, name, ERROR_PARAM);
-		CHECK_ERROR(!schema_array[i]);
-		ret = j_db_schema_add_field(schema_array[i], "name", J_DB_TYPE_STRING, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_db_schema_add_field(schema_array[i], "loc", J_DB_TYPE_UINT32, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_db_schema_add_field(schema_array[i], "coverage", J_DB_TYPE_FLOAT32, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_db_schema_add_field(schema_array[i], "lastrun", J_DB_TYPE_UINT32, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-	}
 start:
 	m++;
 	for (i = 0; i < n; i++)
-	{
-		schema_array[i]->server_side = FALSE;
-	}
+        {
+                sprintf(name, "name%d", i);
+                schema_array[i] = j_db_schema_new(namespace, name, ERROR_PARAM);
+                CHECK_ERROR(!schema_array[i]);
+                ret = j_db_schema_add_field(schema_array[i], "name", J_DB_TYPE_STRING, ERROR_PARAM);
+                CHECK_ERROR(!ret);
+                ret = j_db_schema_add_field(schema_array[i], "loc", J_DB_TYPE_UINT32, ERROR_PARAM);
+                CHECK_ERROR(!ret);
+                ret = j_db_schema_add_field(schema_array[i], "coverage", J_DB_TYPE_FLOAT32, ERROR_PARAM);
+                CHECK_ERROR(!ret);
+                ret = j_db_schema_add_field(schema_array[i], "lastrun", J_DB_TYPE_UINT32, ERROR_PARAM);
+                CHECK_ERROR(!ret);
+        }
 	j_benchmark_timer_start();
 	for (i = 0; i < n; i++)
 	{
@@ -157,13 +153,13 @@ start:
 		CHECK_ERROR(!ret);
 	}
 	elapsed_delete += j_benchmark_timer_elapsed();
+	for (i = 0; i < n; i++)
+        {
+                j_db_schema_unref(schema_array[i]);
+        }
 	if (elapsed_create < target_time && elapsed_delete < target_time)
 	{
 		goto start;
-	}
-	for (i = 0; i < n; i++)
-	{
-		j_db_schema_unref(schema_array[i]);
 	}
 	g_free(schema_array);
 	benchmark_db_schema_create_executed = g_new(BenchmarkResult, 1);

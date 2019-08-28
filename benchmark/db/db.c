@@ -93,7 +93,8 @@ benchmark_db(void)
 			scale_factor = scale;
 		}
 	}
-#ifdef JULEA_DEBUG
+//#ifdef JULEA_DEBUG
+#ifndef JULEA_DEBUG
 	exec_tree1(0, 1, 5);
 #else
 	guint i;

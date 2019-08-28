@@ -106,12 +106,12 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	//g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 	{
-		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", mysql_stmt_error(wrapper->stmt));
 		goto _error;
 	}
 	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
 	{
-		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
 		goto _error;
 	}
 	wrapper->param_count_in = types_in ? types_in->len : 0;
