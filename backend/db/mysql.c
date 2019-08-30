@@ -515,7 +515,7 @@ j_sql_open(void)
 		    "julea", //database name
 		    3306, //port number
 		    "/var/run/mysqld/mysqld.sock", //unix socket
-		    0 //client flags
+		    CLIENT_OPTIONAL_RESULTSET_METADATA //client flags
 		    ))
 	{
 		//g_debug("%s", mysql_error(backend_db));
