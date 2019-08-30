@@ -54,7 +54,7 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 
 mv ~/.config/julea/julea ${JULEA_CONFIG}
 
-./warnke_skript/reset_mysql.sh
+./warnke_skript/reset_mysql.sh ${mountpoint}/julea/mysql
 ./build-gcc-benchmark/server/julea-server >> server_log 2>&1 &
 server_pid=$!
 sleep 0.1s

@@ -326,10 +326,10 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean
 		//selector single
 		while (m3 == 0 || elapsed_iterator_single < target_time)
 		{
-			m3++;
-			j_benchmark_timer_start();
-			for (j = 0; j < n; j++)
+			for (j = 0; (j < n) && (elapsed_iterator_single < target_time); j++)
 			{
+				m3++;
+				j_benchmark_timer_start();
 				selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 				CHECK_ERROR(!selector);
 				ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
@@ -349,8 +349,8 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean
 				CHECK_ERROR(ret);
 				j_db_iterator_unref(iterator);
 				j_db_selector_unref(selector[j]);
+				elapsed_iterator_single += j_benchmark_timer_elapsed();
 			}
-			elapsed_iterator_single += j_benchmark_timer_elapsed();
 		}
 		//selector all
 		while (m4 == 0 || elapsed_iterator_all < target_time)
@@ -464,7 +464,7 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean
 	benchmark_db_entry_delete_executed->operations = n * m;
 	benchmark_db_iterator_single_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_iterator_single_executed->elapsed_time = elapsed_iterator_single;
-	benchmark_db_iterator_single_executed->operations = n * m3;
+	benchmark_db_iterator_single_executed->operations = m3;
 	benchmark_db_iterator_all_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_iterator_all_executed->elapsed_time = elapsed_iterator_all;
 	benchmark_db_iterator_all_executed->operations = n * m4;

@@ -19,10 +19,9 @@
 
 echo "core" > /proc/sys/kernel/core_pattern
 ulimit -c unlimited
-export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
+#export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
 #export J_TRACE="combined"
-export G_MESSAGES_DEBUG=all
-
+#export G_MESSAGES_DEBUG=all
 
 mountpoint=/mnt2
 export J_BENCHMARK_SCALE=10
@@ -50,10 +49,7 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 githash=$(git log --pretty=format:'%H' -n 1)
 
-mkdir -p ${mountpoint}/julea/mysql
-ln -s ${mountpoint}/julea/mysql /var/lib/mysql
-./warnke_skript/reset_mysql.sh
-
+./warnke_skript/reset_mysql.sh ${mountpoint}/julea/mysql
 ./build-gcc-benchmark/server/julea-server >> server_log &
 server_pid=$!
 

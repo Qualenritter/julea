@@ -23,7 +23,7 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
-	./warnke_skript/reset_mysql.sh
+	./warnke_skript/reset_mysql.sh ${basepath}/julea/mysql
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
@@ -38,7 +38,7 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
-	./warnke_skript/reset_mysql.sh
+	./warnke_skript/reset_mysql.sh ${basepath}/julea/mysql
 	./scripts/test.sh
 )
 }
