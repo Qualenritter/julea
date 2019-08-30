@@ -11,7 +11,7 @@ do
 	while IFS="" read -r attribute || [ -n "$attribute" ]
 	do
 		attribute=$(echo $attribute | sed "s/:.*//g")
-		printf "$attribute" >> combined.csv
+		printf $(echo "$attribute" | sed "s-/1--g" | sed "s-/hdf5/--g") >> combined.csv
 		for file in $(ls benchmark_values_* | sort)
 		do
 			printf "," >> combined.csv
