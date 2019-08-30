@@ -1,0 +1,8 @@
+/db/1/schema/add_field:                            30.000 seconds (5591700/s) [172.555 seconds]
+/db/1/schema/get_field:                            30.000 seconds (9682295/s) [0.000 seconds]
+/db/1/schema/get_fields:                           30.000 seconds (6238102/s) [0.000 seconds]
+/db/1/schema/equals:                               30.000 seconds (3864522/s) [0.000 seconds]
+/db/1/schema/create:                               30.000 seconds (2115/s) [86.835 seconds]
+/db/1/schema/get:                                  30.000 seconds (34818/s) [0.000 seconds]
+/db/1/schema/delete:                               26.110 seconds (2430/s) [0.000 seconds]
+/db/1/schema/create-batch:                         
