@@ -11,7 +11,7 @@ do
 	while IFS="" read -r attribute || [ -n "$attribute" ]
 	do
 		attribute=$(echo $attribute | sed "s/:.*//g")
-		printf $(echo "$attribute" | sed "s-/1--g" | sed "s-/hdf5/--g") >> combined.csv
+		printf $(echo "$attribute" | sed "s-/1--g" | sed "s-/hdf5/--g" | sed "sx/x-xg") >> combined.csv
 		for file in $(ls benchmark_values_* | sort)
 		do
 			printf "," >> combined.csv
@@ -37,8 +37,8 @@ set style fill solid
 set boxwidth 0.9
 set xtics format ""
 set grid ytics
-set xlabel "attribute" noenhanced
-set ylabel "operation/second" noenhanced
+set xlabel "" noenhanced
+set ylabel "# Operation or Bytes / second" noenhanced
 plot	'combined.csv' using 2:xtic(1) title columnheader(2), \
 for [i=3:7] '' using i title columnheader(i)
 EOF
