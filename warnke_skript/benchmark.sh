@@ -69,7 +69,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
 	export J_BENCHMARK_TARGET=0.001
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+	../../warnke_skript/reset_mysql.sh
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x1 2>&1
@@ -94,7 +94,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-mock/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark-debug
 	export J_BENCHMARK_TARGET=0.001
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+	../../warnke_skript/reset_mysql.sh
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
 		--suppressions=../../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 		../../build-gcc-benchmark-mock/benchmark/julea-benchmark > ../../log/x2 2>&1
@@ -115,7 +115,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark-debug/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=0.001
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+	../../warnke_skript/reset_mysql.sh
 	../../build-gcc-benchmark-debug/benchmark/julea-benchmark > ../../log/x3
 )
 sleep 2
@@ -126,7 +126,7 @@ sleep 2
 	export LD_LIBRARY_PATH=${thepath}/prefix-gcc-benchmark/lib/:$LD_LIBRARY_PATH
 	export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	export J_BENCHMARK_TARGET=30;
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+	../../warnke_skript/reset_mysql.sh
 	../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
 	kill -9 ${server_pid}
 )

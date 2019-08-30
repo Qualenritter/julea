@@ -54,7 +54,7 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 
 mv ~/.config/julea/julea ${JULEA_CONFIG}
 
-mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+./warnke_skript/reset_mysql.sh
 ./build-gcc-benchmark/server/julea-server >> server_log 2>&1 &
 server_pid=$!
 sleep 0.1s

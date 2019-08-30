@@ -50,7 +50,9 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 githash=$(git log --pretty=format:'%H' -n 1)
 
-mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+mkdir -p ${mountpoint}/julea/mysql
+ln -s ${mountpoint}/julea/mysql /var/lib/mysql
+./warnke_skript/reset_mysql.sh
 
 ./build-gcc-benchmark/server/julea-server >> server_log &
 server_pid=$!

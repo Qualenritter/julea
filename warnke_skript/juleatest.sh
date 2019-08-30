@@ -23,7 +23,7 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=all
 	export G_SLICE=always-malloc
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+	./warnke_skript/reset_mysql.sh
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
@@ -38,7 +38,7 @@ mkdir -p ${basepath}
 	export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 	export G_MESSAGES_DEBUG=
 	export G_SLICE=always-malloc
-	mysql --user='root' --password='1234' -e 'show tables' julea | while read table; do mysql --user='root' --password='1234' -e "drop table $table" julea; done
+	./warnke_skript/reset_mysql.sh
 	./scripts/test.sh
 )
 }
