@@ -64,9 +64,9 @@ kill ${server_pid}
 )
 }
 
-#exec_tests mysql  client 1 /mnt2 mem mysql
+exec_tests mysql  client 1 /mnt2 mem mysql
 #exec_tests sqlite server 1 /mnt2 mem sqlite
-exec_tests sqlite server 0 /mnt2 mem native
-#exec_tests mysql  client 1 /mnt  hdd mysql
+#exec_tests sqlite server 0 /mnt2 mem native
+exec_tests mysql  client 1 /mnt  hdd mysql
 #exec_tests sqlite server 1 /mnt  hdd sqlite
-exec_tests sqlite server 0 /mnt  hdd native
+#exec_tests sqlite server 0 /mnt  hdd native

@@ -29,7 +29,7 @@ export J_BENCHMARK_SCALE=10
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
 
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
+./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 ./waf.sh install
 thepath=$(pwd)
@@ -58,7 +58,7 @@ sleep 2
 rm -rf benchmark_values/warnke-${githash}
 mkdir -p benchmark_values/warnke-${githash}
 cd benchmark_values/warnke-${githash}
-export J_BENCHMARK_TARGET=1
+export J_BENCHMARK_TARGET=30
 
 ../../build-gcc-benchmark/benchmark/julea-benchmark >> benchmark_values
 kill ${server_pid}

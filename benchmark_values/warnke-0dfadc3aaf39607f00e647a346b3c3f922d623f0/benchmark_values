@@ -5,4 +5,11 @@
 /db/1/schema/create:                               30.000 seconds (2115/s) [86.835 seconds]
 /db/1/schema/get:                                  30.000 seconds (34818/s) [0.000 seconds]
 /db/1/schema/delete:                               26.110 seconds (2430/s) [0.000 seconds]
-/db/1/schema/create-batch:                         
+/db/1/schema/create-batch:                         30.000 seconds (2094/s) [86.637 seconds]
+/db/1/schema/get-batch:                            30.000 seconds (34796/s) [0.000 seconds]
+/db/1/schema/delete-batch:                         25.918 seconds (2424/s) [0.000 seconds]
+/db/1/schema/ref:                                  28.334 seconds (137502533/s) [58.524 seconds]
+/db/1/schema/unref:                                30.000 seconds (129866349/s) [0.000 seconds]
+/db/1/schema/new:                                  30.000 seconds (8421622/s) [53.722 seconds]
+/db/1/schema/free:                                 23.709 seconds (10656411/s) [0.000 seconds]
+/db/1/entry/ref:                                   
