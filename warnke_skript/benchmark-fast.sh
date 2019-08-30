@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 mountpoint=/mnt2
-export J_BENCHMARK_SCALE=100
+export J_BENCHMARK_SCALE=10
 
 rm -rf build* prefix*
 ./warnke_skript/kill.sh

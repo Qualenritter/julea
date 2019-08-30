@@ -11,7 +11,6 @@ folders=$(find -type d \
 | grep -v "warnke-ssd-m2-07" \
 )
 
-n_values=(1 5 10 50 100 500 1000 5000 10000 50000 100000 1000000)
 #/db/scheme_1/write/db
 rm *.csv tmp *.plot *.pdf
 for f in ${folders}
