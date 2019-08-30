@@ -536,16 +536,19 @@ j_sql_close(MYSQL* backend_db)
 static gboolean
 j_sql_start_transaction(MYSQL* backend_db, GError** error)
 {
+	mysql_query(backend_db, "START TRANSACTION");
 	return TRUE;
 }
 static gboolean
 j_sql_commit_transaction(MYSQL* backend_db, GError** error)
 {
+	mysql_query(backend_db, "COMMIT");
 	return TRUE;
 }
 static gboolean
 j_sql_abort_transaction(MYSQL* backend_db, GError** error)
 {
+	mysql_query(backend_db, "ROLLBACK");
 	return TRUE;
 }
 #include "sql-generic.c"

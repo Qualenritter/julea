@@ -273,25 +273,25 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean
 	names = g_new(gchar const*, 2);
 	names[0] = "varname_0";
 	names[1] = NULL;
+	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
+	CHECK_ERROR(!schema);
+	for (i = 0; i < global_n2; i++)
+	{
+		sprintf(varname, "varname_%d", i);
+		ret = j_db_schema_add_field(schema, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+	}
+	if (use_index)
+	{
+		ret = j_db_schema_add_index(schema, names, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+	}
+	ret = j_db_schema_create(schema, batch, ERROR_PARAM);
+	CHECK_ERROR(!ret);
+	ret = j_batch_execute(batch);
+	CHECK_ERROR(!ret);
 	while (m == 0 || (elapsed_entry_insert < target_time && elapsed_entry_delete < target_time))
 	{
-		schema = j_db_schema_new(namespace, name, ERROR_PARAM);
-		CHECK_ERROR(!schema);
-		for (i = 0; i < global_n2; i++)
-		{
-			sprintf(varname, "varname_%d", i);
-			ret = j_db_schema_add_field(schema, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
-			CHECK_ERROR(!ret);
-		}
-		if (use_index)
-		{
-			ret = j_db_schema_add_index(schema, names, ERROR_PARAM);
-			CHECK_ERROR(!ret);
-		}
-		ret = j_db_schema_create(schema, batch, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_batch_execute(batch);
-		CHECK_ERROR(!ret);
 		m++;
 		//insert
 		j_benchmark_timer_start();
@@ -447,12 +447,12 @@ _benchmark_db_entry_insert(BenchmarkResult* result, gboolean use_batch, gboolean
 			j_db_selector_unref(selector[j]);
 		}
 		elapsed_entry_delete += j_benchmark_timer_elapsed();
-		ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_batch_execute(batch);
-		CHECK_ERROR(!ret);
-		j_db_schema_unref(schema);
 	}
+	ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
+	CHECK_ERROR(!ret);
+	ret = j_batch_execute(batch);
+	CHECK_ERROR(!ret);
+	j_db_schema_unref(schema);
 	benchmark_db_entry_insert_executed = g_new(BenchmarkResult, 1);
 	benchmark_db_entry_insert_executed->elapsed_time = elapsed_entry_insert;
 	benchmark_db_entry_insert_executed->operations = n * m;
