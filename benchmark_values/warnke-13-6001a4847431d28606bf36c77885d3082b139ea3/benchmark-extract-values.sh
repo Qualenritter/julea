@@ -23,7 +23,7 @@ do
 done
 
 cat > gnuplot.plot << EOF
-set terminal pdf size 20,20
+set terminal pdf size 8,4
 set output 'hdf5-syntetic-benchmark.pdf'
 set title 'HDF5-synthetic benchmarks' noenhanced
 set datafile separator ","
@@ -38,8 +38,58 @@ set boxwidth 0.9
 set xtics format ""
 set grid ytics
 set xlabel "" noenhanced
-set ylabel "# Operation or Bytes / second" noenhanced
+set ylabel "#operation or Bytes / second" noenhanced
 plot	'combined.csv' using 2:xtic(1) title columnheader(2), \
+for [i=3:7] '' using i title columnheader(i)
+EOF
+cat gnuplot.plot | gnuplot
+rm gnuplot.plot
+
+cat combined.csv | grep -e "read" -e "write" -e "file," > combined-data.csv
+cat combined.csv | grep -v "read" | grep -v "write" > combined-meta.csv
+
+
+cat > gnuplot.plot << EOF
+set terminal pdf size 8,4
+set output 'hdf5-syntetic-benchmark-meta.pdf'
+set title 'HDF5-synthetic meta data benchmarks' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set size ratio 0.5
+set logscale y
+set key right outside
+set style data histogram
+set style histogram cluster gap 1
+set style fill solid
+set boxwidth 0.9
+set xtics format ""
+set grid ytics
+set xlabel "" noenhanced
+set ylabel "#operation/second" noenhanced
+plot	'combined-meta.csv' using 2:xtic(1) title columnheader(2), \
+for [i=3:7] '' using i title columnheader(i)
+EOF
+cat gnuplot.plot | gnuplot
+rm gnuplot.plot
+
+cat > gnuplot.plot << EOF
+set terminal pdf size 8,4
+set output 'hdf5-syntetic-benchmark-data.pdf'
+set title 'HDF5-synthetic data benchmarks' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set size ratio 0.5
+set logscale y
+set key right outside
+set style data histogram
+set style histogram cluster gap 1
+set style fill solid
+set boxwidth 0.9
+set xtics format ""
+set grid ytics
+set xlabel "" noenhanced
+set ylabel "Bytes/second" noenhanced
+plot	'combined-data.csv' using 2:xtic(1) title columnheader(2), \
 for [i=3:7] '' using i title columnheader(i)
 EOF
 cat gnuplot.plot | gnuplot
