@@ -99,27 +99,23 @@ static void
 myprintf(const char* name, guint n, BenchmarkResult* result)
 {
 	if (result->elapsed_time > 0)
-		printf("/db/%d/%s %.3f seconds (%.0f / s) [%d - prog: %f]\n",
+		printf("/db/%d/%s %.3f seconds (%.0f / s)\n",
 			n,
 			name,
 			result->elapsed_time,
-			(gdouble)result->operations / result->elapsed_time,
-			result->operations_without_n,
-			result->prognosted_time * (gdouble)result->operations_without_n);
+			(gdouble)result->operations / result->elapsed_time);
 	fflush(stdout);
 }
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 {
 	if (result->elapsed_time > 0)
-		printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [%d - prog: %f]\n",
+		printf("/db/%d/%d/%s %.3f seconds (%.0f / s)\n",
 			n,
 			n2,
 			name,
 			result->elapsed_time,
-			(gdouble)result->operations / result->elapsed_time,
-			result->operations_without_n,
-			result->prognosted_time * (gdouble)result->operations_without_n);
+			(gdouble)result->operations / result->elapsed_time);
 	fflush(stdout);
 }
 
@@ -262,7 +258,7 @@ calculate_prognose(guint n, gint n_next)
 		next_result_step->iterator_single[my_index].prognosted_time = target_time + 1;
 		next_result_step->iterator_all[my_index].prognosted_time = target_time + 1;
 	}
-	{
+	/*	{
 		printf("prognose next\n");
 		printf("prognose schema_equals %f\n", next_result_step->schema_equals.prognosted_time);
 		printf("prognose schema_add_field %f\n", next_result_step->schema_add_field.prognosted_time);
@@ -283,7 +279,7 @@ calculate_prognose(guint n, gint n_next)
 			printf("prognose iterator_single %d %f\n", j, next_result_step->iterator_single[j].prognosted_time);
 			printf("prognose iterator_all %d %f\n", j, next_result_step->iterator_all[j].prognosted_time);
 		}
-	}
+	}*/
 	return result;
 }
 

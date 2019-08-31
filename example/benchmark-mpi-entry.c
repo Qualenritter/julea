@@ -207,7 +207,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	names[0] = "varname_0";
 	names[1] = NULL;
 _start:
-	allow_loop = TRUE;
+	allow_loop = FALSE;
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
 	for (i = 0; i < n2; i++)
@@ -229,6 +229,7 @@ _start:
 	{
 		while (m == 0 || current_result_step->entry_insert[my_index].elapsed_time < target_time)
 		{
+			allow_loop = TRUE;
 			m++;
 			//insert
 			j_benchmark_timer_start();
@@ -371,7 +372,6 @@ _start:
 			{
 				if (current_result_step->entry_delete[my_index].elapsed_time < target_time)
 				{
-					allow_loop = FALSE;
 					m5++;
 					j_benchmark_timer_start();
 					for (j = 0; j < n; j++)
