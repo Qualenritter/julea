@@ -205,82 +205,23 @@ exec_tests(guint n)
 	}
 }
 
-#define prognose_1(p_next, p_tmp)                                                                                                            \
-	do                                                                                                                                   \
-	{                                                                                                                                    \
-		BenchmarkResult* tmp_prev = (BenchmarkResult*)(((char*)&p_tmp) - sizeof(result_step));                                       \
-		if ((char*)tmp_prev > (char*)all_result_step)                                                                                \
-		{                                                                                                                            \
-			gdouble tmp_double_old = (tmp_prev->elapsed_time / (tmp_prev->operations / (tmp->n / 4)));                           \
-			gdouble tmp_double_new = (p_tmp.elapsed_time / (p_tmp.operations / tmp->n));                                         \
-			printf(#p_next "%f - %f -> %f\n", tmp_double_old, tmp_double_new, tmp_double_new + tmp_double_new - tmp_double_old); \
-			p_next.prognosted_time += tmp_double_new + tmp_double_new - tmp_double_old;                                          \
-		}                                                                                                                            \
-		else                                                                                                                         \
-		{                                                                                                                            \
-			p_next.prognosted_time += (p_tmp.elapsed_time / (p_tmp.operations / tmp->n));                                        \
-		}                                                                                                                            \
-	} while (0)
-#define prognose_2(p_next, p_curr)                                                                                                        \
-	do                                                                                                                                \
-	{                                                                                                                                 \
-		p_next.prognosted_time = (p_next.prognosted_time / i);                                                                    \
-		p_next.prognosted_time = max(p_next.prognosted_time, p_curr.elapsed_time / (p_curr.operations / current_result_step->n)); \
-		result = result || (p_next.prognosted_time < target_time && p_curr.elapsed_time >= target_time);                          \
+#define prognose_2(p_next, p_curr)                                                                               \
+	do                                                                                                       \
+	{                                                                                                        \
+		p_next.prognosted_time = p_curr.elapsed_time / (p_curr.operations / current_result_step->n);     \
+		result = result || (p_next.prognosted_time < target_time && p_curr.elapsed_time >= target_time); \
 	} while (0)
 
 static gboolean
 calculate_prognose(guint n, gint n_next)
 {
 	gboolean result = FALSE;
-	gdouble i = 0;
 	guint j;
 	guint my_index;
-	result_step* tmp;
 
 	memset(next_result_step, 0, sizeof(result_step));
 
 	next_result_step->n = n_next;
-	next_result_step->schema_new.prognosted_time = target_time + 1;
-	next_result_step->schema_free.prognosted_time = target_time + 1;
-	next_result_step->schema_ref.prognosted_time = target_time + 1;
-	next_result_step->schema_unref.prognosted_time = target_time + 1;
-	next_result_step->entry_new.prognosted_time = target_time + 1;
-	next_result_step->entry_free.prognosted_time = target_time + 1;
-	next_result_step->entry_ref.prognosted_time = target_time + 1;
-	next_result_step->entry_unref.prognosted_time = target_time + 1;
-	for (my_index = 0; my_index < 12; my_index += 4)
-	{
-		current_result_step->iterator_single[my_index].elapsed_time = target_time + 1;
-		current_result_step->iterator_all[my_index].elapsed_time = target_time + 1;
-	}
-	{
-		tmp = all_result_step++;
-		while (tmp <= current_result_step)
-		{
-			i++;
-			prognose_1(next_result_step->schema_equals, tmp->schema_equals);
-			prognose_1(next_result_step->schema_add_field, tmp->schema_add_field);
-			prognose_1(next_result_step->schema_get_field, tmp->schema_get_field);
-			prognose_1(next_result_step->schema_get_fields, tmp->schema_get_fields);
-			prognose_1(next_result_step->entry_set_field, tmp->entry_set_field);
-			for (j = 0; j < 2; j++)
-			{
-				prognose_1(next_result_step->schema_create[j], tmp->schema_create[j]);
-				prognose_1(next_result_step->schema_get[j], tmp->schema_get[j]);
-				prognose_1(next_result_step->schema_delete[j], tmp->schema_delete[j]);
-			}
-			for (j = 0; j < 12; j++)
-			{
-				prognose_1(next_result_step->entry_insert[j], tmp->entry_insert[j]);
-				prognose_1(next_result_step->entry_update[j], tmp->entry_update[j]);
-				prognose_1(next_result_step->entry_delete[j], tmp->entry_delete[j]);
-				prognose_1(next_result_step->iterator_single[j], tmp->iterator_single[j]);
-				prognose_1(next_result_step->iterator_all[j], tmp->iterator_all[j]);
-			}
-			tmp++;
-		}
-	}
 	{
 		prognose_2(next_result_step->schema_equals, current_result_step->schema_equals);
 		prognose_2(next_result_step->schema_add_field, current_result_step->schema_add_field);
@@ -301,6 +242,19 @@ calculate_prognose(guint n, gint n_next)
 			prognose_2(next_result_step->iterator_single[j], current_result_step->iterator_single[j]);
 			prognose_2(next_result_step->iterator_all[j], current_result_step->iterator_all[j]);
 		}
+	}
+	next_result_step->schema_new.prognosted_time = target_time + 1;
+	next_result_step->schema_free.prognosted_time = target_time + 1;
+	next_result_step->schema_ref.prognosted_time = target_time + 1;
+	next_result_step->schema_unref.prognosted_time = target_time + 1;
+	next_result_step->entry_new.prognosted_time = target_time + 1;
+	next_result_step->entry_free.prognosted_time = target_time + 1;
+	next_result_step->entry_ref.prognosted_time = target_time + 1;
+	next_result_step->entry_unref.prognosted_time = target_time + 1;
+	for (my_index = 0; my_index < 12; my_index += 4)
+	{
+		next_result_step->iterator_single[my_index].prognosted_time = target_time + 1;
+		next_result_step->iterator_all[my_index].prognosted_time = target_time + 1;
 	}
 	{
 		printf("prognose next\n");

@@ -63,7 +63,7 @@ mkdir -p benchmark_values/warnke-${githash}
 )
 
 cd benchmark_values/warnke-${githash}
-export J_BENCHMARK_TARGET=1
+export J_BENCHMARK_TARGET=0.05
 
 ../../example/benchmark-mpi >> benchmark_values
 kill ${server_pid}
