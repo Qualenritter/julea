@@ -25,6 +25,7 @@
 struct BenchmarkResult
 {
 	guint operations;
+	guint operations_without_n;
 	gdouble elapsed_time;
 	gdouble prognosted_time;
 };
@@ -36,11 +37,13 @@ void
 j_benchmark_timer_start(void)
 {
 	g_timer_start(j_benchmark_timer);
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 gdouble
 j_benchmark_timer_elapsed(void)
 {
+	MPI_Barrier(MPI_COMM_WORLD);
 	return g_timer_elapsed(j_benchmark_timer, NULL);
 }
 
@@ -101,8 +104,8 @@ myprintf(const char* name, guint n, BenchmarkResult* result)
 			name,
 			result->elapsed_time,
 			(gdouble)result->operations / result->elapsed_time,
-			result->operations,
-			result->prognosted_time * (gdouble)result->operations);
+			result->operations_without_n,
+			result->prognosted_time * (gdouble)result->operations_without_n);
 	fflush(stdout);
 }
 static void
@@ -115,8 +118,8 @@ myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 			name,
 			result->elapsed_time,
 			(gdouble)result->operations / result->elapsed_time,
-			result->operations,
-			result->prognosted_time * (gdouble)result->operations);
+			result->operations_without_n,
+			result->prognosted_time * (gdouble)result->operations_without_n);
 	fflush(stdout);
 }
 
@@ -205,11 +208,14 @@ exec_tests(guint n)
 	}
 }
 
-#define prognose_2(p_next, p_curr)                                                                               \
-	do                                                                                                       \
-	{                                                                                                        \
-		p_next.prognosted_time = p_curr.elapsed_time / (p_curr.operations / current_result_step->n);     \
-		result = result || (p_next.prognosted_time < target_time && p_curr.elapsed_time >= target_time); \
+#define prognose_2(p_next, p_curr)                                                                            \
+	do                                                                                                    \
+	{                                                                                                     \
+		if (p_curr.operations_without_n > 1)                                                          \
+			p_next.prognosted_time = 0;                                                           \
+		else                                                                                          \
+			p_next.prognosted_time = target_time + 1;                                             \
+		result = result || (p_next.prognosted_time < target_time && p_curr.operations_without_n > 0); \
 	} while (0)
 
 static gboolean

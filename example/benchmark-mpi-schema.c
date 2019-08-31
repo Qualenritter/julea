@@ -136,6 +136,9 @@ _benchmark_db_schema_create(gboolean use_batch, const guint n)
 	current_result_step->schema_create[use_batch].operations = n * m;
 	current_result_step->schema_get[use_batch].operations = n * m2;
 	current_result_step->schema_delete[use_batch].operations = n * m;
+	current_result_step->schema_create[use_batch].operations_without_n = m;
+	current_result_step->schema_get[use_batch].operations_without_n = m2;
+	current_result_step->schema_delete[use_batch].operations_without_n = m;
 }
 static void
 _benchmark_db_schema_ref(void)
@@ -177,6 +180,8 @@ _benchmark_db_schema_ref(void)
 	j_db_schema_unref(schema);
 	current_result_step->schema_ref.operations = m;
 	current_result_step->schema_unref.operations = m;
+	current_result_step->schema_ref.operations_without_n = m;
+	current_result_step->schema_unref.operations_without_n = m;
 }
 static void
 _benchmark_db_schema_new(void)
@@ -214,6 +219,8 @@ _benchmark_db_schema_new(void)
 
 	current_result_step->schema_new.operations = m;
 	current_result_step->schema_free.operations = m;
+	current_result_step->schema_new.operations_without_n = m;
+	current_result_step->schema_free.operations_without_n = m;
 }
 static void
 _benchmark_db_schema_add_field(const guint n)
@@ -304,4 +311,8 @@ _benchmark_db_schema_add_field(const guint n)
 	current_result_step->schema_get_field.operations = n * m2;
 	current_result_step->schema_get_fields.operations = n * m3;
 	current_result_step->schema_equals.operations = n * m4;
+	current_result_step->schema_add_field.operations_without_n = m;
+	current_result_step->schema_get_field.operations_without_n = m2;
+	current_result_step->schema_get_fields.operations_without_n = m3;
+	current_result_step->schema_equals.operations_without_n = m4;
 }
