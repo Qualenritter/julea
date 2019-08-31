@@ -28,3 +28,4 @@ waf-extras/*.pyc
 afl
 nohup.out
 log
+server_log

@@ -102,7 +102,7 @@ myprintf(const char* name, guint n, BenchmarkResult* result)
 			result->elapsed_time,
 			(gdouble)result->operations / result->elapsed_time,
 			result->operations,
-			result->prognosed_time * (gdouble)result->operations);
+			result->prognosted_time * (gdouble)result->operations);
 }
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
@@ -115,7 +115,7 @@ myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 			result->elapsed_time,
 			(gdouble)result->operations / result->elapsed_time,
 			result->operations,
-			result->prognosed_time * (gdouble)result->operations);
+			result->prognosted_time * (gdouble)result->operations);
 }
 
 static void
