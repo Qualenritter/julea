@@ -96,22 +96,26 @@ static void
 myprintf(const char* name, guint n, BenchmarkResult* result)
 {
 	if (result->elapsed_time > 0)
-		printf("/db/%d/%s %.3f seconds (%.0f)",
+		printf("/db/%d/%s %.3f seconds (%.0f / s) [%d - prog: %f]\n",
 			n,
 			name,
 			result->elapsed_time,
-			(gdouble)result->operations / result->elapsed_time);
+			(gdouble)result->operations / result->elapsed_time,
+			result->operations,
+			result->prognosed_time * (gdouble)result->operations);
 }
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 {
 	if (result->elapsed_time > 0)
-		printf("/db/%d/%d/%s %.3f seconds (%.0f)",
+		printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [%d - prog: %f]\n",
 			n,
 			n2,
 			name,
 			result->elapsed_time,
-			(gdouble)result->operations / result->elapsed_time);
+			(gdouble)result->operations / result->elapsed_time,
+			result->operations,
+			result->prognosed_time * (gdouble)result->operations);
 }
 
 static void
@@ -199,12 +203,26 @@ exec_tests(guint n)
 	}
 }
 
+#define prognose_1(p_next, p_tmp)                                                           \
+	do                                                                                  \
+	{                                                                                   \
+		p_next.prognosted_time += (p_tmp.elapsed_time / p_tmp.operations) / tmp->n; \
+	} while (0)
+#define prognose_2(p_next, p_curr)                                                         \
+	do                                                                                 \
+	{                                                                                  \
+		p_next.prognosted_time = (p_next.prognosted_time / i) * n_next * n_next;   \
+		p_next.prognosted_time = max(p_next.prognosted_time, p_curr.elapsed_time); \
+		result = result || p_next.prognosted_time < target_time;                   \
+	} while (0)
+
 static gboolean
 calculate_prognose(guint n, gint n_next)
 {
 	gboolean result = FALSE;
 	gdouble i = 0;
 	guint j;
+	guint my_index;
 	result_step* tmp;
 
 	next_result_step->n = n_next;
@@ -216,115 +234,79 @@ calculate_prognose(guint n, gint n_next)
 	next_result_step->entry_free.prognosted_time = target_time + 1;
 	next_result_step->entry_ref.prognosted_time = target_time + 1;
 	next_result_step->entry_unref.prognosted_time = target_time + 1;
+	for (my_index = 0; my_index < 12; my_index += 4)
+	{
+		current_result_step->iterator_single[my_index].elapsed_time = target_time + 1;
+		current_result_step->iterator_all[my_index].elapsed_time = target_time + 1;
+	}
 	{
 		tmp = all_result_step;
 		while (tmp <= current_result_step)
 		{
 			i++;
-			next_result_step->schema_equals.prognosted_time += tmp->schema_equals.elapsed_time / (tmp->n * tmp->n);
-			next_result_step->schema_add_field.prognosted_time += tmp->schema_add_field.elapsed_time / (tmp->n * tmp->n);
-			next_result_step->schema_get_field.prognosted_time += tmp->schema_get_field.elapsed_time / (tmp->n * tmp->n);
-			next_result_step->schema_get_fields.prognosted_time += tmp->schema_get_fields.elapsed_time / (tmp->n * tmp->n);
-			next_result_step->entry_set_field.prognosted_time += tmp->entry_set_field.elapsed_time / (tmp->n * tmp->n);
+			prognose_1(next_result_step->schema_equals, tmp->schema_equals);
+			prognose_1(next_result_step->schema_add_field, tmp->schema_add_field);
+			prognose_1(next_result_step->schema_get_field, tmp->schema_get_field);
+			prognose_1(next_result_step->schema_get_fields, tmp->schema_get_fields);
+			prognose_1(next_result_step->entry_set_field, tmp->entry_set_field);
 			for (j = 0; j < 2; j++)
 			{
-				next_result_step->schema_create[j].prognosted_time += tmp->schema_create[j].elapsed_time / (tmp->n * tmp->n);
-				next_result_step->schema_get[j].prognosted_time += tmp->schema_get[j].elapsed_time / (tmp->n * tmp->n);
-				next_result_step->schema_delete[j].prognosted_time += tmp->schema_delete[j].elapsed_time / (tmp->n * tmp->n);
+				prognose_1(next_result_step->schema_create[j], tmp->schema_create[j]);
+				prognose_1(next_result_step->schema_get[j], tmp->schema_get[j]);
+				prognose_1(next_result_step->schema_delete[j], tmp->schema_delete[j]);
 			}
 			for (j = 0; j < 12; j++)
 			{
-				next_result_step->entry_insert[j].prognosted_time += tmp->entry_insert[j].elapsed_time / (tmp->n * tmp->n);
-				next_result_step->entry_update[j].prognosted_time += tmp->entry_update[j].elapsed_time / (tmp->n * tmp->n);
-				next_result_step->entry_delete[j].prognosted_time += tmp->entry_delete[j].elapsed_time / (tmp->n * tmp->n);
-				next_result_step->iterator_single[j].prognosted_time += tmp->iterator_single[j].elapsed_time / (tmp->n * tmp->n);
-				next_result_step->iterator_all[j].prognosted_time += tmp->iterator_all[j].elapsed_time / (tmp->n * tmp->n);
+				prognose_1(next_result_step->entry_insert[j], tmp->entry_insert[j]);
+				prognose_1(next_result_step->entry_update[j], tmp->entry_update[j]);
+				prognose_1(next_result_step->entry_delete[j], tmp->entry_delete[j]);
+				prognose_1(next_result_step->iterator_single[j], tmp->iterator_single[j]);
+				prognose_1(next_result_step->iterator_all[j], tmp->iterator_all[j]);
 			}
 			tmp++;
 		}
 	}
 	{
-		next_result_step->schema_equals.prognosted_time = (next_result_step->schema_equals.prognosted_time / i) * n_next * n_next;
-		next_result_step->schema_add_field.prognosted_time = (next_result_step->schema_add_field.prognosted_time / i) * n_next * n_next;
-		next_result_step->schema_get_field.prognosted_time = (next_result_step->schema_get_field.prognosted_time / i) * n_next * n_next;
-		next_result_step->schema_get_fields.prognosted_time = (next_result_step->schema_get_fields.prognosted_time / i) * n_next * n_next;
-		next_result_step->entry_set_field.prognosted_time = (next_result_step->entry_set_field.prognosted_time / i) * n_next * n_next;
+		prognose_2(next_result_step->schema_equals, current_result_step->schema_equals);
+		prognose_2(next_result_step->schema_add_field, current_result_step->schema_add_field);
+		prognose_2(next_result_step->schema_get_field, current_result_step->schema_get_field);
+		prognose_2(next_result_step->schema_get_fields, current_result_step->schema_get_fields);
+		prognose_2(next_result_step->entry_set_field, current_result_step->entry_set_field);
 		for (j = 0; j < 2; j++)
 		{
-			next_result_step->schema_create[j].prognosted_time = (next_result_step->schema_create[j].prognosted_time / i) * n_next * n_next;
-			next_result_step->schema_get[j].prognosted_time = (next_result_step->schema_get[j].prognosted_time / i) * n_next * n_next;
-			next_result_step->schema_delete[j].prognosted_time = (next_result_step->schema_delete[j].prognosted_time / i) * n_next * n_next;
+			prognose_2(next_result_step->schema_create[j], current_result_step->schema_create[j]);
+			prognose_2(next_result_step->schema_get[j], current_result_step->schema_get[j]);
+			prognose_2(next_result_step->schema_delete[j], current_result_step->schema_delete[j]);
 		}
 		for (j = 0; j < 12; j++)
 		{
-			next_result_step->entry_insert[j].prognosted_time = (next_result_step->entry_insert[j].prognosted_time / i) * n_next * n_next;
-			next_result_step->entry_update[j].prognosted_time = (next_result_step->entry_update[j].prognosted_time / i) * n_next * n_next;
-			next_result_step->entry_delete[j].prognosted_time = (next_result_step->entry_delete[j].prognosted_time / i) * n_next * n_next;
-			next_result_step->iterator_single[j].prognosted_time = (next_result_step->iterator_single[j].prognosted_time / i) * n_next * n_next;
-			next_result_step->iterator_all[j].prognosted_time = (next_result_step->iterator_all[j].prognosted_time / i) * n_next * n_next;
+			prognose_2(next_result_step->entry_insert[j], current_result_step->entry_insert[j]);
+			prognose_2(next_result_step->entry_update[j], current_result_step->entry_update[j]);
+			prognose_2(next_result_step->entry_delete[j], current_result_step->entry_delete[j]);
+			prognose_2(next_result_step->iterator_single[j], current_result_step->iterator_single[j]);
+			prognose_2(next_result_step->iterator_all[j], current_result_step->iterator_all[j]);
 		}
 	}
 	{
-		next_result_step->schema_equals.prognosted_time = max(next_result_step->schema_equals.prognosted_time, current_result_step->schema_equals.prognosted_time);
-		next_result_step->schema_add_field.prognosted_time = max(next_result_step->schema_add_field.prognosted_time, current_result_step->schema_add_field.prognosted_time);
-		next_result_step->schema_get_field.prognosted_time = max(next_result_step->schema_get_field.prognosted_time, current_result_step->schema_get_field.prognosted_time);
-		next_result_step->schema_get_fields.prognosted_time = max(next_result_step->schema_get_fields.prognosted_time, current_result_step->schema_get_fields.prognosted_time);
-		next_result_step->entry_set_field.prognosted_time = max(next_result_step->entry_set_field.prognosted_time, current_result_step->entry_set_field.prognosted_time);
+		printf("prognose next\n");
+		printf("prognose schema_equals %f\n", next_result_step->schema_equals.prognosted_time);
+		printf("prognose schema_add_field %f\n", next_result_step->schema_add_field.prognosted_time);
+		printf("prognose schema_get_field %f\n", next_result_step->schema_get_field.prognosted_time);
+		printf("prognose schema_get_fields %f\n", next_result_step->schema_get_fields.prognosted_time);
+		printf("prognose entry_set_field %f\n", next_result_step->entry_set_field.prognosted_time);
 		for (j = 0; j < 2; j++)
 		{
-			next_result_step->schema_create[j].prognosted_time = max(next_result_step->schema_create[j].prognosted_time, current_result_step->schema_create[j].prognosted_time);
-			next_result_step->schema_get[j].prognosted_time = max(next_result_step->schema_get[j].prognosted_time, current_result_step->schema_get[j].prognosted_time);
-			next_result_step->schema_delete[j].prognosted_time = max(next_result_step->schema_delete[j].prognosted_time, current_result_step->schema_delete[j].prognosted_time);
+			printf("prognose schema_create %d %f\n", j, next_result_step->schema_create[j].prognosted_time);
+			printf("prognose schema_get %d %f\n", j, next_result_step->schema_get[j].prognosted_time);
+			printf("prognose schema_delete %d %f\n", j, next_result_step->schema_delete[j].prognosted_time);
 		}
 		for (j = 0; j < 12; j++)
 		{
-			next_result_step->entry_insert[j].prognosted_time = max(next_result_step->entry_insert[j].prognosted_time, current_result_step->entry_insert[j].prognosted_time);
-			next_result_step->entry_update[j].prognosted_time = max(next_result_step->entry_update[j].prognosted_time, current_result_step->entry_update[j].prognosted_time);
-			next_result_step->entry_delete[j].prognosted_time = max(next_result_step->entry_delete[j].prognosted_time, current_result_step->entry_delete[j].prognosted_time);
-			next_result_step->iterator_single[j].prognosted_time = max(next_result_step->iterator_single[j].prognosted_time, current_result_step->iterator_single[j].prognosted_time);
-			next_result_step->iterator_all[j].prognosted_time = max(next_result_step->iterator_all[j].prognosted_time, current_result_step->iterator_all[j].prognosted_time);
-		}
-	}
-	{
-		result = result || next_result_step->schema_equals.prognosted_time < target_time;
-		result = result || next_result_step->schema_add_field.prognosted_time < target_time;
-		result = result || next_result_step->schema_get_field.prognosted_time < target_time;
-		result = result || next_result_step->schema_get_fields.prognosted_time < target_time;
-		result = result || next_result_step->entry_set_field.prognosted_time < target_time;
-		for (j = 0; j < 2; j++)
-		{
-			result = result || next_result_step->schema_create[j].prognosted_time < target_time;
-			result = result || next_result_step->schema_get[j].prognosted_time < target_time;
-			result = result || next_result_step->schema_delete[j].prognosted_time < target_time;
-		}
-		for (j = 0; j < 12; j++)
-		{
-			result = result || next_result_step->entry_insert[j].prognosted_time < target_time;
-			result = result || next_result_step->entry_update[j].prognosted_time < target_time;
-			result = result || next_result_step->entry_delete[j].prognosted_time < target_time;
-			result = result || next_result_step->iterator_single[j].prognosted_time < target_time;
-			result = result || next_result_step->iterator_all[j].prognosted_time < target_time;
-		}
-	}
-	{
-		printf("prognose schema_equals %f", next_result_step->schema_equals.prognosted_time);
-		printf("prognose schema_add_field %f", next_result_step->schema_add_field.prognosted_time);
-		printf("prognose schema_get_field %f", next_result_step->schema_get_field.prognosted_time);
-		printf("prognose schema_get_fields %f", next_result_step->schema_get_fields.prognosted_time);
-		printf("prognose entry_set_field %f", next_result_step->entry_set_field.prognosted_time);
-		for (j = 0; j < 2; j++)
-		{
-			printf("prognose schema_create %d %f", j, next_result_step->schema_create[j].prognosted_time);
-			printf("prognose schema_get %d %f", j, next_result_step->schema_get[j].prognosted_time);
-			printf("prognose schema_delete %d %f", j, next_result_step->schema_delete[j].prognosted_time);
-		}
-		for (j = 0; j < 12; j++)
-		{
-			printf("prognose entry_insert %d %f", j, next_result_step->entry_insert[j].prognosted_time);
-			printf("prognose entry_update %d %f", j, next_result_step->entry_update[j].prognosted_time);
-			printf("prognose entry_delete %d %f", j, next_result_step->entry_delete[j].prognosted_time);
-			printf("prognose iterator_single %d %f", j, next_result_step->iterator_single[j].prognosted_time);
-			printf("prognose iterator_all %d %f", j, next_result_step->iterator_all[j].prognosted_time);
+			printf("prognose entry_insert %d %f\n", j, next_result_step->entry_insert[j].prognosted_time);
+			printf("prognose entry_update %d %f\n", j, next_result_step->entry_update[j].prognosted_time);
+			printf("prognose entry_delete %d %f\n", j, next_result_step->entry_delete[j].prognosted_time);
+			printf("prognose iterator_single %d %f\n", j, next_result_step->iterator_single[j].prognosted_time);
+			printf("prognose iterator_all %d %f\n", j, next_result_step->iterator_all[j].prognosted_time);
 		}
 	}
 	return result;
@@ -359,6 +341,7 @@ benchmark_db(void)
 	{
 		n_next = n * 4;
 		exec_tests(n);
+		fflush(stdout);
 		n = n_next;
 		if (current_result_step < all_result_step + tmp_result_count - 1)
 		{
@@ -372,7 +355,9 @@ benchmark_db(void)
 		}
 		if (!calculate_prognose(n, n_next))
 			break;
+		fflush(stdout);
 		current_result_step = next_result_step;
 	}
+	fflush(stdout);
 	g_timer_destroy(j_benchmark_timer);
 }
