@@ -10,6 +10,7 @@ folders=$(find -type d \
 | grep -v "warnke-ssd-m2-06" \
 | grep -v "warnke-ssd-m2-07" \
 )
+folders="warnke-14-mysql-mem-0dfadc3aaf39607f00e647a346b3c3f922d623f0"
 
 #/db/scheme_1/write/db
 rm *.csv tmp *.plot *.pdf

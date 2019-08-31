@@ -44,7 +44,7 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	  --db-servers="$(hostname)" \
 	  --object-backend=posix --object-component=server --object-path=${mountpoint}/julea/object-benchmark \
 	  --kv-backend=sqlite --kv-component=server --kv-path=${mountpoint}/julea/kv-benchmark \
-	  --db-backend=mysql --db-component=client --db-path=${mountpoint}/julea/db-benchmark
+	  --db-backend=sqlite --db-component=server --db-path=${mountpoint}/julea/db-benchmark
 
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 githash=$(git log --pretty=format:'%H' -n 1)
