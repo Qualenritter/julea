@@ -1,7 +1,7 @@
 #CFLAGS  += -fsanitize=address
 #LDFLAGS += -fsanitize=address
 
-CFLAGS  += -ggdb
+CFLAGS  += -ggdb -Wall -Wextra
 
 BIN = hello-world hdf5-example benchmark-mpi
 

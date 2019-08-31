@@ -103,6 +103,7 @@ myprintf(const char* name, guint n, BenchmarkResult* result)
 			(gdouble)result->operations / result->elapsed_time,
 			result->operations,
 			result->prognosted_time * (gdouble)result->operations);
+	fflush(stdout);
 }
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
@@ -116,6 +117,7 @@ myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 			(gdouble)result->operations / result->elapsed_time,
 			result->operations,
 			result->prognosted_time * (gdouble)result->operations);
+	fflush(stdout);
 }
 
 static void
@@ -203,17 +205,28 @@ exec_tests(guint n)
 	}
 }
 
-#define prognose_1(p_next, p_tmp)                                                           \
-	do                                                                                  \
-	{                                                                                   \
-		p_next.prognosted_time += (p_tmp.elapsed_time / p_tmp.operations) / tmp->n; \
+#define prognose_1(p_next, p_tmp)                                                                                                            \
+	do                                                                                                                                   \
+	{                                                                                                                                    \
+		BenchmarkResult* tmp_prev = (BenchmarkResult*)(((char*)&p_tmp) - sizeof(result_step));                                       \
+		if ((char*)tmp_prev > (char*)all_result_step)                                                                                \
+		{                                                                                                                            \
+			gdouble tmp_double_old = (tmp_prev->elapsed_time / (tmp_prev->operations / (tmp->n / 4)));                           \
+			gdouble tmp_double_new = (p_tmp.elapsed_time / (p_tmp.operations / tmp->n));                                         \
+			printf(#p_next "%f - %f -> %f\n", tmp_double_old, tmp_double_new, tmp_double_new + tmp_double_new - tmp_double_old); \
+			p_next.prognosted_time += tmp_double_new + tmp_double_new - tmp_double_old;                                          \
+		}                                                                                                                            \
+		else                                                                                                                         \
+		{                                                                                                                            \
+			p_next.prognosted_time += (p_tmp.elapsed_time / (p_tmp.operations / tmp->n));                                        \
+		}                                                                                                                            \
 	} while (0)
-#define prognose_2(p_next, p_curr)                                                         \
-	do                                                                                 \
-	{                                                                                  \
-		p_next.prognosted_time = (p_next.prognosted_time / i) * n_next * n_next;   \
-		p_next.prognosted_time = max(p_next.prognosted_time, p_curr.elapsed_time); \
-		result = result || p_next.prognosted_time < target_time;                   \
+#define prognose_2(p_next, p_curr)                                                                                                        \
+	do                                                                                                                                \
+	{                                                                                                                                 \
+		p_next.prognosted_time = (p_next.prognosted_time / i);                                                                    \
+		p_next.prognosted_time = max(p_next.prognosted_time, p_curr.elapsed_time / (p_curr.operations / current_result_step->n)); \
+		result = result || (p_next.prognosted_time < target_time && p_curr.elapsed_time >= target_time);                          \
 	} while (0)
 
 static gboolean
@@ -224,6 +237,8 @@ calculate_prognose(guint n, gint n_next)
 	guint j;
 	guint my_index;
 	result_step* tmp;
+
+	memset(next_result_step, 0, sizeof(result_step));
 
 	next_result_step->n = n_next;
 	next_result_step->schema_new.prognosted_time = target_time + 1;
@@ -240,7 +255,7 @@ calculate_prognose(guint n, gint n_next)
 		current_result_step->iterator_all[my_index].elapsed_time = target_time + 1;
 	}
 	{
-		tmp = all_result_step;
+		tmp = all_result_step++;
 		while (tmp <= current_result_step)
 		{
 			i++;
@@ -351,7 +366,6 @@ benchmark_db(void)
 		{
 			for (i = 0; i < tmp_result_count - 1; i++)
 				memcpy(all_result_step + i, all_result_step + i + 1, sizeof(result_step));
-			memset(all_result_step + tmp_result_count - 1, 0, sizeof(result_step));
 		}
 		if (!calculate_prognose(n, n_next))
 			break;
