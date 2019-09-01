@@ -22,9 +22,20 @@ ulimit -c unlimited
 #export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
 #export J_TRACE="combined"
 #export G_MESSAGES_DEBUG=all
+export J_BENCHMARK_TARGET_LOW=20
+export J_BENCHMARK_TARGET_HIGH=60
 
-mountpoint=/mnt2
 
+function exec_tests()
+{
+db_backend=$1
+db_component=$2
+mountpoint=$3
+mountmedium=$4
+pretty_backend_name=$5
+process_count=$6
+
+(
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
 
@@ -43,7 +54,7 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	  --db-servers="$(hostname)" \
 	  --object-backend=posix --object-component=server --object-path=${mountpoint}/julea/object-benchmark \
 	  --kv-backend=sqlite --kv-component=server --kv-path=${mountpoint}/julea/kv-benchmark \
-	  --db-backend=mysql --db-component=client --db-path=${mountpoint}/julea/db-benchmark
+	  --db-backend=${db_backend} --db-component=${db_component} --db-path=${mountpoint}/julea/db-benchmark
 
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 githash=$(git log --pretty=format:'%H' -n 1)
@@ -63,7 +74,19 @@ mkdir -p benchmark_values/warnke-${githash}
 )
 
 cd benchmark_values/warnke-${githash}
-export J_BENCHMARK_TARGET=0.05
 
-../../example/benchmark-mpi >> benchmark_values
+mpirun --allow-run-as-root -np ${process_count} ../../example/benchmark-mpi >> benchmark_values_${pretty_backend_name}_${mountmedium}_${process_count} 2>&1
 kill ${server_pid}
+)
+}
+
+exec_tests mysql  client /mnt2 mem mysql 1
+exec_tests sqlite server /mnt2 mem sqlite 1
+exec_tests mysql  client /mnt  hdd mysql 1
+exec_tests sqlite server /mnt  hdd sqlite 1
+exec_tests mysql  client /mnt2 mem mysql 6
+exec_tests sqlite server /mnt2 mem sqlite 6
+exec_tests mysql  client /mnt  hdd mysql 6
+exec_tests sqlite server /mnt  hdd sqlite 6
+
+

@@ -41,8 +41,8 @@ _benchmark_db_schema_create(gboolean use_batch, const guint n)
 	semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 	batch = j_batch_new(semantics);
 	schema_array = g_new0(JDBSchema*, n);
-	if (current_result_step->schema_create[use_batch].prognosted_time < target_time && current_result_step->schema_delete[use_batch].prognosted_time < target_time)
-		while (m == 0 || (current_result_step->schema_create[use_batch].elapsed_time < target_time && current_result_step->schema_delete[use_batch].elapsed_time < target_time))
+	if (current_result_step->schema_create[use_batch].prognosted_time < target_time_high && current_result_step->schema_delete[use_batch].prognosted_time < target_time_high)
+		while (m == 0 || (current_result_step->schema_create[use_batch].elapsed_time < target_time_low && current_result_step->schema_delete[use_batch].elapsed_time < target_time_low))
 		{
 			m++;
 			for (i = 0; i < n; i++)
@@ -77,8 +77,8 @@ _benchmark_db_schema_create(gboolean use_batch, const guint n)
 				CHECK_ERROR(!ret);
 			}
 			current_result_step->schema_create[use_batch].elapsed_time += j_benchmark_timer_elapsed();
-			if (current_result_step->schema_get[use_batch].prognosted_time < target_time)
-				while (m2 == 0 || current_result_step->schema_get[use_batch].elapsed_time < target_time)
+			if (current_result_step->schema_get[use_batch].prognosted_time < target_time_high)
+				while (m2 == 0 || current_result_step->schema_get[use_batch].elapsed_time < target_time_low)
 				{
 					for (i = 0; i < n; i++)
 					{
@@ -157,8 +157,8 @@ _benchmark_db_schema_ref(void)
 
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
-	if (current_result_step->schema_ref.prognosted_time < target_time && current_result_step->schema_unref.prognosted_time < target_time)
-		while (m == 0 || (current_result_step->schema_ref.elapsed_time < target_time && current_result_step->schema_unref.elapsed_time < target_time))
+	if (current_result_step->schema_ref.prognosted_time < target_time_high && current_result_step->schema_unref.prognosted_time < target_time_high)
+		while (m == 0 || (current_result_step->schema_ref.elapsed_time < target_time_low && current_result_step->schema_unref.elapsed_time < target_time_low))
 		{
 			m += batch_count;
 			j_benchmark_timer_start();
@@ -197,8 +197,8 @@ _benchmark_db_schema_new(void)
 	guint m = 0;
 
 	schema_array = g_new(JDBSchema*, batch_count);
-	if (current_result_step->schema_new.prognosted_time < target_time && current_result_step->schema_free.prognosted_time < target_time)
-		while (m == 0 || (current_result_step->schema_new.elapsed_time < target_time && current_result_step->schema_free.elapsed_time < target_time))
+	if (current_result_step->schema_new.prognosted_time < target_time_high && current_result_step->schema_free.prognosted_time < target_time_high)
+		while (m == 0 || (current_result_step->schema_new.elapsed_time < target_time_low && current_result_step->schema_free.elapsed_time < target_time_low))
 		{
 			m += batch_count;
 			j_benchmark_timer_start();
@@ -243,8 +243,8 @@ _benchmark_db_schema_add_field(const guint n)
 	guint m3 = 0;
 	guint m4 = 0;
 	JDBType type;
-	if (current_result_step->schema_add_field.prognosted_time < target_time)
-		while (m == 0 || current_result_step->schema_add_field.elapsed_time < target_time)
+	if (current_result_step->schema_add_field.prognosted_time < target_time_high)
+		while (m == 0 || current_result_step->schema_add_field.elapsed_time < target_time_low)
 		{
 			if (schema)
 			{
@@ -261,8 +261,8 @@ _benchmark_db_schema_add_field(const guint n)
 				CHECK_ERROR(!ret);
 			}
 			current_result_step->schema_add_field.elapsed_time += j_benchmark_timer_elapsed();
-			if (current_result_step->schema_get_field.prognosted_time < target_time)
-				while (m2 == 0 || current_result_step->schema_get_field.elapsed_time < target_time)
+			if (current_result_step->schema_get_field.prognosted_time < target_time_high)
+				while (m2 == 0 || current_result_step->schema_get_field.elapsed_time < target_time_low)
 				{
 					m2++;
 					j_benchmark_timer_start();
@@ -274,8 +274,8 @@ _benchmark_db_schema_add_field(const guint n)
 					}
 					current_result_step->schema_get_field.elapsed_time += j_benchmark_timer_elapsed();
 				}
-			if (current_result_step->schema_get_fields.prognosted_time < target_time)
-				while (m3 == 0 || current_result_step->schema_get_fields.elapsed_time < target_time)
+			if (current_result_step->schema_get_fields.prognosted_time < target_time_high)
+				while (m3 == 0 || current_result_step->schema_get_fields.elapsed_time < target_time_low)
 				{
 					m3++;
 					j_benchmark_timer_start();
@@ -296,8 +296,8 @@ _benchmark_db_schema_add_field(const guint n)
 		ret = j_db_schema_add_field(schema2, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
 		CHECK_ERROR(!ret);
 	}
-	if (current_result_step->schema_equals.prognosted_time < target_time)
-		while (m4 == 0 || current_result_step->schema_equals.elapsed_time < target_time)
+	if (current_result_step->schema_equals.prognosted_time < target_time_high)
+		while (m4 == 0 || current_result_step->schema_equals.elapsed_time < target_time_low)
 		{
 			m4++;
 			j_benchmark_timer_start();

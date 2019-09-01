@@ -42,8 +42,8 @@ _benchmark_db_entry_ref(void)
 	CHECK_ERROR(!schema);
 	entry = j_db_entry_new(schema, ERROR_PARAM);
 	CHECK_ERROR(!entry);
-	if (current_result_step->entry_ref.prognosted_time < target_time && current_result_step->entry_unref.prognosted_time < target_time)
-		while (m == 0 || (current_result_step->entry_ref.elapsed_time < target_time && current_result_step->entry_unref.elapsed_time < target_time))
+	if (current_result_step->entry_ref.prognosted_time < target_time_high && current_result_step->entry_unref.prognosted_time < target_time_high)
+		while (m == 0 || (current_result_step->entry_ref.elapsed_time < target_time_low && current_result_step->entry_unref.elapsed_time < target_time_low))
 		{
 			m += batch_count;
 			j_benchmark_timer_start();
@@ -86,8 +86,8 @@ _benchmark_db_entry_new(void)
 	entry_array = g_new(JDBEntry*, batch_count);
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
-	if (current_result_step->entry_new.prognosted_time < target_time && current_result_step->entry_free.prognosted_time < target_time)
-		while (m == 0 || (current_result_step->entry_new.elapsed_time < target_time && current_result_step->entry_free.elapsed_time < target_time))
+	if (current_result_step->entry_new.prognosted_time < target_time_high && current_result_step->entry_free.prognosted_time < target_time_high)
+		while (m == 0 || (current_result_step->entry_new.elapsed_time < target_time_low && current_result_step->entry_free.elapsed_time < target_time_low))
 		{
 			m += batch_count;
 			j_benchmark_timer_start();
@@ -134,8 +134,8 @@ _benchmark_db_entry_set_field(const guint n)
 		ret = j_db_schema_add_field(schema, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
 		CHECK_ERROR(!ret);
 	}
-	if (current_result_step->entry_set_field.prognosted_time < target_time)
-		while (m == 0 || current_result_step->entry_set_field.elapsed_time < target_time)
+	if (current_result_step->entry_set_field.prognosted_time < target_time_high)
+		while (m == 0 || current_result_step->entry_set_field.elapsed_time < target_time_low)
 		{
 			m++;
 			entry = j_db_entry_new(schema, ERROR_PARAM);
@@ -225,9 +225,9 @@ _start:
 	CHECK_ERROR(!ret);
 	ret = j_batch_execute(batch);
 	CHECK_ERROR(!ret);
-	if (current_result_step->entry_insert[my_index].prognosted_time < target_time)
+	if (current_result_step->entry_insert[my_index].prognosted_time < target_time_high)
 	{
-		while (m == 0 || current_result_step->entry_insert[my_index].elapsed_time < target_time)
+		while (m == 0 || current_result_step->entry_insert[my_index].elapsed_time < target_time_low)
 		{
 			allow_loop = TRUE;
 			m++;
@@ -264,11 +264,11 @@ _start:
 			if (use_batch)
 			{
 				//selector single
-				if (current_result_step->iterator_single[my_index].prognosted_time < target_time)
+				if (current_result_step->iterator_single[my_index].prognosted_time < target_time_high)
 				{
-					while (m3 == 0 || current_result_step->iterator_single[my_index].elapsed_time < target_time)
+					while (m3 == 0 || current_result_step->iterator_single[my_index].elapsed_time < target_time_low)
 					{
-						for (j = 0; (j < n) && (current_result_step->iterator_single[my_index].elapsed_time < target_time); j++)
+						for (j = 0; (j < n) && (current_result_step->iterator_single[my_index].elapsed_time < target_time_low); j++)
 						{
 							m3++;
 							j_benchmark_timer_start();
@@ -296,9 +296,9 @@ _start:
 					}
 				}
 				//selector all
-				if (current_result_step->iterator_all[my_index].prognosted_time < target_time)
+				if (current_result_step->iterator_all[my_index].prognosted_time < target_time_high)
 				{
-					while (m4 == 0 || current_result_step->iterator_all[my_index].elapsed_time < target_time)
+					while (m4 == 0 || current_result_step->iterator_all[my_index].elapsed_time < target_time_low)
 					{
 						m3++;
 						m4++;
@@ -324,9 +324,9 @@ _start:
 					}
 				}
 			}
-			if (current_result_step->entry_update[my_index].prognosted_time < target_time)
+			if (current_result_step->entry_update[my_index].prognosted_time < target_time_high)
 			{
-				while (m2 == 0 || current_result_step->entry_update[my_index].elapsed_time < target_time)
+				while (m2 == 0 || current_result_step->entry_update[my_index].elapsed_time < target_time_low)
 				{
 					m2++;
 					//update
@@ -368,9 +368,9 @@ _start:
 				}
 			}
 			//delete
-			if (current_result_step->entry_delete[my_index].prognosted_time < target_time)
+			if (current_result_step->entry_delete[my_index].prognosted_time < target_time_high)
 			{
-				if (current_result_step->entry_delete[my_index].elapsed_time < target_time)
+				if (current_result_step->entry_delete[my_index].elapsed_time < target_time_low)
 				{
 					m5++;
 					j_benchmark_timer_start();
