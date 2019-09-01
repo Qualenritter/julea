@@ -249,7 +249,7 @@ _start:
 					ret = j_batch_execute(batch);
 					CHECK_ERROR(!ret);
 				}
-if(current_result_step->entry_insert[my_index].elapsed_time > target_time_low && m==1 &&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+if(current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m==1 &&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
 m=0;
 allow_loop=FALSE;
 goto _abort;
@@ -272,7 +272,7 @@ goto _abort;
 				{
 					while (current_result_step->iterator_single[my_index].elapsed_time < target_time_low)
 					{
-						for (j = 0; (j < n) && (current_result_step->iterator_single[my_index].elapsed_time < target_time_low); j++)
+						for (j = 0; j < n; j++)
 						{
 							m3++;
 							j_benchmark_timer_start();
@@ -296,6 +296,10 @@ goto _abort;
 							j_db_iterator_unref(iterator);
 							j_db_selector_unref(selector[j]);
 							current_result_step->iterator_single[my_index].elapsed_time += j_benchmark_timer_elapsed();
+							if(current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3==1 &&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+								m3=0;
+								break;
+							}
 						}
 					}
 				}
@@ -357,7 +361,7 @@ goto _abort;
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
 						}
-if(current_result_step->entry_update[my_index].elapsed_time > target_time_low && m2==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+if(current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
 m2=0;break;
 }
 					}
@@ -397,7 +401,7 @@ m2=0;break;
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
 						}
-if(current_result_step->entry_delete[my_index].elapsed_time > target_time_low && m5==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+if(current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
 m5=0;break;
 }
 					}

@@ -1,5 +1,3 @@
-Hello world from processor benjamin0, rank 0 out of 1 processors
-argv[0] -> ../../example/benchmark-mpi
 /db/1/schema/create 10.000 seconds (3011 / s) [ 30110 30110 ]
 /db/1/schema/get 10.000 seconds (33303 / s) [ 333033 333033 ]
 /db/1/schema/delete 5.163 seconds (5832 / s) [ 30110 30110 ]
@@ -396,23 +394,3 @@ argv[0] -> ../../example/benchmark-mpi
 /db/262144/5/iterator/all-index-atomicity 10.322 seconds (558723 / s) [ 5767168 22 ]
 /db/262144/50/entry/insert 27.255 seconds (9618 / s) [ 262144 1 ]
 /db/262144/50/entry/delete 4053.425 seconds (65 / s) [ 262144 1 ]
-[benjamin0:11072] *** Process received signal ***
-[benjamin0:11072] Signal: Segmentation fault (11)
-[benjamin0:11072] Signal code: Address not mapped (1)
-[benjamin0:11072] Failing at address: 0x55a5022863ea
-[benjamin0:11072] [ 0] /lib/x86_64-linux-gnu/libc.so.6(+0x43f60)[0x7faeb1499f60]
-[benjamin0:11072] [ 1] /src/julea/prefix-gcc-benchmark/lib/libjulea.so(j_message_get_4+0x1d)[0x7faeb1883a9d]
-[benjamin0:11072] [ 2] /src/julea/prefix-gcc-benchmark/lib/libjulea.so(j_backend_operation_from_message+0x88)[0x7faeb187ead8]
-[benjamin0:11072] [ 3] /src/julea/prefix-gcc-benchmark/lib/libjulea-db.so(+0x405a)[0x7faeb18b805a]
-[benjamin0:11072] [ 4] /src/julea/prefix-gcc-benchmark/lib/libjulea-db.so(+0x428d)[0x7faeb18b828d]
-[benjamin0:11072] [ 5] /src/julea/prefix-gcc-benchmark/lib/libjulea.so(+0xa7a1)[0x7faeb18807a1]
-[benjamin0:11072] [ 6] /src/julea/prefix-gcc-benchmark/lib/libjulea.so(+0xac40)[0x7faeb1880c40]
-[benjamin0:11072] [ 7] /src/julea/prefix-gcc-benchmark/lib/libjulea.so(j_batch_execute+0x62)[0x7faeb1880cf2]
-[benjamin0:11072] [ 8] ../../example/benchmark-mpi(+0x3af8)[0x55a395db5af8]
-[benjamin0:11072] [ 9] ../../example/benchmark-mpi(+0x55bf)[0x55a395db75bf]
-[benjamin0:11072] [10] ../../example/benchmark-mpi(+0x6d41)[0x55a395db8d41]
-[benjamin0:11072] [11] ../../example/benchmark-mpi(+0x6e37)[0x55a395db8e37]
-[benjamin0:11072] [12] ../../example/benchmark-mpi(+0x6efa)[0x55a395db8efa]
-[benjamin0:11072] [13] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xeb)[0x7faeb147cb6b]
-[benjamin0:11072] [14] ../../example/benchmark-mpi(+0x23da)[0x55a395db43da]
-[benjamin0:11072] *** End of error message ***
