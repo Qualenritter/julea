@@ -22,7 +22,15 @@
 
 #include "benchmark-mpi.h"
 
-static char* namespace[100];
+// options -->>
+static const guint batch_size = 10000;
+static const gdouble allowed_percentage = 0.8;
+static gdouble target_time_low = 30.0;
+static gdouble target_time_high = 30.0;
+static guint multiplicator = 2;
+// <<-- options
+
+static char namespace[100];
 
 struct BenchmarkResult
 {
@@ -56,9 +64,6 @@ max(gdouble a, gdouble b)
 {
 	return a > b ? a : b;
 }
-
-static gdouble target_time_low = 30.0;
-static gdouble target_time_high = 30.0;
 
 struct result_step
 {
@@ -101,30 +106,32 @@ static result_step* all_result_step = NULL;
 static void
 myprintf(const char* name, guint n, BenchmarkResult* result)
 {
-	if (world_rank == 0&&
-		result->elapsed_time > 0 && result->operations>0){
-			printf("/db/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
-				n,
-				name,
-				result->elapsed_time,
-				(gdouble)result->operations / result->elapsed_time,
-				result->operations,
-				result->operations_without_n);
+	if (world_rank == 0 &&
+		result->elapsed_time > 0 && result->operations > 0)
+	{
+		printf("/db/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
+			n,
+			name,
+			result->elapsed_time,
+			(gdouble)(result->operations * world_size) / result->elapsed_time,
+			(result->operations * world_size),
+			(result->operations_without_n * world_size));
 		fflush(stdout);
 	}
 }
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 {
-	if (world_rank == 0	&&result->elapsed_time > 0&& result->operations>0){
-			printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
-				n,
-				n2,
-				name,
-				result->elapsed_time,
-				(gdouble)result->operations / result->elapsed_time,
-				result->operations,
-				result->operations_without_n);
+	if (world_rank == 0 && result->elapsed_time > 0 && result->operations > 0)
+	{
+		printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
+			n,
+			n2,
+			name,
+			result->elapsed_time,
+			(gdouble)(result->operations * world_size) / result->elapsed_time,
+			(result->operations * world_size),
+			(result->operations_without_n * world_size));
 		fflush(stdout);
 	}
 }
@@ -214,17 +221,17 @@ exec_tests(guint n)
 	}
 }
 
-#define prognose_2(p_next, p_curr)                                                                                 \
-	do                                                                                                         \
-	{                                                                                                          \
-		if (p_curr.operations_without_n==0 || (p_curr.operations_without_n <= 1 && p_curr.elapsed_time >= target_time_high))                   \
-			p_next.prognosted_time = target_time_high + 1;                                             \
-		else                                                                                               \
-			p_next.prognosted_time = 0;                                                                \
-		p_next.elapsed_time = 0;                                                                           \
-		p_next.operations_without_n = 0;                                                                   \
-		p_next.operations = 0;                                                                             \
-		result = result || (p_next.prognosted_time < target_time_high && p_curr.operations_without_n > 0); \
+#define prognose_2(p_next, p_curr)                                                                                                     \
+	do                                                                                                                             \
+	{                                                                                                                              \
+		if (p_curr.operations_without_n == 0 || (p_curr.operations_without_n <= 1 && p_curr.elapsed_time >= target_time_high)) \
+			p_next.prognosted_time = target_time_high + 1;                                                                 \
+		else                                                                                                                   \
+			p_next.prognosted_time = 0;                                                                                    \
+		p_next.elapsed_time = 0;                                                                                               \
+		p_next.operations_without_n = 0;                                                                                       \
+		p_next.operations = 0;                                                                                                 \
+		result = result || (p_next.prognosted_time < target_time_high && p_curr.operations_without_n > 0);                     \
 	} while (0)
 
 static gboolean
@@ -285,7 +292,7 @@ benchmark_db(void)
 	result_step* tmp;
 	guint n;
 	guint n_next;
-	sprintf(namespace,"namespace_%d",world_rank);
+	sprintf(namespace, "namespace_%d", world_rank);
 	target_low_str = g_getenv("J_BENCHMARK_TARGET_LOW");
 	if (target_low_str)
 	{
@@ -316,16 +323,16 @@ benchmark_db(void)
 	current_result_step->n = n;
 	while (1)
 	{
-		n_next = n * 8;
+		n_next = n * multiplicator;
 		exec_tests(n);
 		fflush(stdout);
 		n = n_next;
 		if (!calculate_prognose(n, n_next))
 			break;
 		fflush(stdout);
-		tmp=current_result_step;
-		current_result_step=next_result_step;
-		next_result_step=tmp;
+		tmp = current_result_step;
+		current_result_step = next_result_step;
+		next_result_step = tmp;
 	}
 	fflush(stdout);
 	g_timer_destroy(j_benchmark_timer);

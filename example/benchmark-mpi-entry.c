@@ -22,9 +22,6 @@
 
 #include "benchmark-mpi.h"
 
-static const guint batch_size=10000;
-static const gdouble allowed_percentage=0.8;
-
 static void
 _benchmark_db_entry_ref(void)
 {
@@ -244,16 +241,17 @@ _start:
 				}
 				ret = j_db_entry_insert(entry[j], batch, ERROR_PARAM);
 				CHECK_ERROR(!ret);
-				if (!use_batch || ((j%batch_size)==0))
+				if (!use_batch || ((j % batch_size) == 0))
 				{
 					ret = j_batch_execute(batch);
 					CHECK_ERROR(!ret);
 				}
-if(current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m==1 &&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
-m=0;
-allow_loop=FALSE;
-goto _abort;
-}
+				if (current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+				{
+					m = 0;
+					allow_loop = FALSE;
+					goto _abort;
+				}
 			}
 			if (use_batch)
 			{
@@ -296,8 +294,9 @@ goto _abort;
 							j_db_iterator_unref(iterator);
 							j_db_selector_unref(selector[j]);
 							current_result_step->iterator_single[my_index].elapsed_time += j_benchmark_timer_elapsed();
-							if(current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3==1 &&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
-								m3=0;
+							if (current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+							{
+								m3 = 0;
 								break;
 							}
 						}
@@ -356,14 +355,16 @@ goto _abort;
 						CHECK_ERROR(!ret);
 						ret = j_db_entry_update(entry[j], selector[j], batch, ERROR_PARAM);
 						CHECK_ERROR(!ret);
-						if (!use_batch|| ((j%batch_size)==0))
+						if (!use_batch || ((j % batch_size) == 0))
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
 						}
-if(current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
-m2=0;break;
-}
+						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+						{
+							m2 = 0;
+							break;
+						}
 					}
 					if (use_batch)
 					{
@@ -396,14 +397,16 @@ m2=0;break;
 						CHECK_ERROR(!entry[j]);
 						ret = j_db_entry_delete(entry[j], selector[j], batch, ERROR_PARAM);
 						CHECK_ERROR(!ret);
-						if (!use_batch|| ((j%batch_size)==0))
+						if (!use_batch || ((j % batch_size) == 0))
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
 						}
-if(current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
-m5=0;break;
-}
+						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+						{
+							m5 = 0;
+							goto _abort;
+						}
 					}
 					if (use_batch)
 					{

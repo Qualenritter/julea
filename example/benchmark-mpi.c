@@ -2,6 +2,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+static int world_size;
 static int world_rank;
 
 #include "benchmark-mpi-main.c"
@@ -24,7 +25,6 @@ main(int argc, char** argv)
 	MPI_Init(&argc, &argv);
 
 	// Get the number of processes
-	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
 	// Get the rank of the process

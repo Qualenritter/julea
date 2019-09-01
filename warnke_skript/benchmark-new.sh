@@ -22,7 +22,7 @@ ulimit -c unlimited
 #export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
 #export J_TRACE="combined"
 #export G_MESSAGES_DEBUG=all
-export J_BENCHMARK_TARGET_LOW=10
+export J_BENCHMARK_TARGET_LOW=2
 export J_BENCHMARK_TARGET_HIGH=60
 
 
@@ -81,10 +81,10 @@ kill ${server_pid}
 )
 }
 
-#exec_tests mysql  client /mnt2 mem mysql 1
-#exec_tests sqlite server /mnt2 mem sqlite 1
 exec_tests mysql  client /mnt2 mem mysql 6
 exec_tests sqlite server /mnt2 mem sqlite 6
+exec_tests mysql  client /mnt2 mem mysql 1
+exec_tests sqlite server /mnt2 mem sqlite 1
 exec_tests mysql  client /mnt  hdd mysql 1
 exec_tests sqlite server /mnt  hdd sqlite 1
 exec_tests mysql  client /mnt  hdd mysql 6
