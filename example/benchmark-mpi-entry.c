@@ -244,7 +244,8 @@ _start:
 				if (!use_batch || ((j % batch_size) == 0))
 				{
 					ret = j_batch_execute(batch);
-					CHECK_ERROR(!ret);MPI_Barrier(MPI_COMM_WORLD);
+					CHECK_ERROR(!ret);
+					MPI_Barrier(MPI_COMM_WORLD);
 				}
 				if (current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 				{
@@ -256,7 +257,8 @@ _start:
 			if (use_batch)
 			{
 				ret = j_batch_execute(batch);
-				CHECK_ERROR(!ret);MPI_Barrier(MPI_COMM_WORLD);
+				CHECK_ERROR(!ret);
+				MPI_Barrier(MPI_COMM_WORLD);
 			}
 			for (j = 0; j < n; j++)
 			{
@@ -270,7 +272,7 @@ _start:
 				{
 					while (current_result_step->iterator_single[my_index].elapsed_time < target_time_low)
 					{
-							m3++;
+						m3++;
 						for (j = 0; j < n; j++)
 						{
 							j_benchmark_timer_start();
@@ -294,7 +296,7 @@ _start:
 							j_db_iterator_unref(iterator);
 							j_db_selector_unref(selector[j]);
 							current_result_step->iterator_single[my_index].elapsed_time += j_benchmark_timer_elapsed();
-							if (current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3 ==1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+							if (current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 							{
 								m3 = 0;
 								break;
@@ -358,7 +360,8 @@ _start:
 						if (!use_batch || ((j % batch_size) == 0))
 						{
 							ret = j_batch_execute(batch);
-							CHECK_ERROR(!ret);MPI_Barrier(MPI_COMM_WORLD);
+							CHECK_ERROR(!ret);
+							MPI_Barrier(MPI_COMM_WORLD);
 						}
 						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 						{
@@ -369,7 +372,8 @@ _start:
 					if (use_batch)
 					{
 						ret = j_batch_execute(batch);
-						CHECK_ERROR(!ret);MPI_Barrier(MPI_COMM_WORLD);
+						CHECK_ERROR(!ret);
+						MPI_Barrier(MPI_COMM_WORLD);
 					}
 					for (j = 0; j < n; j++)
 					{
@@ -400,7 +404,8 @@ _start:
 						if (!use_batch || ((j % batch_size) == 0))
 						{
 							ret = j_batch_execute(batch);
-							CHECK_ERROR(!ret);MPI_Barrier(MPI_COMM_WORLD);
+							CHECK_ERROR(!ret);
+							MPI_Barrier(MPI_COMM_WORLD);
 						}
 						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 						{
@@ -411,7 +416,8 @@ _start:
 					if (use_batch)
 					{
 						ret = j_batch_execute(batch);
-						CHECK_ERROR(!ret);MPI_Barrier(MPI_COMM_WORLD);
+						CHECK_ERROR(!ret);
+						MPI_Barrier(MPI_COMM_WORLD);
 					}
 					for (j = 0; j < n; j++)
 					{
