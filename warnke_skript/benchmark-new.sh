@@ -25,6 +25,9 @@ ulimit -c unlimited
 export J_BENCHMARK_TARGET_LOW=2
 export J_BENCHMARK_TARGET_HIGH=60
 
+githash=$(git log --pretty=format:'%H' -n 1)
+rm -rf benchmark_values/warnke-${githash}
+mkdir -p benchmark_values/warnke-${githash}
 
 function exec_tests()
 {
@@ -57,7 +60,6 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 	  --db-backend=${db_backend} --db-component=${db_component} --db-path=${mountpoint}/julea/db-benchmark
 
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
-githash=$(git log --pretty=format:'%H' -n 1)
 
 ./warnke_skript/reset_mysql.sh ${mountpoint}/julea/mysql
 ./build-gcc-benchmark/server/julea-server >> server_log &
@@ -65,8 +67,6 @@ server_pid=$!
 
 sleep 2
 
-rm -rf benchmark_values/warnke-${githash}
-mkdir -p benchmark_values/warnke-${githash}
 
 (
 	cd example
@@ -81,13 +81,12 @@ kill ${server_pid}
 )
 }
 
-exec_tests mysql  client /mnt2 mem mysql 6
-exec_tests sqlite server /mnt2 mem sqlite 6
 exec_tests mysql  client /mnt2 mem mysql 1
 exec_tests sqlite server /mnt2 mem sqlite 1
+exec_tests mysql  client /mnt2 mem mysql 6
+exec_tests sqlite server /mnt2 mem sqlite 6
 exec_tests mysql  client /mnt  hdd mysql 1
 exec_tests sqlite server /mnt  hdd sqlite 1
 exec_tests mysql  client /mnt  hdd mysql 6
 exec_tests sqlite server /mnt  hdd sqlite 6
-
 
