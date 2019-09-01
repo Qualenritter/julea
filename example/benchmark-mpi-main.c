@@ -198,16 +198,16 @@ exec_tests(guint n)
 		}
 		{
 			_benchmark_db_entry_insert(TRUE, TRUE, n, n2, J_SEMANTICS_ATOMICITY_NONE);
-			myprintf2("entry/update-batch-index", n, n2, &current_result_step->entry_update[my_index + 2]);
 			myprintf2("entry/insert-batch-index", n, n2, &current_result_step->entry_insert[my_index + 2]);
+			myprintf2("entry/update-batch-index", n, n2, &current_result_step->entry_update[my_index + 2]);
 			myprintf2("entry/delete-batch-index", n, n2, &current_result_step->entry_delete[my_index + 2]);
 			myprintf2("iterator/single-index", n, n2, &current_result_step->iterator_single[my_index + 2]);
 			myprintf2("iterator/all-index", n, n2, &current_result_step->iterator_all[my_index + 2]);
 		}
 		{
 			_benchmark_db_entry_insert(TRUE, TRUE, n, n2, J_SEMANTICS_ATOMICITY_BATCH);
-			myprintf2("entry/update-batch-index-atomicity", n, n2, &current_result_step->entry_update[my_index + 3]);
 			myprintf2("entry/insert-batch-index-atomicity", n, n2, &current_result_step->entry_insert[my_index + 3]);
+			myprintf2("entry/update-batch-index-atomicity", n, n2, &current_result_step->entry_update[my_index + 3]);
 			myprintf2("entry/delete-batch-index-atomicity", n, n2, &current_result_step->entry_delete[my_index + 3]);
 			myprintf2("iterator/single-index-atomicity", n, n2, &current_result_step->iterator_single[my_index + 3]);
 			myprintf2("iterator/all-index-atomicity", n, n2, &current_result_step->iterator_all[my_index + 3]);
@@ -218,7 +218,7 @@ exec_tests(guint n)
 #define prognose_2(p_next, p_curr)                                                                                 \
 	do                                                                                                         \
 	{                                                                                                          \
-		if (p_curr.operations_without_n <= 1 && p_curr.elapsed_time >= target_time_high)                   \
+		if (p_curr.operations_without_n==0 || (p_curr.operations_without_n <= 1 && p_curr.elapsed_time >= target_time_high))                   \
 			p_next.prognosted_time = target_time_high + 1;                                             \
 		else                                                                                               \
 			p_next.prognosted_time = 0;                                                                \
