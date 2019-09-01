@@ -24,8 +24,8 @@
 
 struct BenchmarkResult
 {
-	guint operations;
-	guint operations_without_n;
+	guint64 operations;
+	guint64 operations_without_n;
 	gdouble elapsed_time;
 	gdouble prognosted_time;
 };
@@ -99,29 +99,35 @@ static result_step* all_result_step = NULL;
 static void
 myprintf(const char* name, guint n, BenchmarkResult* result)
 {
-	if (result->elapsed_time > 0)
-		printf("/db/%d/%s %.3f seconds (%.0f / s) [ %d %d ]\n",
-			n,
-			name,
-			result->elapsed_time,
-			(gdouble)result->operations / result->elapsed_time,
-			result->operations,
-			result->operations_without_n);
-	fflush(stdout);
+	if (world_rank == 0)
+	{
+		if (result->elapsed_time > 0)
+			printf("/db/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
+				n,
+				name,
+				result->elapsed_time,
+				(gdouble)result->operations / result->elapsed_time,
+				result->operations,
+				result->operations_without_n);
+		fflush(stdout);
+	}
 }
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 {
-	if (result->elapsed_time > 0)
-		printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [ %d %d ]\n",
-			n,
-			n2,
-			name,
-			result->elapsed_time,
-			(gdouble)result->operations / result->elapsed_time,
-			result->operations,
-			result->operations_without_n);
-	fflush(stdout);
+	if (world_rank == 0)
+	{
+		if (result->elapsed_time > 0)
+			printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
+				n,
+				n2,
+				name,
+				result->elapsed_time,
+				(gdouble)result->operations / result->elapsed_time,
+				result->operations,
+				result->operations_without_n);
+		fflush(stdout);
+	}
 }
 
 static void
@@ -129,7 +135,7 @@ exec_tests(guint n)
 {
 	guint my_index;
 	guint n2;
-	if (n < 500)
+	if (n <= 512)
 	{
 		{
 			_benchmark_db_schema_create(TRUE, n);
@@ -209,13 +215,16 @@ exec_tests(guint n)
 	}
 }
 
-#define prognose_2(p_next, p_curr)                                                                            \
-	do                                                                                                    \
-	{                                                                                                     \
-		if (p_curr.operations_without_n <= 1 && p_curr.elapsed_time >= target_time_high)                                                          \
-			p_next.prognosted_time = target_time_high + 1;                                                           \
-		else                                                                                          \
-			p_next.prognosted_time = 0;                                             \
+#define prognose_2(p_next, p_curr)                                                                                 \
+	do                                                                                                         \
+	{                                                                                                          \
+		if (p_curr.operations_without_n <= 1 && p_curr.elapsed_time >= target_time_high)                   \
+			p_next.prognosted_time = target_time_high + 1;                                             \
+		else                                                                                               \
+			p_next.prognosted_time = 0;                                                                \
+		p_ext.elapsed_time = 0;                                                                            \
+		p_next.operations_without_n = 0;                                                                   \
+		p_next.operations = 0;                                                                             \
 		result = result || (p_next.prognosted_time < target_time_high && p_curr.operations_without_n > 0); \
 	} while (0)
 
@@ -226,7 +235,7 @@ calculate_prognose(guint n, gint n_next)
 	guint j;
 	guint my_index;
 
-	memset(next_result_step, 0, sizeof(result_step));
+	memset(next_result_step, 0, sizeof(*next_result_step));
 
 	next_result_step->n = n_next;
 	{
@@ -286,26 +295,27 @@ benchmark_db(void)
 			g_debug("J_BENCHMARK_TARGET_LOW %s %f", target_low_str, target_low);
 			target_time_low = target_low;
 		}
-	}target_high_str = g_getenv("J_BENCHMARK_TARGET_HIGH");
-        if (target_high_str)
-        {
-                g_debug("J_BENCHMARK_TARGET_HIGH %s", target_high_str);
-                ret = sscanf(target_high_str, "%lf", &target_high);
-                if (ret == 1)
-                {
-                        g_debug("J_BENCHMARK_TARGET_HIGH %s %f", target_high_str, target_high);
-                        target_time_high = target_high;
-                }
-        }
+	}
+	target_high_str = g_getenv("J_BENCHMARK_TARGET_HIGH");
+	if (target_high_str)
+	{
+		g_debug("J_BENCHMARK_TARGET_HIGH %s", target_high_str);
+		ret = sscanf(target_high_str, "%lf", &target_high);
+		if (ret == 1)
+		{
+			g_debug("J_BENCHMARK_TARGET_HIGH %s %f", target_high_str, target_high);
+			target_time_high = target_high;
+		}
+	}
 	all_result_step = g_new0(result_step, 2);
 	current_result_step = all_result_step;
-	next_result_step = all_result_step+1;
+	next_result_step = all_result_step + 1;
 	j_benchmark_timer = g_timer_new();
 	n = 1;
 	current_result_step->n = n;
 	while (1)
 	{
-		n_next = n * 4;
+		n_next = n * 8;
 		exec_tests(n);
 		fflush(stdout);
 		n = n_next;

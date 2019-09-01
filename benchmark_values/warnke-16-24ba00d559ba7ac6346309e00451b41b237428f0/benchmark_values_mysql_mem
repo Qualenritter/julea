@@ -1,5 +1,3 @@
-Hello world from processor benjamin0, rank 0 out of 1 processors
-argv[0] -> ../../example/benchmark-mpi
 /db/1/schema/create 30.000 seconds (2132 / s)
 /db/1/schema/get 30.000 seconds (34895 / s)
 /db/1/schema/delete 26.025 seconds (2458 / s)
