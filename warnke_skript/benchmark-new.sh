@@ -22,7 +22,7 @@ ulimit -c unlimited
 #export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
 #export J_TRACE="combined"
 #export G_MESSAGES_DEBUG=all
-export J_BENCHMARK_TARGET_LOW=20
+export J_BENCHMARK_TARGET_LOW=10
 export J_BENCHMARK_TARGET_HIGH=60
 
 
@@ -70,6 +70,7 @@ mkdir -p benchmark_values/warnke-${githash}
 
 (
 	cd example
+	make clean
 	make
 )
 

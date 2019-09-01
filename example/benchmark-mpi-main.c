@@ -222,7 +222,7 @@ exec_tests(guint n)
 			p_next.prognosted_time = target_time_high + 1;                                             \
 		else                                                                                               \
 			p_next.prognosted_time = 0;                                                                \
-		p_ext.elapsed_time = 0;                                                                            \
+		p_next.elapsed_time = 0;                                                                           \
 		p_next.operations_without_n = 0;                                                                   \
 		p_next.operations = 0;                                                                             \
 		result = result || (p_next.prognosted_time < target_time_high && p_curr.operations_without_n > 0); \
@@ -283,6 +283,7 @@ benchmark_db(void)
 	int ret;
 	double target_low = 0.0;
 	double target_high = 0.0;
+	result_step* tmp;
 	guint n;
 	guint n_next;
 	target_low_str = g_getenv("J_BENCHMARK_TARGET_LOW");
@@ -322,6 +323,9 @@ benchmark_db(void)
 		if (!calculate_prognose(n, n_next))
 			break;
 		fflush(stdout);
+		tmp=current_result_step;
+		current_result_step=next_result_step;
+		next_result_step=tmp;
 	}
 	fflush(stdout);
 	g_timer_destroy(j_benchmark_timer);
