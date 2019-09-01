@@ -22,6 +22,9 @@
 
 #include "benchmark-mpi.h"
 
+static const guint batch_size=10000;
+static const gdouble allowed_percentage=0.8;
+
 static void
 _benchmark_db_entry_ref(void)
 {
@@ -29,7 +32,6 @@ _benchmark_db_entry_ref(void)
 
 	guint batch_count = 1000;
 	GError* error = NULL;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	JDBSchema* schema;
 	JDBEntry* entry;
@@ -43,7 +45,7 @@ _benchmark_db_entry_ref(void)
 	entry = j_db_entry_new(schema, ERROR_PARAM);
 	CHECK_ERROR(!entry);
 	if (current_result_step->entry_ref.prognosted_time < target_time_high && current_result_step->entry_unref.prognosted_time < target_time_high)
-		while (m == 0 || (current_result_step->entry_ref.elapsed_time < target_time_low && current_result_step->entry_unref.elapsed_time < target_time_low))
+		while ((current_result_step->entry_ref.elapsed_time < target_time_low && current_result_step->entry_unref.elapsed_time < target_time_low))
 		{
 			m += batch_count;
 			j_benchmark_timer_start();
@@ -76,7 +78,6 @@ _benchmark_db_entry_new(void)
 
 	guint batch_count = 1000;
 	GError* error = NULL;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	guint i;
 	JDBSchema* schema;
@@ -87,7 +88,7 @@ _benchmark_db_entry_new(void)
 	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
 	if (current_result_step->entry_new.prognosted_time < target_time_high && current_result_step->entry_free.prognosted_time < target_time_high)
-		while (m == 0 || (current_result_step->entry_new.elapsed_time < target_time_low && current_result_step->entry_free.elapsed_time < target_time_low))
+		while ((current_result_step->entry_new.elapsed_time < target_time_low && current_result_step->entry_free.elapsed_time < target_time_low))
 		{
 			m += batch_count;
 			j_benchmark_timer_start();
@@ -118,7 +119,6 @@ _benchmark_db_entry_set_field(const guint n)
 
 	GError* error = NULL;
 	gboolean ret;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	JDBEntry* entry;
 	JDBSchema* schema;
@@ -135,7 +135,7 @@ _benchmark_db_entry_set_field(const guint n)
 		CHECK_ERROR(!ret);
 	}
 	if (current_result_step->entry_set_field.prognosted_time < target_time_high)
-		while (m == 0 || current_result_step->entry_set_field.elapsed_time < target_time_low)
+		while (current_result_step->entry_set_field.elapsed_time < target_time_low)
 		{
 			m++;
 			entry = j_db_entry_new(schema, ERROR_PARAM);
@@ -164,7 +164,6 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	gpointer iter_ptr;
 	JDBType iter_type;
 	guint64 iter_length;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	JDBEntry** entry;
 	JDBSelector** selector;
@@ -227,7 +226,7 @@ _start:
 	CHECK_ERROR(!ret);
 	if (current_result_step->entry_insert[my_index].prognosted_time < target_time_high)
 	{
-		while (m == 0 || current_result_step->entry_insert[my_index].elapsed_time < target_time_low)
+		while (current_result_step->entry_insert[my_index].elapsed_time < target_time_low)
 		{
 			allow_loop = TRUE;
 			m++;
@@ -245,11 +244,16 @@ _start:
 				}
 				ret = j_db_entry_insert(entry[j], batch, ERROR_PARAM);
 				CHECK_ERROR(!ret);
-				if (!use_batch)
+				if (!use_batch || ((j%batch_size)==0))
 				{
 					ret = j_batch_execute(batch);
 					CHECK_ERROR(!ret);
 				}
+if(current_result_step->entry_insert[my_index].elapsed_time > target_time_low && m==1 &&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+m=0;
+allow_loop=FALSE;
+goto _abort;
+}
 			}
 			if (use_batch)
 			{
@@ -266,7 +270,7 @@ _start:
 				//selector single
 				if (current_result_step->iterator_single[my_index].prognosted_time < target_time_high)
 				{
-					while (m3 == 0 || current_result_step->iterator_single[my_index].elapsed_time < target_time_low)
+					while (current_result_step->iterator_single[my_index].elapsed_time < target_time_low)
 					{
 						for (j = 0; (j < n) && (current_result_step->iterator_single[my_index].elapsed_time < target_time_low); j++)
 						{
@@ -298,7 +302,7 @@ _start:
 				//selector all
 				if (current_result_step->iterator_all[my_index].prognosted_time < target_time_high)
 				{
-					while (m4 == 0 || current_result_step->iterator_all[my_index].elapsed_time < target_time_low)
+					while (current_result_step->iterator_all[my_index].elapsed_time < target_time_low)
 					{
 						m3++;
 						m4++;
@@ -326,7 +330,7 @@ _start:
 			}
 			if (current_result_step->entry_update[my_index].prognosted_time < target_time_high)
 			{
-				while (m2 == 0 || current_result_step->entry_update[my_index].elapsed_time < target_time_low)
+				while (current_result_step->entry_update[my_index].elapsed_time < target_time_low)
 				{
 					m2++;
 					//update
@@ -348,11 +352,14 @@ _start:
 						CHECK_ERROR(!ret);
 						ret = j_db_entry_update(entry[j], selector[j], batch, ERROR_PARAM);
 						CHECK_ERROR(!ret);
-						if (!use_batch)
+						if (!use_batch|| ((j%batch_size)==0))
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
 						}
+if(current_result_step->entry_update[my_index].elapsed_time > target_time_low && m2==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+m2=0;break;
+}
 					}
 					if (use_batch)
 					{
@@ -385,11 +392,14 @@ _start:
 						CHECK_ERROR(!entry[j]);
 						ret = j_db_entry_delete(entry[j], selector[j], batch, ERROR_PARAM);
 						CHECK_ERROR(!ret);
-						if (!use_batch)
+						if (!use_batch|| ((j%batch_size)==0))
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
 						}
+if(current_result_step->entry_delete[my_index].elapsed_time > target_time_low && m5==1&&((((gdouble)j)/((gdouble)n))<allowed_percentage)){
+m5=0;break;
+}
 					}
 					if (use_batch)
 					{
@@ -406,6 +416,7 @@ _start:
 			}
 		}
 	}
+_abort:
 	ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
 	CHECK_ERROR(!ret);
 	ret = j_batch_execute(batch);
@@ -415,7 +426,6 @@ _start:
 	{
 		goto _start;
 	}
-
 	current_result_step->entry_insert[my_index].operations = n * m;
 	current_result_step->entry_update[my_index].operations = n * m2;
 	current_result_step->entry_delete[my_index].operations = n * m5;

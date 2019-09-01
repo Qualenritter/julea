@@ -22,6 +22,8 @@
 
 #include "benchmark-mpi.h"
 
+static char* namespace[100];
+
 struct BenchmarkResult
 {
 	guint64 operations;
@@ -99,9 +101,8 @@ static result_step* all_result_step = NULL;
 static void
 myprintf(const char* name, guint n, BenchmarkResult* result)
 {
-	if (world_rank == 0)
-	{
-		if (result->elapsed_time > 0)
+	if (world_rank == 0&&
+		result->elapsed_time > 0 && result->operations>0){
 			printf("/db/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
 				n,
 				name,
@@ -115,9 +116,7 @@ myprintf(const char* name, guint n, BenchmarkResult* result)
 static void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 {
-	if (world_rank == 0)
-	{
-		if (result->elapsed_time > 0)
+	if (world_rank == 0	&&result->elapsed_time > 0&& result->operations>0){
 			printf("/db/%d/%d/%s %.3f seconds (%.0f / s) [ %ld %ld ]\n",
 				n,
 				n2,
@@ -286,6 +285,7 @@ benchmark_db(void)
 	result_step* tmp;
 	guint n;
 	guint n_next;
+	sprintf(namespace,"namespace_%d",world_rank);
 	target_low_str = g_getenv("J_BENCHMARK_TARGET_LOW");
 	if (target_low_str)
 	{

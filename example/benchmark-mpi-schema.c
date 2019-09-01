@@ -30,7 +30,6 @@ _benchmark_db_schema_create(gboolean use_batch, const guint n)
 	JDBSchema** schema_array = NULL;
 	GError* error = NULL;
 	gboolean ret;
-	const char* namespace = "namespace";
 	char name[50];
 	guint i;
 	guint m = 0;
@@ -147,7 +146,6 @@ _benchmark_db_schema_ref(void)
 
 	guint batch_count = 1000;
 	GError* error = NULL;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	JDBSchema* schema;
 	JDBSchema* schema2;
@@ -190,7 +188,6 @@ _benchmark_db_schema_new(void)
 
 	guint batch_count = 1000;
 	GError* error = NULL;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	guint i;
 	JDBSchema** schema_array = NULL;
@@ -231,7 +228,6 @@ _benchmark_db_schema_add_field(const guint n)
 	JDBType* types;
 	char varname[50];
 	GError* error = NULL;
-	const char* namespace = "namespace";
 	const char* name = "name";
 	JDBSchema* schema = NULL;
 	JDBSchema* schema2;
