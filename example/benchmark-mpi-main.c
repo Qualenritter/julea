@@ -54,9 +54,15 @@ j_benchmark_timer_start(void)
 gdouble
 j_benchmark_timer_elapsed(void)
 {
+	gdouble elapsed;
+	gdouble elapsed_global;
 	MPI_Barrier(MPI_COMM_WORLD);
 	//wait for the slowest
-	return g_timer_elapsed(j_benchmark_timer, NULL);
+	elapsed = g_timer_elapsed(j_benchmark_timer, NULL);
+	MPI_Allreduce(&elapsed, &elapsed_global, 1, MPI_DOUBLE, MPI_SUM,
+		MPI_COMM_WORLD);
+	MPI_Barrier(MPI_COMM_WORLD);
+	return elapsed_global / (gdouble)world_size;
 }
 
 gdouble
@@ -141,7 +147,9 @@ exec_tests(guint n)
 {
 	guint my_index;
 	guint n2;
-	guint n1 = ((n / world_size) + ((n / world_size)==0)) * world_size;
+	guint n1 = ((n / world_size) + ((n / world_size) == 0)) * world_size;
+	fprintf(stderr, "n1=%d\n", n1);
+	MPI_Barrier(MPI_COMM_WORLD);
 	if (n <= 512 && world_size == 1)
 	{
 		{
@@ -293,6 +301,7 @@ benchmark_db(void)
 	result_step* tmp;
 	guint n;
 	guint n_next;
+	MPI_Barrier(MPI_COMM_WORLD);
 	sprintf(namespace, "namespace_%d", world_rank);
 	target_low_str = g_getenv("J_BENCHMARK_TARGET_LOW");
 	if (target_low_str)

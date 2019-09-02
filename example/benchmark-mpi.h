@@ -31,30 +31,44 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#ifdef JULEA_DEBUG
+#if 0
 #define ERROR_PARAM &error
-#define CHECK_ERROR(_ret_)                                                       \
-	do                                                                       \
-	{                                                                        \
-		if (error)                                                       \
-		{                                                                \
-			g_debug("ERROR (%d) (%s)", error->code, error->message); \
-			abort();                                                 \
-		}                                                                \
-		if (_ret_)                                                       \
-		{                                                                \
-			g_debug("ret was %d", _ret_);                            \
-			abort();                                                 \
-		}                                                                \
+#define ERROR_PARAM2(idx) &(_error[idx])
+#define CHECK_ERROR(_ret_)                                                               \
+	do                                                                               \
+	{                                                                                \
+		if (error)                                                               \
+		{                                                                        \
+			fprintf(stderr, "ERROR (%d) (%s)", error->code, error->message); \
+			abort();                                                         \
+		}                                                                        \
+		if (_ret_)                                                               \
+		{                                                                        \
+			fprintf(stderr, "ret was %d", _ret_);                            \
+			abort();                                                         \
+		}                                                                        \
+	} while (0)
+#define CHECK_ERROR2(_ret_)                            \
+	do                                             \
+	{                                              \
+		CHECK_ERROR(0);                        \
+		for (guint ee = 0; ee < n_local; ee++) \
+		{                                      \
+			error = _error[ee];            \
+			CHECK_ERROR(0);                \
+		}                                      \
+		CHECK_ERROR(_ret_);                    \
 	} while (0)
 #else
 #define ERROR_PARAM NULL
+#define ERROR_PARAM2(idx) NULL
 #define CHECK_ERROR(_ret_)   \
 	do                   \
 	{                    \
 		(void)error; \
 		(void)_ret_; \
 	} while (0)
+#define CHECK_ERROR2(_ret_) CHECK_ERROR(_ret_)
 #endif
 
 void benchmark_db_schema(gdouble _target_time, guint _n, guint _scale_factor);

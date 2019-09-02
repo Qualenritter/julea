@@ -846,7 +846,7 @@ backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 	{
 		goto _error;
 	}
-	g_string_append_printf(sql, "DROP TABLE %s_%s", batch->namespace, name);
+	g_string_append_printf(sql, "DROP TABLE IF EXISTS %s_%s", batch->namespace, name);
 	value.val_string = batch->namespace;
 	if (G_UNLIKELY(!j_sql_bind_value(thread_variables->sql_backend, prepared->stmt, 1, J_DB_TYPE_STRING, &value, error)))
 	{

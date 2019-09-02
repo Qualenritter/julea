@@ -62,6 +62,10 @@ export JULEA_CONFIG=~/.config/julea/julea-benchmark
 mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 
 ./warnke_skript/reset_mysql.sh ${mountpoint}/julea/mysql
+
+#mysql --user='root' --password='1234' -e "SET GLOBAL log_output = 'TABLE';"
+#mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'ON';"
+
 ./build-gcc-benchmark/server/julea-server >> server_log &
 server_pid=$!
 
@@ -86,6 +90,7 @@ exec_tests mysql  client /mnt  hdd mysql 1
 exec_tests sqlite server /mnt  hdd sqlite 1
 exec_tests mysql  client /mnt  hdd mysql 6
 exec_tests sqlite server /mnt  hdd sqlite 6
-
 exec_tests mysql  client /mnt2 mem mysql 1
 exec_tests sqlite server /mnt2 mem sqlite 1
+#mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'OFF';"
+#mysql --user='root' --password='1234' -e "select * from mysql.general_log;"

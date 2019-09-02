@@ -157,6 +157,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	J_TRACE_FUNCTION(NULL);
 
 	GError* error = NULL;
+	GError** _error = NULL;
 	gboolean ret;
 	gpointer iter_ptr;
 	JDBType iter_type;
@@ -182,6 +183,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	gboolean allow_loop;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
+	gboolean batch_empty = TRUE;
 
 	guint my_index;
 	if (!use_batch)
@@ -203,6 +205,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	batch = j_batch_new(semantics);
 	entry = g_new(JDBEntry*, n_local);
 	selector = g_new(JDBSelector*, n_local);
+	_error = g_new0(GError*, n_local);
 	names = g_new(gchar const*, 2);
 	names[0] = "varname_0";
 	names[1] = NULL;
@@ -228,15 +231,15 @@ _start:
 		CHECK_ERROR(!ret);
 		ret = j_batch_execute(batch);
 		CHECK_ERROR(!ret);
+		j_db_schema_unref(schema);
+		schema = j_db_schema_new("namespace", name, ERROR_PARAM);
+		CHECK_ERROR(!schema);
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
-	if (world_rank != 0)
-	{
-		ret = j_db_schema_get(schema, batch, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_batch_execute(batch);
-		CHECK_ERROR(!ret);
-	}
+	ret = j_db_schema_get(schema, batch, ERROR_PARAM);
+	CHECK_ERROR(!ret);
+	ret = j_batch_execute(batch);
+	CHECK_ERROR(!ret);
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (current_result_step->entry_insert[my_index].prognosted_time < target_time_high)
 	{
@@ -257,12 +260,14 @@ _start:
 					ret = j_db_entry_set_field(entry[j], varname, &j2, 4, ERROR_PARAM);
 					CHECK_ERROR(!ret);
 				}
-				ret = j_db_entry_insert(entry[j], batch, ERROR_PARAM);
+				ret = j_db_entry_insert(entry[j], batch, ERROR_PARAM2(j));
+				batch_empty = FALSE;
 				CHECK_ERROR(!ret);
 				if (!use_batch || ((j % batch_size) == 0))
 				{
 					ret = j_batch_execute(batch);
-					CHECK_ERROR(!ret);
+					batch_empty = TRUE;
+					CHECK_ERROR2(!ret);
 					current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					j_benchmark_timer_start();
 				}
@@ -277,10 +282,10 @@ _start:
 					goto _abort;
 				}
 			}
-			if (use_batch)
+			if (use_batch && !batch_empty)
 			{
 				ret = j_batch_execute(batch);
-				CHECK_ERROR(!ret);
+				CHECK_ERROR2(!ret);
 				current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 			}
 			for (j = 0; j < n_local; j++)
@@ -310,6 +315,7 @@ _start:
 							for (i = 0; i < n2; i++)
 							{
 								sprintf(varname, "varname_%d", i);
+								iter_ptr = NULL;
 								ret = j_db_iterator_get_field(iterator, varname, &iter_type, &iter_ptr, &iter_length, ERROR_PARAM);
 								CHECK_ERROR(!ret);
 								g_free(iter_ptr);
@@ -339,7 +345,7 @@ _start:
 						{
 							iterator = j_db_iterator_new(schema, NULL, ERROR_PARAM);
 							CHECK_ERROR(!iterator);
-							for (j = 0; j < n_local; j++)
+							for (j = 0; j < n1; j++)
 							{
 								ret = j_db_iterator_next(iterator, ERROR_PARAM);
 								CHECK_ERROR(!ret);
@@ -371,23 +377,24 @@ _start:
 						j2 = j + n_off;
 						entry[j] = j_db_entry_new(schema, ERROR_PARAM);
 						CHECK_ERROR(!entry[j]);
-						for (i = 0; i < n2; i++)
+						for (i = 1; i < n2; i++)
 						{
 							sprintf(varname, "varname_%d", i);
-							ret = j_db_entry_set_field(entry[j], varname, &j, 4, ERROR_PARAM);
+							ret = j_db_entry_set_field(entry[j], varname, &j2, 4, ERROR_PARAM);
 							CHECK_ERROR(!ret);
 						}
-						sprintf(varname, "varname_%d", 0);
 						selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 						CHECK_ERROR(!selector);
-						ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j2, 4, ERROR_PARAM);
+						ret = j_db_selector_add_field(selector[j], "varname_0", J_DB_SELECTOR_OPERATOR_EQ, &j2, 4, ERROR_PARAM);
 						CHECK_ERROR(!ret);
-						ret = j_db_entry_update(entry[j], selector[j], batch, ERROR_PARAM);
+						ret = j_db_entry_update(entry[j], selector[j], batch, ERROR_PARAM2(j));
+						batch_empty = FALSE;
 						CHECK_ERROR(!ret);
 						if (!use_batch || ((j % batch_size) == 0))
 						{
 							ret = j_batch_execute(batch);
-							CHECK_ERROR(!ret);
+							batch_empty = TRUE;
+							CHECK_ERROR2(!ret);
 							current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 							j_benchmark_timer_start();
 						}
@@ -402,10 +409,10 @@ _start:
 							goto _selector_all_end;
 						}
 					}
-					if (use_batch)
+					if (use_batch && !batch_empty)
 					{
 						ret = j_batch_execute(batch);
-						CHECK_ERROR(!ret);
+						CHECK_ERROR2(!ret);
 						current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 					for (j = 0; j < n_local; j++)
@@ -433,12 +440,14 @@ _start:
 						CHECK_ERROR(!ret);
 						entry[j] = j_db_entry_new(schema, ERROR_PARAM);
 						CHECK_ERROR(!entry[j]);
-						ret = j_db_entry_delete(entry[j], selector[j], batch, ERROR_PARAM);
+						ret = j_db_entry_delete(entry[j], selector[j], batch, ERROR_PARAM2(j));
+						batch_empty = FALSE;
 						CHECK_ERROR(!ret);
 						if (!use_batch || ((j % batch_size) == 0))
 						{
 							ret = j_batch_execute(batch);
-							CHECK_ERROR(!ret);
+							batch_empty = TRUE;
+							CHECK_ERROR2(!ret);
 							current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 							j_benchmark_timer_start();
 						}
@@ -453,10 +462,10 @@ _start:
 							goto _abort;
 						}
 					}
-					if (use_batch)
+					if (use_batch && !batch_empty)
 					{
 						ret = j_batch_execute(batch);
-						CHECK_ERROR(!ret);
+						CHECK_ERROR2(!ret);
 						current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 					for (j = 0; j < n_local; j++)
@@ -469,13 +478,13 @@ _start:
 		}
 	}
 _abort:
-	if (world_rank == 0)
-	{
-		ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
-		CHECK_ERROR(!ret);
-		ret = j_batch_execute(batch);
-		CHECK_ERROR(!ret);
-	}
+{
+	//destroy caches on EVERY mpi client
+	ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
+	CHECK_ERROR(!ret);
+	ret = j_batch_execute(batch);
+	CHECK_ERROR(!ret);
+}
 	j_db_schema_unref(schema);
 	if (allow_loop)
 	{
@@ -494,4 +503,5 @@ _abort:
 	g_free(names);
 	g_free(entry);
 	g_free(selector);
+	g_free(_error);
 }
