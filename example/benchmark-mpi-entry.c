@@ -152,7 +152,7 @@ _benchmark_db_entry_set_field(const guint n)
 	current_result_step->entry_set_field.operations_without_n = m;
 }
 static void
-_benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n, const guint n2, JSemanticsAtomicity atomicity)
+_benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n1, const guint n2, JSemanticsAtomicity atomicity)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -169,6 +169,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	guint i;
 	guint k;
 	guint j;
+	guint j2;
 	gchar const** names;
 	char varname[50];
 	guint m = 0;
@@ -176,6 +177,8 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	guint m3 = 0;
 	guint m4 = 0;
 	guint m5 = 0;
+	const guint n_local = n1 / world_size; //assert (n_1 % world_size == 0)
+	const guint n_off = n_local * world_rank;
 	gboolean allow_loop;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(JSemantics) semantics = NULL;
@@ -198,30 +201,43 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	semantics = j_semantics_new(J_SEMANTICS_TEMPLATE_DEFAULT);
 	j_semantics_set(semantics, J_SEMANTICS_ATOMICITY, atomicity);
 	batch = j_batch_new(semantics);
-	entry = g_new(JDBEntry*, n);
-	selector = g_new(JDBSelector*, n);
+	entry = g_new(JDBEntry*, n_local);
+	selector = g_new(JDBSelector*, n_local);
 	names = g_new(gchar const*, 2);
 	names[0] = "varname_0";
 	names[1] = NULL;
 _start:
+	MPI_Barrier(MPI_COMM_WORLD);
 	allow_loop = FALSE;
-	schema = j_db_schema_new(namespace, name, ERROR_PARAM);
+	schema = j_db_schema_new("namespace", name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
-	for (i = 0; i < n2; i++)
+	if (world_rank == 0)
 	{
-		sprintf(varname, "varname_%d", i);
-		ret = j_db_schema_add_field(schema, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
+		for (i = 0; i < n2; i++)
+		{
+			sprintf(varname, "varname_%d", i);
+			ret = j_db_schema_add_field(schema, varname, J_DB_TYPE_UINT32, ERROR_PARAM);
+			CHECK_ERROR(!ret);
+		}
+		if (use_index)
+		{
+			ret = j_db_schema_add_index(schema, names, ERROR_PARAM);
+			CHECK_ERROR(!ret);
+		}
+		ret = j_db_schema_create(schema, batch, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+		ret = j_batch_execute(batch);
 		CHECK_ERROR(!ret);
 	}
-	if (use_index)
+	MPI_Barrier(MPI_COMM_WORLD);
+	if (world_rank != 0)
 	{
-		ret = j_db_schema_add_index(schema, names, ERROR_PARAM);
+		ret = j_db_schema_get(schema, batch, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+		ret = j_batch_execute(batch);
 		CHECK_ERROR(!ret);
 	}
-	ret = j_db_schema_create(schema, batch, ERROR_PARAM);
-	CHECK_ERROR(!ret);
-	ret = j_batch_execute(batch);
-	CHECK_ERROR(!ret);
+	MPI_Barrier(MPI_COMM_WORLD);
 	if (current_result_step->entry_insert[my_index].prognosted_time < target_time_high)
 	{
 		while (current_result_step->entry_insert[my_index].elapsed_time < target_time_low)
@@ -230,14 +246,15 @@ _start:
 			m++;
 			//insert
 			j_benchmark_timer_start();
-			for (j = 0; j < n; j++)
+			for (j = 0; j < n_local; j++)
 			{
+				j2 = j + n_off;
 				entry[j] = j_db_entry_new(schema, ERROR_PARAM);
 				CHECK_ERROR(!entry[j]);
 				for (i = 0; i < n2; i++)
 				{
 					sprintf(varname, "varname_%d", i);
-					ret = j_db_entry_set_field(entry[j], varname, &j, 4, ERROR_PARAM);
+					ret = j_db_entry_set_field(entry[j], varname, &j2, 4, ERROR_PARAM);
 					CHECK_ERROR(!ret);
 				}
 				ret = j_db_entry_insert(entry[j], batch, ERROR_PARAM);
@@ -249,7 +266,7 @@ _start:
 					current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					j_benchmark_timer_start();
 				}
-				if (current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+				if (current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
 				{
 					m = 0;
 					allow_loop = FALSE;
@@ -266,7 +283,7 @@ _start:
 				CHECK_ERROR(!ret);
 				current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 			}
-			for (j = 0; j < n; j++)
+			for (j = 0; j < n_local; j++)
 			{
 				j_db_entry_unref(entry[j]);
 			}
@@ -278,12 +295,13 @@ _start:
 					while (current_result_step->iterator_single[my_index].elapsed_time < target_time_low)
 					{
 						m3++;
-						for (j = 0; j < n; j++)
+						for (j = 0; j < n_local; j++)
 						{
+							j2 = j + n_off;
 							j_benchmark_timer_start();
 							selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 							CHECK_ERROR(!selector);
-							ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
+							ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j2, 4, ERROR_PARAM);
 							CHECK_ERROR(!ret);
 							iterator = j_db_iterator_new(schema, selector[j], ERROR_PARAM);
 							CHECK_ERROR(!iterator);
@@ -301,7 +319,7 @@ _start:
 							j_db_iterator_unref(iterator);
 							j_db_selector_unref(selector[j]);
 							current_result_step->iterator_single[my_index].elapsed_time += j_benchmark_timer_elapsed();
-							if (current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+							if (current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3 == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
 							{
 								m3 = 0;
 								goto _selector_single_end;
@@ -317,23 +335,26 @@ _start:
 					{
 						m4++;
 						j_benchmark_timer_start();
-						iterator = j_db_iterator_new(schema, NULL, ERROR_PARAM);
-						CHECK_ERROR(!iterator);
-						for (j = 0; j < n; j++)
+						if (world_rank == 0)
 						{
-							ret = j_db_iterator_next(iterator, ERROR_PARAM);
-							CHECK_ERROR(!ret);
-							for (i = 0; i < n2; i++)
+							iterator = j_db_iterator_new(schema, NULL, ERROR_PARAM);
+							CHECK_ERROR(!iterator);
+							for (j = 0; j < n_local; j++)
 							{
-								sprintf(varname, "varname_%d", i);
-								ret = j_db_iterator_get_field(iterator, varname, &iter_type, &iter_ptr, &iter_length, ERROR_PARAM);
+								ret = j_db_iterator_next(iterator, ERROR_PARAM);
 								CHECK_ERROR(!ret);
-								g_free(iter_ptr);
+								for (i = 0; i < n2; i++)
+								{
+									sprintf(varname, "varname_%d", i);
+									ret = j_db_iterator_get_field(iterator, varname, &iter_type, &iter_ptr, &iter_length, ERROR_PARAM);
+									CHECK_ERROR(!ret);
+									g_free(iter_ptr);
+								}
 							}
+							ret = j_db_iterator_next(iterator, NULL);
+							CHECK_ERROR(ret);
+							j_db_iterator_unref(iterator);
 						}
-						ret = j_db_iterator_next(iterator, NULL);
-						CHECK_ERROR(ret);
-						j_db_iterator_unref(iterator);
 						current_result_step->iterator_all[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 				}
@@ -345,8 +366,9 @@ _start:
 					m2++;
 					//update
 					j_benchmark_timer_start();
-					for (j = 0; j < n; j++)
+					for (j = 0; j < n_local; j++)
 					{
+						j2 = j + n_off;
 						entry[j] = j_db_entry_new(schema, ERROR_PARAM);
 						CHECK_ERROR(!entry[j]);
 						for (i = 0; i < n2; i++)
@@ -358,7 +380,7 @@ _start:
 						sprintf(varname, "varname_%d", 0);
 						selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 						CHECK_ERROR(!selector);
-						ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
+						ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j2, 4, ERROR_PARAM);
 						CHECK_ERROR(!ret);
 						ret = j_db_entry_update(entry[j], selector[j], batch, ERROR_PARAM);
 						CHECK_ERROR(!ret);
@@ -369,7 +391,7 @@ _start:
 							current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 							j_benchmark_timer_start();
 						}
-						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
 						{
 							m2 = 0;
 							for (k = 0; k <= j; k++)
@@ -386,7 +408,7 @@ _start:
 						CHECK_ERROR(!ret);
 						current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
-					for (j = 0; j < n; j++)
+					for (j = 0; j < n_local; j++)
 					{
 						j_db_entry_unref(entry[j]);
 						j_db_selector_unref(selector[j]);
@@ -401,12 +423,13 @@ _start:
 				{
 					m5++;
 					j_benchmark_timer_start();
-					for (j = 0; j < n; j++)
+					for (j = 0; j < n_local; j++)
 					{
+						j2 = j + n_off;
 						CHECK_ERROR(!entry);
 						selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 						CHECK_ERROR(!selector[j]);
-						ret = j_db_selector_add_field(selector[j], "varname_0", J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
+						ret = j_db_selector_add_field(selector[j], "varname_0", J_DB_SELECTOR_OPERATOR_EQ, &j2, 4, ERROR_PARAM);
 						CHECK_ERROR(!ret);
 						entry[j] = j_db_entry_new(schema, ERROR_PARAM);
 						CHECK_ERROR(!entry[j]);
@@ -419,7 +442,7 @@ _start:
 							current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 							j_benchmark_timer_start();
 						}
-						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
+						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
 						{
 							m5 = 0;
 							for (k = 0; k <= j; k++)
@@ -436,7 +459,7 @@ _start:
 						CHECK_ERROR(!ret);
 						current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
-					for (j = 0; j < n; j++)
+					for (j = 0; j < n_local; j++)
 					{
 						j_db_entry_unref(entry[j]);
 						j_db_selector_unref(selector[j]);
@@ -446,20 +469,23 @@ _start:
 		}
 	}
 _abort:
-	ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
-	CHECK_ERROR(!ret);
-	ret = j_batch_execute(batch);
-	CHECK_ERROR(!ret);
+	if (world_rank == 0)
+	{
+		ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+		ret = j_batch_execute(batch);
+		CHECK_ERROR(!ret);
+	}
 	j_db_schema_unref(schema);
 	if (allow_loop)
 	{
 		goto _start;
 	}
-	current_result_step->entry_insert[my_index].operations = n * m;
-	current_result_step->entry_update[my_index].operations = n * m2;
-	current_result_step->entry_delete[my_index].operations = n * m5;
-	current_result_step->iterator_single[my_index].operations = n * m3;
-	current_result_step->iterator_all[my_index].operations = n * m4;
+	current_result_step->entry_insert[my_index].operations = n1 * m;
+	current_result_step->entry_update[my_index].operations = n1 * m2;
+	current_result_step->entry_delete[my_index].operations = n1 * m5;
+	current_result_step->iterator_single[my_index].operations = n1 * m3;
+	current_result_step->iterator_all[my_index].operations = n1 * m4;
 	current_result_step->entry_insert[my_index].operations_without_n = m;
 	current_result_step->entry_update[my_index].operations_without_n = m2;
 	current_result_step->entry_delete[my_index].operations_without_n = m5;

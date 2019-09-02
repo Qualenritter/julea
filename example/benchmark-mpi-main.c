@@ -113,9 +113,9 @@ myprintf(const char* name, guint n, BenchmarkResult* result)
 			n,
 			name,
 			result->elapsed_time,
-			(gdouble)(result->operations * world_size) / result->elapsed_time,
-			(result->operations * world_size),
-			(result->operations_without_n * world_size));
+			(gdouble)result->operations / result->elapsed_time,
+			result->operations,
+			result->operations_without_n);
 		fflush(stdout);
 	}
 }
@@ -129,9 +129,9 @@ myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 			n2,
 			name,
 			result->elapsed_time,
-			(gdouble)(result->operations * world_size) / result->elapsed_time,
-			(result->operations * world_size),
-			(result->operations_without_n * world_size));
+			(gdouble)result->operations / result->elapsed_time,
+			result->operations,
+			result->operations_without_n);
 		fflush(stdout);
 	}
 }
@@ -141,7 +141,8 @@ exec_tests(guint n)
 {
 	guint my_index;
 	guint n2;
-	if (n <= 512)
+	guint n1 = ((n / world_size) + ((n / world_size)==0)) * world_size;
+	if (n <= 512 && world_size == 1)
 	{
 		{
 			_benchmark_db_schema_create(TRUE, n);
@@ -189,34 +190,34 @@ exec_tests(guint n)
 	for (n2 = 5; n2 <= 500; n2 *= 10, my_index += 4)
 	{
 		{
-			_benchmark_db_entry_insert(FALSE, FALSE, n, n2, J_SEMANTICS_ATOMICITY_NONE);
-			myprintf2("entry/insert", n, n2, &current_result_step->entry_insert[my_index + 0]);
-			myprintf2("entry/update", n, n2, &current_result_step->entry_update[my_index + 0]);
-			myprintf2("entry/delete", n, n2, &current_result_step->entry_delete[my_index + 0]);
+			_benchmark_db_entry_insert(FALSE, FALSE, n1, n2, J_SEMANTICS_ATOMICITY_NONE);
+			myprintf2("entry/insert", n1, n2, &current_result_step->entry_insert[my_index + 0]);
+			myprintf2("entry/update", n1, n2, &current_result_step->entry_update[my_index + 0]);
+			myprintf2("entry/delete", n1, n2, &current_result_step->entry_delete[my_index + 0]);
 		}
 		{
-			_benchmark_db_entry_insert(TRUE, FALSE, n, n2, J_SEMANTICS_ATOMICITY_NONE);
-			myprintf2("entry/insert-batch", n, n2, &current_result_step->entry_insert[my_index + 1]);
-			myprintf2("entry/update-batch", n, n2, &current_result_step->entry_update[my_index + 1]);
-			myprintf2("entry/delete-batch", n, n2, &current_result_step->entry_delete[my_index + 1]);
-			myprintf2("iterator/single", n, n2, &current_result_step->iterator_single[my_index + 1]);
-			myprintf2("iterator/all", n, n2, &current_result_step->iterator_all[my_index + 1]);
+			_benchmark_db_entry_insert(TRUE, FALSE, n1, n2, J_SEMANTICS_ATOMICITY_NONE);
+			myprintf2("entry/insert-batch", n1, n2, &current_result_step->entry_insert[my_index + 1]);
+			myprintf2("entry/update-batch", n1, n2, &current_result_step->entry_update[my_index + 1]);
+			myprintf2("entry/delete-batch", n1, n2, &current_result_step->entry_delete[my_index + 1]);
+			myprintf2("iterator/single", n1, n2, &current_result_step->iterator_single[my_index + 1]);
+			myprintf2("iterator/all", n1, n2, &current_result_step->iterator_all[my_index + 1]);
 		}
 		{
-			_benchmark_db_entry_insert(TRUE, TRUE, n, n2, J_SEMANTICS_ATOMICITY_NONE);
-			myprintf2("entry/insert-batch-index", n, n2, &current_result_step->entry_insert[my_index + 2]);
-			myprintf2("entry/update-batch-index", n, n2, &current_result_step->entry_update[my_index + 2]);
-			myprintf2("entry/delete-batch-index", n, n2, &current_result_step->entry_delete[my_index + 2]);
-			myprintf2("iterator/single-index", n, n2, &current_result_step->iterator_single[my_index + 2]);
-			myprintf2("iterator/all-index", n, n2, &current_result_step->iterator_all[my_index + 2]);
+			_benchmark_db_entry_insert(TRUE, TRUE, n1, n2, J_SEMANTICS_ATOMICITY_NONE);
+			myprintf2("entry/insert-batch-index", n1, n2, &current_result_step->entry_insert[my_index + 2]);
+			myprintf2("entry/update-batch-index", n1, n2, &current_result_step->entry_update[my_index + 2]);
+			myprintf2("entry/delete-batch-index", n1, n2, &current_result_step->entry_delete[my_index + 2]);
+			myprintf2("iterator/single-index", n1, n2, &current_result_step->iterator_single[my_index + 2]);
+			myprintf2("iterator/all-index", n1, n2, &current_result_step->iterator_all[my_index + 2]);
 		}
 		{
-			_benchmark_db_entry_insert(TRUE, TRUE, n, n2, J_SEMANTICS_ATOMICITY_BATCH);
-			myprintf2("entry/insert-batch-index-atomicity", n, n2, &current_result_step->entry_insert[my_index + 3]);
-			myprintf2("entry/update-batch-index-atomicity", n, n2, &current_result_step->entry_update[my_index + 3]);
-			myprintf2("entry/delete-batch-index-atomicity", n, n2, &current_result_step->entry_delete[my_index + 3]);
-			myprintf2("iterator/single-index-atomicity", n, n2, &current_result_step->iterator_single[my_index + 3]);
-			myprintf2("iterator/all-index-atomicity", n, n2, &current_result_step->iterator_all[my_index + 3]);
+			_benchmark_db_entry_insert(TRUE, TRUE, n1, n2, J_SEMANTICS_ATOMICITY_BATCH);
+			myprintf2("entry/insert-batch-index-atomicity", n1, n2, &current_result_step->entry_insert[my_index + 3]);
+			myprintf2("entry/update-batch-index-atomicity", n1, n2, &current_result_step->entry_update[my_index + 3]);
+			myprintf2("entry/delete-batch-index-atomicity", n1, n2, &current_result_step->entry_delete[my_index + 3]);
+			myprintf2("iterator/single-index-atomicity", n1, n2, &current_result_step->iterator_single[my_index + 3]);
+			myprintf2("iterator/all-index-atomicity", n1, n2, &current_result_step->iterator_all[my_index + 3]);
 		}
 	}
 }
