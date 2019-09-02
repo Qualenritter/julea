@@ -22,8 +22,8 @@ ulimit -c unlimited
 #export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libSegFault.so"
 #export J_TRACE="combined"
 #export G_MESSAGES_DEBUG=all
-export J_BENCHMARK_TARGET_LOW=0.01
-export J_BENCHMARK_TARGET_HIGH=0.02
+export J_BENCHMARK_TARGET_LOW=2
+export J_BENCHMARK_TARGET_HIGH=60
 
 githash=$(git log --pretty=format:'%H' -n 1)
 rm -rf benchmark_values/warnke-${githash}
@@ -75,19 +75,11 @@ sleep 2
 
 cd benchmark_values/warnke-${githash}
 
-mpirun --allow-run-as-root -np ${process_count} \
-	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes \
-	--suppressions=/usr/share/openmpi/openmpi-valgrind.supp \
-	--suppressions=/src/julea/example/openmpi.supp \
-	--suppressions=/src/julea/dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
-	--gen-suppressions=all \
-	../../example/benchmark-mpi >> benchmark_values_${pretty_backend_name}_${mountmedium}_${process_count} 2>&1
+mpirun --allow-run-as-root -np ${process_count} ../../example/benchmark-mpi >> benchmark_values_${pretty_backend_name}_${mountmedium}_${process_count} 2>&1
 kill ${server_pid}
 )
 }
 
-exec_tests mysql  client /mnt2 mem mysql 1
-exec_tests sqlite server /mnt2 mem sqlite 1
 exec_tests mysql  client /mnt2 mem mysql 6
 exec_tests sqlite server /mnt2 mem sqlite 6
 exec_tests mysql  client /mnt  hdd mysql 1
@@ -95,3 +87,5 @@ exec_tests sqlite server /mnt  hdd sqlite 1
 exec_tests mysql  client /mnt  hdd mysql 6
 exec_tests sqlite server /mnt  hdd sqlite 6
 
+exec_tests mysql  client /mnt2 mem mysql 1
+exec_tests sqlite server /mnt2 mem sqlite 1
