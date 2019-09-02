@@ -167,6 +167,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	JDBSchema* schema;
 	JDBIterator* iterator;
 	guint i;
+	guint k;
 	guint j;
 	gchar const** names;
 	char varname[50];
@@ -252,6 +253,10 @@ _start:
 				{
 					m = 0;
 					allow_loop = FALSE;
+					for (k = 0; k <= j; k++)
+					{
+						j_db_entry_unref(entry[k]);
+					}
 					goto _abort;
 				}
 			}
@@ -299,17 +304,17 @@ _start:
 							if (current_result_step->iterator_single[my_index].elapsed_time > target_time_high && m3 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 							{
 								m3 = 0;
-								break;
+								goto _selector_single_end;
 							}
 						}
 					}
 				}
+			_selector_single_end:
 				//selector all
 				if (current_result_step->iterator_all[my_index].prognosted_time < target_time_high)
 				{
 					while (current_result_step->iterator_all[my_index].elapsed_time < target_time_low)
 					{
-						m3++;
 						m4++;
 						j_benchmark_timer_start();
 						iterator = j_db_iterator_new(schema, NULL, ERROR_PARAM);
@@ -361,18 +366,25 @@ _start:
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
-							current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();j_benchmark_timer_start();
+							current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
+							j_benchmark_timer_start();
 						}
 						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 						{
 							m2 = 0;
-							break;
+							for (k = 0; k <= j; k++)
+							{
+								j_db_entry_unref(entry[k]);
+								j_db_selector_unref(selector[k]);
+							}
+							goto _selector_all_end;
 						}
 					}
 					if (use_batch)
 					{
 						ret = j_batch_execute(batch);
-						CHECK_ERROR(!ret);current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
+						CHECK_ERROR(!ret);
+						current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 					for (j = 0; j < n; j++)
 					{
@@ -381,6 +393,7 @@ _start:
 					}
 				}
 			}
+		_selector_all_end:
 			//delete
 			if (current_result_step->entry_delete[my_index].prognosted_time < target_time_high)
 			{
@@ -393,7 +406,7 @@ _start:
 						CHECK_ERROR(!entry);
 						selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 						CHECK_ERROR(!selector[j]);
-						ret = j_db_selector_add_field(selector[j], varname, J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
+						ret = j_db_selector_add_field(selector[j], "varname_0", J_DB_SELECTOR_OPERATOR_EQ, &j, 4, ERROR_PARAM);
 						CHECK_ERROR(!ret);
 						entry[j] = j_db_entry_new(schema, ERROR_PARAM);
 						CHECK_ERROR(!entry[j]);
@@ -403,11 +416,17 @@ _start:
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
-current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();j_benchmark_timer_start();
+							current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
+							j_benchmark_timer_start();
 						}
 						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 						{
 							m5 = 0;
+							for (k = 0; k <= j; k++)
+							{
+								j_db_entry_unref(entry[k]);
+								j_db_selector_unref(selector[k]);
+							}
 							goto _abort;
 						}
 					}
@@ -415,7 +434,7 @@ current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_el
 					{
 						ret = j_batch_execute(batch);
 						CHECK_ERROR(!ret);
-current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
+						current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 					for (j = 0; j < n; j++)
 					{

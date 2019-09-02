@@ -67,7 +67,6 @@ server_pid=$!
 
 sleep 2
 
-
 (
 	cd example
 	make clean
@@ -81,8 +80,8 @@ kill ${server_pid}
 )
 }
 
-exec_tests sqlite server /mnt2 mem sqlite 1
 exec_tests mysql  client /mnt2 mem mysql 1
+exec_tests sqlite server /mnt2 mem sqlite 1
 exec_tests mysql  client /mnt2 mem mysql 6
 exec_tests sqlite server /mnt2 mem sqlite 6
 exec_tests mysql  client /mnt  hdd mysql 1
