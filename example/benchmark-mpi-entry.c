@@ -245,7 +245,8 @@ _start:
 				{
 					ret = j_batch_execute(batch);
 					CHECK_ERROR(!ret);
-					MPI_Barrier(MPI_COMM_WORLD);
+					current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
+					j_benchmark_timer_start();
 				}
 				if (current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 				{
@@ -258,13 +259,12 @@ _start:
 			{
 				ret = j_batch_execute(batch);
 				CHECK_ERROR(!ret);
-				MPI_Barrier(MPI_COMM_WORLD);
+				current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 			}
 			for (j = 0; j < n; j++)
 			{
 				j_db_entry_unref(entry[j]);
 			}
-			current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 			if (use_batch)
 			{
 				//selector single
@@ -361,7 +361,7 @@ _start:
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
-							MPI_Barrier(MPI_COMM_WORLD);
+							current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();j_benchmark_timer_start();
 						}
 						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 						{
@@ -372,15 +372,13 @@ _start:
 					if (use_batch)
 					{
 						ret = j_batch_execute(batch);
-						CHECK_ERROR(!ret);
-						MPI_Barrier(MPI_COMM_WORLD);
+						CHECK_ERROR(!ret);current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 					for (j = 0; j < n; j++)
 					{
 						j_db_entry_unref(entry[j]);
 						j_db_selector_unref(selector[j]);
 					}
-					current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 				}
 			}
 			//delete
@@ -405,7 +403,7 @@ _start:
 						{
 							ret = j_batch_execute(batch);
 							CHECK_ERROR(!ret);
-							MPI_Barrier(MPI_COMM_WORLD);
+current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();j_benchmark_timer_start();
 						}
 						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n)) < allowed_percentage))
 						{
@@ -417,14 +415,13 @@ _start:
 					{
 						ret = j_batch_execute(batch);
 						CHECK_ERROR(!ret);
-						MPI_Barrier(MPI_COMM_WORLD);
+current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
 					for (j = 0; j < n; j++)
 					{
 						j_db_entry_unref(entry[j]);
 						j_db_selector_unref(selector[j]);
 					}
-					current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 				}
 			}
 		}
