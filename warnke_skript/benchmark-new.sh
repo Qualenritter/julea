@@ -23,15 +23,15 @@ ulimit -c unlimited
 #debugging-->>
 
 #export G_MESSAGES_DEBUG=all
-export ASAN_OPTIONS=fast_unwind_on_malloc=0
-export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
-export G_SLICE=always-malloc
+#export ASAN_OPTIONS=fast_unwind_on_malloc=0
+#export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
+#export G_SLICE=always-malloc
 
 #<<--debugging
 
 #export J_TRACE="combined"
-export J_BENCHMARK_TARGET_LOW=0.01
-export J_BENCHMARK_TARGET_HIGH=0.2
+export J_BENCHMARK_TARGET_LOW=10
+export J_BENCHMARK_TARGET_HIGH=60
 
 githash=$(git log --pretty=format:'%H' -n 1)
 rm -rf benchmark_values/warnke-${githash}
@@ -50,7 +50,7 @@ process_count=$6
 rm -rf build* prefix*
 ./warnke_skript/kill.sh
 
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
+./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 ./waf.sh install
 thepath=$(pwd)
@@ -71,8 +71,8 @@ mv ~/.config/julea/julea ~/.config/julea/julea-benchmark
 
 ./warnke_skript/reset_mysql.sh ${mountpoint}/julea/mysql
 
-mysql --user='root' --password='1234' -e "SET GLOBAL log_output = 'TABLE';"
-mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'ON';"
+#mysql --user='root' --password='1234' -e "SET GLOBAL log_output = 'TABLE';"
+#mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'ON';"
 
 ./build-gcc-benchmark/server/julea-server >> server_log &
 server_pid=$!
@@ -93,8 +93,6 @@ kill ${server_pid}
 }
 
 exec_tests mysql  client /mnt2 mem mysql 6
-mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'OFF';"
-exit
 exec_tests sqlite server /mnt2 mem sqlite 6
 exec_tests mysql  client /mnt2 mem mysql 1
 exec_tests sqlite server /mnt2 mem sqlite 1
@@ -102,4 +100,5 @@ exec_tests mysql  client /mnt  hdd mysql 6
 exec_tests sqlite server /mnt  hdd sqlite 6
 exec_tests mysql  client /mnt  hdd mysql 1
 exec_tests sqlite server /mnt  hdd sqlite 1
+#mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'OFF';"
 #mysql --user='root' --password='1234' -e "select * from mysql.general_log;"

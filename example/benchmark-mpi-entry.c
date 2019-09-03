@@ -68,8 +68,6 @@ _benchmark_db_entry_ref(void)
 		while ((current_result_step->entry_ref.elapsed_time < target_time_low && current_result_step->entry_unref.elapsed_time < target_time_low))
 		{
 			m += batch_count;
-			fprintf(benjamin_logfile, "rank=%d  022\n", world_rank);
-			fflush(benjamin_logfile);
 			j_benchmark_timer_start();
 			for (i = 0; i < batch_count; i++)
 			{
@@ -79,8 +77,6 @@ _benchmark_db_entry_ref(void)
 				CHECK_ERROR(ret);
 			}
 			current_result_step->entry_ref.elapsed_time += j_benchmark_timer_elapsed();
-			fprintf(benjamin_logfile, "rank=%d  023\n", world_rank);
-			fflush(benjamin_logfile);
 			j_benchmark_timer_start();
 			for (i = 0; i < batch_count; i++)
 			{
@@ -115,8 +111,6 @@ _benchmark_db_entry_new(void)
 		while ((current_result_step->entry_new.elapsed_time < target_time_low && current_result_step->entry_free.elapsed_time < target_time_low))
 		{
 			m += batch_count;
-			fprintf(benjamin_logfile, "rank=%d  024\n", world_rank);
-			fflush(benjamin_logfile);
 			j_benchmark_timer_start();
 			for (i = 0; i < batch_count; i++)
 			{
@@ -124,8 +118,6 @@ _benchmark_db_entry_new(void)
 				CHECK_ERROR(!entry_array[i]);
 			}
 			current_result_step->entry_new.elapsed_time += j_benchmark_timer_elapsed();
-			fprintf(benjamin_logfile, "rank=%d  025\n", world_rank);
-			fflush(benjamin_logfile);
 			j_benchmark_timer_start();
 			for (i = 0; i < batch_count; i++)
 			{
@@ -168,8 +160,6 @@ _benchmark_db_entry_set_field(const guint n)
 			m++;
 			entry = j_db_entry_new(schema, ERROR_PARAM);
 			CHECK_ERROR(!entry);
-			fprintf(benjamin_logfile, "rank=%d  026\n", world_rank);
-			fflush(benjamin_logfile);
 			j_benchmark_timer_start();
 			for (i = 0; i < n; i++)
 			{
@@ -244,11 +234,7 @@ _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n
 	names[0] = "varname_0";
 	names[1] = NULL;
 _start:
-	fprintf(benjamin_logfile, "rank=%d  004\n", world_rank);
-	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
-	fprintf(benjamin_logfile, "rank=%d  005\n", world_rank);
-	fflush(benjamin_logfile);
 	allow_loop = FALSE;
 	schema = j_db_schema_new("namespace", name, ERROR_PARAM);
 	CHECK_ERROR(!schema);
@@ -273,20 +259,12 @@ _start:
 		schema = j_db_schema_new("namespace", name, ERROR_PARAM);
 		CHECK_ERROR(!schema);
 	}
-	fprintf(benjamin_logfile, "rank=%d  006\n", world_rank);
-	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
-	fprintf(benjamin_logfile, "rank=%d  007\n", world_rank);
-	fflush(benjamin_logfile);
 	ret = j_db_schema_get(schema, batch, ERROR_PARAM);
 	CHECK_ERROR(!ret);
 	ret = j_batch_execute(batch);
 	CHECK_ERROR(!ret);
-	fprintf(benjamin_logfile, "rank=%d  008\n", world_rank);
-	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
-	fprintf(benjamin_logfile, "rank=%d  009\n", world_rank);
-	fflush(benjamin_logfile);
 	if (current_result_step->entry_insert[my_index].prognosted_time < target_time_high)
 	{
 		while (current_result_step->entry_insert[my_index].elapsed_time < target_time_low)
@@ -294,8 +272,6 @@ _start:
 			allow_loop = TRUE;
 			m++;
 			//insert
-			fprintf(benjamin_logfile, "rank=%d  027\n", world_rank);
-			fflush(benjamin_logfile);
 			j_benchmark_timer_start();
 			for (j = 0; j < n_local; j++)
 			{
@@ -317,8 +293,6 @@ _start:
 					batch_empty = TRUE;
 					CHECK_ERROR2(!ret);
 					current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
-					fprintf(benjamin_logfile, "rank=%d  028\n", world_rank);
-					fflush(benjamin_logfile);
 					j_benchmark_timer_start();
 				}
 				if (current_result_step->entry_insert[my_index].elapsed_time > target_time_high && m == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
@@ -354,8 +328,6 @@ _start:
 						for (j = 0; j < n_local; j++)
 						{
 							j2 = j + n_off;
-							fprintf(benjamin_logfile, "rank=%d  029\n", world_rank);
-							fflush(benjamin_logfile);
 							j_benchmark_timer_start();
 							selector[j] = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, ERROR_PARAM);
 							CHECK_ERROR(!selector);
@@ -392,8 +364,6 @@ _start:
 				{
 					while (current_result_step->iterator_all[my_index].elapsed_time < target_time_low)
 					{
-						fprintf(benjamin_logfile, "rank=%d  030\n", world_rank);
-						fflush(benjamin_logfile);
 						j_benchmark_timer_start();
 						if (world_rank == 0)
 						{
@@ -427,8 +397,6 @@ _start:
 				{
 					m2++;
 					//update
-					fprintf(benjamin_logfile, "rank=%d  031\n", world_rank);
-					fflush(benjamin_logfile);
 					j_benchmark_timer_start();
 					for (j = 0; j < n_local; j++)
 					{
@@ -454,8 +422,6 @@ _start:
 							batch_empty = TRUE;
 							CHECK_ERROR2(!ret);
 							current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
-							fprintf(benjamin_logfile, "rank=%d  032\n", world_rank);
-							fflush(benjamin_logfile);
 							j_benchmark_timer_start();
 						}
 						if (current_result_step->entry_update[my_index].elapsed_time > target_time_high && m2 == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
@@ -490,8 +456,6 @@ _start:
 				if (current_result_step->entry_delete[my_index].elapsed_time < target_time_low)
 				{
 					m5++;
-					fprintf(benjamin_logfile, "rank=%d  033\n", world_rank);
-					fflush(benjamin_logfile);
 					j_benchmark_timer_start();
 					for (j = 0; j < n_local; j++)
 					{
@@ -512,8 +476,6 @@ _start:
 							batch_empty = TRUE;
 							CHECK_ERROR2(!ret);
 							current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
-							fprintf(benjamin_logfile, "rank=%d  034\n", world_rank);
-							fflush(benjamin_logfile);
 							j_benchmark_timer_start();
 						}
 						if (current_result_step->entry_delete[my_index].elapsed_time > target_time_high && m5 == 1 && ((((gdouble)j) / ((gdouble)n_local)) < allowed_percentage))
@@ -544,11 +506,7 @@ _start:
 		}
 	}
 _abort:
-	fprintf(benjamin_logfile, "rank=%d  000\n", world_rank);
-	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
-	fprintf(benjamin_logfile, "rank=%d  001\n", world_rank);
-	fflush(benjamin_logfile);
 	{
 		CHECK_ERROR(j_list_length(batch->list) != 0);
 		CHECK_ERROR(!batch_empty);
@@ -558,11 +516,7 @@ _abort:
 		ret = j_batch_execute(batch);
 		CHECK_ERROR(!ret);
 	}
-	fprintf(benjamin_logfile, "rank=%d  002\n", world_rank);
-	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
-	fprintf(benjamin_logfile, "rank=%d  003\n", world_rank);
-	fflush(benjamin_logfile);
 	j_db_schema_unref(schema);
 	if (allow_loop)
 	{
