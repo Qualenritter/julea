@@ -328,7 +328,7 @@ benchmark_db(void)
 	current_result_step = all_result_step;
 	next_result_step = all_result_step + 1;
 	j_benchmark_timer = g_timer_new();
-	n = 1;
+	n = world_size;
 	current_result_step->n = n;
 	while (1)
 	{
