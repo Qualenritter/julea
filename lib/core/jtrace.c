@@ -507,7 +507,7 @@ j_trace_fini(void)
 		gchar* key;
 		JTraceTime* value;
 		g_hash_table_iter_init(&iter, j_trace_combined_timers);
-		while (g_hash_table_iter_next(&iter, &key, &value))
+		while (g_hash_table_iter_next(&iter, (gpointer*)&key, (gpointer*)&value))
 		{
 			g_printerr("duration (%f) count (%d) func (%s)\n", value->time, value->count, key);
 		}

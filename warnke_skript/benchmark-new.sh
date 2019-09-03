@@ -22,7 +22,7 @@ ulimit -c unlimited
 
 #debugging-->>
 
-export G_MESSAGES_DEBUG=all
+#export G_MESSAGES_DEBUG=all
 export ASAN_OPTIONS=fast_unwind_on_malloc=0
 export G_DEBUG=fatal-warnings,resident-modules,gc-friendly
 export G_SLICE=always-malloc
@@ -30,8 +30,8 @@ export G_SLICE=always-malloc
 #<<--debugging
 
 #export J_TRACE="combined"
-export J_BENCHMARK_TARGET_LOW=0.01
-export J_BENCHMARK_TARGET_HIGH=0.02
+export J_BENCHMARK_TARGET_LOW=5
+export J_BENCHMARK_TARGET_HIGH=30
 
 githash=$(git log --pretty=format:'%H' -n 1)
 rm -rf benchmark_values/warnke-${githash}

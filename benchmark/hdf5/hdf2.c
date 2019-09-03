@@ -54,7 +54,7 @@ struct result_sets
 static struct result_sets shared_result;
 
 static void
-benchmark_hdf_main()
+benchmark_hdf_main(void)
 {
 	const guint dim_size = 1024;
 	hsize_t dims_ds[2];
