@@ -363,16 +363,13 @@ _start:
 				{
 					while (current_result_step->iterator_all[my_index].elapsed_time < target_time_low)
 					{
-						m4++;
 						j_benchmark_timer_start();
 						if (world_rank == 0)
 						{
 							iterator = j_db_iterator_new(schema, NULL, ERROR_PARAM);
 							CHECK_ERROR(!iterator);
-							for (j = 0; j < n1; j++)
-							{
-								ret = j_db_iterator_next(iterator, ERROR_PARAM);
-								CHECK_ERROR(!ret);
+							while( j_db_iterator_next(iterator, NULL)){
+								m4++;
 								for (i = 0; i < n2; i++)
 								{
 									sprintf(varname, "varname_%d", i);
@@ -381,8 +378,6 @@ _start:
 									g_free(iter_ptr);
 								}
 							}
-							ret = j_db_iterator_next(iterator, NULL);
-							CHECK_ERROR(ret);
 							j_db_iterator_unref(iterator);
 						}
 						current_result_step->iterator_all[my_index].elapsed_time += j_benchmark_timer_elapsed();
@@ -524,12 +519,12 @@ _abort:
 	current_result_step->entry_update[my_index].operations = n1 * m2;
 	current_result_step->entry_delete[my_index].operations = n1 * m5;
 	current_result_step->iterator_single[my_index].operations = n1 * m3;
-	current_result_step->iterator_all[my_index].operations = n1 * m4;
+	current_result_step->iterator_all[my_index].operations = m4;
 	current_result_step->entry_insert[my_index].operations_without_n = m;
 	current_result_step->entry_update[my_index].operations_without_n = m2;
 	current_result_step->entry_delete[my_index].operations_without_n = m5;
 	current_result_step->iterator_single[my_index].operations_without_n = m3;
-	current_result_step->iterator_all[my_index].operations_without_n = m4;
+	current_result_step->iterator_all[my_index].operations_without_n = m4 / n1;
 	g_free(names);
 	g_free(entry);
 	g_free(selector);
