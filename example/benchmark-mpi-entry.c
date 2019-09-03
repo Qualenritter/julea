@@ -22,6 +22,29 @@
 
 #include "benchmark-mpi.h"
 
+struct JBatch
+{
+	/**
+         * The list of pending operations.
+         **/
+	JList* list;
+
+	/**
+         * The semantics.
+         **/
+	JSemantics* semantics;
+
+	/**
+         * The background operation used for j_batch_execute_async().
+         **/
+	JBackgroundOperation* background_operation;
+
+	/**
+         * The reference count.
+         **/
+	gint ref_count;
+};
+
 static void
 _benchmark_db_entry_ref(void)
 {
@@ -285,6 +308,7 @@ _start:
 			if (use_batch && !batch_empty)
 			{
 				ret = j_batch_execute(batch);
+				batch_empty = TRUE;
 				CHECK_ERROR2(!ret);
 				current_result_step->entry_insert[my_index].elapsed_time += j_benchmark_timer_elapsed();
 			}
@@ -412,6 +436,7 @@ _start:
 					if (use_batch && !batch_empty)
 					{
 						ret = j_batch_execute(batch);
+						batch_empty = TRUE;
 						CHECK_ERROR2(!ret);
 						current_result_step->entry_update[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
@@ -465,6 +490,7 @@ _start:
 					if (use_batch && !batch_empty)
 					{
 						ret = j_batch_execute(batch);
+						batch_empty = TRUE;
 						CHECK_ERROR2(!ret);
 						current_result_step->entry_delete[my_index].elapsed_time += j_benchmark_timer_elapsed();
 					}
@@ -478,13 +504,17 @@ _start:
 		}
 	}
 _abort:
-{
-	//destroy caches on EVERY mpi client
-	ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
-	CHECK_ERROR(!ret);
-	ret = j_batch_execute(batch);
-	CHECK_ERROR(!ret);
-}
+	MPI_Barrier(MPI_COMM_WORLD);
+	{
+		CHECK_ERROR(j_list_length(batch->list) != 0);
+		CHECK_ERROR(!batch_empty);
+		//destroy caches on EVERY mpi client
+		ret = j_db_schema_delete(schema, batch, ERROR_PARAM);
+		CHECK_ERROR(!ret);
+		ret = j_batch_execute(batch);
+		CHECK_ERROR(!ret);
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
 	j_db_schema_unref(schema);
 	if (allow_loop)
 	{

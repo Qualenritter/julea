@@ -148,7 +148,6 @@ exec_tests(guint n)
 	guint my_index;
 	guint n2;
 	guint n1 = ((n / world_size) + ((n / world_size) == 0)) * world_size;
-	fprintf(stderr, "n1=%d\n", n1);
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (n <= 512 && world_size == 1)
 	{

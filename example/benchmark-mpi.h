@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if 0
+#if 1
 #define ERROR_PARAM &error
 #define ERROR_PARAM2(idx) &(_error[idx])
 #define CHECK_ERROR(_ret_)                                                               \
