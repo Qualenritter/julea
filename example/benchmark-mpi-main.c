@@ -19,6 +19,7 @@
 /**
  * \file
  **/
+static FILE* benjamin_logfile = NULL;
 
 #include "benchmark-mpi.h"
 
@@ -46,7 +47,11 @@ static GTimer* j_benchmark_timer = NULL;
 void
 j_benchmark_timer_start(void)
 {
+	fprintf(benjamin_logfile, "rank=%d  010\n", world_rank);
+	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  011\n", world_rank);
+	fflush(benjamin_logfile);
 	//start simultaneously
 	g_timer_start(j_benchmark_timer);
 }
@@ -56,12 +61,21 @@ j_benchmark_timer_elapsed(void)
 {
 	gdouble elapsed;
 	gdouble elapsed_global;
+	fprintf(benjamin_logfile, "rank=%d  012\n", world_rank);
+	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  013\n", world_rank);
+	fflush(benjamin_logfile);
 	//wait for the slowest
 	elapsed = g_timer_elapsed(j_benchmark_timer, NULL);
-	MPI_Allreduce(&elapsed, &elapsed_global, 1, MPI_DOUBLE, MPI_SUM,
-		MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  014\n", world_rank);
+	fflush(benjamin_logfile);
+	MPI_Allreduce(&elapsed, &elapsed_global, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  015\n", world_rank);
+	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  016\n", world_rank);
+	fflush(benjamin_logfile);
 	return elapsed_global / (gdouble)world_size;
 }
 
@@ -148,7 +162,11 @@ exec_tests(guint n)
 	guint my_index;
 	guint n2;
 	guint n1 = ((n / world_size) + ((n / world_size) == 0)) * world_size;
+	fprintf(benjamin_logfile, "rank=%d  018\n", world_rank);
+	fflush(benjamin_logfile);
 	MPI_Barrier(MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  019\n", world_rank);
+	fflush(benjamin_logfile);
 	if (n <= 512 && world_size == 1)
 	{
 		{
@@ -300,8 +318,13 @@ benchmark_db(void)
 	result_step* tmp;
 	guint n;
 	guint n_next;
-	MPI_Barrier(MPI_COMM_WORLD);
 	sprintf(namespace, "namespace_%d", world_rank);
+	benjamin_logfile = fopen(namespace, "w");
+	fprintf(benjamin_logfile, "rank=%d  020\n", world_rank);
+	fflush(benjamin_logfile);
+	MPI_Barrier(MPI_COMM_WORLD);
+	fprintf(benjamin_logfile, "rank=%d  021\n", world_rank);
+	fflush(benjamin_logfile);
 	target_low_str = g_getenv("J_BENCHMARK_TARGET_LOW");
 	if (target_low_str)
 	{
@@ -346,4 +369,5 @@ benchmark_db(void)
 	fflush(stdout);
 	g_timer_destroy(j_benchmark_timer);
 	g_free(all_result_step);
+	fclose(benjamin_logfile);
 }

@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if 0
+#if 1
 #define ERROR_PARAM &error
 #define ERROR_PARAM2(idx) &(_error[idx])
 #define CHECK_ERROR(_ret_)                                                               \
@@ -44,7 +44,7 @@
 		}                                                                        \
 		if (_ret_)                                                               \
 		{                                                                        \
-			fprintf(stderr, "ret was %d", _ret_);                            \
+			fprintf(stderr, "ret was %d", (_ret_));                          \
 			abort();                                                         \
 		}                                                                        \
 	} while (0)
@@ -54,7 +54,7 @@
 		CHECK_ERROR(0);                        \
 		for (guint ee = 0; ee < n_local; ee++) \
 		{                                      \
-			error = _error[ee];            \
+			error = (_error[ee]);          \
 			CHECK_ERROR(0);                \
 		}                                      \
 		CHECK_ERROR(_ret_);                    \
@@ -62,11 +62,11 @@
 #else
 #define ERROR_PARAM NULL
 #define ERROR_PARAM2(idx) NULL
-#define CHECK_ERROR(_ret_)   \
-	do                   \
-	{                    \
-		(void)error; \
-		(void)_ret_; \
+#define CHECK_ERROR(_ret_)     \
+	do                     \
+	{                      \
+		(void)(error); \
+		(void)(_ret_); \
 	} while (0)
 #define CHECK_ERROR2(_ret_) CHECK_ERROR(_ret_)
 #endif
