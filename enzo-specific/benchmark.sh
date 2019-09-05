@@ -24,15 +24,15 @@ echo $tmpdir
 
 echo "core-%e-%p-%s" > /proc/sys/kernel/core_pattern
 ulimit -c unlimited
-export LD_LIBRARY_PATH=${HOME}/julea/prefix-hdf-julea/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${HOME}/julea/prefix/lib/:$LD_LIBRARY_PATH
 export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
 export HDF5_VOL_JULEA=$use_julea
-export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-hdf-julea/lib
+export HDF5_PLUGIN_PATH=${HOME}/julea/prefix/lib
 export J_TIMER_DB_RUN="${HOME}/julea/enzo-specific/benchmark-${tmp_dir_type}-${use_julea}-${iteration_limit}-${db_backend}"
 export J_TIMER_DB="$tmpdir/tmp.sqlite"
 #export G_MESSAGES_DEBUG=all
 
-${HOME}/julea/build-hdf-julea/tools/julea-config --user --object-servers="benjamin0" --kv-servers="benjamin0" --db-servers="benjamin0" \
+${HOME}/julea/build/tools/julea-config --user --object-servers="benjamin0" --kv-servers="benjamin0" --db-servers="benjamin0" \
 	--object-backend=posix --object-component=server --object-path="${tmpdir}/server-object" \
 	--kv-backend=sqlite --kv-component=server --kv-path="${tmpdir}/server-kv" \
 	--db-backend=${db_backend} --db-component=${db_component} --db-path="${tmpdir}/server-db"
@@ -43,7 +43,7 @@ cat ${JULEA_CONFIG}
 pkill julea-server
 
 /src/julea/warnke_skript/reset_mysql.sh ${tmpdir}/mysql
-${HOME}/julea/build-hdf-julea/server/julea-server &
+${HOME}/julea/build/server/julea-server &
 SERVER_PID=$!
 sleep 1s
 
@@ -62,8 +62,6 @@ rm ${J_TIMER_DB}*
 
 (
         cd ${HOME}/julea/example
-        make clean
-        make
 	./hdf5-example
 )
 
@@ -124,9 +122,15 @@ echo "done"
 cd /src/julea/enzo-specific
 (
 	cd ..
-	./waf.sh configure  --out build-hdf-julea --prefix=prefix-hdf-julea --libdir=prefix-hdf-julea --bindir=prefix-hdf-julea --destdir=prefix-hdf-julea --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
+	rm -rf build prefix
+	./waf.sh configure  --out build --prefix=prefix --libdir=prefix --bindir=prefix --destdir=prefix --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
 	./waf.sh build
 	./waf.sh install
+)
+(
+        cd ${HOME}/julea/example
+        make clean
+        make
 )
 
 sudo chown -R benjamin:benjamin /home/benjamin/enzo-dev/run
