@@ -37,6 +37,7 @@ struct JDBEntry
 	gint ref_count;
 	JDBSchema* schema;
 	bson_t bson;
+	bson_t id;
 };
 struct JDBIterator
 {
@@ -95,7 +96,7 @@ union JDBTypeValue
 gboolean j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error);
 gboolean j_db_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error);
 gboolean j_db_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error);
-gboolean j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, JBatch* batch, GError** error);
+gboolean j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, bson_t* id, JBatch* batch, GError** error);
 gboolean j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error);
 gboolean j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error);
 gboolean j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error);

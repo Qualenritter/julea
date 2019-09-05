@@ -34,7 +34,8 @@
 #define SQL_MODE_MULTI_THREAD 1
 #define SQL_MODE SQL_MODE_MULTI_THREAD
 
-#define sql_autoincrement_string "NOT NULL AUTO_INCREMENT"
+#define sql_autoincrement_string " NOT NULL AUTO_INCREMENT "
+#define sql_last_insert_id_string "SELECT LAST_INSERT_ID()"
 
 static gchar* path;
 struct mysql_stmt_wrapper
@@ -71,7 +72,6 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 	if (wrapper->stmt && (status = mysql_stmt_close(wrapper->stmt)))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_FINALIZE, "sql finalize failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
-		abort();
 		goto _error;
 	}
 	for (i = 0; i < wrapper->param_count_out; i++)
@@ -113,13 +113,11 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", mysql_stmt_error(wrapper->stmt));
-		abort();
 		goto _error;
 	}
 	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
-		abort();
 		goto _error;
 	}
 	wrapper->param_count_in = types_in ? types_in->len : 0;
@@ -188,7 +186,6 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		case _J_DB_TYPE_COUNT:
 		default:
 			g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
-			abort();
 			goto _error;
 		}
 	}
@@ -250,7 +247,6 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		case _J_DB_TYPE_COUNT:
 		default:
 			g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
-			abort();
 			goto _error;
 		}
 	}
@@ -322,7 +318,6 @@ j_sql_column(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeVal
 	case _J_DB_TYPE_COUNT:
 	default:
 		g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
-		abort();
 		goto _error;
 	}
 	return TRUE;
@@ -389,7 +384,6 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 	case _J_DB_TYPE_COUNT:
 	default:
 		g_set_error_literal(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_INVALID_TYPE, "sql invalid type");
-		abort();
 		goto _error;
 	}
 	return TRUE;
@@ -433,7 +427,6 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 	if ((status = mysql_stmt_execute(stmt->stmt)))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(stmt->stmt));
-		abort();
 		goto _error;
 	}
 	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
@@ -471,27 +464,23 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 			if ((status = mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in)))
 			{
 				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
-				abort();
 				goto _error;
 			}
 		if (wrapper->param_count_out)
 			if ((status = mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out)))
 			{
 				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
-				abort();
 				goto _error;
 			}
 		if ((status = mysql_stmt_execute(wrapper->stmt)))
 		{
 			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
-			abort();
 			goto _error;
 		}
 		if (wrapper->param_count_out)
 			if ((status = mysql_stmt_store_result(wrapper->stmt)))
 			{
 				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
-				abort();
 				goto _error;
 			}
 		wrapper->active = TRUE;
@@ -544,8 +533,9 @@ j_sql_open(void)
 	g_return_val_if_fail(path != NULL, FALSE);
 
 	if (!(backend_db = mysql_init(NULL)))
+	{
 		goto _error;
-
+	}
 	//FIXME use the path variable
 	if (!mysql_real_connect(backend_db,
 		    "localhost", //hostname
@@ -563,7 +553,7 @@ j_sql_open(void)
 
 	return backend_db;
 _error:
-	fprintf(stderr,"%s\n",mysql_error(backend_db));
+	fprintf(stderr, "%s\n", mysql_error(backend_db));
 	mysql_close(backend_db);
 	return NULL;
 }

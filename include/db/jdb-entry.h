@@ -63,6 +63,10 @@ JDBEntry* j_db_entry_ref(JDBEntry* entry, GError** error);
  **/
 void j_db_entry_unref(JDBEntry* entry);
 /**
+ * returns the if of the entry, after j_db_entry_insert has been called
+ */
+gboolean j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** error);
+/**
  * Set a field in the given entry
  *
  * \param[in] entry the entry to set a value

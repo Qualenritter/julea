@@ -39,7 +39,7 @@
  **/
 
 gboolean
-j_backend_operation_unwrap_db_schema_create (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_schema_create(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -47,7 +47,7 @@ j_backend_operation_unwrap_db_schema_create (JBackend* backend, gpointer batch, 
 }
 
 gboolean
-j_backend_operation_unwrap_db_schema_get (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_schema_get(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -55,7 +55,7 @@ j_backend_operation_unwrap_db_schema_get (JBackend* backend, gpointer batch, JBa
 }
 
 gboolean
-j_backend_operation_unwrap_db_schema_delete (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_schema_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -63,15 +63,15 @@ j_backend_operation_unwrap_db_schema_delete (JBackend* backend, gpointer batch, 
 }
 
 gboolean
-j_backend_operation_unwrap_db_insert (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_insert(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	return j_backend_db_insert(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
+	return j_backend_db_insert(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr, data->out_param[1].ptr);
 }
 
 gboolean
-j_backend_operation_unwrap_db_update (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_update(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -79,7 +79,7 @@ j_backend_operation_unwrap_db_update (JBackend* backend, gpointer batch, JBacken
 }
 
 gboolean
-j_backend_operation_unwrap_db_delete (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -88,7 +88,7 @@ j_backend_operation_unwrap_db_delete (JBackend* backend, gpointer batch, JBacken
 
 // FIXME clean up
 gboolean
-j_backend_operation_unwrap_db_query (JBackend* backend, gpointer batch, JBackendOperation* data)
+j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -132,7 +132,7 @@ _error:
 }
 
 gboolean
-j_backend_operation_to_message (JMessage* message, JBackendOperationParam* data, guint arrlen)
+j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -253,7 +253,7 @@ j_backend_operation_to_message (JMessage* message, JBackendOperationParam* data,
  * the return value of this function is the same as the return value of the original function call
 */
 gboolean
-j_backend_operation_from_message (JMessage* message, JBackendOperationParam* data, guint arrlen)
+j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -334,7 +334,7 @@ j_backend_operation_from_message (JMessage* message, JBackendOperationParam* dat
  * the return value of this function is the same as the return value of the original function call
  */
 gboolean
-j_backend_operation_from_message_static (JMessage* message, JBackendOperationParam* data, guint arrlen)
+j_backend_operation_from_message_static(JMessage* message, JBackendOperationParam* data, guint arrlen)
 {
 	J_TRACE_FUNCTION(NULL);
 

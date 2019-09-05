@@ -60,7 +60,12 @@ echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro
 
 rm ${J_TIMER_DB}*
 
-${HOME}/julea/example/a.out
+(
+        cd ${HOME}/julea/example
+        make clean
+        make
+	./hdf5-example
+)
 
 rm ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 sqlite3 ${J_TIMER_DB_RUN}.sqlite "create table if not exists tmp (name TEXT primary key,count INTEGER,timer REAL)"

@@ -584,7 +584,7 @@ event_insert(void)
 	gboolean ret_expected = TRUE;
 	ret_expected = build_metadata() && ret_expected; //inserting valid metadata should succeed
 	G_DEBUG_HERE();
-	ret = j_db_internal_insert(namespace_strbuf, name_strbuf, metadata, batch, &error);
+	ret = j_db_internal_insert(namespace_strbuf, name_strbuf, metadata, NULL, batch, &error);
 	ret = j_batch_execute(batch) && ret;
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	if (ret)

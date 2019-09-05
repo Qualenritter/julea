@@ -129,6 +129,7 @@ H5VL_julea_db_file_init(hid_t vipl_id)
 _error:
 	H5VL_julea_db_error_handler(error);
 	H5VL_julea_db_file_term();
+	abort();
 	return 1;
 }
 

@@ -38,7 +38,8 @@
 #define SQL_MODE_MULTI_THREAD 1
 #define SQL_MODE SQL_MODE_SINGLE_THREAD
 
-#define sql_autoincrement_string ""
+#define sql_autoincrement_string " "
+#define sql_last_insert_id_string "SELECT last_insert_rowid()"
 
 static gchar* path;
 
