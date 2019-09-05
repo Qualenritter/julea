@@ -581,10 +581,12 @@ event_insert(void)
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	gboolean ret;
+	bson_t id;
 	gboolean ret_expected = TRUE;
+	bson_init(&id);
 	ret_expected = build_metadata() && ret_expected; //inserting valid metadata should succeed
 	G_DEBUG_HERE();
-	ret = j_db_internal_insert(namespace_strbuf, name_strbuf, metadata, NULL, batch, &error);
+	ret = j_db_internal_insert(namespace_strbuf, name_strbuf, metadata, &id, batch, &error);
 	ret = j_batch_execute(batch) && ret;
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	if (ret)
@@ -603,6 +605,8 @@ event_insert(void)
 		bson_destroy(metadata);
 		metadata = NULL;
 	}
+	J_AFL_DEBUG_BSON(&id);
+	bson_destroy(&id);
 }
 static void
 event_update(void)

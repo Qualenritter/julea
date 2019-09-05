@@ -39,7 +39,7 @@
 		char* json = NULL;                       \
 		if (bson)                                \
 			json = bson_as_json(bson, NULL); \
-		g_debug("json = %s", json);              \
+		g_debug(#bson " as json = %s", json);    \
 		bson_free((void*)json);                  \
 	} while (0)
 struct J_db_iterator_helper

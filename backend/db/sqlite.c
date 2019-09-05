@@ -39,7 +39,7 @@
 #define SQL_MODE SQL_MODE_SINGLE_THREAD
 
 #define sql_autoincrement_string " "
-#define sql_last_insert_id_string "SELECT last_insert_rowid()"
+#define sql_last_insert_id_string " SELECT last_insert_rowid() "
 
 static gchar* path;
 
@@ -68,6 +68,8 @@ j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GArray* types_i
 	sqlite3_stmt** stmt = _stmt;
 	(void)types_in;
 	(void)types_out;
+
+	g_debug("sql-string = %s", sql);
 
 	//g_debug("sql = %s", sql);
 
@@ -397,7 +399,7 @@ backend_fini(void)
 
 	//g_debug("db-backend-fini");
 
-	g_private_replace(&thread_variables_global, NULL);
+	//	g_private_replace(&thread_variables_global, NULL);
 	g_free(path);
 }
 static JBackend sqlite_backend = {

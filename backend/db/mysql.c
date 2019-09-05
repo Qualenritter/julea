@@ -35,7 +35,7 @@
 #define SQL_MODE SQL_MODE_MULTI_THREAD
 
 #define sql_autoincrement_string " NOT NULL AUTO_INCREMENT "
-#define sql_last_insert_id_string "SELECT LAST_INSERT_ID()"
+#define sql_last_insert_id_string " SELECT LAST_INSERT_ID() "
 
 static gchar* path;
 struct mysql_stmt_wrapper
@@ -103,6 +103,8 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	gint status;
 	mysql_stmt_wrapper** _wrapper = _stmt;
 	mysql_stmt_wrapper* wrapper;
+
+	g_debug("sql-string = %s", sql);
 
 	g_return_val_if_fail(backend_db != NULL, FALSE);
 	g_return_val_if_fail(sql != NULL, FALSE);
@@ -604,7 +606,7 @@ backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_private_replace(&thread_variables_global, NULL); //this should free the main threads private variables
+	//	g_private_replace(&thread_variables_global, NULL); //this should free the main threads private variables
 	g_free(path);
 }
 static JBackend mysql_backend = {

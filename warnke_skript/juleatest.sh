@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "core-%e-%p-%s" > /proc/sys/kernel/core_pattern
+ulimit -c unlimited
 ./warnke_skript/kill.sh
 rm -rf build
 ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
@@ -27,7 +29,9 @@ mkdir -p ${basepath}
 	./build/server/julea-server &
 	server_pid=$!
 	sleep 0.5s
-	./build/test/julea-test
+#	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
+#		--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
+		./build/test/julea-test
 	echo "kill ${server_pid}"
 	kill -9 ${server_pid}
 )

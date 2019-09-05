@@ -60,6 +60,7 @@ test_db_insert(void)
 	memset(&random_values, 0, sizeof(random_values));
 	event = AFL_EVENT_DB_INSERT;
 	test_db_backend_exec();
+	random_values.schema_create.variable_types[0] = J_DB_TYPE_UINT32;
 	event = AFL_EVENT_DB_SCHEMA_CREATE;
 	test_db_backend_exec();
 	event = AFL_EVENT_DB_INSERT;
