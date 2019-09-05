@@ -93,14 +93,6 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
-				if (!j_db_schema_add_field(julea_db_schema_attr, "xxx_parent", J_DB_TYPE_ID, &error))
-				{
-					j_goto_error();
-				}
-				if (!j_db_schema_add_field(julea_db_schema_attr, "xxx_name", J_DB_TYPE_STRING, &error))
-				{
-					j_goto_error();
-				}
 				if (!j_db_schema_add_field(julea_db_schema_attr, "datatype", J_DB_TYPE_ID, &error))
 				{
 					j_goto_error();
@@ -111,8 +103,6 @@ H5VL_julea_db_attr_init(hid_t vipl_id)
 				}
 				{
 					const gchar* index[] = {
-						"xxx_parent",
-						"xxx_name",
 						"file",
 						NULL,
 					};
@@ -283,14 +273,6 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	{
 		j_goto_error();
 	}
-	if (!j_db_entry_set_field(entry, "xxx_parent", parent->backend_id, parent->backend_id_len, &error))
-	{
-		j_goto_error();
-	}
-	if (!j_db_entry_set_field(entry, "xxx_name", name, strlen(name), &error))
-	{
-		j_goto_error();
-	}
 	if (!j_db_entry_set_field(entry, "datatype", object->attr.datatype->backend_id, object->attr.datatype->backend_id_len, &error))
 	{
 		j_goto_error();
@@ -307,35 +289,10 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 	{
 		j_goto_error();
 	}
-	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
+	if (!j_db_entry_get_id(entry, &object->backend_id, &object->backend_id_len, &error))
 	{
 		j_goto_error();
 	}
-	if (!j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file->backend_id, file->backend_id_len, &error))
-	{
-		j_goto_error();
-	}
-	if (!j_db_selector_add_field(selector, "xxx_parent", J_DB_SELECTOR_OPERATOR_EQ, parent->backend_id, parent->backend_id_len, &error))
-	{
-		j_goto_error();
-	}
-	if (!j_db_selector_add_field(selector, "xxx_name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error))
-	{
-		j_goto_error();
-	}
-	if (!(iterator = j_db_iterator_new(julea_db_schema_attr, selector, &error)))
-	{
-		j_goto_error();
-	}
-	if (!j_db_iterator_next(iterator, &error))
-	{
-		j_goto_error();
-	}
-	if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
-	{
-		j_goto_error();
-	}
-	g_assert(!j_db_iterator_next(iterator, NULL));
 	if (!(object->attr.distribution = j_distribution_new(J_DISTRIBUTION_ROUND_ROBIN)))
 	{
 		j_goto_error();

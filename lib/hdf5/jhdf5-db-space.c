@@ -247,7 +247,6 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	g_autoptr(JDBSelector) selector = NULL;
 	gint stored_ndims;
 	guint element_count;
-	gboolean loop = FALSE;
 	JHDF5Object_t* object = NULL;
 	JDBType type;
 	size_t size;
@@ -317,8 +316,6 @@ _check_type_exist:
 		goto _done;
 	}
 
-	g_return_val_if_fail(loop == FALSE, NULL);
-
 	//create new space if it did not exist before
 	if (!(entry = j_db_entry_new(julea_db_schema_space_header, &error)))
 	{
@@ -344,43 +341,41 @@ _check_type_exist:
 	{
 		j_goto_error();
 	}
-	loop = TRUE;
-	goto _check_type_exist;
-_done:
-	if (loop)
+	if (!j_db_entry_get_id(entry, &object->backend_id, &object->backend_id_len, &error))
 	{
-		//new space defined
-		for (i = 0; i < (guint)stored_ndims; i++)
+		j_goto_error();
+	}
+	for (i = 0; i < (guint)stored_ndims; i++)
+	{
+		j_db_entry_unref(entry);
+		entry = NULL;
+		if (!(entry = j_db_entry_new(julea_db_schema_space, &error)))
 		{
-			j_db_entry_unref(entry);
-			entry = NULL;
-			if (!(entry = j_db_entry_new(julea_db_schema_space, &error)))
-			{
-				j_goto_error();
-			}
-			if (!j_db_entry_set_field(entry, "dim_id", object->backend_id, object->backend_id_len, &error))
-			{
-				j_goto_error();
-			}
-			if (!j_db_entry_set_field(entry, "dim_index", &i, sizeof(guint32), &error))
-			{
-				j_goto_error();
-			}
-			j = stored_dims[i];
-			if (!j_db_entry_set_field(entry, "dim_size", &j, sizeof(guint32), &error))
-			{
-				j_goto_error();
-			}
-			if (!j_db_entry_insert(entry, batch, &error))
-			{
-				j_goto_error();
-			}
-			if (!j_batch_execute(batch))
-			{
-				j_goto_error();
-			}
+			j_goto_error();
+		}
+		if (!j_db_entry_set_field(entry, "dim_id", object->backend_id, object->backend_id_len, &error))
+		{
+			j_goto_error();
+		}
+		if (!j_db_entry_set_field(entry, "dim_index", &i, sizeof(guint32), &error))
+		{
+			j_goto_error();
+		}
+		j = stored_dims[i];
+		if (!j_db_entry_set_field(entry, "dim_size", &j, sizeof(guint32), &error))
+		{
+			j_goto_error();
+		}
+		if (!j_db_entry_insert(entry, batch, &error))
+		{
+			j_goto_error();
+		}
+		if (!j_batch_execute(batch))
+		{
+			j_goto_error();
 		}
 	}
+_done:
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);

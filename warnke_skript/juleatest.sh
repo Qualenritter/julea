@@ -35,7 +35,6 @@ mkdir -p ${basepath}
 	echo "kill ${server_pid}"
 	kill -9 ${server_pid}
 )
-exit
 rm -rf ${basepath}
 mkdir -p ${basepath}
 (

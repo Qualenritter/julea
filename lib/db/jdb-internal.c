@@ -251,6 +251,8 @@ j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* me
 	JOperation* op;
 	JBackendOperation* data;
 
+	J_AFL_DEBUG_BSON(metadata);
+
 	data = g_slice_new(JBackendOperation);
 	memcpy(data, &j_backend_operation_db_insert, sizeof(JBackendOperation));
 	data->in_param[0].ptr_const = namespace;

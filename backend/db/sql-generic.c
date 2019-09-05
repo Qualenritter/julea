@@ -1165,7 +1165,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_
 		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no more elements");
 		goto _error;
 	}
-	if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, prepared_id->stmt, 1, J_DB_TYPE_UINT32, &value, error)))
+	if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, prepared_id->stmt, 0, J_DB_TYPE_UINT32, &value, error)))
 	{
 		goto _error;
 	}

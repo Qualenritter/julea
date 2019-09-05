@@ -211,15 +211,7 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		{
 			j_goto_error();
 		}
-		if (!(iterator = j_db_iterator_new(julea_db_schema_file, selector, &error)))
-		{
-			j_goto_error();
-		}
-		if (!j_db_iterator_next(iterator, &error))
-		{
-			j_goto_error();
-		}
-		if (!j_db_iterator_get_field(iterator, "_id", &type, &object->backend_id, &object->backend_id_len, &error))
+		if (!j_db_entry_get_id(entry, &object->backend_id, &object->backend_id_len, &error))
 		{
 			j_goto_error();
 		}
@@ -230,6 +222,7 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		{
 			j_goto_error();
 		}
+		g_assert(!j_db_iterator_next(iterator, NULL));
 		if (flags & H5F_ACC_TRUNC)
 		{
 			g_debug("truncateing file");
@@ -243,7 +236,6 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 				j_goto_error();
 		}
 	}
-	g_assert(!j_db_iterator_next(iterator, NULL));
 	return object;
 _error:
 	g_debug("file create error %s", name);

@@ -510,8 +510,10 @@ _check_type_exist:
 	{
 		j_goto_error();
 	}
-	loop = TRUE;
-	goto _check_type_exist;
+	if (!j_db_entry_get_id(entry, &object->backend_id, &object->backend_id_len, &error))
+	{
+		j_goto_error();
+	}
 _done:
 	return object;
 _error:

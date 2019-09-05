@@ -33,6 +33,16 @@
 #include <julea-db.h>
 #include "../../backend/db/jbson.c"
 
+#define J_AFL_DEBUG_BSON(bson)                           \
+	do                                               \
+	{                                                \
+		char* json = NULL;                       \
+		if (bson)                                \
+			json = bson_as_json(bson, NULL); \
+		g_debug(#bson " as json = %s", json);    \
+		bson_free((void*)json);                  \
+	} while (0)
+
 JDBEntry*
 j_db_entry_new(JDBSchema* schema, GError** error)
 {
@@ -223,6 +233,8 @@ j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** er
 	g_return_val_if_fail(entry != NULL, FALSE);
 	g_return_val_if_fail(value != NULL, FALSE);
 	g_return_val_if_fail(length != NULL, FALSE);
+
+	J_AFL_DEBUG_BSON(&entry->id);
 
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &entry->id, error)))
 	{
