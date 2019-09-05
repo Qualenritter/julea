@@ -560,8 +560,10 @@ j_sql_open(void)
 		//g_debug("%s", mysql_error(backend_db));
 		goto _error;
 	}
+
 	return backend_db;
 _error:
+	fprintf(stderr,"%s\n",mysql_error(backend_db));
 	mysql_close(backend_db);
 	return NULL;
 }
