@@ -104,14 +104,11 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	mysql_stmt_wrapper** _wrapper = _stmt;
 	mysql_stmt_wrapper* wrapper;
 
-	g_debug("sql-string = %s", sql);
-
 	g_return_val_if_fail(backend_db != NULL, FALSE);
 	g_return_val_if_fail(sql != NULL, FALSE);
 	g_return_val_if_fail(_stmt != NULL, FALSE);
 
 	wrapper = *_wrapper = g_new0(mysql_stmt_wrapper, 1);
-	//g_debug("%s %p %s", G_STRFUNC, wrapper, sql);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", mysql_stmt_error(wrapper->stmt));
@@ -140,46 +137,38 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_SINT32", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_in[i].is_unsigned = 0;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint32;
 			break;
 		case J_DB_TYPE_UINT32:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_UINT32", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_in[i].is_unsigned = 1;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_uint32;
 			break;
 		case J_DB_TYPE_SINT64:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_SINT64", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_in[i].is_unsigned = 0;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_UINT64:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_UINT64", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_in[i].is_unsigned = 1;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_uint64;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_FLOAT32", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_FLOAT;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_float32;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_FLOAT64", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_DOUBLE;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_STRING:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_STRING", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_STRING;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_string;
 			break;
 		case J_DB_TYPE_BLOB:
-			//g_debug("param_type_in[%d]=J_DB_TYPE_BLOB", i);
 			wrapper->bind_in[i].buffer_type = MYSQL_TYPE_BLOB;
 			wrapper->bind_in[i].buffer = &wrapper->buffer[i].val_blob;
 			wrapper->bind_in[i].buffer_length = wrapper->buffer[i].val_blob_length;
@@ -200,47 +189,39 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 		switch (type)
 		{
 		case J_DB_TYPE_SINT32:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_SINT32", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_out[i].is_unsigned = 0;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint32;
 			break;
 		case J_DB_TYPE_UINT32:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_UINT32", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONG;
 			wrapper->bind_out[i].is_unsigned = 1;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_uint32;
 			break;
 		case J_DB_TYPE_SINT64:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_SINT64", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_out[i].is_unsigned = 0;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_UINT64:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_UINT64", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_LONGLONG;
 			wrapper->bind_out[i].is_unsigned = 1;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_uint64;
 			break;
 		case J_DB_TYPE_FLOAT32:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_FLOAT32", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_FLOAT;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_float32;
 			break;
 		case J_DB_TYPE_FLOAT64:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_FLOAT64", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_DOUBLE;
 			wrapper->bind_out[i].buffer = &wrapper->buffer[i].val_sint64;
 			break;
 		case J_DB_TYPE_STRING:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_STRING", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_STRING;
 			wrapper->bind_out[i].buffer_length = MAX_BUF_SIZE;
 			wrapper->bind_out[i].buffer = g_new(char, MAX_BUF_SIZE);
 			break;
 		case J_DB_TYPE_BLOB:
-			//g_debug("param_type_out[%d]=J_DB_TYPE_BLOB", i);
 			wrapper->bind_out[i].buffer_type = MYSQL_TYPE_BLOB;
 			wrapper->bind_out[i].buffer_length = MAX_BUF_SIZE;
 			wrapper->bind_out[i].buffer = g_new(char, MAX_BUF_SIZE);
@@ -345,38 +326,30 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
-		//g_debug("bind_param [%d]= %d", idx, value->val_sint32);
 		wrapper->buffer[idx].val_sint32 = value->val_sint32;
 		break;
 	case J_DB_TYPE_UINT32:
-		//g_debug("bind_param [%d]= %d", idx, value->val_uint32);
 		wrapper->buffer[idx].val_uint32 = value->val_uint32;
 		break;
 	case J_DB_TYPE_SINT64:
-		//g_debug("bind_param [%d]= %lld", idx, value->val_sint64);
 		wrapper->buffer[idx].val_sint64 = value->val_sint64;
 		break;
 	case J_DB_TYPE_UINT64:
-		//g_debug("bind_param [%d]= %lld", idx, value->val_uint64);
 		wrapper->buffer[idx].val_uint64 = value->val_uint64;
 		break;
 	case J_DB_TYPE_FLOAT32:
-		//g_debug("bind_param [%d]= %f", idx, value->val_float32);
 		wrapper->buffer[idx].val_float32 = value->val_float32;
 		break;
 	case J_DB_TYPE_FLOAT64:
-		//g_debug("bind_param [%d]= %f", idx, value->val_float64);
 		wrapper->buffer[idx].val_float64 = value->val_float64;
 		break;
 	case J_DB_TYPE_STRING:
-		//g_debug("bind_param [%d]= %s", idx, value->val_string);
 		wrapper->is_null[idx] = value->val_string == NULL;
 		wrapper->bind_in[idx].buffer = value->val_string;
 		wrapper->bind_in[idx].buffer_length = value->val_string != 0 ? strlen(value->val_string) : 0;
 		wrapper->length[idx] = wrapper->bind_in[idx].buffer_length;
 		break;
 	case J_DB_TYPE_BLOB:
-		//g_debug("bind_param [%d]= %p", idx, value->val_blob);
 		wrapper->is_null[idx] = value->val_blob == NULL;
 		wrapper->bind_in[idx].buffer = value->val_blob;
 		wrapper->bind_in[idx].buffer_length = value->val_blob_length;

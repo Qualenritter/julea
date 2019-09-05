@@ -61,9 +61,11 @@ test_db_insert(void)
 	event = AFL_EVENT_DB_INSERT;
 	test_db_backend_exec();
 	random_values.schema_create.variable_types[0] = J_DB_TYPE_UINT32;
+	random_values.schema_create.variable_count = 1;
 	event = AFL_EVENT_DB_SCHEMA_CREATE;
 	test_db_backend_exec();
 	event = AFL_EVENT_DB_INSERT;
+	random_values.values.value_count = 1;
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }

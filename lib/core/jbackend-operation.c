@@ -68,7 +68,6 @@ j_backend_operation_unwrap_db_insert(JBackend* backend, gpointer batch, JBackend
 	J_TRACE_FUNCTION(NULL);
 
 	bson_t* bson = data->out_param[0].ptr;
-	gboolean ret;
 
 	bson_init(bson);
 	if (!j_backend_db_insert(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr, data->out_param[1].ptr))

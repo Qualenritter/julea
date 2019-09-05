@@ -308,6 +308,11 @@ getCacheSchema(gpointer _batch, gchar const* name, GError** error)
 _error:
 	if (schema_initialized)
 		j_bson_destroy(&schema);
+	if (cacheQueries->types)
+	{
+		g_hash_table_unref(cacheQueries->types);
+		cacheQueries->types = NULL;
+	}
 	return NULL;
 }
 static JSqlCacheSQLPrepared*
@@ -1083,7 +1088,11 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_
 			g_array_append_val(arr_types_in, type);
 			g_hash_table_insert(prepared->variables_index, g_strdup(string_tmp), GINT_TO_POINTER(prepared->variables_count));
 		}
-		g_string_append(prepared->sql, ") VALUES ( ?");
+		g_string_append(prepared->sql, ") VALUES (");
+		if (prepared->variables_count)
+		{
+			g_string_append_printf(prepared->sql, " ?");
+		}
 		for (i = 1; i < prepared->variables_count; i++)
 		{
 			g_string_append_printf(prepared->sql, ", ?");
