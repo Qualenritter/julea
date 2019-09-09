@@ -20,6 +20,14 @@
  * \file
  **/
 
+#ifndef BENCHMARK_MPI_C
+//compile for code formatting reasons
+#include "benchmark-mpi.c"
+#endif
+
+#ifndef BENCHMARK_MPI_MAIN_C
+#define BENCHMARK_MPI_MAIN_C
+
 #include "benchmark-mpi.h"
 
 // options -->>
@@ -340,3 +348,4 @@ benchmark_db(void)
 	g_timer_destroy(j_benchmark_timer);
 	g_free(all_result_step);
 }
+#endif

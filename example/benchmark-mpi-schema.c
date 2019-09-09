@@ -20,6 +20,14 @@
  * \file
  **/
 
+#ifndef BENCHMARK_MPI_MAIN_C
+//compile for code formatting reasons
+#include "benchmark-mpi-main.c"
+#endif
+
+#ifndef BENCHMARK_MPI_SCHEMA_C
+#define BENCHMARK_MPI_SCHEMA_C
+
 #include "benchmark-mpi.h"
 
 static void
@@ -312,3 +320,4 @@ _benchmark_db_schema_add_field(const guint n)
 	current_result_step->schema_get_fields.operations_without_n = m3;
 	current_result_step->schema_equals.operations_without_n = m4;
 }
+#endif

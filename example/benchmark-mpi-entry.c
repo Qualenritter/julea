@@ -20,6 +20,14 @@
  * \file
  **/
 
+#ifndef BENCHMARK_MPI_MAIN_C
+//compile for code formatting reasons
+#include "benchmark-mpi-main.c"
+#endif
+
+#ifndef BENCHMARK_MPI_ENTRY_C
+#define BENCHMARK_MPI_ENTRY_C
+
 #include "benchmark-mpi.h"
 
 struct JBatch
@@ -537,3 +545,4 @@ _abort:
 	g_free(selector);
 	g_free(_error);
 }
+#endif

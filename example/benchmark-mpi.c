@@ -2,6 +2,8 @@
 #include <glib.h>
 #include <stdio.h>
 
+#define BENCHMARK_MPI_C
+
 static int world_size;
 static int world_rank;
 

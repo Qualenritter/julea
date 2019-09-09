@@ -38,7 +38,21 @@ for f in $(git diff --name-only master | grep '\.c$' | grep -v prefix | grep -v 
 		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pcre-8.42-yupgernpm6rywenufbupwypikx4b5xec/include \
 		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libmongoc-1.9.5-a37k6hbsbanjkqibnmcc3letw7wshirg/include/libbson-1.0 \
 		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/hdf5-develop-4iami4kalqj7xgv2x2uv25dnzvz4xzwf/include \
-		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/sqlite-3.28.0-h2xu54j2dy5spf2gbnaikdw4ci5aj3bj/include
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/sqlite-3.28.0-h2xu54j2dy5spf2gbnaikdw4ci5aj3bj/include \
+		-Ibenchmark \
+		-I../benchmark \
+		-Itest \
+		-I../test \
+		-Iexample \
+		-I../example \
+		-I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
+		-DJULEA_COMPILATION \
+		-DJULEA_DB_COMPILATION \
+		-DJULEA_HDF5_COMPILATION \
+		-DJULEA_ITEM_COMPILATION \
+		-DJULEA_KV_COMPILATION \
+		-DJULEA_OBJECT_COMPILATION
+
 	cd ..
 	clang-format -i $f
 done
