@@ -293,7 +293,6 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	object->space.hdf5_id = *type_id;
 	object->space.dim_total_count = element_count;
 
-_check_type_exist:
 	//check if this space exists
 	if (!(selector = j_db_selector_new(julea_db_schema_space_header, J_DB_SELECTOR_MODE_AND, &error)))
 	{

@@ -367,7 +367,6 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(JDBIterator) iterator = NULL;
 	g_autoptr(JDBSelector) selector = NULL;
-	gboolean loop = FALSE;
 	JHDF5Object_t* object = NULL;
 	JDBType type;
 	size_t size;
@@ -396,7 +395,6 @@ H5VL_julea_db_datatype_encode(hid_t* type_id)
 	H5Tencode(*type_id, object->datatype.data, &size);
 	object->datatype.hdf5_id = *type_id;
 
-_check_type_exist:
 	//check if this datatype exists
 	if (!(selector = j_db_selector_new(julea_db_schema_datatype_header, J_DB_SELECTOR_MODE_AND, &error)))
 	{
@@ -418,8 +416,6 @@ _check_type_exist:
 		}
 		goto _done;
 	}
-
-	g_return_val_if_fail(loop == FALSE, NULL);
 
 	//create new datatype if it did not exist before
 	if (!(entry = j_db_entry_new(julea_db_schema_datatype_header, &error)))

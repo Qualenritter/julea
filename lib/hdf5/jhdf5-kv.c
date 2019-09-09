@@ -533,6 +533,7 @@ H5VL_julea_kv_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 
 	switch (loc_params->obj_type)
 	{
+	case H5I_MAP:
 	case H5I_DATASET:
 	{
 		JHD_t* o = obj;
@@ -612,6 +613,7 @@ H5VL_julea_kv_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 
 	switch (loc_params->obj_type)
 	{
+	case H5I_MAP:
 	case H5I_DATASET:
 	{
 		JHD_t* o = obj;
@@ -912,6 +914,7 @@ H5VL_julea_kv_group_create(void* obj, const H5VL_loc_params_t* loc_params, const
 
 	switch (loc_params->obj_type)
 	{
+	case H5I_MAP:
 	case H5I_FILE:
 	{
 		JHF_t* o = obj;
@@ -968,6 +971,7 @@ H5VL_julea_kv_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 
 	switch (loc_params->obj_type)
 	{
+	case H5I_MAP:
 	case H5I_FILE:
 	{
 		JHF_t* o = obj;
@@ -1080,6 +1084,7 @@ H5VL_julea_kv_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 
 	switch (loc_params->obj_type)
 	{
+	case H5I_MAP:
 	case H5I_FILE:
 	{
 		JHF_t* o = obj;
@@ -1158,6 +1163,7 @@ H5VL_julea_kv_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 
 	switch (loc_params->obj_type)
 	{
+	case H5I_MAP:
 	case H5I_FILE:
 	{
 		JHF_t* o = obj;

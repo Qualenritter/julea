@@ -43,7 +43,7 @@ typedef struct BenchmarkResult BenchmarkResult;
 
 static GTimer* j_benchmark_timer = NULL;
 
-void
+static void
 j_benchmark_timer_start(void)
 {
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -51,7 +51,7 @@ j_benchmark_timer_start(void)
 	g_timer_start(j_benchmark_timer);
 }
 
-gdouble
+static gdouble
 j_benchmark_timer_elapsed(void)
 {
 	gdouble elapsed;
@@ -62,12 +62,6 @@ j_benchmark_timer_elapsed(void)
 	MPI_Allreduce(&elapsed, &elapsed_global, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 	MPI_Barrier(MPI_COMM_WORLD);
 	return elapsed_global / (gdouble)world_size;
-}
-
-gdouble
-max(gdouble a, gdouble b)
-{
-	return a > b ? a : b;
 }
 
 struct result_step
@@ -242,7 +236,7 @@ exec_tests(guint n)
 	} while (0)
 
 static gboolean
-calculate_prognose(guint n, gint n_next)
+calculate_prognose(gint n_next)
 {
 	gboolean result = FALSE;
 	guint j;
@@ -288,7 +282,7 @@ calculate_prognose(guint n, gint n_next)
 	return result;
 }
 
-void
+static void
 benchmark_db(void)
 {
 	const char* target_low_str;
@@ -335,7 +329,7 @@ benchmark_db(void)
 		exec_tests(n);
 		fflush(stdout);
 		n = n_next;
-		if (!calculate_prognose(n, n_next))
+		if (!calculate_prognose(n_next))
 			break;
 		fflush(stdout);
 		tmp = current_result_step;

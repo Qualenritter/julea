@@ -10,7 +10,7 @@ static int world_rank;
 static void
 work(int argc, char** argv)
 {
-	guint i;
+	gint i;
 	for (i = 0; i < argc; i++)
 	{
 		printf("argv[%d] -> %s\n", i, argv[i]);

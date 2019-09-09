@@ -199,7 +199,6 @@ H5VL_julea_db_group_create(void* obj, const H5VL_loc_params_t* loc_params, const
 	JHDF5Object_t* object = NULL;
 	JHDF5Object_t* parent = obj;
 	JHDF5Object_t* file;
-	JDBType type;
 
 	g_return_val_if_fail(name != NULL, NULL);
 	g_return_val_if_fail(parent != NULL, NULL);
