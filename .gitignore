@@ -29,3 +29,4 @@ afl
 nohup.out
 log
 server_log
+all_functions_names.txt
