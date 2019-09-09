@@ -391,7 +391,7 @@ backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	//	g_private_replace(&thread_variables_global, NULL);
+	g_private_replace(&thread_variables_global, NULL);
 	g_free(path);
 }
 static JBackend sqlite_backend = {

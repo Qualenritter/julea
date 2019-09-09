@@ -29,13 +29,18 @@ out = 'build'
 
 # Structured logging needs GLib 2.56
 # CentOS 7 has GLib 2.42, CentOS 7.6 has GLib 2.56
+# Ubuntu 18.04 has GLib 2.56
 glib_version = '2.56'
+# Ubuntu 18.04 has libbson 1.9.2
 libbson_version = '1.9.0'
 
+# Ubuntu 18.04 has LevelDB 1.20
 leveldb_version = '1.20'
+# Ubuntu 18.04 has LMDB 0.9.21
 lmdb_version = '0.9.21'
+# Ubuntu 18.04 has libmongoc 1.9.2
 libmongoc_version = '1.9.0'
-sqlite_version = '3.23.0'
+sqlite_version = '3.22.0'
 mysql_version = '8.0.15'
 
 
@@ -246,6 +251,18 @@ def configure(ctx):
 			pkg_config_path=get_pkg_config_path(ctx.options.leveldb),
 			mandatory=False
 		)
+
+	if not ctx.env.JULEA_LEVELDB:
+		ctx.env.JULEA_LEVELDB = \
+			check_cc_rpath(
+				ctx,
+				ctx.options.leveldb,
+				header_name='leveldb/c.h',
+				lib='leveldb',
+				uselib_store='LEVELDB',
+				define_name='HAVE_LEVELDB',
+				mandatory=False
+			)
 
 	ctx.env.JULEA_LMDB = \
 		check_cfg_rpath(

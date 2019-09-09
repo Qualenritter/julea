@@ -16,10 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef sql_autoincrement_string
+//compile for code formatting reasons
+#include "mysql.c"
+#endif
+
 #ifndef SQL_GENERIC_BACKEND_H
 #define SQL_GENERIC_BACKEND_H
 
-#include "../../lib/db/jdb-internal.h"
 /*
  * this file does not care which sql-database is actually in use, and uses only defines sql-syntax to allow fast and easy implementations for any new sql-database backend
 */
@@ -303,12 +307,12 @@ getCacheSchema(gpointer _batch, gchar const* name, GError** error)
 		}
 	}
 	if (schema_initialized)
-		j_bson_destroy(&schema);
-	return cacheQueries->types;
+{		j_bson_destroy(&schema);
+}	return cacheQueries->types;
 _error:
 	if (schema_initialized)
-		j_bson_destroy(&schema);
-	if (cacheQueries->types)
+{		j_bson_destroy(&schema);
+}	if (cacheQueries->types)
 	{
 		g_hash_table_unref(cacheQueries->types);
 		cacheQueries->types = NULL;
