@@ -17,9 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 mkdir -p log/scan-build
-#rm -rf build
-#scan-build -o log/scan-build ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
-#scan-build -o log/scan-build ./waf.sh build
+rm -rf build
+scan-build -o log/scan-build ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
+scan-build -o log/scan-build ./waf.sh build
 rm -rf build
 ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 

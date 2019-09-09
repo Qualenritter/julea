@@ -401,7 +401,7 @@ j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 	(void)error;
 	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
 	{
-		goto _error;
+		goto _error2;
 	}
 	if ((status = mysql_stmt_execute(stmt->stmt)))
 	{
