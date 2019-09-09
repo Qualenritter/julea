@@ -307,12 +307,16 @@ getCacheSchema(gpointer _batch, gchar const* name, GError** error)
 		}
 	}
 	if (schema_initialized)
-{		j_bson_destroy(&schema);
-}	return cacheQueries->types;
+	{
+		j_bson_destroy(&schema);
+	}
+	return cacheQueries->types;
 _error:
 	if (schema_initialized)
-{		j_bson_destroy(&schema);
-}	if (cacheQueries->types)
+	{
+		j_bson_destroy(&schema);
+	}
+	if (cacheQueries->types)
 	{
 		g_hash_table_unref(cacheQueries->types);
 		cacheQueries->types = NULL;

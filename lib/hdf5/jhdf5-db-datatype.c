@@ -179,7 +179,9 @@ H5VL_julea_db_datatype_convert_type(hid_t type_id_from, hid_t type_id_to, const 
 	J_TRACE_FUNCTION(NULL);
 
 	if (H5Tequal(type_id_from, type_id_to))
+	{
 		return from_buf;
+	}
 	return H5VL_julea_db_datatype_convert_type_change(type_id_from, type_id_to, from_buf, tmp_buf, count);
 }
 static herr_t

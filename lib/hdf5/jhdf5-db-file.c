@@ -227,13 +227,21 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		{
 			g_debug("truncateing file");
 			if (H5VL_julea_db_group_truncate_file(object))
+			{
 				j_goto_error();
+			}
 			if (H5VL_julea_db_attr_truncate_file(object))
+			{
 				j_goto_error();
+			}
 			if (H5VL_julea_db_dataset_truncate_file(object))
+			{
 				j_goto_error();
+			}
 			if (H5VL_julea_db_link_truncate_file(object))
+			{
 				j_goto_error();
+			}
 		}
 	}
 	return object;

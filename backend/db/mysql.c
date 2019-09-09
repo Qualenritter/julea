@@ -77,9 +77,13 @@ j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 	for (i = 0; i < wrapper->param_count_out; i++)
 	{
 		if (wrapper->bind_out[i].buffer_type == MYSQL_TYPE_STRING)
+		{
 			g_free(wrapper->bind_out[i].buffer);
+		}
 		if (wrapper->bind_out[i].buffer_type == MYSQL_TYPE_BLOB)
+		{
 			g_free(wrapper->bind_out[i].buffer);
+		}
 	}
 	g_free(wrapper->bind_in);
 	g_free(wrapper->bind_out);
@@ -436,34 +440,44 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 	if (!wrapper->active)
 	{
 		if (wrapper->param_count_in)
+		{
 			if ((status = mysql_stmt_bind_param(wrapper->stmt, wrapper->bind_in)))
 			{
 				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
 				goto _error;
 			}
+		}
 		if (wrapper->param_count_out)
+		{
 			if ((status = mysql_stmt_bind_result(wrapper->stmt, wrapper->bind_out)))
 			{
 				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
 				goto _error;
 			}
+		}
 		if ((status = mysql_stmt_execute(wrapper->stmt)))
 		{
 			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
 			goto _error;
 		}
 		if (wrapper->param_count_out)
+		{
 			if ((status = mysql_stmt_store_result(wrapper->stmt)))
 			{
 				g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was  (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
 				goto _error;
 			}
+		}
 		wrapper->active = TRUE;
 	}
 	if (wrapper->param_count_out)
+	{
 		*found = mysql_stmt_fetch(wrapper->stmt) == 0;
+	}
 	else
+	{
 		*found = TRUE;
+	}
 	return TRUE;
 _error:
 	return FALSE;

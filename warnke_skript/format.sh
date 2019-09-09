@@ -17,17 +17,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 mkdir -p log/scan-build
-rm -rf build
-scan-build -o log/scan-build ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
-scan-build -o log/scan-build ./waf.sh build
+#rm -rf build
+#scan-build -o log/scan-build ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
+#scan-build -o log/scan-build ./waf.sh build
 rm -rf build
 ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 
-#for f in $(git diff --name-only HEAD | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
-for f in $(git diff --name-only master | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
+for f in $(git diff --name-only master | grep '\.c$' | grep -v prefix | grep -v spack);do
 	echo $f
 	cd build
-	clang-tidy -header-filter='.*,-dependencies' -fix -checks='readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration' -p=/src/julea/build ../$f
+	clang-tidy -header-filter='.*,-dependencies' -fix -checks='readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration' -p=/src/julea/build ../$f -- \
+		-Iinclude \
+		-I../include \
+		-Iinclude/core \
+		-I../include/core \
+		-Itest \
+		-I../test \
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/include/glib-2.0 \
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/lib/glib-2.0/include \
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/pcre-8.42-yupgernpm6rywenufbupwypikx4b5xec/include \
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/libmongoc-1.9.5-a37k6hbsbanjkqibnmcc3letw7wshirg/include/libbson-1.0 \
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/hdf5-develop-4iami4kalqj7xgv2x2uv25dnzvz4xzwf/include \
+		-I../dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/sqlite-3.28.0-h2xu54j2dy5spf2gbnaikdw4ci5aj3bj/include
 	cd ..
 	clang-format -i $f
 done

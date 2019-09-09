@@ -303,7 +303,7 @@ backend_read(gpointer data, gpointer buffer, guint64 length, guint64 offset, gui
 		{
 			break;
 		}
-		else if (nbytes < 0)
+		if (nbytes < 0)
 		{
 			if (errno != EINTR)
 			{

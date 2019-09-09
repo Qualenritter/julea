@@ -250,7 +250,8 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	JHDF5Object_t* object = NULL;
 	JDBType type;
 	size_t size;
-	guint i, j;
+	guint i;
+	guint j;
 
 	g_return_val_if_fail(type_id != NULL, NULL);
 	g_return_val_if_fail(*type_id != -1, NULL);

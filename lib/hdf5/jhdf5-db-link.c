@@ -208,7 +208,9 @@ H5VL_julea_db_link_truncate_file(void* obj)
 	if (!j_batch_execute(batch))
 	{
 		if (!error || error->code != J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+		{
 			j_goto_error();
+		}
 	}
 	return 0;
 _error:

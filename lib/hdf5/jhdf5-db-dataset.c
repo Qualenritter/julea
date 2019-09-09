@@ -187,7 +187,9 @@ H5VL_julea_db_dataset_truncate_file(void* obj)
 	if (!j_batch_execute(batch))
 	{
 		if (!error || error->code != J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+		{
 			j_goto_error();
+		}
 	}
 	return 0;
 _error:
@@ -312,7 +314,9 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 		}
 	}
 	if (!H5VL_julea_db_link_create_helper(parent, object, name))
+	{
 		j_goto_error();
+	}
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -385,7 +389,9 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 		j_goto_error();
 	}
 	if (!H5VL_julea_db_link_get_helper(parent, object, name))
+	{
 		j_goto_error();
+	}
 	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
 	{
 		j_goto_error();
@@ -463,9 +469,13 @@ H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 	range_arr = g_array_new(FALSE, FALSE, sizeof(JHDF5IndexRange));
 	G_DEBUG_HERE();
 	if (mem_space_id == H5S_ALL)
+	{
 		sel_type = H5S_SEL_ALL;
+	}
 	else
+	{
 		sel_type = H5Sget_select_type(mem_space_id);
+	}
 	switch (sel_type)
 	{
 	case H5S_SEL_POINTS:
@@ -535,7 +545,9 @@ H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 		gboolean first;
 
 		if ((hyperslab_count = H5Sget_select_hyper_nblocks(mem_space_id)) < 0)
+		{
 			j_goto_error();
+		}
 		hyperspab_coordinates = g_new(hsize_t, stored_ndims * 2);
 		hyperspab_counters = g_new(hsize_t, stored_ndims);
 		hyperspab_skip_size = g_new(hsize_t, stored_ndims);
@@ -548,7 +560,9 @@ H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 		for (hyperslab_index = 0; hyperslab_index < hyperslab_count; hyperslab_index++)
 		{
 			if (H5Sget_select_hyper_blocklist(mem_space_id, hyperslab_index, 1, hyperspab_coordinates) < 0)
+			{
 				j_goto_error();
+			}
 
 			for (i = 0; i < (guint)stored_ndims; i++)
 			{
@@ -578,7 +592,9 @@ H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 					current_counter--;
 				}
 				if (!found)
+				{
 					break;
+				}
 				//calculate output range
 				range_tmp.start = 0;
 				for (i = 0; i < (guint)stored_ndims; i++)
@@ -673,9 +689,13 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 	}
 
 	if (!(mem_space_arr = H5VL_julea_db_space_hdf5_to_range(mem_space_id, object->dataset.space->space.hdf5_id)))
+	{
 		j_goto_error();
+	}
 	if (!(file_space_arr = H5VL_julea_db_space_hdf5_to_range(file_space_id, object->dataset.space->space.hdf5_id)))
+	{
 		j_goto_error();
+	}
 
 	data_count = 0;
 	for (i = 0; i < mem_space_arr->len; i++)
@@ -708,9 +728,13 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 		g_debug("file_range start=%ld count=%ld", file_space_range->start, current_count1 + 1);
 		j_distributed_object_write(object->dataset.object, ((const char*)local_buf) + mem_space_range->start * data_size, data_size * current_count1, file_space_range->start * data_size, &bytes_written, batch);
 		if (mem_space_range->start + current_count1 == mem_space_range->stop)
+		{
 			mem_space_range = NULL;
+		}
 		if (file_space_range->start + current_count1 == file_space_range->stop)
+		{
 			file_space_range = NULL;
+		}
 	}
 	if (!j_batch_execute(batch))
 	{
@@ -753,9 +777,13 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		j_goto_error();
 	}
 	if (!(mem_space_arr = H5VL_julea_db_space_hdf5_to_range(mem_space_id, object->dataset.space->space.hdf5_id)))
+	{
 		j_goto_error();
+	}
 	if (!(file_space_arr = H5VL_julea_db_space_hdf5_to_range(file_space_id, object->dataset.space->space.hdf5_id)))
+	{
 		j_goto_error();
+	}
 
 	data_count = 0;
 	for (i = 0; i < mem_space_arr->len; i++)
@@ -787,9 +815,13 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		g_debug("file_range start=%ld count=%ld", file_space_range->start, current_count1 + 1);
 		j_distributed_object_read(object->dataset.object, ((char*)buf) + mem_space_range->start * data_size, data_size * current_count1, file_space_range->start * data_size, &bytes_read, batch);
 		if (mem_space_range->start + current_count1 == mem_space_range->stop)
+		{
 			mem_space_range = NULL;
+		}
 		if (file_space_range->start + current_count1 == file_space_range->stop)
+		{
 			file_space_range = NULL;
+		}
 	}
 	if (!j_batch_execute(batch))
 	{

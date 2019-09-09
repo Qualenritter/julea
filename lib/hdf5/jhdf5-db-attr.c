@@ -187,7 +187,9 @@ H5VL_julea_db_attr_truncate_file(void* obj)
 	if (!j_batch_execute(batch))
 	{
 		if (!error || error->code != J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS)
+		{
 			j_goto_error();
+		}
 	}
 	return 0;
 _error:
@@ -310,7 +312,9 @@ H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
 		j_goto_error();
 	}
 	if (!H5VL_julea_db_link_create_helper(parent, object, name))
+	{
 		j_goto_error();
+	}
 	return object;
 _error:
 	H5VL_julea_db_error_handler(error);
@@ -383,7 +387,9 @@ H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 		j_goto_error();
 	}
 	if (!H5VL_julea_db_link_get_helper(parent, object, name))
+	{
 		j_goto_error();
+	}
 	if (!(selector = j_db_selector_new(julea_db_schema_attr, J_DB_SELECTOR_MODE_AND, &error)))
 	{
 		j_goto_error();
