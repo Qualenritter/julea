@@ -22,7 +22,9 @@
 #pragma GCC diagnostic ignored "-Wredundant-decls"
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#ifndef JULEA_DB_COMPILATION
 #define JULEA_DB_COMPILATION
+#endif
 #include <julea-config.h>
 #include <stdio.h>
 #include <math.h>

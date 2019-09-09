@@ -483,7 +483,7 @@ H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 		hssize_t npoints = 0;
 		hssize_t point_current = 0;
 		hssize_t point_current_index = 0;
-		g_autofree hsize_t* point_current_arr;
+		g_autofree hsize_t* point_current_arr = NULL;
 		guint skipsize;
 
 		point_current_arr = g_new(hsize_t, stored_ndims);
@@ -661,7 +661,7 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_autofree void* local_buf_org;
+	g_autofree void* local_buf_org = NULL;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GArray) mem_space_arr = NULL;
 	g_autoptr(GArray) file_space_arr = NULL;
@@ -750,7 +750,7 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_autofree void* local_buf_org;
+	g_autofree void* local_buf_org = NULL;
 	g_autoptr(JBatch) batch = NULL;
 	g_autoptr(GArray) mem_space_arr = NULL;
 	g_autoptr(GArray) file_space_arr = NULL;
