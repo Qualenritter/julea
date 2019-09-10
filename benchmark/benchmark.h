@@ -57,6 +57,4 @@ void benchmark_item(void);
 void benchmark_hdf(void);
 void benchmark_hdf2(void);
 
-void benchmark_db(void);
-
 #endif
