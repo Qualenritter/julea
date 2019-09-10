@@ -9,7 +9,7 @@ rm -rf build* prefix*
 
 for f in $(find * -name "*.c" | grep -v "test" | grep -v "benchmark" | grep -v "dependencies")
 do
-	grep -ni "^{" -B1 $f | grep "(" | sed "s/\s*(.*//g" | sed "s/.*-//g" >> tmp
+	grep -ni "^{" -B1 $f | grep "(" | sed "s/\s*(.*//g" | sed "s/.*-//g" | sed "s/.*\s\+//g">> tmp
 done
 for f in $(find build* -name "*.o" -or -name "*.so") $(find build* -executable -type f)
 do

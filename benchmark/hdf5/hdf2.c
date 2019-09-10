@@ -261,38 +261,6 @@ exec_tests(guint _n)
 	sprintf(testname, "/hdf5/attr/read/%d", n);
 	j_benchmark_run(testname, benchmark_hdf_attr_read);
 }
-static void
-exec_tree(guint depth, gfloat min, gfloat max)
-{
-	//exec tests such that n increases exponentially
-	//exec tests in an ordering such that some huge and some small n are executed fast to gain a overview of the result before executing everything completely
-	gfloat val = (max - min) * 0.5f + min;
-	guint imin = pow(min, 10.0f);
-	guint imax = pow(max, 10.0f);
-	guint ival = pow(val, 10.0f);
-	if (ival != imin && ival != imax)
-	{
-		if (depth == 0)
-		{
-			exec_tests(ival);
-		}
-		else
-		{
-			exec_tree(depth - 1, min, val);
-			exec_tree(depth - 1, val, max);
-		}
-	}
-}
-static void
-exec_tree1(guint depth, gfloat min, gfloat max)
-{
-	if (depth == 0)
-	{
-		exec_tests(min);
-		exec_tests(max);
-	}
-	exec_tree(depth, pow(min, 1.0f / 10.0f), pow(max, 1.0f / 10.0f));
-}
 #endif
 void
 benchmark_hdf2(void)
@@ -316,15 +284,5 @@ benchmark_hdf2(void)
 		}
 	}
 	exec_tests(1);
-/*#ifdef JULEA_DEBUG
-	exec_tree1(0, 1, 5);
-#else
-	guint i;
-	for (i = 0; i < 7; i++)
-	{
-		exec_tree1(i, 1, 1000000);
-	}
-#endif
-*/
 #endif
 }
