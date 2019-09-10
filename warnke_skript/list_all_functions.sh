@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -rf tmp functions_names*
+rm -rf functions_names*
 rm -rf build* prefix*
 
 ./waf.sh configure --out build_debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
@@ -35,7 +35,26 @@ do
 	fi
 done
 
+rm -rf build*
 grep -rni --exclude-dir=dependencies "^\s*\..* = " | sed "s/.* = //g" | sed "s/,.*//g" | grep -v " " | sort | uniq > tmp5
+grep -rnw --exclude-dir=dependencies "G_PRIVATE_INIT" | sed "s/.*(//g" | sed "s/).*//g" >> tmp5
+
+#ignore some functions
+cat >> tmp5 << EOF
+__do_global_dtors_aux
+__do_global_dtors_aux_fini_array_entry
+__init_array_start
+_fini
+_j_message_new_reply
+_start
+backend_info
+frame_dummy
+fstat
+H5PLget_plugin_type
+j_init
+register_tm_clones
+EOF
+
 cat tmp5 >> tmp2
 cat tmp5 >> tmp3
 cat tmp5 >> tmp4
@@ -49,3 +68,9 @@ rm tmp tmp2 tmp3 tmp4 tmp5
 diff functions_names_defined.txt functions_names_used_by_release.txt | grep "<" | sed "s/.*<\s*//g" > functions_names_defined_but_not_used.txt
 diff functions_names_defined.txt functions_names_used_by_debug.txt | grep "<" | sed "s/.*<\s*//g" > functions_names_defined_but_not_used_debug.txt
 diff functions_names_defined.txt functions_names_used_by_test.txt | grep "<" | sed "s/.*<\s*//g" > functions_names_defined_but_not_used_not_even_in_test.txt
+
+for f in $(cat functions_names_defined_but_not_used_not_even_in_test.txt)
+do
+	echo $f
+	grep -rnw $f --exclude-dir=dependencies | grep -v "functions_names_" | grep -v "benchmark_values"
+done
