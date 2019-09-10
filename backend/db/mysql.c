@@ -37,7 +37,8 @@
 #define sql_autoincrement_string " NOT NULL AUTO_INCREMENT "
 #define sql_last_insert_id_string " SELECT LAST_INSERT_ID() "
 
-static gchar* path;
+static
+gchar* path;
 struct mysql_stmt_wrapper
 {
 	MYSQL_STMT* stmt;
@@ -54,7 +55,8 @@ struct mysql_stmt_wrapper
 };
 typedef struct mysql_stmt_wrapper mysql_stmt_wrapper;
 
-static gboolean
+static
+gboolean
 j_sql_finalize(MYSQL* backend_db, void* _stmt, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -97,7 +99,8 @@ _error:
 	return FALSE;
 }
 
-static gboolean
+static
+gboolean
 j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in, GArray* types_out, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -243,7 +246,8 @@ _error:
 	return FALSE;
 }
 
-static gboolean
+static
+gboolean
 j_sql_bind_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -261,7 +265,8 @@ j_sql_bind_null(MYSQL* backend_db, void* _stmt, guint idx, GError** error)
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 j_sql_column(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -312,7 +317,8 @@ _error:
 	return FALSE;
 }
 
-static gboolean
+static
+gboolean
 j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTypeValue* value, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -369,7 +375,8 @@ j_sql_bind_value(MYSQL* backend_db, void* _stmt, guint idx, JDBType type, JDBTyp
 _error:
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 j_sql_reset(MYSQL* backend_db, void* _stmt, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -386,7 +393,8 @@ j_sql_reset(MYSQL* backend_db, void* _stmt, GError** error)
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 j_sql_exec(MYSQL* backend_db, const char* sql, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -423,7 +431,8 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -482,7 +491,8 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 _error:
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 j_sql_step_and_reset_check_done(MYSQL* backend_db, void* _stmt, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -511,7 +521,8 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-static void*
+static
+void*
 j_sql_open(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -546,7 +557,8 @@ _error:
 	mysql_close(backend_db);
 	return NULL;
 }
-static void
+static
+void
 j_sql_close(MYSQL* backend_db)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -556,21 +568,24 @@ j_sql_close(MYSQL* backend_db)
 		mysql_close(backend_db);
 	}
 }
-static gboolean
+static
+gboolean
 j_sql_start_transaction(MYSQL* backend_db, GError** error)
 {
 	(void)error;
 	mysql_query(backend_db, "START TRANSACTION");
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_sql_commit_transaction(MYSQL* backend_db, GError** error)
 {
 	(void)error;
 	mysql_query(backend_db, "COMMIT");
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_sql_abort_transaction(MYSQL* backend_db, GError** error)
 {
 	(void)error;
@@ -578,7 +593,8 @@ j_sql_abort_transaction(MYSQL* backend_db, GError** error)
 	return TRUE;
 }
 #include "sql-generic.c"
-static gboolean
+static
+gboolean
 backend_init(gchar const* _path)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -588,7 +604,8 @@ backend_init(gchar const* _path)
 	path = g_strdup(_path);
 	return TRUE;
 }
-static void
+static
+void
 backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -596,7 +613,8 @@ backend_fini(void)
 	//	g_private_replace(&thread_variables_global, NULL); //this should free the main threads private variables
 	g_free(path);
 }
-static JBackend mysql_backend = {
+static
+JBackend mysql_backend = {
 	.type = J_BACKEND_TYPE_DB,
 	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
 	.db = {

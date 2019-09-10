@@ -28,15 +28,22 @@
 
 #include "benchmark.h"
 
-static gchar* opt_machine_separator = NULL;
-static gboolean opt_machine_readable = FALSE;
-static gchar* opt_path = NULL;
-static gchar* opt_semantics = NULL;
-static gchar* opt_template = NULL;
+static
+gchar* opt_machine_separator = NULL;
+static
+gboolean opt_machine_readable = FALSE;
+static
+gchar* opt_path = NULL;
+static
+gchar* opt_semantics = NULL;
+static
+gchar* opt_template = NULL;
 
-static JSemantics* j_benchmark_semantics = NULL;
+static
+JSemantics* j_benchmark_semantics = NULL;
 
-static GTimer* j_benchmark_timer = NULL;
+static
+GTimer* j_benchmark_timer = NULL;
 
 JSemantics*
 j_benchmark_get_semantics(void)

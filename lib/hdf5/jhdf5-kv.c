@@ -91,27 +91,39 @@ struct JHA_t
 
 typedef struct JHA_t JHA_t;
 
-static char* H5VL_julea_kv_encode_type(const char*, hid_t*, hid_t, size_t*);
-static char* H5VL_julea_kv_encode_space(const char*, hid_t*, hid_t, size_t*);
+static
+char* H5VL_julea_kv_encode_type(const char*, hid_t*, hid_t, size_t*);
+static
+char* H5VL_julea_kv_encode_space(const char*, hid_t*, hid_t, size_t*);
 
-static bson_t* H5VL_julea_kv_serialize(const void*, size_t);
-static bson_t* H5VL_julea_kv_serialize_ts(const void*, size_t, const void*, size_t);
-static bson_t* H5VL_julea_kv_serialize_dataset(const void*, size_t, const void*, size_t, size_t, JDistribution*);
+static
+bson_t* H5VL_julea_kv_serialize(const void*, size_t);
+static
+bson_t* H5VL_julea_kv_serialize_ts(const void*, size_t, const void*, size_t);
+static
+bson_t* H5VL_julea_kv_serialize_dataset(const void*, size_t, const void*, size_t, size_t, JDistribution*);
 
-static void H5VL_julea_kv_deserialize(const bson_t*, void*, size_t);
-static void* H5VL_julea_kv_deserialize_type(const bson_t*);
-static void* H5VL_julea_kv_deserialize_space(const bson_t*);
-static void H5VL_julea_kv_deserialize_dataset(const bson_t*, JHD_t*, size_t*);
-static void H5VL_julea_kv_deserialize_size(const bson_t*, size_t*);
+static
+void H5VL_julea_kv_deserialize(const bson_t*, void*, size_t);
+static
+void* H5VL_julea_kv_deserialize_type(const bson_t*);
+static
+void* H5VL_julea_kv_deserialize_space(const bson_t*);
+static
+void H5VL_julea_kv_deserialize_dataset(const bson_t*, JHD_t*, size_t*);
+static
+void H5VL_julea_kv_deserialize_size(const bson_t*, size_t*);
 
-static char* create_path(const char*, char*);
+static
+char* create_path(const char*, char*);
 
 /**
  * Initializes the plugin
  *
  * \return err Error
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_init(hid_t vipl_id)
 {
 	(void)vipl_id;
@@ -124,7 +136,8 @@ H5VL_julea_kv_init(hid_t vipl_id)
  *
  * \return err Error
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_term(void)
 {
 	return 0;
@@ -135,7 +148,8 @@ H5VL_julea_kv_term(void)
  *
  * \return type_buf The encoded type
  **/
-static char*
+static
+char*
 H5VL_julea_kv_encode_type(const char* property, hid_t* type_id, hid_t cpl_id, size_t* type_size)
 {
 	char* type_buf;
@@ -154,7 +168,8 @@ H5VL_julea_kv_encode_type(const char* property, hid_t* type_id, hid_t cpl_id, si
  *
  * \return type_buf The encoded space
  **/
-static char*
+static
+char*
 H5VL_julea_kv_encode_space(const char* property, hid_t* space_id, hid_t cpl_id, size_t* space_size)
 {
 	char* space_buf;
@@ -176,7 +191,8 @@ H5VL_julea_kv_encode_space(const char* property, hid_t* space_id, hid_t cpl_id, 
  *
  * \return b The serialized BSON
  **/
-static bson_t*
+static
+bson_t*
 H5VL_julea_kv_serialize(const void* data, size_t data_size)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -201,7 +217,8 @@ H5VL_julea_kv_serialize(const void* data, size_t data_size)
  *
  * \return b The serialized BSON
  **/
-static bson_t*
+static
+bson_t*
 H5VL_julea_kv_serialize_ts(const void* type_data, size_t type_size, const void* space_data, size_t space_size)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -230,7 +247,8 @@ H5VL_julea_kv_serialize_ts(const void* type_data, size_t type_size, const void* 
  *
  * \return b The serialized BSON
  **/
-static bson_t*
+static
+bson_t*
 H5VL_julea_kv_serialize_dataset(const void* type_data, size_t type_size, const void* space_data, size_t space_size, size_t data_size, JDistribution* distribution)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -261,7 +279,8 @@ H5VL_julea_kv_serialize_dataset(const void* type_data, size_t type_size, const v
  * \param data The pointer where the data is returned
  * \param data_size The size of the data
  **/
-static void
+static
+void
 H5VL_julea_kv_deserialize(const bson_t* b, void* data, size_t data_size)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -296,7 +315,8 @@ H5VL_julea_kv_deserialize(const bson_t* b, void* data, size_t data_size)
  *
  * \return type_data the encoded type data
  **/
-static void*
+static
+void*
 H5VL_julea_kv_deserialize_type(const bson_t* b)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -344,7 +364,8 @@ H5VL_julea_kv_deserialize_type(const bson_t* b)
  *
  * \return space_data the encoded space data
  **/
-static void*
+static
+void*
 H5VL_julea_kv_deserialize_space(const bson_t* b)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -391,7 +412,8 @@ H5VL_julea_kv_deserialize_space(const bson_t* b)
  * \param b The bson containing the data
  * \param data_size Pointer to the data size to return
  **/
-static void
+static
+void
 H5VL_julea_kv_deserialize_size(const bson_t* b, size_t* data_size)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -423,7 +445,8 @@ H5VL_julea_kv_deserialize_size(const bson_t* b, size_t* data_size)
  * \param d The dataset whoch should contain the distribution
  * \param data_size Pointer to the data size to return
  **/
-static void
+static
+void
 H5VL_julea_kv_deserialize_dataset(const bson_t* b, JHD_t* d, size_t* data_size)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -465,10 +488,12 @@ H5VL_julea_kv_deserialize_dataset(const bson_t* b, JHD_t* d, size_t* data_size)
  *
  * \return path
  **/
-static char*
+static
+char*
 create_path(const char* name, char* prev_path)
 {
-	static const char* seperator = "/";
+	static
+const char* seperator = "/";
 	char* path = NULL;
 
 	path = (char*)malloc(strlen(prev_path) + strlen(seperator) + strlen(name) + 1);
@@ -483,7 +508,8 @@ create_path(const char* name, char* prev_path)
  *
  * \return attribute The new attribute
  **/
-static void*
+static
+void*
 H5VL_julea_kv_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name, hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -591,7 +617,8 @@ H5VL_julea_kv_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const 
  *
  * \return attribute The attribute
  **/
-static void*
+static
+void*
 H5VL_julea_kv_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char* attr_name, hid_t aapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -669,7 +696,8 @@ H5VL_julea_kv_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const ch
 /**
  * Reads the data from the attribute
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_attr_read(void* attr, hid_t dtype_id, void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -703,7 +731,8 @@ H5VL_julea_kv_attr_read(void* attr, hid_t dtype_id, void* buf, hid_t dxpl_id, vo
 /**
  * Writes the data of the attribute
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_attr_write(void* attr, hid_t dtype_id, const void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -735,7 +764,8 @@ H5VL_julea_kv_attr_write(void* attr, hid_t dtype_id, const void* buf, hid_t dxpl
  *
  * \return ret_value The error code
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_attr_get(void* attr, H5VL_attr_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -809,7 +839,8 @@ H5VL_julea_kv_attr_get(void* attr, H5VL_attr_get_t get_type, hid_t dxpl_id, void
 /**
  * Closes the attribute
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_attr_close(void* attr, hid_t dxpl_id, void** req)
 {
 	JHA_t* attribute = attr;
@@ -839,7 +870,8 @@ H5VL_julea_kv_attr_close(void* attr, hid_t dxpl_id, void** req)
  *
  * \return file The new file
  **/
-static void*
+static
+void*
 H5VL_julea_kv_file_create(const char* fname, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t dxpl_id, void** req)
 {
 	JHF_t* file;
@@ -861,7 +893,8 @@ H5VL_julea_kv_file_create(const char* fname, unsigned flags, hid_t fcpl_id, hid_
  *
  * \return file The file
  **/
-static void*
+static
+void*
 H5VL_julea_kv_file_open(const char* fname, unsigned flags, hid_t fapl_id, hid_t dxpl_id, void** req)
 {
 	JHF_t* file;
@@ -880,7 +913,8 @@ H5VL_julea_kv_file_open(const char* fname, unsigned flags, hid_t fapl_id, hid_t 
 /**
  * Closes the file
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_file_close(void* file, hid_t dxpl_id, void** req)
 {
 	JHF_t* f = file;
@@ -899,7 +933,8 @@ H5VL_julea_kv_file_close(void* file, hid_t dxpl_id, void** req)
  *
  * \return group The new group
  **/
-static void*
+static
+void*
 H5VL_julea_kv_group_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t dxpl_id, void** req)
 {
 	JHG_t* group;
@@ -957,7 +992,8 @@ H5VL_julea_kv_group_create(void* obj, const H5VL_loc_params_t* loc_params, const
  *
  * \return group The group
  **/
-static void*
+static
+void*
 H5VL_julea_kv_group_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t gapl_id, hid_t dxpl_id, void** req)
 {
 	JHG_t* group;
@@ -1010,7 +1046,8 @@ H5VL_julea_kv_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 /**
  * Closes the group
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_group_close(void* grp, hid_t dxpl_id, void** req)
 {
 	JHG_t* g = grp;
@@ -1030,7 +1067,8 @@ H5VL_julea_kv_group_close(void* grp, hid_t dxpl_id, void** req)
  *
  * \return dset The new dataset
  **/
-static void*
+static
+void*
 H5VL_julea_kv_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id, hid_t dapl_id, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1144,7 +1182,8 @@ H5VL_julea_kv_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
  *
  * \return dset The dataset
  **/
-static void*
+static
+void*
 H5VL_julea_kv_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name, hid_t dapl_id, hid_t dxpl_id, void** req)
 {
 	JHD_t* dset;
@@ -1221,7 +1260,8 @@ H5VL_julea_kv_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 /**
  * Reads the data from the dataset
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_dataset_read(void* dset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), void* buf, void** req __attribute__((unused)))
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1252,7 +1292,8 @@ H5VL_julea_kv_dataset_read(void* dset, hid_t mem_type_id __attribute__((unused))
  *
  * \return ret_value The error code
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_dataset_get(void* dset, H5VL_dataset_get_t get_type, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)), va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1327,7 +1368,8 @@ H5VL_julea_kv_dataset_get(void* dset, H5VL_dataset_get_t get_type, hid_t dxpl_id
 /**
  * Writes the data to the dataset
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)), hid_t mem_space_id __attribute__((unused)), hid_t file_space_id __attribute__((unused)), hid_t plist_id __attribute__((unused)), const void* buf, void** req __attribute__((unused)))
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1352,7 +1394,8 @@ H5VL_julea_kv_dataset_write(void* dset, hid_t mem_type_id __attribute__((unused)
 /**
  * Closes the dataset
  **/
-static herr_t
+static
+herr_t
 H5VL_julea_kv_dataset_close(void* dset, hid_t dxpl_id __attribute__((unused)), void** req __attribute__((unused)))
 {
 	JHD_t* d = (JHD_t*)dset;
@@ -1380,7 +1423,8 @@ H5VL_julea_kv_dataset_close(void* dset, hid_t dxpl_id __attribute__((unused)), v
 /**
  * The class providing the functions to HDF5
  **/
-static const H5VL_class_t H5VL_julea_kv_g = {
+static
+const H5VL_class_t H5VL_julea_kv_g = {
 	.version = 0,
 	.value = JULEA_KV,
 	.name = "julea",

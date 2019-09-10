@@ -72,10 +72,13 @@ struct JSqlIterator
 	guint index;
 };
 typedef struct JSqlIterator JSqlIterator;
-static void
+static
+void
 thread_variables_fini(void* ptr);
-static GPrivate thread_variables_global = G_PRIVATE_INIT(thread_variables_fini);
-static void
+static
+GPrivate thread_variables_global = G_PRIVATE_INIT(thread_variables_fini);
+static
+void
 thread_variables_fini(void* ptr)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -92,9 +95,11 @@ thread_variables_fini(void* ptr)
 		g_free(thread_variables);
 	}
 }
-static void
+static
+void
 freeJSqlCacheNames(void* ptr);
-static JThreadVariables*
+static
+JThreadVariables*
 thread_variables_get(GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -127,7 +132,8 @@ _error:
 	return NULL;
 }
 
-static void
+static
+void
 freeJSqlIterator(gpointer ptr)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -142,7 +148,8 @@ freeJSqlIterator(gpointer ptr)
 		g_free(iter);
 	}
 }
-static void
+static
+void
 freeJSqlCacheNames(void* ptr)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -158,7 +165,8 @@ freeJSqlCacheNames(void* ptr)
 		g_free(p);
 	}
 }
-static void
+static
+void
 freeJSqlCacheSQLQueries(void* ptr)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -178,7 +186,8 @@ freeJSqlCacheSQLQueries(void* ptr)
 		g_free(p);
 	}
 }
-static void
+static
+void
 freeJSqlCacheSQLPrepared(void* ptr)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -207,7 +216,8 @@ freeJSqlCacheSQLPrepared(void* ptr)
 		g_free(p);
 	}
 }
-static JSqlCacheSQLQueries*
+static
+JSqlCacheSQLQueries*
 _getCachePrepared(gchar const* namespace, gchar const* name, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -244,9 +254,11 @@ _getCachePrepared(gchar const* namespace, gchar const* name, GError** error)
 _error:
 	return NULL;
 }
-static gboolean
+static
+gboolean
 _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error);
-static GHashTable*
+static
+GHashTable*
 getCacheSchema(gpointer _batch, gchar const* name, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -323,7 +335,8 @@ _error:
 	}
 	return NULL;
 }
-static JSqlCacheSQLPrepared*
+static
+JSqlCacheSQLPrepared*
 getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -354,7 +367,8 @@ getCachePrepared(gchar const* namespace, gchar const* name, gchar const* query, 
 _error:
 	return NULL;
 }
-static void
+static
+void
 deleteCachePrepared(gchar const* namespace, gchar const* name)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -376,7 +390,8 @@ deleteCachePrepared(gchar const* namespace, gchar const* name)
 _error:
 	return;
 }
-static gboolean
+static
+gboolean
 _backend_batch_start(JSqlBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -399,7 +414,8 @@ _backend_batch_start(JSqlBatch* batch, GError** error)
 _error:
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 _backend_batch_execute(JSqlBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -421,7 +437,8 @@ _backend_batch_execute(JSqlBatch* batch, GError** error)
 _error:
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 _backend_batch_abort(JSqlBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -447,7 +464,8 @@ _error:
 
 G_LOCK_DEFINE_STATIC(sql_backend_lock);
 
-static gboolean
+static
+gboolean
 backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* _batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -476,7 +494,8 @@ _error:
 		G_UNLOCK(sql_backend_lock);
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 backend_batch_execute(gpointer _batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -502,7 +521,8 @@ _error:
 	return FALSE;
 }
 
-static gboolean
+static
+gboolean
 backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -802,7 +822,8 @@ _error:
 	}
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 _backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -918,7 +939,8 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error)
 {
 	gboolean ret;
@@ -929,7 +951,8 @@ backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** 
 	}
 	return ret;
 }
-static gboolean
+static
+gboolean
 backend_schema_delete(gpointer _batch, gchar const* name, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1014,7 +1037,8 @@ _error2:
 	return FALSE;
 }
 
-static gboolean
+static
+gboolean
 backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_t* id, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1201,7 +1225,8 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guint* variables_count, GArray* arr_types_in, GHashTable* schema_cache, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1355,7 +1380,8 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 _error:
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* variables_count, GHashTable* schema_cache, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1445,7 +1471,8 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* va
 _error:
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 _backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1580,7 +1607,8 @@ _error:
 	freeJSqlIterator(iteratorOut);
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 backend_update(gpointer _batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1776,7 +1804,8 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 backend_delete(gpointer _batch, gchar const* name, bson_t const* selector, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1845,7 +1874,8 @@ _error2:
 	/*something failed very hard*/
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1983,7 +2013,8 @@ _error:
 	}
 	return FALSE;
 }
-static gboolean
+static
+gboolean
 backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);

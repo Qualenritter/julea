@@ -31,14 +31,20 @@
 #include "benchmark-mpi.h"
 
 // options -->>
-static const guint batch_size = 10000;
-static const gdouble allowed_percentage = 0.8;
-static gdouble target_time_low = 30.0;
-static gdouble target_time_high = 30.0;
-static guint multiplicator = 2;
+static
+const guint batch_size = 10000;
+static
+const gdouble allowed_percentage = 0.8;
+static
+gdouble target_time_low = 30.0;
+static
+gdouble target_time_high = 30.0;
+static
+guint multiplicator = 2;
 // <<-- options
 
-static char namespace[100];
+static
+char namespace[100];
 
 struct BenchmarkResult
 {
@@ -49,9 +55,11 @@ struct BenchmarkResult
 };
 typedef struct BenchmarkResult BenchmarkResult;
 
-static GTimer* j_benchmark_timer = NULL;
+static
+GTimer* j_benchmark_timer = NULL;
 
-static void
+static
+void
 j_benchmark_timer_start(void)
 {
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -59,7 +67,8 @@ j_benchmark_timer_start(void)
 	g_timer_start(j_benchmark_timer);
 }
 
-static gdouble
+static
+gdouble
 j_benchmark_timer_elapsed(void)
 {
 	gdouble elapsed;
@@ -104,13 +113,17 @@ struct result_step
 	BenchmarkResult iterator_all[12];
 };
 typedef struct result_step result_step;
-static result_step* current_result_step = NULL;
-static result_step* next_result_step = NULL;
-static result_step* all_result_step = NULL;
+static
+result_step* current_result_step = NULL;
+static
+result_step* next_result_step = NULL;
+static
+result_step* all_result_step = NULL;
 
 #include "benchmark-mpi-entry.c"
 #include "benchmark-mpi-schema.c"
-static void
+static
+void
 myprintf(const char* name, guint n, BenchmarkResult* result)
 {
 	if (world_rank == 0 &&
@@ -126,7 +139,8 @@ myprintf(const char* name, guint n, BenchmarkResult* result)
 		fflush(stdout);
 	}
 }
-static void
+static
+void
 myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 {
 	if (world_rank == 0 && result->elapsed_time > 0 && result->operations > 0)
@@ -143,7 +157,8 @@ myprintf2(const char* name, guint n, guint n2, BenchmarkResult* result)
 	}
 }
 
-static void
+static
+void
 exec_tests(guint n)
 {
 	guint my_index;
@@ -243,7 +258,8 @@ exec_tests(guint n)
 		result = result || (p_next.prognosted_time < target_time_high && p_curr.operations_without_n > 0);                     \
 	} while (0)
 
-static gboolean
+static
+gboolean
 calculate_prognose(gint n_next)
 {
 	gboolean result = FALSE;
@@ -290,7 +306,8 @@ calculate_prognose(gint n_next)
 	return result;
 }
 
-static void
+static
+void
 benchmark_db(void)
 {
 	const char* target_low_str;

@@ -141,7 +141,8 @@ struct JDistributedObject
 	gint ref_count;
 };
 
-static void
+static
+void
 j_distributed_object_create_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -151,7 +152,8 @@ j_distributed_object_create_free(gpointer data)
 	j_distributed_object_unref(object);
 }
 
-static void
+static
+void
 j_distributed_object_delete_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -161,7 +163,8 @@ j_distributed_object_delete_free(gpointer data)
 	j_distributed_object_unref(object);
 }
 
-static void
+static
+void
 j_distributed_object_status_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -173,7 +176,8 @@ j_distributed_object_status_free(gpointer data)
 	g_slice_free(JDistributedObjectOperation, operation);
 }
 
-static void
+static
+void
 j_distributed_object_read_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -185,7 +189,8 @@ j_distributed_object_read_free(gpointer data)
 	g_slice_free(JDistributedObjectOperation, operation);
 }
 
-static void
+static
+void
 j_distributed_object_write_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -206,7 +211,8 @@ j_distributed_object_write_free(gpointer data)
  *
  * \return #data.
  **/
-static gpointer
+static
+gpointer
 j_distributed_object_create_background_operation(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -249,7 +255,8 @@ j_distributed_object_create_background_operation(gpointer data)
  *
  * \return #data.
  **/
-static gpointer
+static
+gpointer
 j_distributed_object_delete_background_operation(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -292,7 +299,8 @@ j_distributed_object_delete_background_operation(gpointer data)
  *
  * \return #data.
  **/
-static gpointer
+static
+gpointer
 j_distributed_object_read_background_operation(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -373,7 +381,8 @@ j_distributed_object_read_background_operation(gpointer data)
  *
  * \return #data.
  **/
-static gpointer
+static
+gpointer
 j_distributed_object_write_background_operation(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -428,7 +437,8 @@ j_distributed_object_write_background_operation(gpointer data)
  *
  * \return #data.
  **/
-static gpointer
+static
+gpointer
 j_distributed_object_status_background_operation(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -479,7 +489,8 @@ j_distributed_object_status_background_operation(gpointer data)
 	return NULL;
 }
 
-static gboolean
+static
+gboolean
 j_distributed_object_create_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -584,7 +595,8 @@ j_distributed_object_create_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_distributed_object_delete_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -681,7 +693,8 @@ j_distributed_object_delete_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_distributed_object_read_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -855,7 +868,8 @@ j_distributed_object_read_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_distributed_object_write_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -1030,7 +1044,8 @@ j_distributed_object_write_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_distributed_object_status_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);

@@ -58,7 +58,8 @@ j_frontend_db_error_quark(void)
 	return g_quark_from_static_string("j-frontend-db-error-quark");
 }
 
-static gboolean
+static
+gboolean
 j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -136,7 +137,8 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	}
 	return ret;
 }
-static void
+static
+void
 j_backend_db_func_free(gpointer _data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -148,7 +150,8 @@ j_backend_db_func_free(gpointer _data)
 	}
 }
 
-static gboolean
+static
+gboolean
 j_db_schema_create_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -179,7 +182,8 @@ j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t co
 	j_batch_add(batch, op);
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_db_schema_get_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -208,7 +212,8 @@ j_db_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* sche
 	j_batch_add(batch, op);
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_db_schema_delete_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -236,7 +241,8 @@ j_db_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* b
 	j_batch_add(batch, op);
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_db_insert_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -268,7 +274,8 @@ j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* me
 	j_batch_add(batch, op);
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_db_update_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -301,7 +308,8 @@ j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* se
 	j_batch_add(batch, op);
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_db_delete_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -330,7 +338,8 @@ j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* se
 	j_batch_add(batch, op);
 	return TRUE;
 }
-static gboolean
+static
+gboolean
 j_db_query_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);

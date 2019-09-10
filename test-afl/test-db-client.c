@@ -115,35 +115,48 @@ struct JDBAflRandomValues
 };
 typedef struct JDBAflRandomValues JDBAflRandomValues;
 //schema->
-static JDBSchema* stored_schemas[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME];
+static
+JDBSchema* stored_schemas[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME];
 #define the_stored_schema stored_schemas[random_values.namespace][random_values.name]
-static JDBType schema_field_types[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SCHEMA_FIELDS];
+static
+JDBType schema_field_types[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SCHEMA_FIELDS];
 #define the_schema_field_type schema_field_types[random_values.namespace][random_values.name][random_values.var_name]
 //<-
 //entry->
-static JDBEntry* stored_entrys[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
+static
+JDBEntry* stored_entrys[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
 #define the_stored_entry stored_entrys[random_values.namespace][random_values.name][random_values.entry]
-static guint stored_entrys_field_set[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
+static
+guint stored_entrys_field_set[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ENTRY];
 #define the_stored_entry_field_set stored_entrys_field_set[random_values.namespace][random_values.name][random_values.entry]
 //<-
 //selector->
-static JDBSelector* stored_selectors[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SELECTOR];
+static
+JDBSelector* stored_selectors[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SELECTOR];
 #define the_stored_selector stored_selectors[random_values.namespace][random_values.name][random_values.selector]
-static gboolean stored_selectors_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SELECTOR];
+static
+gboolean stored_selectors_field_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_SELECTOR];
 #define the_stored_selector_field_count stored_selectors_field_count[random_values.namespace][random_values.name][random_values.selector]
 //<-
 //iterator->
-static JDBIterator* stored_iterators[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
+static
+JDBIterator* stored_iterators[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
 #define the_stored_iterator stored_iterators[random_values.namespace][random_values.name][random_values.iterator]
-static gboolean stored_iterators_next_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
+static
+gboolean stored_iterators_next_count[AFL_LIMIT_SCHEMA_NAMESPACE][AFL_LIMIT_SCHEMA_NAME][AFL_LIMIT_ITERATOR];
 #define the_stored_iterator_next_count stored_iterators_next_count[random_values.namespace][random_values.name][random_values.iterator]
 //<-
 //allgemein->
-static char name_strbuf[AFL_LIMIT_STRING_LEN];
-static char namespace_strbuf[AFL_LIMIT_STRING_LEN];
-static char varname_strbuf[AFL_LIMIT_STRING_LEN];
-static char varvalue_strbuf[AFL_LIMIT_STRING_LEN];
-static JDBAflRandomValues random_values;
+static
+char name_strbuf[AFL_LIMIT_STRING_LEN];
+static
+char namespace_strbuf[AFL_LIMIT_STRING_LEN];
+static
+char varname_strbuf[AFL_LIMIT_STRING_LEN];
+static
+char varvalue_strbuf[AFL_LIMIT_STRING_LEN];
+static
+JDBAflRandomValues random_values;
 //<-
 
 #include "test-db-entry.h"

@@ -25,7 +25,8 @@
 
 #include "test.h"
 
-static void
+static
+void
 test_uri_new_free(void)
 {
 	G_GNUC_UNUSED g_autoptr(JURI) uri = NULL;
@@ -33,7 +34,8 @@ test_uri_new_free(void)
 	uri = j_uri_new("julea://JULEA");
 }
 
-static void
+static
+void
 test_uri_valid(void)
 {
 	JURI* uri;
@@ -64,7 +66,8 @@ test_uri_valid(void)
 	j_uri_free(uri);
 }
 
-static void
+static
+void
 test_uri_invalid(void)
 {
 	JURI* uri;
@@ -94,7 +97,8 @@ test_uri_invalid(void)
 	g_assert(uri == NULL);
 }
 
-static void
+static
+void
 test_uri_create_delete(void)
 {
 	JURI* uri;
@@ -120,7 +124,8 @@ test_uri_create_delete(void)
 	j_uri_free(uri);
 }
 
-static void
+static
+void
 test_uri_get(void)
 {
 	JURI* uri;

@@ -4,12 +4,15 @@
 
 #define BENCHMARK_MPI_C
 
-static int world_size;
-static int world_rank;
+static
+int world_size;
+static
+int world_rank;
 
 #include "benchmark-mpi-main.c"
 
-static void
+static
+void
 work(int argc, char** argv)
 {
 	gint i;

@@ -34,10 +34,13 @@
 #include <hdf5.h>
 #include <H5PLextern.h>
 
-static gdouble target_time = 30.0;
+static
+gdouble target_time = 30.0;
 
-static guint n;
-static gboolean useVOL = 1;
+static
+guint n;
+static
+gboolean useVOL = 1;
 struct result_sets
 {
 	BenchmarkResult dataset_create;
@@ -51,9 +54,11 @@ struct result_sets
 	BenchmarkResult attr_read;
 	BenchmarkResult attr_write;
 };
-static struct result_sets shared_result;
+static
+struct result_sets shared_result;
 
-static void
+static
+void
 benchmark_hdf_main(void)
 {
 	const guint dim_size = 1024;
@@ -184,57 +189,68 @@ benchmark_hdf_main(void)
 		H5VLunregister_connector(julea_vol_id);
 	}
 }
-static void
+static
+void
 benchmark_hdf_dataset_create(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.dataset_create, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_dataset_open(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.dataset_open, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_dataset_close(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.dataset_close, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_dataset_write(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.dataset_write, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_dataset_read(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.dataset_read, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_attr_create(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.attr_create, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_attr_open(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.attr_open, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_attr_close(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.attr_close, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_attr_write(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.attr_write, sizeof(*result));
 }
-static void
+static
+void
 benchmark_hdf_attr_read(BenchmarkResult* result)
 {
 	memcpy(result, &shared_result.attr_read, sizeof(*result));
 }
-static void
+static
+void
 exec_tests(guint _n)
 {
 	char testname[500];

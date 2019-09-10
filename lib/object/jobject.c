@@ -97,7 +97,8 @@ struct JObject
 	gint ref_count;
 };
 
-static void
+static
+void
 j_object_create_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -107,7 +108,8 @@ j_object_create_free(gpointer data)
 	j_object_unref(object);
 }
 
-static void
+static
+void
 j_object_delete_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -117,7 +119,8 @@ j_object_delete_free(gpointer data)
 	j_object_unref(object);
 }
 
-static void
+static
+void
 j_object_status_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -129,7 +132,8 @@ j_object_status_free(gpointer data)
 	g_slice_free(JObjectOperation, operation);
 }
 
-static void
+static
+void
 j_object_read_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -141,7 +145,8 @@ j_object_read_free(gpointer data)
 	g_slice_free(JObjectOperation, operation);
 }
 
-static void
+static
+void
 j_object_write_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -153,7 +158,8 @@ j_object_write_free(gpointer data)
 	g_slice_free(JObjectOperation, operation);
 }
 
-static gboolean
+static
+gboolean
 j_object_create_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -248,7 +254,8 @@ j_object_create_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_object_delete_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -335,7 +342,8 @@ j_object_delete_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_object_read_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -496,7 +504,8 @@ j_object_read_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_object_write_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -648,7 +657,8 @@ j_object_write_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_object_status_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);

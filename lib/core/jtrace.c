@@ -104,33 +104,49 @@ struct JTrace
 	guint64 enter_time;
 };
 
-static JTraceFlags j_trace_flags = J_TRACE_OFF;
+static
+JTraceFlags j_trace_flags = J_TRACE_OFF;
 
-static gchar* j_trace_name = NULL;
-static gint j_trace_thread_id = 1;
+static
+gchar* j_trace_name = NULL;
+static
+gint j_trace_thread_id = 1;
 
-static GPatternSpec** j_trace_function_patterns = NULL;
+static
+GPatternSpec** j_trace_function_patterns = NULL;
 
 #ifdef HAVE_OTF
-static OTF_FileManager* otf_manager = NULL;
-static OTF_Writer* otf_writer = NULL;
+static
+OTF_FileManager* otf_manager = NULL;
+static
+OTF_Writer* otf_writer = NULL;
 
-static guint32 otf_process_id = 1;
-static guint32 otf_function_id = 1;
-static guint32 otf_file_id = 1;
-static guint32 otf_counter_id = 1;
+static
+guint32 otf_process_id = 1;
+static
+guint32 otf_function_id = 1;
+static
+guint32 otf_file_id = 1;
+static
+guint32 otf_counter_id = 1;
 
-static GHashTable* otf_function_table = NULL;
-static GHashTable* otf_file_table = NULL;
-static GHashTable* otf_counter_table = NULL;
+static
+GHashTable* otf_function_table = NULL;
+static
+GHashTable* otf_file_table = NULL;
+static
+GHashTable* otf_counter_table = NULL;
 
 G_LOCK_DEFINE_STATIC(j_trace_otf);
 #endif
 
-static void j_trace_thread_default_free(gpointer);
+static
+void j_trace_thread_default_free(gpointer);
 
-static GPrivate j_trace_thread_default = G_PRIVATE_INIT(j_trace_thread_default_free);
-static GHashTable* j_trace_combined_timers;
+static
+GPrivate j_trace_thread_default = G_PRIVATE_INIT(j_trace_thread_default_free);
+static
+GHashTable* j_trace_combined_timers;
 
 G_LOCK_DEFINE_STATIC(j_trace_echo);
 
@@ -144,7 +160,8 @@ G_LOCK_DEFINE_STATIC(j_trace_echo);
  *
  * \return A new trace thread. Should be freed with j_trace_thread_free().
  **/
-static JTraceThread*
+static
+JTraceThread*
 j_trace_thread_new(GThread* thread)
 {
 	JTraceThread* trace_thread;
@@ -194,7 +211,8 @@ j_trace_thread_new(GThread* thread)
  *
  * \param trace_thread A trace thread.
  **/
-static void
+static
+void
 j_trace_thread_free(JTraceThread* trace_thread)
 {
 	if (j_trace_flags == J_TRACE_OFF)
@@ -221,7 +239,8 @@ j_trace_thread_free(JTraceThread* trace_thread)
  *
  * \return The default trace thread.
  **/
-static JTraceThread*
+static
+JTraceThread*
 j_trace_thread_get_default(void)
 {
 	JTraceThread* trace_thread;
@@ -237,7 +256,8 @@ j_trace_thread_get_default(void)
 	return trace_thread;
 }
 
-static void
+static
+void
 j_trace_thread_default_free(gpointer data)
 {
 	JTraceThread* trace_thread = data;
@@ -256,7 +276,8 @@ j_trace_thread_default_free(gpointer data)
  * \param trace_thread A trace thread.
  * \param timestamp    A timestamp.
  **/
-static void
+static
+void
 j_trace_echo_printerr(JTraceThread* trace_thread, guint64 timestamp)
 {
 	guint i;
@@ -282,7 +303,8 @@ j_trace_echo_printerr(JTraceThread* trace_thread, guint64 timestamp)
  *
  * \return A time stamp in microseconds.
  **/
-static guint64
+static
+guint64
 j_trace_get_time(void)
 {
 	GTimeVal timeval;
@@ -306,7 +328,8 @@ j_trace_get_time(void)
  *
  * \return A name.
  **/
-static gchar const*
+static
+gchar const*
 j_trace_file_operation_name(JTraceFileOperation op)
 {
 	switch (op)
@@ -344,7 +367,8 @@ j_trace_file_operation_name(JTraceFileOperation op)
  *
  * \return TRUE if the function should be traced, FALSE otherwise.
  **/
-static gboolean
+static
+gboolean
 j_trace_function_check(gchar const* name)
 {
 	if (j_trace_function_patterns != NULL)

@@ -85,7 +85,8 @@ struct JObjectURI
  * \param uri  A URI.
  * \param uri_ A URI string.
  **/
-static gboolean
+static
+gboolean
 j_object_uri_parse(JObjectURI* uri, gchar const* uri_)
 {
 	J_TRACE_FUNCTION(NULL);

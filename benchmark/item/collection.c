@@ -25,7 +25,8 @@
 
 #include "benchmark.h"
 
-static void
+static
+void
 _benchmark_collection_create(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = (use_batch) ? 100000 : 1000;
@@ -74,19 +75,22 @@ _benchmark_collection_create(BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static void
+static
+void
 benchmark_collection_create(BenchmarkResult* result)
 {
 	_benchmark_collection_create(result, FALSE);
 }
 
-static void
+static
+void
 benchmark_collection_create_batch(BenchmarkResult* result)
 {
 	_benchmark_collection_create(result, TRUE);
 }
 
-static void
+static
+void
 _benchmark_collection_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 10000;
@@ -144,19 +148,22 @@ _benchmark_collection_delete(BenchmarkResult* result, gboolean use_batch)
 	result->operations = n;
 }
 
-static void
+static
+void
 benchmark_collection_delete(BenchmarkResult* result)
 {
 	_benchmark_collection_delete(result, FALSE);
 }
 
-static void
+static
+void
 benchmark_collection_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_collection_delete(result, TRUE);
 }
 
-static void
+static
+void
 benchmark_collection_delete_batch_without_get(BenchmarkResult* result)
 {
 	guint const n = 10000;
@@ -196,7 +203,8 @@ benchmark_collection_delete_batch_without_get(BenchmarkResult* result)
 	result->operations = n;
 }
 
-static void
+static
+void
 _benchmark_collection_unordered_create_delete(BenchmarkResult* result, gboolean use_batch)
 {
 	guint const n = 5000;
@@ -240,13 +248,15 @@ _benchmark_collection_unordered_create_delete(BenchmarkResult* result, gboolean 
 	result->operations = n * 2;
 }
 
-static void
+static
+void
 benchmark_collection_unordered_create_delete(BenchmarkResult* result)
 {
 	_benchmark_collection_unordered_create_delete(result, FALSE);
 }
 
-static void
+static
+void
 benchmark_collection_unordered_create_delete_batch(BenchmarkResult* result)
 {
 	_benchmark_collection_unordered_create_delete(result, TRUE);

@@ -89,7 +89,8 @@ struct JKV
 	gint ref_count;
 };
 
-static void
+static
+void
 j_kv_put_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -106,7 +107,8 @@ j_kv_put_free(gpointer data)
 	g_slice_free(JKVOperation, operation);
 }
 
-static void
+static
+void
 j_kv_delete_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -116,7 +118,8 @@ j_kv_delete_free(gpointer data)
 	j_kv_unref(kv);
 }
 
-static void
+static
+void
 j_kv_get_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -128,7 +131,8 @@ j_kv_get_free(gpointer data)
 	g_slice_free(JKVOperation, operation);
 }
 
-static gboolean
+static
+gboolean
 j_kv_put_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -229,7 +233,8 @@ j_kv_put_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_kv_delete_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -320,7 +325,8 @@ j_kv_delete_exec(JList* operations, JSemantics* semantics)
 	return ret;
 }
 
-static gboolean
+static
+gboolean
 j_kv_get_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);

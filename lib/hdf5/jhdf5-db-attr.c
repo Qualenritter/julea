@@ -49,9 +49,11 @@
 
 #define _GNU_SOURCE
 
-static JDBSchema* julea_db_schema_attr = NULL;
+static
+JDBSchema* julea_db_schema_attr = NULL;
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -60,7 +62,8 @@ H5VL_julea_db_attr_term(void)
 	julea_db_schema_attr = NULL;
 	return 0;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -150,7 +153,8 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	return 1;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_truncate_file(void* obj)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -196,7 +200,8 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	return 1;
 }
-static void*
+static
+void*
 H5VL_julea_db_attr_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id,
 	hid_t dxpl_id, void** req)
@@ -321,7 +326,8 @@ _error:
 	H5VL_julea_db_object_unref(object);
 	return NULL;
 }
-static void*
+static
+void*
 H5VL_julea_db_attr_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t aapl_id, hid_t dxpl_id, void** req)
 {
@@ -441,7 +447,8 @@ _error:
 	H5VL_julea_db_object_unref(object);
 	return NULL;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -467,7 +474,8 @@ H5VL_julea_db_attr_read(void* obj, hid_t mem_type_id, void* buf, hid_t dxpl_id, 
 _error:
 	return 1;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -493,7 +501,8 @@ H5VL_julea_db_attr_write(void* obj, hid_t mem_type_id, const void* buf, hid_t dx
 _error:
 	return 1;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -520,7 +529,8 @@ H5VL_julea_db_attr_get(void* obj, H5VL_attr_get_t get_type, hid_t dxpl_id, void*
 	}
 	return 0;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL_attr_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
@@ -533,7 +543,8 @@ H5VL_julea_db_attr_specific(void* obj, const H5VL_loc_params_t* loc_params, H5VL
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -545,7 +556,8 @@ H5VL_julea_db_attr_optional(void* obj, hid_t dxpl_id, void** req, va_list argume
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);

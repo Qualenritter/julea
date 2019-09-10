@@ -29,7 +29,8 @@
 
 #include "../../test-afl/test-db-backend.c"
 
-static void
+static
+void
 test_db_schema_create(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
@@ -38,7 +39,8 @@ test_db_schema_create(void)
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static void
+static
+void
 test_db_schema_get(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
@@ -46,7 +48,8 @@ test_db_schema_get(void)
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static void
+static
+void
 test_db_schema_delete(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
@@ -54,7 +57,8 @@ test_db_schema_delete(void)
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static void
+static
+void
 test_db_insert(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
@@ -69,7 +73,8 @@ test_db_insert(void)
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static void
+static
+void
 test_db_update(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
@@ -85,7 +90,8 @@ test_db_update(void)
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static void
+static
+void
 test_db_delete(void)
 {
 	memset(&random_values, 0, sizeof(random_values));
@@ -99,7 +105,8 @@ test_db_delete(void)
 	test_db_backend_exec();
 	test_db_backend_cleanup();
 }
-static void
+static
+void
 test_db_query_all(void)
 {
 	memset(&random_values, 0, sizeof(random_values));

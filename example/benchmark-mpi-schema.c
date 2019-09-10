@@ -30,7 +30,8 @@
 
 #include "benchmark-mpi.h"
 
-static void
+static
+void
 _benchmark_db_schema_create(gboolean use_batch, const guint n)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -147,7 +148,8 @@ _benchmark_db_schema_create(gboolean use_batch, const guint n)
 	current_result_step->schema_get[use_batch].operations_without_n = m2;
 	current_result_step->schema_delete[use_batch].operations_without_n = m;
 }
-static void
+static
+void
 _benchmark_db_schema_ref(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -189,7 +191,8 @@ _benchmark_db_schema_ref(void)
 	current_result_step->schema_ref.operations_without_n = m;
 	current_result_step->schema_unref.operations_without_n = m;
 }
-static void
+static
+void
 _benchmark_db_schema_new(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -227,7 +230,8 @@ _benchmark_db_schema_new(void)
 	current_result_step->schema_new.operations_without_n = m;
 	current_result_step->schema_free.operations_without_n = m;
 }
-static void
+static
+void
 _benchmark_db_schema_add_field(const guint n)
 {
 	J_TRACE_FUNCTION(NULL);

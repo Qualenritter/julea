@@ -84,7 +84,8 @@ struct JStatistics
 	guint64 bytes_sent;
 };
 
-static gchar const*
+static
+gchar const*
 j_statistics_get_type_name(JStatisticsType type)
 {
 	J_TRACE_FUNCTION(NULL);

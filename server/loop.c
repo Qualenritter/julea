@@ -26,7 +26,8 @@
 
 #include "server.h"
 
-static guint jd_thread_num = 0;
+static
+guint jd_thread_num = 0;
 
 gboolean
 jd_handle_message(JMessage* message, GSocketConnection* connection, JMemoryChunk* memory_chunk, guint64 memory_chunk_size, JStatistics* statistics)

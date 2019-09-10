@@ -63,7 +63,8 @@ struct JKVIterator
 	guint32 replies_cur;
 };
 
-static JMessage*
+static
+JMessage*
 fetch_reply(guint32 index, gchar const* namespace, gchar const* prefix)
 {
 	J_TRACE_FUNCTION(NULL);

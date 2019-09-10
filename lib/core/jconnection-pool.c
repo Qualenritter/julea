@@ -68,7 +68,8 @@ struct JConnectionPool
 
 typedef struct JConnectionPool JConnectionPool;
 
-static JConnectionPool* j_connection_pool = NULL;
+static
+JConnectionPool* j_connection_pool = NULL;
 
 void
 j_connection_pool_init(JConfiguration* configuration)
@@ -170,7 +171,8 @@ j_connection_pool_fini(void)
 	g_slice_free(JConnectionPool, pool);
 }
 
-static GSocketConnection*
+static
+GSocketConnection*
 j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* server)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -259,7 +261,8 @@ j_connection_pool_pop_internal(GAsyncQueue* queue, guint* count, gchar const* se
 	return connection;
 }
 
-static void
+static
+void
 j_connection_pool_push_internal(GAsyncQueue* queue, GSocketConnection* connection)
 {
 	J_TRACE_FUNCTION(NULL);

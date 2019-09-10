@@ -51,7 +51,8 @@ enum JHDF5Implementation
 
 typedef enum JHDF5Implementation JHDF5Implementation;
 
-static JHDF5Implementation hdf5_implementation_to_use = J_HDF5_IMPLEMENTATION_DB;
+static
+JHDF5Implementation hdf5_implementation_to_use = J_HDF5_IMPLEMENTATION_DB;
 
 /**
  * Provides the plugin type

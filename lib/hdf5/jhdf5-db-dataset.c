@@ -48,9 +48,11 @@
 
 #define _GNU_SOURCE
 
-static JDBSchema* julea_db_schema_dataset = NULL;
+static
+JDBSchema* julea_db_schema_dataset = NULL;
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -60,7 +62,8 @@ H5VL_julea_db_dataset_term(void)
 	return 0;
 }
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -150,7 +153,8 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	return 1;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_truncate_file(void* obj)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -196,7 +200,8 @@ _error:
 	H5VL_julea_db_error_handler(error);
 	return 1;
 }
-static void*
+static
+void*
 H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t lcpl_id, hid_t type_id, hid_t space_id, hid_t dcpl_id,
 	hid_t dapl_id, hid_t dxpl_id, void** req)
@@ -323,7 +328,8 @@ _error:
 	H5VL_julea_db_object_unref(object);
 	return NULL;
 }
-static void*
+static
+void*
 H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const char* name,
 	hid_t dapl_id, hid_t dxpl_id, void** req)
 {
@@ -450,7 +456,8 @@ struct JHDF5IndexRange
 };
 typedef struct JHDF5IndexRange JHDF5IndexRange;
 
-static GArray*
+static
+GArray*
 H5VL_julea_db_space_hdf5_to_range(hid_t mem_space_id, hid_t stored_space_id)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -655,7 +662,8 @@ _error:
 	return NULL;
 }
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
 	hid_t xfer_plist_id, const void* buf, void** req)
 {
@@ -744,7 +752,8 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 _error:
 	return 1;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
 	hid_t xfer_plist_id, void* buf, void** req)
 {
@@ -837,7 +846,8 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 _error:
 	return 1;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_get(void* obj, H5VL_dataset_get_t get_type, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -865,7 +875,8 @@ H5VL_julea_db_dataset_get(void* obj, H5VL_dataset_get_t get_type, hid_t dxpl_id,
 	}
 	return 0;
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_specific(void* obj, H5VL_dataset_specific_t specific_type,
 	hid_t dxpl_id, void** req, va_list arguments)
 {
@@ -878,7 +889,8 @@ H5VL_julea_db_dataset_specific(void* obj, H5VL_dataset_specific_t specific_type,
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_optional(void* obj, hid_t dxpl_id, void** req, va_list arguments)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -890,7 +902,8 @@ H5VL_julea_db_dataset_optional(void* obj, hid_t dxpl_id, void** req, va_list arg
 	g_critical("%s NOT implemented !!", G_STRLOC);
 	abort();
 }
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);

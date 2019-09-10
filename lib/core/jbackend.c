@@ -61,7 +61,8 @@ j_backend_sql_error_quark(void)
 	return g_quark_from_static_string("j-backend-sql-error-quark");
 }
 
-static GModule*
+static
+GModule*
 j_backend_load(gchar const* name, JBackendComponent component, JBackendType type, JBackend** backend)
 {
 	J_TRACE_FUNCTION(NULL);

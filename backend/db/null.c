@@ -24,7 +24,8 @@
 
 #include <julea.h>
 
-static gboolean
+static
+gboolean
 backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* batch, GError** error)
 {
 	(void)error;
@@ -35,7 +36,8 @@ backend_batch_start(gchar const* namespace, JSemantics* semantics, gpointer* bat
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_batch_execute(gpointer batch, GError** error)
 {
 	(void)error;
@@ -44,7 +46,8 @@ backend_batch_execute(gpointer batch, GError** error)
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_schema_create(gpointer batch, gchar const* name, bson_t const* schema, GError** error)
 {
 	(void)error;
@@ -55,7 +58,8 @@ backend_schema_create(gpointer batch, gchar const* name, bson_t const* schema, G
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_schema_get(gpointer batch, gchar const* name, bson_t* schema, GError** error)
 {
 	(void)error;
@@ -66,7 +70,8 @@ backend_schema_get(gpointer batch, gchar const* name, bson_t* schema, GError** e
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_schema_delete(gpointer batch, gchar const* name, GError** error)
 {
 	(void)error;
@@ -76,7 +81,8 @@ backend_schema_delete(gpointer batch, gchar const* name, GError** error)
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_insert(gpointer batch, gchar const* name, bson_t const* metadata, bson_t* id, GError** error)
 {
 	(void)error;
@@ -88,7 +94,8 @@ backend_insert(gpointer batch, gchar const* name, bson_t const* metadata, bson_t
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_update(gpointer batch, gchar const* name, bson_t const* selector, bson_t const* metadata, GError** error)
 {
 	(void)error;
@@ -100,7 +107,8 @@ backend_update(gpointer batch, gchar const* name, bson_t const* selector, bson_t
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_delete(gpointer batch, gchar const* name, bson_t const* selector, GError** error)
 {
 	(void)error;
@@ -111,7 +119,8 @@ backend_delete(gpointer batch, gchar const* name, bson_t const* selector, GError
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_query(gpointer batch, gchar const* name, bson_t const* selector, gpointer* iterator, GError** error)
 {
 	(void)error;
@@ -123,7 +132,8 @@ backend_query(gpointer batch, gchar const* name, bson_t const* selector, gpointe
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
 	(void)error;
@@ -133,7 +143,8 @@ backend_iterate(gpointer iterator, bson_t* metadata, GError** error)
 	return TRUE;
 }
 
-static gboolean
+static
+gboolean
 backend_init(gchar const* path)
 {
 	(void)path;
@@ -141,12 +152,14 @@ backend_init(gchar const* path)
 	return TRUE;
 }
 
-static void
+static
+void
 backend_fini(void)
 {
 }
 
-static JBackend null_backend = {
+static
+JBackend null_backend = {
 	.type = J_BACKEND_TYPE_DB,
 	.component = J_BACKEND_COMPONENT_CLIENT | J_BACKEND_COMPONENT_SERVER,
 	.db = {

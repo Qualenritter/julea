@@ -44,33 +44,47 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_attr_term(void);
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_dataset_term(void);
-static herr_t
+static
+herr_t
 H5VL_julea_db_datatype_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_datatype_term(void);
-static herr_t
+static
+herr_t
 H5VL_julea_db_file_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_file_term(void);
-static herr_t
+static
+herr_t
 H5VL_julea_db_group_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_group_term(void);
-static herr_t
+static
+herr_t
 H5VL_julea_db_space_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_space_term(void);
-static herr_t
+static
+herr_t
 H5VL_julea_db_link_init(hid_t vipl_id);
-static herr_t
+static
+herr_t
 H5VL_julea_db_link_term(void);
 
 #include "jhdf5-db.h"
@@ -87,7 +101,8 @@ H5VL_julea_db_link_term(void);
 
 #define JULEA_DB 530
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -150,7 +165,8 @@ _error_file:
 	return 1;
 }
 
-static herr_t
+static
+herr_t
 H5VL_julea_db_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -194,7 +210,8 @@ _error:
  * The class providing the functions to HDF5
  * @see dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/hdf5-develop-4iami4kalqj7xgv2x2uv25dnzvz4xzwf/include/H5VLconnector.h
  **/
-static const H5VL_class_t H5VL_julea_db_g = {
+static
+const H5VL_class_t H5VL_julea_db_g = {
 	.version = 0,
 	.value = JULEA_DB,
 	.name = "julea",

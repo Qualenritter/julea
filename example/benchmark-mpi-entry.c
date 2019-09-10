@@ -53,7 +53,8 @@ struct JBatch
 	gint ref_count;
 };
 
-static void
+static
+void
 _benchmark_db_entry_ref(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -99,7 +100,8 @@ _benchmark_db_entry_ref(void)
 	current_result_step->entry_ref.operations_without_n = m;
 	current_result_step->entry_unref.operations_without_n = m;
 }
-static void
+static
+void
 _benchmark_db_entry_new(void)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -140,7 +142,8 @@ _benchmark_db_entry_new(void)
 	current_result_step->entry_new.operations_without_n = m;
 	current_result_step->entry_free.operations_without_n = m;
 }
-static void
+static
+void
 _benchmark_db_entry_set_field(const guint n)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -182,7 +185,8 @@ _benchmark_db_entry_set_field(const guint n)
 	current_result_step->entry_set_field.operations = m;
 	current_result_step->entry_set_field.operations_without_n = m;
 }
-static void
+static
+void
 _benchmark_db_entry_insert(gboolean use_batch, gboolean use_index, const guint n1, const guint n2, JSemanticsAtomicity atomicity)
 {
 	J_TRACE_FUNCTION(NULL);

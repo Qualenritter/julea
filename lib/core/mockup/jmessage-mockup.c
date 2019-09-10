@@ -86,7 +86,8 @@ struct JMessage
 	gboolean client_side;
 	guint32 semantics;
 };
-static JMessage* server_reply;
+static
+JMessage* server_reply;
 JMessage*
 j_message_new(JMessageType type, gsize size)
 {

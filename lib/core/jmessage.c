@@ -172,7 +172,8 @@ struct JMessage
  *
  * \return The message's header.
  **/
-static JMessageHeader*
+static
+JMessageHeader*
 j_message_header(JMessage const* message)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -192,7 +193,8 @@ j_message_header(JMessage const* message)
  *
  * \return The message's length.
  **/
-static gsize
+static
+gsize
 j_message_length(JMessage const* message)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -204,7 +206,8 @@ j_message_length(JMessage const* message)
 	return GUINT32_FROM_LE(length);
 }
 
-static void
+static
+void
 j_message_data_free(gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -225,7 +228,8 @@ j_message_data_free(gpointer data)
  *
  * \return TRUE if it is possible, FALSE otherwise.
  **/
-static gboolean
+static
+gboolean
 j_message_can_append(JMessage const* message, gsize length)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -246,7 +250,8 @@ j_message_can_append(JMessage const* message, gsize length)
  *
  * \return TRUE if it is possible, FALSE otherwise.
  **/
-static gboolean
+static
+gboolean
 j_message_can_get(JMessage const* message, gsize length)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -254,7 +259,8 @@ j_message_can_get(JMessage const* message, gsize length)
 	return (message->current + length <= message->data + sizeof(JMessageHeader) + j_message_length(message));
 }
 
-static void
+static
+void
 j_message_extend(JMessage* message, gsize length)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -290,7 +296,8 @@ j_message_extend(JMessage* message, gsize length)
 	message->current = message->data + position;
 }
 
-static void
+static
+void
 j_message_ensure_size(JMessage* message, gsize length)
 {
 	J_TRACE_FUNCTION(NULL);
