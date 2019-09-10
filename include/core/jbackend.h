@@ -45,7 +45,7 @@ G_BEGIN_DECLS
 // FIXME does it make sense to report these errors?
 enum JBackendBSONError
 {
-	J_BACKEND_BSON_ERROR_BSON_APPEND_ARRAY_FAILED,
+	J_BACKEND_BSON_ERROR_BSON_APPEND_ARRAY_FAILED = 1,
 	J_BACKEND_BSON_ERROR_BSON_APPEND_DOCUMENT_FAILED,
 	J_BACKEND_BSON_ERROR_BSON_APPEND_FAILED,
 	J_BACKEND_BSON_ERROR_BSON_BUF_NULL,
@@ -73,7 +73,7 @@ typedef enum JBackendBSONError JBackendBSONError;
 
 enum JBackendDBError
 {
-	J_BACKEND_DB_ERROR_COMPARATOR_INVALID,
+	J_BACKEND_DB_ERROR_COMPARATOR_INVALID = 1,
 	J_BACKEND_DB_ERROR_DB_TYPE_INVALID,
 	J_BACKEND_DB_ERROR_ITERATOR_INVALID,
 	J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS,
@@ -90,7 +90,7 @@ typedef enum JBackendDBError JBackendDBError;
 
 enum JBackendSQLError
 {
-	J_BACKEND_SQL_ERROR_BIND,
+	J_BACKEND_SQL_ERROR_BIND = 1,
 	J_BACKEND_SQL_ERROR_CONSTRAINT,
 	J_BACKEND_SQL_ERROR_FINALIZE,
 	J_BACKEND_SQL_ERROR_INVALID_TYPE,
@@ -128,7 +128,7 @@ struct JBackend
 	 * \param[in] which namespace to delete
 	 * \param[out] how many "things" are deleted within the specified namespace
 	 */
-	gboolean (*backend_reset)(gpointer, GError**);
+	gboolean (*backend_reset)(gchar const*, GError**);
 
 	union
 	{
@@ -431,7 +431,7 @@ gboolean j_backend_db_delete(JBackend*, gpointer, gchar const*, bson_t const*, G
 gboolean j_backend_db_query(JBackend*, gpointer, gchar const*, bson_t const*, gpointer*, GError**);
 gboolean j_backend_db_iterate(JBackend*, gpointer, bson_t*, GError**);
 
-gboolean j_backend_reset(JBackend* backend,gpointer, GError**);
+gboolean j_backend_reset(JBackend* backend, gpointer, GError**);
 G_END_DECLS
 
 #endif

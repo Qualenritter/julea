@@ -109,7 +109,6 @@ thread_variables_get(GError** error)
 	thread_variables = g_private_get(&thread_variables_global);
 	if (!thread_variables)
 	{
-		g_debug("!thread_variables");
 		thread_variables = g_new0(JThreadVariables, 1);
 		thread_variables->sql_backend = j_sql_open();
 		if (G_UNLIKELY(!j_sql_exec(thread_variables->sql_backend,
@@ -199,20 +198,23 @@ freeJSqlCacheSQLPrepared(void* ptr)
 		g_assert_not_reached();
 	if (ptr)
 	{
-		if (p->variables_index)
+		if (p->initialized)
 		{
-			g_hash_table_destroy(p->variables_index);
+			if (p->variables_index)
+			{
+				g_hash_table_destroy(p->variables_index);
+			}
+			if (p->sql)
+			{
+				g_string_free(p->sql, TRUE);
+			}
+			if (p->stmt)
+			{
+				j_sql_finalize(thread_variables->sql_backend, p->stmt, NULL);
+			}
+			g_free(p->namespace);
+			g_free(p->name);
 		}
-		if (p->sql)
-		{
-			g_string_free(p->sql, TRUE);
-		}
-		if (p->stmt)
-		{
-			j_sql_finalize(thread_variables->sql_backend, p->stmt, NULL);
-		}
-		g_free(p->namespace);
-		g_free(p->name);
 		g_free(p);
 	}
 }
@@ -2071,6 +2073,101 @@ backend_iterate(gpointer _iterator, bson_t* metadata, GError** error)
 	return TRUE;
 _error:
 	if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, prepared->stmt, NULL)))
+	{
+		goto _error3;
+	}
+	return FALSE;
+_error3:
+	/*something failed very hard*/
+	return FALSE;
+}
+static
+gboolean
+backend_reset(gchar const* namespace, GError** error)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	JDBType type;
+	JThreadVariables* thread_variables = NULL;
+	void* stmt1;
+	void* stmt2;
+	gboolean found1 = FALSE;
+	gboolean found2 = FALSE;
+	g_autoptr(GArray) arr_types_out1 = NULL;
+	g_autoptr(GArray) arr_types_out2 = NULL;
+	JDBTypeValue value1;
+	JDBTypeValue value2;
+	char sql_strbuf[128];
+
+	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
+	{
+		goto _error3;
+	}
+	arr_types_out1 = g_array_new(FALSE, FALSE, sizeof(JDBType));
+	type = J_DB_TYPE_STRING;
+	g_array_append_val(arr_types_out1, type);
+	arr_types_out2 = g_array_new(FALSE, FALSE, sizeof(JDBType));
+	type = J_DB_TYPE_UINT32;
+	g_array_append_val(arr_types_out2, type);
+	(void)error;
+	sprintf(sql_strbuf, sql_get_table_names, namespace);
+	if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt1, NULL, arr_types_out1, error)))
+	{
+		goto _error3;
+	}
+	do
+	{
+		if (G_UNLIKELY(!j_sql_step(thread_variables->sql_backend, stmt1, &found1, error)))
+		{
+			goto _error2;
+		}
+		if (!found1)
+			break;
+		if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, stmt1, 0, J_DB_TYPE_STRING, &value1, error)))
+		{
+			goto _error;
+		}
+		sprintf(sql_strbuf, "SELECT COUNT(*) FROM %s", value1.val_string);
+		if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt2, NULL, arr_types_out2, error)))
+		{
+			goto _error;
+		}
+		if (G_UNLIKELY(!j_sql_step(thread_variables->sql_backend, stmt2, &found2, error)))
+		{
+			goto _error;
+		}
+		g_return_val_if_fail(found2 == TRUE, FALSE);
+		if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, stmt1, 0, J_DB_TYPE_UINT32, &value2, error)))
+		{
+			goto _error;
+		}
+		if (value2.val_uint32 > 0)
+		{
+			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset_not_empty %s %d", value1.val_string, value2.val_uint32);
+			goto _error;
+		}
+		if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt2, error)))
+		{
+			goto _error2;
+		}
+		stmt2 = NULL;
+
+	} while (TRUE);
+	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt1, error)))
+	{
+		goto _error3;
+	}
+	return TRUE;
+_error:
+	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt2, NULL)))
+	{
+		goto _error2;
+	}
+_error2:
+	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt1, NULL)))
 	{
 		goto _error3;
 	}

@@ -40,6 +40,7 @@
 
 #define sql_autoincrement_string " "
 #define sql_last_insert_id_string " SELECT last_insert_rowid() "
+#define sql_get_table_names "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%s_%%'"
 
 static
 gchar* path;
@@ -74,7 +75,7 @@ j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GArray* types_i
 
 	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 	{
-		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", sqlite3_errmsg(backend_db));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was <%s> '%s'",sql, sqlite3_errmsg(backend_db));
 		goto _error;
 	}
 	return TRUE;
@@ -415,6 +416,7 @@ static
 JBackend sqlite_backend = {
 	.type = J_BACKEND_TYPE_DB,
 	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
+	.backend_reset = backend_reset,
 	.db = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,

@@ -36,7 +36,7 @@
 
 #define sql_autoincrement_string " NOT NULL AUTO_INCREMENT "
 #define sql_last_insert_id_string " SELECT LAST_INSERT_ID() "
-
+#define sql_get_table_names "SELECT table_name FROM information_schema.tables WHERE table_schema = 'julea' AND table_name LIKE '%s_%%';"
 static
 gchar* path;
 struct mysql_stmt_wrapper
@@ -118,12 +118,12 @@ j_sql_prepare(MYSQL* backend_db, const char* sql, void* _stmt, GArray* types_in,
 	wrapper = *_wrapper = g_new0(mysql_stmt_wrapper, 1);
 	if (!(wrapper->stmt = mysql_stmt_init(backend_db)))
 	{
-		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was '%s'", mysql_stmt_error(wrapper->stmt));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was <%s> '%s'",sql, mysql_stmt_error(wrapper->stmt));
 		goto _error;
 	}
 	if ((status = mysql_stmt_prepare(wrapper->stmt, sql, strlen(sql))))
 	{
-		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was (%d):'%s'", status, mysql_stmt_error(wrapper->stmt));
+		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was <%s> (%d):'%s'",sql, status, mysql_stmt_error(wrapper->stmt));
 		goto _error;
 	}
 	wrapper->param_count_in = types_in ? types_in->len : 0;
@@ -385,7 +385,6 @@ j_sql_reset(MYSQL* backend_db, void* _stmt, GError** error)
 
 	g_return_val_if_fail(backend_db != NULL, FALSE);
 	g_return_val_if_fail(_stmt != NULL, FALSE);
-
 	(void)backend_db;
 	(void)error;
 	wrapper->active = FALSE;
@@ -443,7 +442,6 @@ j_sql_step(MYSQL* backend_db, void* _stmt, gboolean* found, GError** error)
 	g_return_val_if_fail(backend_db != NULL, FALSE);
 	g_return_val_if_fail(_stmt != NULL, FALSE);
 	g_return_val_if_fail(found != NULL, FALSE);
-
 	(void)backend_db;
 	(void)error;
 	if (!wrapper->active)
@@ -501,7 +499,6 @@ j_sql_step_and_reset_check_done(MYSQL* backend_db, void* _stmt, GError** error)
 
 	g_return_val_if_fail(backend_db != NULL, FALSE);
 	g_return_val_if_fail(_stmt != NULL, FALSE);
-
 	if (G_UNLIKELY(!j_sql_step(backend_db, _stmt, &sql_found, error)))
 	{
 		goto _error;
@@ -531,7 +528,6 @@ j_sql_open(void)
 	g_autofree gchar* dirname = NULL;
 
 	g_return_val_if_fail(path != NULL, FALSE);
-
 	if (!(backend_db = mysql_init(NULL)))
 	{
 		goto _error;
@@ -547,7 +543,6 @@ j_sql_open(void)
 		    CLIENT_OPTIONAL_RESULTSET_METADATA //client flags
 		    ))
 	{
-		//g_debug("%s", mysql_error(backend_db));
 		goto _error;
 	}
 
@@ -609,14 +604,14 @@ void
 backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
-
-	//	g_private_replace(&thread_variables_global, NULL); //this should free the main threads private variables
+	g_private_replace(&thread_variables_global, NULL); //this should free the main threads private variables
 	g_free(path);
 }
 static
 JBackend mysql_backend = {
 	.type = J_BACKEND_TYPE_DB,
 	.component = J_BACKEND_COMPONENT_SERVER | J_BACKEND_COMPONENT_CLIENT,
+	.backend_reset = backend_reset,
 	.db = {
 		.backend_init = backend_init,
 		.backend_fini = backend_fini,
