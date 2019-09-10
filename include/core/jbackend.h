@@ -128,7 +128,7 @@ struct JBackend
 	 * \param[in] which namespace to delete
 	 * \param[out] how many "things" are deleted within the specified namespace
 	 */
-	gboolean (*backend_reset)(gchar const*, GError**);
+	gboolean (*backend_reset)(gpointer, GError**);
 
 	union
 	{

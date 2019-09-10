@@ -167,11 +167,14 @@ JDBAflRandomValues random_values;
 int
 main(int argc, char* argv[])
 {
+	GError* error = NULL;
 	FILE* file;
 	JDBAflEvent event;
 	guint i;
 	guint j;
+	gboolean ret;
 	guint k;
+	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	if (argc > 1)
 	{
 		char filename[50 + strlen(argv[1])];
@@ -215,7 +218,10 @@ main(int argc, char* argv[])
 				schema_field_types[i][j][k] = _J_DB_TYPE_COUNT;
 			}
 		}
+		sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, i);
+		j_internal_reset(namespace_strbuf, batch, NULL);
 	}
+	j_batch_execute(batch);
 #ifdef __AFL_HAVE_MANUAL_CONTROL
 	__AFL_INIT();
 	while (__AFL_LOOP(1000))
@@ -329,6 +335,10 @@ main(int argc, char* argv[])
 				random_values.name = j;
 				event_schema_delete_helper();
 			}
+			sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, i);
+			ret = j_internal_reset(namespace_strbuf, batch, &error);
+			ret = ret && j_batch_execute(batch);
+			J_AFL_DEBUG_ERROR(ret, TRUE, error);
 		}
 	}
 fini:

@@ -18,7 +18,7 @@
 
 #ifndef sql_autoincrement_string
 //compile for code formatting reasons
-#include "mysql.c"
+#include "sqlite.c"
 #endif
 
 #ifndef SQL_GENERIC_BACKEND_H
@@ -2083,7 +2083,7 @@ _error3:
 }
 static
 gboolean
-backend_reset(gchar const* namespace, GError** error)
+backend_reset(gpointer _batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -2091,6 +2091,7 @@ backend_reset(gchar const* namespace, GError** error)
 	JThreadVariables* thread_variables = NULL;
 	void* stmt1;
 	void* stmt2;
+	JSqlBatch* batch = _batch;
 	gboolean found1 = FALSE;
 	gboolean found2 = FALSE;
 	g_autoptr(GArray) arr_types_out1 = NULL;
@@ -2099,7 +2100,7 @@ backend_reset(gchar const* namespace, GError** error)
 	JDBTypeValue value2;
 	char sql_strbuf[128];
 
-	g_return_val_if_fail(namespace != NULL, FALSE);
+	g_return_val_if_fail(_batch != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
@@ -2113,59 +2114,79 @@ backend_reset(gchar const* namespace, GError** error)
 	type = J_DB_TYPE_UINT32;
 	g_array_append_val(arr_types_out2, type);
 	(void)error;
-	sprintf(sql_strbuf, sql_get_table_names, namespace);
-	if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt1, NULL, arr_types_out1, error)))
-	{
-		goto _error3;
-	}
 	do
 	{
+		sprintf(sql_strbuf, sql_get_table_names, batch->namespace);
+		if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt1, NULL, arr_types_out1, error)))
+		{
+			goto _error3;
+		}
 		if (G_UNLIKELY(!j_sql_step(thread_variables->sql_backend, stmt1, &found1, error)))
 		{
 			goto _error2;
 		}
 		if (!found1)
+		{
 			break;
+		}
+		value1.val_string = NULL;
 		if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, stmt1, 0, J_DB_TYPE_STRING, &value1, error)))
 		{
-			goto _error;
+			goto _error2;
 		}
-		sprintf(sql_strbuf, "SELECT COUNT(*) FROM %s", value1.val_string);
+		if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt1, error)))
+		{
+			goto _error2;
+		}
+		if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt1, error)))
+		{
+			goto _error3;
+		}
+		g_debug("value1.val_string = %s", value1.val_string);
+		sprintf(sql_strbuf, "SELECT COUNT(*) FROM '%s'", value1.val_string);
 		if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt2, NULL, arr_types_out2, error)))
 		{
-			goto _error;
+			goto _error3;
 		}
 		if (G_UNLIKELY(!j_sql_step(thread_variables->sql_backend, stmt2, &found2, error)))
 		{
 			goto _error;
 		}
-		g_return_val_if_fail(found2 == TRUE, FALSE);
-		if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, stmt1, 0, J_DB_TYPE_UINT32, &value2, error)))
+		if (!found2)
+		{
+			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count not found", value1.val_string);
+			goto _error;
+		}
+		if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, stmt2, 0, J_DB_TYPE_UINT32, &value2, error)))
 		{
 			goto _error;
 		}
 		if (value2.val_uint32 > 0)
 		{
-			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset_not_empty %s %d", value1.val_string, value2.val_uint32);
+			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count %d", value1.val_string, value2.val_uint32);
+			goto _error;
+		}
+		if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt2, error)))
+		{
 			goto _error;
 		}
 		if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt2, error)))
 		{
-			goto _error2;
+			goto _error3;
 		}
-		stmt2 = NULL;
-
+		sprintf(sql_strbuf, "DROP TABLE %s", value1.val_string);
+		if (G_UNLIKELY(!j_sql_exec(thread_variables->sql_backend, sql_strbuf, error)))
+		{
+			goto _error3;
+		}
 	} while (TRUE);
-	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt1, error)))
-	{
-		goto _error3;
-	}
 	return TRUE;
 _error:
 	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt2, NULL)))
 	{
 		goto _error2;
 	}
+	return FALSE;
 _error2:
 	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt1, NULL)))
 	{

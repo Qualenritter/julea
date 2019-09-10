@@ -843,10 +843,6 @@ event_schema_delete(void)
 		namespace_bson[random_values.namespace][random_values.name] = NULL;
 		namespace_exist[random_values.namespace][random_values.name] = FALSE;
 	}
-	else
-	{
-		MYABORT_IF(ret);
-	}
 }
 static
 void

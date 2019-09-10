@@ -156,8 +156,8 @@ i=$(($i + 1)); julea_run "afl-gcc" "--coverage" "" "$i" "-m none -t 10000 -S" "0
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --debug" "" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
 sleep 0.5s
-i=$(($i + 1)); julea_run "afl-gcc" " " "asan" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
-sleep 0.5s
+#i=$(($i + 1)); julea_run "afl-gcc" " " "asan" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
+#sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --testmockup" "" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &
 sleep 0.5s
 i=$(($i + 1)); julea_run "afl-gcc" "--coverage --testmockup --debug" "" "$i" "-m none -t 10000 -S" "0" ${program} > "${log_path}/run$i.out" 2>"${log_path}/run$i.out" &

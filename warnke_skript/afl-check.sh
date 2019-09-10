@@ -16,7 +16,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-./warnke_skript/format.sh
+#./warnke_skript/format.sh
+echo "core-%e-%p-%s" > /proc/sys/kernel/core_pattern
+ulimit -c unlimited
+
 mkdir -p log
 rm -rf /mnt2/julea/* *.tmp-file
 (export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
@@ -73,7 +76,8 @@ fi
 		export G_SLICE=always-malloc
 		./build-gcc-asan/server/julea-server --port=13000 >> log/x 2>&1 &
 		server_pid=$!
-		cat $f | valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
+		cat $f \
+			| valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
 			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
 			./build-${g}/test-afl/${programname}
 		r=$?
@@ -82,9 +86,9 @@ fi
 	)  >> log/x 2>&1
 	r=$?
 	if [ $r -eq 0 ]; then
-		echo "invalid $f $g"
+		echo "invalid $f $g $i $programname"
 	else
-		echo "valid $f $g"
+		echo "valid $f $g $i $programname"
 		exit 1
 	fi
 	mv log/x log/$j-${programname}-$g-$i.tmp-file

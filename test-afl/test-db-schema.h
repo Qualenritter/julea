@@ -314,10 +314,10 @@ event_schema_delete(void)
 	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && the_stored_schema->server_side;
-	G_DEBUG_HERE();
+	G_DEBUG_HERE();if(the_stored_schema->server_side){
 	ret = j_db_schema_delete(the_stored_schema, batch, &error);
 	ret = j_batch_execute(batch) && ret;
-	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	J_AFL_DEBUG_ERROR(ret, ret_expected, error);}
 	if (ret)
 	{
 		G_DEBUG_HERE();
