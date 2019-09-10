@@ -156,6 +156,7 @@ j_reset_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	//FIXME call this on EVERY backend(type)
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_RESET);
 }
 gboolean

@@ -1012,9 +1012,9 @@ test_db_backend_init(void)
 			}
 		}
 		sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, i);
-                j_internal_reset(namespace_strbuf,batch,NULL);
+		j_internal_reset(namespace_strbuf, batch, NULL);
 	}
-               j_batch_execute(batch);
+	j_batch_execute(batch);
 }
 
 static
@@ -1084,8 +1084,8 @@ test_db_backend_cleanup(void)
 {
 	guint i;
 	guint j;
-	GError*error=NULL;
-	gboolean ret=TRUE;
+	GError* error = NULL;
+	gboolean ret = TRUE;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	for (i = 0; i < AFL_LIMIT_SCHEMA_NAMESPACE; i++)
 	{
@@ -1098,8 +1098,8 @@ test_db_backend_cleanup(void)
 			namespace_bson[i][j] = NULL;
 		}
 		sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, i);
-		ret = j_internal_reset(namespace_strbuf,batch,&error);
-		ret=ret && j_batch_execute(batch);
-		J_AFL_DEBUG_ERROR(ret,TRUE,error);
+		ret = j_internal_reset(namespace_strbuf, batch, &error);
+		ret = ret && j_batch_execute(batch);
+		J_AFL_DEBUG_ERROR(ret, TRUE, error);
 	}
 }

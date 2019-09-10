@@ -868,15 +868,17 @@ j_backend_db_iterate(JBackend* backend, gpointer iterator, bson_t* metadata, GEr
 }
 
 gboolean
-j_backend_reset(JBackend* backend,gpointer batch, GError** error){
+j_backend_reset(JBackend* backend, gpointer batch, GError** error)
+{
 	J_TRACE_FUNCTION(NULL);
 
 	g_return_val_if_fail(backend != NULL, FALSE);
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	if(backend->backend_reset){
-		return backend->backend_reset(batch,error);
+	if (backend->backend_reset)
+	{
+		return backend->backend_reset(batch, error);
 	}
 	return TRUE;
 }
