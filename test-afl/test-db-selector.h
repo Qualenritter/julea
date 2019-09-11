@@ -53,7 +53,7 @@ event_selector_ref(void)
 	}
 	ref_count = the_stored_selector->ref_count;
 	G_DEBUG_HERE();
-	ptr = j_db_selector_ref(the_stored_selector, &error);
+	ptr = j_db_selector_ref(the_stored_selector);
 	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 	MYABORT_IF(ptr != the_stored_selector);
 	MYABORT_IF(the_stored_selector->ref_count != ref_count + 1);
@@ -96,7 +96,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_SINT32:
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint32, 4, & error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -109,7 +109,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_UINT32:
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint32, 4, & error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -122,7 +122,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_FLOAT32:
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float32, 4, & error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -135,7 +135,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_SINT64:
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_sint64, 8, & error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -148,7 +148,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_UINT64:
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_uint64, 8, & error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -161,7 +161,7 @@ event_selector_add_field(void)
 		case J_DB_TYPE_FLOAT64:
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, & random_values.var_value_float64, 8, & error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -176,7 +176,7 @@ event_selector_add_field(void)
 			sprintf(varvalue_strbuf, AFL_VARVALUE_FORMAT, random_values.var_value_str % AFL_LIMIT_SCHEMA_STRING_VALUES);
 			G_DEBUG_HERE();
 			ret = j_db_selector_add_field(the_stored_selector, varname_strbuf, operator, varvalue_strbuf, strlen(varvalue_strbuf) + 1, &error);
-			if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+			if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 			{
 				ret_expected = FALSE;
 			}
@@ -223,7 +223,7 @@ event_selector_add_selector(void)
 	ret_expected = ret_expected && (stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector]->bson_count);
 	G_DEBUG_HERE();
 	ret = j_db_selector_add_selector(the_stored_selector, stored_selectors[random_values.namespace][random_values.name][random_values.selector_selector], &error);
-	if (error && error->domain == J_FRONTEND_DB_ERROR && error->code == J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX)
+	if (error && error->domain == J_DB_ERROR && error->code == J_DB_ERROR_SELECTOR_TOO_COMPLEX)
 	{
 		ret_expected = FALSE;
 	}

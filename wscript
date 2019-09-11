@@ -147,6 +147,7 @@ def get_pkg_config_path(prefix):
 
 def options(ctx):
 	ctx.load('compiler_c')
+	#ctx.load('compiler_cxx')
 
 	ctx.add_option('--testmockup', action='store_true', default=False, help='Enable testmockup mode')
 	ctx.add_option('--debug', action='store_true', default=False, help='Enable debug mode')
@@ -167,6 +168,7 @@ def options(ctx):
 
 def configure(ctx):
 	ctx.load('compiler_c')
+	#ctx.load('compiler_cxx')
 	ctx.load('gnu_dirs')
 	ctx.load('clang_compilation_database', tooldir='waf-extras')
 
@@ -669,3 +671,15 @@ def build(ctx):
 			GLIB_VERSION=glib_version,
 			LIBBSON_VERSION=libbson_version
 		)
+
+	# Example
+	#for compiler in ('c', 'cxx'):
+	#	ctx(
+	#		features=[compiler, '{0}program'.format(compiler)],
+	#		source=ctx.path.ant_glob('example/hello-world.c'),
+	#		target='example/hello-world-{0}'.format(compiler),
+	#		use=use_julea_object + use_julea_kv,
+	#		includes=include_julea_core,
+	#		rpath=get_rpath(ctx),
+	#		install_path=None
+	#	)

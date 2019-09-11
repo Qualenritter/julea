@@ -70,7 +70,7 @@ event_iterator_ref(void)
 	}
 	ref_count = the_stored_iterator->ref_count;
 	G_DEBUG_HERE();
-	ptr = j_db_iterator_ref(the_stored_iterator, &error);
+	ptr = j_db_iterator_ref(the_stored_iterator);
 	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 	MYABORT_IF(ptr != the_stored_iterator);
 	MYABORT_IF(the_stored_iterator->ref_count != ref_count + 1);
@@ -118,24 +118,24 @@ event_iterator_next(void)
 				 ;
 			}
 		}
-		else if (error->domain == J_FRONTEND_DB_ERROR)
+		else if (error->domain == J_DB_ERROR)
 		{
 			switch (error->code)
 			{
-			case J_FRONTEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS:
+			case J_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS:
 				ret_expected = FALSE;
 				break;
-			case J_FRONTEND_DB_ERROR_VARIABLE_ALREADY_SET:
-			case J_FRONTEND_DB_ERROR_SCHEMA_NOT_INITIALIZED:
-			case J_FRONTEND_DB_ERROR_MODE_INVALID:
-			case J_FRONTEND_DB_ERROR_SCHEMA_INITIALIZED:
-			case J_FRONTEND_DB_ERROR_SELECTOR_MUST_NOT_EQUAL:
-			case J_FRONTEND_DB_ERROR_SELECTOR_EMPTY:
-			case J_FRONTEND_DB_ERROR_OPERATOR_INVALID:
-			case J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX:
-			case J_FRONTEND_DB_ERROR_SCHEMA_SERVER:
-			case J_FRONTEND_DB_ERROR_TYPE_INVALID:
-			case J_FRONTEND_DB_ERROR_VARIABLE_NOT_FOUND:
+			case J_DB_ERROR_VARIABLE_ALREADY_SET:
+			case J_DB_ERROR_SCHEMA_NOT_INITIALIZED:
+			case J_DB_ERROR_MODE_INVALID:
+			case J_DB_ERROR_SCHEMA_INITIALIZED:
+			case J_DB_ERROR_SELECTOR_MUST_NOT_EQUAL:
+			case J_DB_ERROR_SELECTOR_EMPTY:
+			case J_DB_ERROR_OPERATOR_INVALID:
+			case J_DB_ERROR_SELECTOR_TOO_COMPLEX:
+			case J_DB_ERROR_SCHEMA_SERVER:
+			case J_DB_ERROR_TYPE_INVALID:
+			case J_DB_ERROR_VARIABLE_NOT_FOUND:
 			default: //LCOV_EXCL_LINE
 				 ;
 			}

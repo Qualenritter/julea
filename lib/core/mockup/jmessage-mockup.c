@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <julea.h>
-#include "../../lib/db/jdb-internal.h"
+#include <db/jdb-internal.h>
 #include <core/jmessage.h>
 #include "../../../test-afl/afl.h"
 #include "../../../server/loop.c"

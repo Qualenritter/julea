@@ -28,14 +28,21 @@
 #endif
 
 #include <glib.h>
-#include <bson.h>
+
 #include <julea.h>
-#include <db/jdb-type.h>
-#include <db/jdb-selector.h>
-#include <db/jdb-schema.h>
+
+G_BEGIN_DECLS
 
 struct JDBEntry;
+
 typedef struct JDBEntry JDBEntry;
+
+G_END_DECLS
+
+#include <db/jdb-schema.h>
+#include <db/jdb-selector.h>
+
+G_BEGIN_DECLS
 
 /**
  * Allocates a new entry.
@@ -46,7 +53,9 @@ typedef struct JDBEntry JDBEntry;
  *
  * \return the new entry or NULL on failure
  **/
-JDBEntry* j_db_entry_new(JDBSchema* schema, GError** error);
+
+JDBEntry* j_db_entry_new (JDBSchema* schema, GError** error);
+
 /**
  * Increase the ref_count of the given entry.
  *
@@ -55,17 +64,24 @@ JDBEntry* j_db_entry_new(JDBSchema* schema, GError** error);
  *
  * \return the entry or NULL on failure
  **/
-JDBEntry* j_db_entry_ref(JDBEntry* entry, GError** error);
+
+JDBEntry* j_db_entry_ref (JDBEntry* entry);
+
 /**
  * Decrease the ref_count of the given entry - and automatically call free if ref_count is 0.  This is a noop if entry == NULL.
  *
  * \param[in] entry the entry to decrease the ref_count
  **/
-void j_db_entry_unref(JDBEntry* entry);
+
+void j_db_entry_unref (JDBEntry* entry);
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBEntry, j_db_entry_unref)
+
 /**
- * returns the if of the entry, after j_db_entry_insert has been called
+ * returns the id of the entry, after j_db_entry_insert has been called
  */
-gboolean j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** error);
+gboolean j_db_entry_get_id (JDBEntry* entry, gpointer* value, guint64* length, GError** error);
+
 /**
  * Set a field in the given entry
  *
@@ -79,7 +95,9 @@ gboolean j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GE
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error);
+
+gboolean j_db_entry_set_field (JDBEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error);
+
 /**
  * Save the entry in the backend.
  * All variables defined in the schema, which are not explicitily set, are initialized to NULL.
@@ -94,7 +112,9 @@ gboolean j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer 
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error);
+
+gboolean j_db_entry_insert (JDBEntry* entry, JBatch* batch, GError** error);
+
 /**
  * Replayes all entrys attributes with the given entrys attributes in the backend where the selector matches.
  *
@@ -112,7 +132,9 @@ gboolean j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error);
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
+
+gboolean j_db_entry_update (JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
+
 /**
  * Delete the entry from the backend.
  *
@@ -127,8 +149,9 @@ gboolean j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBEntry, j_db_entry_unref)
+gboolean j_db_entry_delete (JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error);
+
+G_END_DECLS
 
 #endif

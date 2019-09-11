@@ -20,8 +20,8 @@
  * \file
  **/
 
-#ifndef JULEA_DB_TYPE_H
-#define JULEA_DB_TYPE_H
+#ifndef JULEA_DB_ERROR_H
+#define JULEA_DB_ERROR_H
 
 #if !defined(JULEA_DB_H) && !defined(JULEA_DB_COMPILATION)
 #error "Only <julea-db.h> can be included directly."
@@ -31,28 +31,28 @@
 
 G_BEGIN_DECLS
 
-enum JDBType
+#define J_DB_ERROR j_db_error_quark()
+
+enum JDBError
 {
-	J_DB_TYPE_SINT32,
-	J_DB_TYPE_UINT32,
-	J_DB_TYPE_FLOAT32,
-	J_DB_TYPE_SINT64,
-	J_DB_TYPE_UINT64,
-	J_DB_TYPE_FLOAT64,
-	J_DB_TYPE_STRING,
-	J_DB_TYPE_BLOB,
-	J_DB_TYPE_ID,
-	_J_DB_TYPE_COUNT
+	J_DB_ERROR_DUPLICATE_INDEX,
+	J_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS,
+	J_DB_ERROR_MODE_INVALID,
+	J_DB_ERROR_OPERATOR_INVALID,
+	J_DB_ERROR_SCHEMA_INITIALIZED,
+	J_DB_ERROR_SCHEMA_NOT_INITIALIZED,
+	J_DB_ERROR_SCHEMA_SERVER,
+	J_DB_ERROR_SELECTOR_EMPTY,
+	J_DB_ERROR_SELECTOR_MUST_NOT_EQUAL,
+	J_DB_ERROR_SELECTOR_TOO_COMPLEX,
+	J_DB_ERROR_TYPE_INVALID,
+	J_DB_ERROR_VARIABLE_ALREADY_SET,
+	J_DB_ERROR_VARIABLE_NOT_FOUND
 };
 
-typedef enum JDBType JDBType;
+typedef enum JDBError JDBError;
 
-union JDBTypeValue;
-
-typedef enum JFrontendDBError JFrontendDBError;
-
-union JDBTypeValue;
-typedef union JDBTypeValue JDBTypeValue;
+GQuark j_db_error_quark (void);
 
 G_END_DECLS
 

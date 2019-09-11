@@ -23,10 +23,12 @@
 #ifndef JULEA_DB_H
 #define JULEA_DB_H
 
-#include <db/jdb-type.h>
+#include <db/jdb-entry.h>
+#include <db/jdb-error.h>
+#include <db/jdb-iterator.h>
 #include <db/jdb-schema.h>
 #include <db/jdb-selector.h>
+#include <db/jdb-type.h>
 #include <db/jdb-iterator.h>
-#include <db/jdb-entry.h>
 
 #endif

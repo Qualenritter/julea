@@ -52,7 +52,7 @@ event_entry_ref(void)
 	}
 	ref_count = the_stored_entry->ref_count;
 	G_DEBUG_HERE();
-	ptr = j_db_entry_ref(the_stored_entry, &error);
+	ptr = j_db_entry_ref(the_stored_entry);
 	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 	MYABORT_IF(ptr != the_stored_entry);
 	MYABORT_IF(the_stored_entry->ref_count != ref_count + 1);

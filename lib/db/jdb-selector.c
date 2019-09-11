@@ -29,186 +29,212 @@
 #include <bson.h>
 
 #include <julea.h>
-#include "jdb-internal.h"
+#include <db/jdb-internal.h>
 #include <julea-db.h>
 #include "../../backend/db/jbson.c"
 
 JDBSelector*
-j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
+j_db_selector_new (JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
 	JDBTypeValue val;
 	JDBSelector* selector = NULL;
 
-	g_return_val_if_fail(mode < _J_DB_SELECTOR_MODE_COUNT, FALSE);
+	g_return_val_if_fail(mode < _J_DB_SELECTOR_MODE_COUNT, NULL);
+	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	selector = g_slice_new(JDBSelector);
 	selector->ref_count = 1;
 	selector->mode = mode;
 	selector->bson_count = 0;
 	bson_init(&selector->bson);
-	selector->schema = j_db_schema_ref(schema, error);
+	selector->schema = j_db_schema_ref(schema);
+
 	if (G_UNLIKELY(!selector->schema))
 	{
 		goto _error;
 	}
+
 	val.val_uint32 = mode;
+
 	if (G_UNLIKELY(!j_bson_append_value(&selector->bson, "_mode", J_DB_TYPE_UINT32, &val, error)))
 	{
 		goto _error;
 	}
+
 	return selector;
+
 _error:
 	j_db_selector_unref(selector);
 	return NULL;
 }
+
 JDBSelector*
-j_db_selector_ref(JDBSelector* selector, GError** error)
+j_db_selector_ref (JDBSelector* selector)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_return_val_if_fail(selector != NULL, FALSE);
-	(void)error;
+	g_return_val_if_fail(selector != NULL, NULL);
 
 	g_atomic_int_inc(&selector->ref_count);
+
 	return selector;
 }
+
 void
-j_db_selector_unref(JDBSelector* selector)
+j_db_selector_unref (JDBSelector* selector)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	if (selector && g_atomic_int_dec_and_test(&selector->ref_count))
+	g_return_if_fail(selector != NULL);
+
+	if (g_atomic_int_dec_and_test(&selector->ref_count))
 	{
 		j_db_schema_unref(selector->schema);
 		bson_destroy(&selector->bson);
 		g_slice_free(JDBSelector, selector);
 	}
 }
+
 gboolean
-j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
+j_db_selector_add_field (JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	// FIXME possible overrun
 	char buf[20];
 	bson_t bson;
 	JDBType type;
 	JDBTypeValue val;
 
 	g_return_val_if_fail(selector != NULL, FALSE);
-	g_return_val_if_fail(operator<_J_DB_SELECTOR_OPERATOR_COUNT, FALSE);
+	g_return_val_if_fail(operator < _J_DB_SELECTOR_OPERATOR_COUNT, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (G_UNLIKELY(selector->bson_count + 1 > 500))
 	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
+		g_set_error_literal(error, J_DB_ERROR, J_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_db_schema_get_field(selector->schema, name, &type, error)))
 	{
 		goto _error;
 	}
+
+	// FIXME possible overrun
 	sprintf(buf, "%d", selector->bson_count);
+
 	if (G_UNLIKELY(!j_bson_append_document_begin(&selector->bson, buf, &bson, error)))
 	{
 		goto _error;
 	}
+
 	val.val_string = name;
+
 	if (G_UNLIKELY(!j_bson_append_value(&bson, "_name", J_DB_TYPE_STRING, &val, error)))
 	{
 		goto _error;
 	}
+
 	val.val_uint32 = operator;
+
 	if (G_UNLIKELY(!j_bson_append_value(&bson, "_operator", J_DB_TYPE_UINT32, &val, error)))
 	{
 		goto _error;
 	}
+
 	switch (type)
 	{
-	case J_DB_TYPE_SINT32:
-		val.val_sint32 = *(gint32 const*)value;
-		break;
-	case J_DB_TYPE_UINT32:
-		val.val_uint32 = *(guint32 const*)value;
-		break;
-	case J_DB_TYPE_FLOAT32:
-		val.val_float32 = *(gfloat const*)value;
-		break;
-	case J_DB_TYPE_SINT64:
-		val.val_sint64 = *(gint64 const*)value;
-		break;
-	case J_DB_TYPE_UINT64:
-		val.val_sint64 = *(gint64 const*)value;
-		break;
-	case J_DB_TYPE_FLOAT64:
-		val.val_float64 = *(gdouble const*)value;
-		break;
-	case J_DB_TYPE_STRING:
-		val.val_string = value;
-		break;
-	case J_DB_TYPE_BLOB:
-		val.val_blob = value;
-		val.val_blob_length = length;
-		break;
-	case J_DB_TYPE_ID:
-	case _J_DB_TYPE_COUNT:
-	default:
-		g_assert_not_reached();
+		case J_DB_TYPE_SINT32:
+			val.val_sint32 = *(gint32 const*)value;
+			break;
+		case J_DB_TYPE_UINT32:
+			val.val_uint32 = *(guint32 const*)value;
+			break;
+		case J_DB_TYPE_FLOAT32:
+			val.val_float32 = *(gfloat const*)value;
+			break;
+		case J_DB_TYPE_SINT64:
+			val.val_sint64 = *(gint64 const*)value;
+			break;
+		case J_DB_TYPE_UINT64:
+			val.val_sint64 = *(gint64 const*)value;
+			break;
+		case J_DB_TYPE_FLOAT64:
+			val.val_float64 = *(gdouble const*)value;
+			break;
+		case J_DB_TYPE_STRING:
+			val.val_string = value;
+			break;
+		case J_DB_TYPE_BLOB:
+			val.val_blob = value;
+			val.val_blob_length = length;
+			break;
+		case J_DB_TYPE_ID:
+		case _J_DB_TYPE_COUNT:
+		default:
+			g_assert_not_reached();
 	}
+
 	if (G_UNLIKELY(!j_bson_append_value(&bson, "_value", type, &val, error)))
 	{
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_bson_append_document_end(&selector->bson, &bson, error)))
 	{
 		goto _error;
 	}
+
 	selector->bson_count++;
+
 	return TRUE;
+
 _error:
 	return FALSE;
 }
+
 gboolean
-j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
+j_db_selector_add_selector (JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	// FIXME possible overrun
 	char buf[20];
 
 	g_return_val_if_fail(selector != NULL, FALSE);
 	g_return_val_if_fail(sub_selector != NULL, FALSE);
 	g_return_val_if_fail(selector != sub_selector, FALSE);
 	g_return_val_if_fail(selector->schema == sub_selector->schema, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (G_UNLIKELY(!sub_selector->bson_count))
 	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_EMPTY, "selector must not be emoty");
+		g_set_error_literal(error, J_DB_ERROR, J_DB_ERROR_SELECTOR_EMPTY, "selector must not be emoty");
 		goto _error;
 	}
+
 	if (G_UNLIKELY(selector->bson_count + sub_selector->bson_count > 500))
 	{
-		g_set_error_literal(error, J_FRONTEND_DB_ERROR, J_FRONTEND_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
+		g_set_error_literal(error, J_DB_ERROR, J_DB_ERROR_SELECTOR_TOO_COMPLEX, "selector too complex");
 		goto _error;
+
 	}
+
+	// FIXME possible overrun
 	sprintf(buf, "%d", selector->bson_count);
+
 	if (G_UNLIKELY(!j_bson_append_document(&selector->bson, buf, &sub_selector->bson, error)))
 	{
 		goto _error;
 	}
+
 	selector->bson_count += sub_selector->bson_count;
+
 	return TRUE;
+
 _error:
 	return FALSE;
-}
-
-bson_t*
-j_db_selector_get_bson(JDBSelector* selector)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	if (selector && selector->bson_count > 0)
-	{
-		return &selector->bson;
-	}
-	return NULL;
 }

@@ -28,13 +28,19 @@
 #endif
 
 #include <glib.h>
-#include <bson.h>
-#include <julea.h>
+
+G_BEGIN_DECLS
+
+struct JDBIterator;
+
+typedef struct JDBIterator JDBIterator;
+
+G_END_DECLS
+
 #include <db/jdb-schema.h>
 #include <db/jdb-selector.h>
 
-struct JDBIterator;
-typedef struct JDBIterator JDBIterator;
+G_BEGIN_DECLS
 
 /**
  * Allocates a new iterator.
@@ -48,7 +54,9 @@ typedef struct JDBIterator JDBIterator;
  *
  * \return the new iterator or NULL on failure
  **/
-JDBIterator* j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error);
+
+JDBIterator* j_db_iterator_new (JDBSchema* schema, JDBSelector* selector, GError** error);
+
 /**
  * Increase the ref_count of the given iterator.
  *
@@ -57,13 +65,19 @@ JDBIterator* j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError*
  *
  * \return the iterator or NULL on failure
  **/
-JDBIterator* j_db_iterator_ref(JDBIterator* iterator, GError** error);
+
+JDBIterator* j_db_iterator_ref (JDBIterator* iterator);
+
 /**
  * Decrease the ref_count of the given iterator - and automatically call free if ref_count is 0. This is a noop if iterator == NULL.
  *
  * \param[in] iterator the iterator to decrease the ref_count
  **/
-void j_db_iterator_unref(JDBIterator* iterator);
+
+void j_db_iterator_unref (JDBIterator* iterator);
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBIterator, j_db_iterator_unref)
+
 /**
  * The iterator moves to the next element.
  *
@@ -72,7 +86,9 @@ void j_db_iterator_unref(JDBIterator* iterator);
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_iterator_next(JDBIterator* iterator, GError** error);
+
+gboolean j_db_iterator_next (JDBIterator* iterator, GError** error);
+
 /**
  * Get a single value from the current entry of the iterator.
  *
@@ -92,8 +108,9 @@ gboolean j_db_iterator_next(JDBIterator* iterator, GError** error);
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error);
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBIterator, j_db_iterator_unref)
+gboolean j_db_iterator_get_field (JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error);
+
+G_END_DECLS
 
 #endif

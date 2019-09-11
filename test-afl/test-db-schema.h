@@ -90,7 +90,7 @@ event_schema_ref(void)
 	}
 	ref_count = the_stored_schema->ref_count;
 	G_DEBUG_HERE();
-	ptr = j_db_schema_ref(the_stored_schema, &error);
+	ptr = j_db_schema_ref(the_stored_schema);
 	J_AFL_DEBUG_ERROR(ptr != NULL, TRUE, error);
 	MYABORT_IF(ptr != the_stored_schema);
 	MYABORT_IF(the_stored_schema->ref_count != ref_count + 1);

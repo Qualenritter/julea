@@ -28,15 +28,24 @@
 #endif
 
 #include <glib.h>
-#include <bson.h>
+
 #include <julea.h>
-#include <db/jdb-type.h>
+
+G_BEGIN_DECLS
 
 struct JDBSchemaIndex;
+
 typedef struct JDBSchemaIndex JDBSchemaIndex;
 
 struct JDBSchema;
+
 typedef struct JDBSchema JDBSchema;
+
+G_END_DECLS
+
+#include <db/jdb-type.h>
+
+G_BEGIN_DECLS
 
 /**
  * Allocates a new schema.
@@ -49,7 +58,9 @@ typedef struct JDBSchema JDBSchema;
  *
  * \return the new schema or NULL on failure
  **/
-JDBSchema* j_db_schema_new(gchar const* namespace, gchar const* name, GError** error);
+
+JDBSchema* j_db_schema_new (gchar const* namespace, gchar const* name, GError** error);
+
 /**
  * Increase the ref_count of the given schema.
  *
@@ -58,13 +69,19 @@ JDBSchema* j_db_schema_new(gchar const* namespace, gchar const* name, GError** e
  *
  * \return the schema or NULL on failure
  **/
-JDBSchema* j_db_schema_ref(JDBSchema* schema, GError** error);
+
+JDBSchema* j_db_schema_ref (JDBSchema* schema);
+
 /**
  * Decrease the ref_count of the given schema - and automatically call free if ref_count is 0.  This is a noop if schema == NULL.
  *
  * \param[in] schema the schema to decrease the ref_count
  **/
-void j_db_schema_unref(JDBSchema* schema);
+
+void j_db_schema_unref (JDBSchema* schema);
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBSchema, j_db_schema_unref)
+
 /**
  * Add a field to the schema.
  *
@@ -78,7 +95,9 @@ void j_db_schema_unref(JDBSchema* schema);
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError** error);
+
+gboolean j_db_schema_add_field (JDBSchema* schema, gchar const* name, JDBType type, GError** error);
+
 /**
  * query a variable from the schema.
  *
@@ -93,7 +112,9 @@ gboolean j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType typ
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GError** error);
+
+gboolean j_db_schema_get_field (JDBSchema* schema, gchar const* name, JDBType* type, GError** error);
+
 /**
  * query all variables from the schema.
  *
@@ -111,7 +132,9 @@ gboolean j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* ty
  *
  * \return TRUE on success, FALSE otherwise
  **/
-guint32 j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, GError** error);
+
+guint32 j_db_schema_get_all_fields (JDBSchema* schema, gchar*** names, JDBType** types, GError** error);
+
 /**
  * adds an index to the given schema.
  *
@@ -126,7 +149,9 @@ guint32 j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** 
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error);
+
+gboolean j_db_schema_add_index (JDBSchema* schema, gchar const** names, GError** error);
+
 /**
  * stores a schema in the backend.
  *
@@ -139,7 +164,9 @@ gboolean j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** 
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error);
+
+gboolean j_db_schema_create (JDBSchema* schema, JBatch* batch, GError** error);
+
 /**
  * querys a schema structure from the backend.
  *
@@ -152,7 +179,9 @@ gboolean j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error);
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error);
+
+gboolean j_db_schema_get (JDBSchema* schema, JBatch* batch, GError** error);
+
 /**
  * deletes a schema structure from the backend.
  *
@@ -165,7 +194,9 @@ gboolean j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error);
  *
  * \return TRUE on success, FALSE otherwise
  **/
-gboolean j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error);
+
+gboolean j_db_schema_delete (JDBSchema* schema, JBatch* batch, GError** error);
+
 /**
  * compares two schema with each other.
  *
@@ -179,8 +210,9 @@ gboolean j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error);
  *
  * \return TRUE on success, FALSE otherwise
  **/
+
 gboolean j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GError** error);
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(JDBSchema, j_db_schema_unref)
+G_END_DECLS
 
 #endif
