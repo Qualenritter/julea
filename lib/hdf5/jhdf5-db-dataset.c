@@ -56,8 +56,8 @@ herr_t
 H5VL_julea_db_dataset_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-
-	j_db_schema_unref(julea_db_schema_dataset);
+	if (julea_db_schema_dataset)
+		j_db_schema_unref(julea_db_schema_dataset);
 	julea_db_schema_dataset = NULL;
 	return 0;
 }
@@ -87,7 +87,8 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 			{
 				g_error_free(error);
 				error = NULL;
-				j_db_schema_unref(julea_db_schema_dataset);
+				if (julea_db_schema_dataset)
+					j_db_schema_unref(julea_db_schema_dataset);
 				if (!(julea_db_schema_dataset = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "dataset", NULL)))
 				{
 					j_goto_error();
@@ -122,7 +123,8 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
-				j_db_schema_unref(julea_db_schema_dataset);
+				if (julea_db_schema_dataset)
+					j_db_schema_unref(julea_db_schema_dataset);
 				if (!(julea_db_schema_dataset = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "dataset", NULL)))
 				{
 					j_goto_error();

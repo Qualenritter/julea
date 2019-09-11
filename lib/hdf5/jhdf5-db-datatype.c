@@ -192,8 +192,8 @@ herr_t
 H5VL_julea_db_datatype_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-
-	j_db_schema_unref(julea_db_schema_datatype_header);
+	if (julea_db_schema_datatype_header)
+		j_db_schema_unref(julea_db_schema_datatype_header);
 	julea_db_schema_datatype_header = NULL;
 	return 0;
 }
@@ -223,7 +223,8 @@ H5VL_julea_db_datatype_init(hid_t vipl_id)
 			{
 				g_error_free(error);
 				error = NULL;
-				j_db_schema_unref(julea_db_schema_datatype_header);
+				if (julea_db_schema_datatype_header)
+					j_db_schema_unref(julea_db_schema_datatype_header);
 				if (!(julea_db_schema_datatype_header = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "datatype_header", NULL)))
 				{
 					j_goto_error();

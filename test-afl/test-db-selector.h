@@ -19,13 +19,15 @@
 /*
  * this file is part of 'test-db-client.c'
  */
-static void
+static
+void
 event_selector_new(void)
 {
 	GError* error = NULL;
 	guint ret_expected;
 	G_DEBUG_HERE();
-	j_db_selector_unref(the_stored_selector);
+	if (the_stored_selector)
+		j_db_selector_unref(the_stored_selector);
 	the_stored_selector = NULL;
 	the_stored_selector_field_count = 0;
 	g_debug("AFL_EVENT_DB_SELECTOR_NEW %d %d", random_values.namespace, random_values.name);
@@ -40,7 +42,8 @@ event_selector_new(void)
 	the_stored_selector = j_db_selector_new(the_stored_schema, random_values.selector_mode, &error);
 	J_AFL_DEBUG_ERROR(the_stored_selector != NULL, ret_expected, error);
 }
-static void
+static
+void
 event_selector_ref(void)
 {
 	GError* error = NULL;
@@ -58,10 +61,12 @@ event_selector_ref(void)
 	MYABORT_IF(ptr != the_stored_selector);
 	MYABORT_IF(the_stored_selector->ref_count != ref_count + 1);
 	G_DEBUG_HERE();
-	j_db_selector_unref(the_stored_selector);
+	if (the_stored_selector)
+		j_db_selector_unref(the_stored_selector);
 	MYABORT_IF(the_stored_selector->ref_count != ref_count);
 }
-static void
+static
+void
 event_selector_add_field(void)
 {
 	GError* error = NULL;
@@ -199,7 +204,8 @@ event_selector_add_field(void)
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
-static void
+static
+void
 event_selector_add_selector(void)
 {
 	GError* error = NULL;

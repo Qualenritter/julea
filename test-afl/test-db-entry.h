@@ -19,14 +19,16 @@
 /*
  * this file is part of 'test-db-client.c'
  */
-static void
+static
+void
 event_entry_new(void)
 {
 	GError* error = NULL;
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ENTRY_NEW %d %d %d", random_values.namespace, random_values.name, random_values.entry);
 	G_DEBUG_HERE();
-	j_db_entry_unref(the_stored_entry);
+	if (the_stored_entry)
+		j_db_entry_unref(the_stored_entry);
 	the_stored_entry_field_set = 0;
 	if (!the_stored_schema)
 	{
@@ -39,7 +41,8 @@ event_entry_new(void)
 	the_stored_entry = j_db_entry_new(the_stored_schema, &error);
 	J_AFL_DEBUG_ERROR(the_stored_entry != NULL, ret_expected, error);
 }
-static void
+static
+void
 event_entry_ref(void)
 {
 	GError* error = NULL;
@@ -57,10 +60,12 @@ event_entry_ref(void)
 	MYABORT_IF(ptr != the_stored_entry);
 	MYABORT_IF(the_stored_entry->ref_count != ref_count + 1);
 	G_DEBUG_HERE();
-	j_db_entry_unref(the_stored_entry);
+	if (the_stored_entry)
+		j_db_entry_unref(the_stored_entry);
 	MYABORT_IF(the_stored_entry->ref_count != ref_count);
 }
-static void
+static
+void
 event_entry_set_field(void)
 {
 	GError* error = NULL;
@@ -157,7 +162,8 @@ event_entry_set_field(void)
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
-static void
+static
+void
 event_entry_insert(void)
 {
 	JBatch* batch;
@@ -179,7 +185,8 @@ event_entry_insert(void)
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	j_batch_unref(batch);
 }
-static void
+static
+void
 event_entry_update(void)
 {
 	JBatch* batch;
@@ -213,7 +220,8 @@ event_entry_update(void)
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 	j_batch_unref(batch);
 }
-static void
+static
+void
 event_entry_delete(void)
 {
 	JBatch* batch;

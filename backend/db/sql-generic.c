@@ -2085,6 +2085,8 @@ static
 gboolean
 backend_reset(gpointer _batch, GError** error)
 {
+	return TRUE; //FIXME
+
 	J_TRACE_FUNCTION(NULL);
 
 	JDBType type;

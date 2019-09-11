@@ -55,8 +55,8 @@ herr_t
 H5VL_julea_db_group_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
-
-	j_db_schema_unref(julea_db_schema_group);
+	if (julea_db_schema_group)
+		j_db_schema_unref(julea_db_schema_group);
 	julea_db_schema_group = NULL;
 	return 0;
 }
@@ -85,7 +85,8 @@ H5VL_julea_db_group_init(hid_t vipl_id)
 			{
 				g_error_free(error);
 				error = NULL;
-				j_db_schema_unref(julea_db_schema_group);
+				if (julea_db_schema_group)
+					j_db_schema_unref(julea_db_schema_group);
 				if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
 				{
 					j_goto_error();
@@ -112,7 +113,8 @@ H5VL_julea_db_group_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
-				j_db_schema_unref(julea_db_schema_group);
+				if (julea_db_schema_group)
+					j_db_schema_unref(julea_db_schema_group);
 				if (!(julea_db_schema_group = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "group", NULL)))
 				{
 					j_goto_error();

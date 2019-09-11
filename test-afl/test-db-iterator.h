@@ -19,14 +19,16 @@
 /*
  * this file is part of 'test-db-client.c'
  */
-static void
+static
+void
 event_iterator_new(void)
 {
 	GError* error = NULL;
 	guint ret_expected;
 	g_debug("AFL_EVENT_DB_ITERATOR_NEW %d %d", random_values.namespace, random_values.name);
 	G_DEBUG_HERE();
-	j_db_iterator_unref(the_stored_iterator);
+	if (the_stored_iterator)
+		j_db_iterator_unref(the_stored_iterator);
 	the_stored_iterator_next_count = 0;
 	if (!the_stored_schema)
 	{
@@ -57,7 +59,8 @@ event_iterator_new(void)
 		MYABORT(); //LCOV_EXCL_LINE
 	}
 }
-static void
+static
+void
 event_iterator_ref(void)
 {
 	GError* error = NULL;
@@ -75,10 +78,12 @@ event_iterator_ref(void)
 	MYABORT_IF(ptr != the_stored_iterator);
 	MYABORT_IF(the_stored_iterator->ref_count != ref_count + 1);
 	G_DEBUG_HERE();
-	j_db_iterator_unref(the_stored_iterator);
+	if (the_stored_iterator)
+		j_db_iterator_unref(the_stored_iterator);
 	MYABORT_IF(the_stored_iterator->ref_count != ref_count);
 }
-static void
+static
+void
 event_iterator_next(void)
 {
 	GError* error = NULL;
@@ -147,7 +152,8 @@ event_iterator_next(void)
 		the_stored_iterator_next_count++;
 	}
 }
-static void
+static
+void
 event_iterator_get_field(void)
 {
 	JDBType type;
