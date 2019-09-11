@@ -34,7 +34,7 @@
 #include "../../backend/db/jbson.c"
 
 JDBEntry*
-j_db_entry_new (JDBSchema* schema, GError** error)
+j_db_entry_new(JDBSchema* schema, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -69,7 +69,7 @@ _error:
 }
 
 JDBEntry*
-j_db_entry_ref (JDBEntry* entry)
+j_db_entry_ref(JDBEntry* entry)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -81,7 +81,7 @@ j_db_entry_ref (JDBEntry* entry)
 }
 
 void
-j_db_entry_unref (JDBEntry* entry)
+j_db_entry_unref(JDBEntry* entry)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -97,7 +97,7 @@ j_db_entry_unref (JDBEntry* entry)
 }
 
 gboolean
-j_db_entry_set_field (JDBEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error)
+j_db_entry_set_field(JDBEntry* entry, gchar const* name, gconstpointer value, guint64 length, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -127,35 +127,35 @@ j_db_entry_set_field (JDBEntry* entry, gchar const* name, gconstpointer value, g
 
 	switch (type)
 	{
-		case J_DB_TYPE_SINT32:
-			val.val_sint32 = *(const gint32*)value;
-			break;
-		case J_DB_TYPE_UINT32:
-			val.val_uint32 = *(const guint32*)value;
-			break;
-		case J_DB_TYPE_SINT64:
-			val.val_sint64 = *(const gint64*)value;
-			break;
-		case J_DB_TYPE_UINT64:
-			val.val_uint64 = *(const guint64*)value;
-			break;
-		case J_DB_TYPE_FLOAT32:
-			val.val_float32 = *(const gfloat*)value;
-			break;
-		case J_DB_TYPE_FLOAT64:
-			val.val_float64 = *(const gdouble*)value;
-			break;
-		case J_DB_TYPE_STRING:
-			val.val_string = (const char*)value;
-			break;
-		case J_DB_TYPE_BLOB:
-			val.val_blob = (const char*)value;
-			val.val_blob_length = length;
-			break;
-		case J_DB_TYPE_ID:
-		case _J_DB_TYPE_COUNT:
-		default:
-			g_assert_not_reached();
+	case J_DB_TYPE_SINT32:
+		val.val_sint32 = *(const gint32*)value;
+		break;
+	case J_DB_TYPE_UINT32:
+		val.val_uint32 = *(const guint32*)value;
+		break;
+	case J_DB_TYPE_SINT64:
+		val.val_sint64 = *(const gint64*)value;
+		break;
+	case J_DB_TYPE_UINT64:
+		val.val_uint64 = *(const guint64*)value;
+		break;
+	case J_DB_TYPE_FLOAT32:
+		val.val_float32 = *(const gfloat*)value;
+		break;
+	case J_DB_TYPE_FLOAT64:
+		val.val_float64 = *(const gdouble*)value;
+		break;
+	case J_DB_TYPE_STRING:
+		val.val_string = (const char*)value;
+		break;
+	case J_DB_TYPE_BLOB:
+		val.val_blob = (const char*)value;
+		val.val_blob_length = length;
+		break;
+	case J_DB_TYPE_ID:
+	case _J_DB_TYPE_COUNT:
+	default:
+		g_assert_not_reached();
 	}
 
 	if (G_UNLIKELY(!j_bson_append_value(&entry->bson, name, type, &val, error)))
@@ -170,7 +170,7 @@ _error:
 }
 
 gboolean
-j_db_entry_insert (JDBEntry* entry, JBatch* batch, GError** error)
+j_db_entry_insert(JDBEntry* entry, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -190,7 +190,7 @@ _error:
 }
 
 gboolean
-j_db_entry_update (JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
+j_db_entry_update(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -222,7 +222,7 @@ _error:
 }
 
 gboolean
-j_db_entry_delete (JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
+j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

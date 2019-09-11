@@ -58,7 +58,9 @@ H5VL_julea_db_file_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
 	if (julea_db_schema_file)
+	{
 		j_db_schema_unref(julea_db_schema_file);
+	}
 	julea_db_schema_file = NULL;
 	return 0;
 }
@@ -89,7 +91,9 @@ H5VL_julea_db_file_init(hid_t vipl_id)
 				g_error_free(error);
 				error = NULL;
 				if (julea_db_schema_file)
+				{
 					j_db_schema_unref(julea_db_schema_file);
+				}
 				if (!(julea_db_schema_file = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "file", NULL)))
 				{
 					j_goto_error();
@@ -192,7 +196,9 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	if (!exist)
 	{
 		if (iterator)
+		{
 			j_db_iterator_unref(iterator);
+		}
 		if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE)))
 		{
 			j_goto_error();

@@ -126,17 +126,25 @@ H5VL_julea_db_object_unref(JHDF5Object_t* object)
 			H5VL_julea_db_object_unref(object->dataset.file);
 			g_free(object->dataset.name);
 			if (object->dataset.distribution)
+			{
 				j_distribution_unref(object->dataset.distribution);
+			}
 			if (object->dataset.object)
+			{
 				j_distributed_object_unref(object->dataset.object);
+			}
 			break;
 		case J_HDF5_OBJECT_TYPE_ATTR:
 			H5VL_julea_db_object_unref(object->attr.file);
 			g_free(object->attr.name);
 			if (object->attr.distribution)
+			{
 				j_distribution_unref(object->attr.distribution);
+			}
 			if (object->attr.object)
+			{
 				j_distributed_object_unref(object->attr.object);
+			}
 			break;
 		case J_HDF5_OBJECT_TYPE_GROUP:
 			H5VL_julea_db_object_unref(object->group.file);

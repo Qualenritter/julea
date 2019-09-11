@@ -44,14 +44,14 @@ struct JDBIteratorHelper
 typedef struct JDBIteratorHelper JDBIteratorHelper;
 
 GQuark
-j_db_error_quark (void)
+j_db_error_quark(void)
 {
 	return g_quark_from_static_string("j-db-error-quark");
 }
 
 static
 gboolean
-j_backend_db_func_exec (JList* operations, JSemantics* semantics, JMessageType type)
+j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType type)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -139,7 +139,7 @@ j_backend_db_func_exec (JList* operations, JSemantics* semantics, JMessageType t
 
 static
 void
-j_backend_db_func_free (gpointer _data)
+j_backend_db_func_free(gpointer _data)
 {
 	JBackendOperation* data = _data;
 
@@ -180,14 +180,14 @@ j_internal_reset(gchar const* namespace, JBatch* batch, GError** error)
 }
 static
 gboolean
-j_db_schema_create_exec (JList* operations, JSemantics* semantics)
+j_db_schema_create_exec(JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_CREATE);
 }
 gboolean
-j_db_internal_schema_create (gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error)
+j_db_internal_schema_create(gchar const* namespace, gchar const* name, bson_t const* schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -216,13 +216,13 @@ j_db_internal_schema_create (gchar const* namespace, gchar const* name, bson_t c
 
 static
 gboolean
-j_db_schema_get_exec (JList* operations, JSemantics* semantics)
+j_db_schema_get_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_GET);
 }
 
 gboolean
-j_db_internal_schema_get (gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error)
+j_db_internal_schema_get(gchar const* namespace, gchar const* name, bson_t* schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -251,13 +251,13 @@ j_db_internal_schema_get (gchar const* namespace, gchar const* name, bson_t* sch
 
 static
 gboolean
-j_db_schema_delete_exec (JList* operations, JSemantics* semantics)
+j_db_schema_delete_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_DELETE);
 }
 
 gboolean
-j_db_internal_schema_delete (gchar const* namespace, gchar const* name, JBatch* batch, GError** error)
+j_db_internal_schema_delete(gchar const* namespace, gchar const* name, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -285,13 +285,13 @@ j_db_internal_schema_delete (gchar const* namespace, gchar const* name, JBatch* 
 
 static
 gboolean
-j_db_insert_exec (JList* operations, JSemantics* semantics)
+j_db_insert_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_INSERT);
 }
 
 gboolean
-j_db_internal_insert (gchar const* namespace, gchar const* name, bson_t const* metadata, bson_t* id, JBatch* batch, GError** error)
+j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, bson_t* id, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -321,13 +321,13 @@ j_db_internal_insert (gchar const* namespace, gchar const* name, bson_t const* m
 
 static
 gboolean
-j_db_update_exec (JList* operations, JSemantics* semantics)
+j_db_update_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_UPDATE);
 }
 
 gboolean
-j_db_internal_update (gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error)
+j_db_internal_update(gchar const* namespace, gchar const* name, bson_t const* selector, bson_t const* metadata, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -357,13 +357,13 @@ j_db_internal_update (gchar const* namespace, gchar const* name, bson_t const* s
 
 static
 gboolean
-j_db_delete_exec (JList* operations, JSemantics* semantics)
+j_db_delete_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_DELETE);
 }
 
 gboolean
-j_db_internal_delete (gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error)
+j_db_internal_delete(gchar const* namespace, gchar const* name, bson_t const* selector, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -392,13 +392,13 @@ j_db_internal_delete (gchar const* namespace, gchar const* name, bson_t const* s
 
 static
 gboolean
-j_db_query_exec (JList* operations, JSemantics* semantics)
+j_db_query_exec(JList* operations, JSemantics* semantics)
 {
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_QUERY);
 }
 
 gboolean
-j_db_internal_query (gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error)
+j_db_internal_query(gchar const* namespace, gchar const* name, bson_t const* selector, gpointer* iterator, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -434,7 +434,7 @@ j_db_internal_query (gchar const* namespace, gchar const* name, bson_t const* se
 }
 
 gboolean
-j_db_internal_iterate (gpointer iterator, bson_t* metadata, GError** error)
+j_db_internal_iterate(gpointer iterator, bson_t* metadata, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -490,7 +490,7 @@ error2:
 }
 
 bson_t*
-j_db_selector_get_bson (JDBSelector* selector)
+j_db_selector_get_bson(JDBSelector* selector)
 {
 	if (selector && selector->bson_count > 0)
 	{

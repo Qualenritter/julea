@@ -57,10 +57,14 @@ H5VL_julea_db_space_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
 	if (julea_db_schema_space_header)
+	{
 		j_db_schema_unref(julea_db_schema_space_header);
+	}
 	julea_db_schema_space_header = NULL;
 	if (julea_db_schema_space)
+	{
 		j_db_schema_unref(julea_db_schema_space);
+	}
 	julea_db_schema_space = NULL;
 	return 0;
 }
@@ -90,7 +94,9 @@ H5VL_julea_db_space_init(hid_t vipl_id)
 				g_error_free(error);
 				error = NULL;
 				if (julea_db_schema_space_header)
+				{
 					j_db_schema_unref(julea_db_schema_space_header);
+				}
 				if (!(julea_db_schema_space_header = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "space_header", NULL)))
 				{
 					j_goto_error();
@@ -141,7 +147,9 @@ H5VL_julea_db_space_init(hid_t vipl_id)
 				g_error_free(error);
 				error = NULL;
 				if (julea_db_schema_space)
+				{
 					j_db_schema_unref(julea_db_schema_space);
+				}
 				if (!(julea_db_schema_space = j_db_schema_new(JULEA_HDF5_DB_NAMESPACE, "space", NULL)))
 				{
 					j_goto_error();
@@ -357,7 +365,9 @@ H5VL_julea_db_space_encode(hid_t* type_id)
 	for (i = 0; i < (guint)stored_ndims; i++)
 	{
 		if (entry)
+		{
 			j_db_entry_unref(entry);
+		}
 		entry = NULL;
 		if (!(entry = j_db_entry_new(julea_db_schema_space, &error)))
 		{
