@@ -60,6 +60,8 @@ JHDF5Implementation hdf5_implementation_to_use = J_HDF5_IMPLEMENTATION_DB;
 H5PL_type_t
 H5PLget_plugin_type(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	g_debug("H5PLget_plugin_type");
 	return H5PL_TYPE_VOL;
 }
@@ -70,6 +72,8 @@ H5PLget_plugin_type(void)
 const void*
 H5PLget_plugin_info(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	g_debug("H5PLget_plugin_info");
 
 	//FIXME override hdf5_implementation_to_use with environment variable?

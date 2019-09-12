@@ -91,6 +91,8 @@ JMessage* server_reply;
 JMessage*
 j_message_new(JMessageType type, gsize size)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JMessage* message;
 	message = g_slice_new(JMessage);
 	message->operation_count = 0;
@@ -107,6 +109,8 @@ j_message_new(JMessageType type, gsize size)
 JMessage*
 _j_message_new_reply(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JMessage* reply;
 	myabort(!message);
 	myabort(message->size_used != message->size_requested);
@@ -121,6 +125,8 @@ _j_message_new_reply(JMessage* message)
 JMessage*
 j_message_new_reply(JMessage* message_input)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	JMessage* message;
 	myabort(!message_input);
 
@@ -152,6 +158,8 @@ j_message_new_reply(JMessage* message_input)
 JMessage*
 j_message_ref(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	g_atomic_int_inc(&message->ref_count);
 	return message;
@@ -159,6 +167,8 @@ j_message_ref(JMessage* message)
 void
 j_message_unref(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	if (message && g_atomic_int_dec_and_test(&message->ref_count))
 	{
 		g_byte_array_unref(message->data);
@@ -168,22 +178,29 @@ j_message_unref(JMessage* message)
 gboolean
 j_message_append_1(JMessage* message, gconstpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
 
 	return j_message_append_n(message, data, 1);
 }
 gboolean
 j_message_append_4(JMessage* message, gconstpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_message_append_n(message, data, 4);
 }
 gboolean
 j_message_append_8(JMessage* message, gconstpointer data)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_message_append_n(message, data, 8);
 }
 gboolean
 j_message_append_n(JMessage* message, gconstpointer data, gsize size)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	g_byte_array_append(message->data, data, size);
 	message->size_used += size;
@@ -193,11 +210,15 @@ j_message_append_n(JMessage* message, gconstpointer data, gsize size)
 gboolean
 j_message_append_string(JMessage* message, gchar const* str)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_message_append_n(message, str, strlen(str) + 1);
 }
 gchar
 j_message_get_1(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gchar result;
 	myabort(!message);
 	myabort(message->current - (gchar*)message->data->data + 1 > message->data->len);
@@ -208,6 +229,8 @@ j_message_get_1(JMessage* message)
 gint32
 j_message_get_4(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gint32 result;
 	myabort(!message);
 	myabort(message->current - (gchar*)message->data->data + 4 > message->data->len);
@@ -218,6 +241,8 @@ j_message_get_4(JMessage* message)
 gint64
 j_message_get_8(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gint64 result;
 	myabort(!message);
 	myabort(message->current - (gchar*)message->data->data + 8 > message->data->len);
@@ -228,6 +253,8 @@ j_message_get_8(JMessage* message)
 gpointer
 j_message_get_n(JMessage* message, gsize size)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gpointer result;
 	myabort(!message);
 	myabort(message->current - (gchar*)message->data->data + size > message->data->len);
@@ -238,6 +265,8 @@ j_message_get_n(JMessage* message, gsize size)
 gchar const*
 j_message_get_string(JMessage* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gchar* ptr_end;
 	gchar* ptr = message->current;
 	myabort(!message);
@@ -252,6 +281,8 @@ j_message_get_string(JMessage* message)
 gboolean
 j_message_send(JMessage* message, gpointer connection)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	myabort(!connection);
 	return TRUE;
@@ -259,6 +290,8 @@ j_message_send(JMessage* message, gpointer connection)
 gboolean
 j_message_receive(JMessage* message, gpointer connection)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	myabort(!connection);
 	return TRUE;
@@ -266,6 +299,8 @@ j_message_receive(JMessage* message, gpointer connection)
 void
 j_message_add_operation(JMessage* message, gsize size)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	message->size_requested += size;
 	message->operation_count++;
@@ -273,12 +308,16 @@ j_message_add_operation(JMessage* message, gsize size)
 JMessageType
 j_message_get_type(JMessage const* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	return message->type;
 }
 guint32
 j_message_get_count(JMessage const* message)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	myabort(!message);
 	return message->operation_count;
 }
@@ -380,12 +419,16 @@ j_message_get_semantics(JMessage* message)
 gboolean
 j_message_read(JMessage* message, GInputStream* stream)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	g_critical("mockup not implemented%d", 0);
 	abort();
 }
 gboolean
 j_message_write(JMessage* message, GOutputStream* stream)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	g_critical("mockup not implemented%d", 1);
 	abort();
 }
@@ -393,6 +436,8 @@ j_message_write(JMessage* message, GOutputStream* stream)
 void
 j_message_add_send(JMessage* message, gconstpointer data, guint64 size)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	g_critical("mockup not implemented%d", 2);
 	abort();
 }

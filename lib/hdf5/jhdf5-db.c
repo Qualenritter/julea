@@ -106,6 +106,7 @@ herr_t
 H5VL_julea_db_init(hid_t vipl_id)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	g_debug("H5VL_julea_db_init start");
 
 	if (H5VL_julea_db_file_init(vipl_id))

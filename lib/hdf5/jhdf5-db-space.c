@@ -56,6 +56,7 @@ herr_t
 H5VL_julea_db_space_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	if (julea_db_schema_space_header)
 	{
 		j_db_schema_unref(julea_db_schema_space_header);

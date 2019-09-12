@@ -945,7 +945,10 @@ static
 gboolean
 backend_schema_get(gpointer _batch, gchar const* name, bson_t* schema, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	gboolean ret;
+
 	ret = _backend_schema_get(_batch, name, schema, error);
 	if (!ret)
 	{

@@ -57,6 +57,7 @@ herr_t
 H5VL_julea_db_attr_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	if (julea_db_schema_attr)
 	{
 		j_db_schema_unref(julea_db_schema_attr);

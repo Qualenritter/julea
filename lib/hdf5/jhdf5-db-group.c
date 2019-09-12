@@ -55,6 +55,7 @@ herr_t
 H5VL_julea_db_group_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	if (julea_db_schema_group)
 	{
 		j_db_schema_unref(julea_db_schema_group);

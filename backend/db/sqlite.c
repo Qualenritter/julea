@@ -379,18 +379,24 @@ static
 gboolean
 j_sql_start_transaction(sqlite3* backend_db, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_sql_exec(backend_db, "BEGIN TRANSACTION", error);
 }
 static
 gboolean
 j_sql_commit_transaction(sqlite3* backend_db, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_sql_exec(backend_db, "COMMIT", error);
 }
 static
 gboolean
 j_sql_abort_transaction(sqlite3* backend_db, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return j_sql_exec(backend_db, "ROLLBACK", error);
 }
 #include "sql-generic.c"
@@ -437,5 +443,7 @@ G_MODULE_EXPORT
 JBackend*
 backend_info(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return &sqlite_backend;
 }

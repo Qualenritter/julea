@@ -100,6 +100,7 @@ gboolean
 j_backend_operation_unwrap_db_delete(JBackend* backend, gpointer batch, JBackendOperation* data)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	return j_backend_db_delete(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, data->out_param[0].ptr);
 }
 

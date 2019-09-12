@@ -567,6 +567,8 @@ static
 gboolean
 j_sql_start_transaction(MYSQL* backend_db, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	(void)error;
 	mysql_query(backend_db, "START TRANSACTION");
 	return TRUE;
@@ -575,6 +577,8 @@ static
 gboolean
 j_sql_commit_transaction(MYSQL* backend_db, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	(void)error;
 	mysql_query(backend_db, "COMMIT");
 	return TRUE;
@@ -583,6 +587,8 @@ static
 gboolean
 j_sql_abort_transaction(MYSQL* backend_db, GError** error)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	(void)error;
 	mysql_query(backend_db, "ROLLBACK");
 	return TRUE;
@@ -632,5 +638,7 @@ G_MODULE_EXPORT
 JBackend*
 backend_info(void)
 {
+	J_TRACE_FUNCTION(NULL);
+
 	return &mysql_backend;
 }

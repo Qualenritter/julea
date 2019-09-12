@@ -192,6 +192,7 @@ herr_t
 H5VL_julea_db_datatype_term(void)
 {
 	J_TRACE_FUNCTION(NULL);
+
 	if (julea_db_schema_datatype_header)
 	{
 		j_db_schema_unref(julea_db_schema_datatype_header);
