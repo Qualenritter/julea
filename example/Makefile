@@ -17,6 +17,8 @@ LDLIBS  += $(shell PKG_CONFIG_PATH=../prefix-gcc-benchmark/lib/pkgconfig:$(PKG_C
 hello-world:
 CFLAGS  += $(shell PKG_CONFIG_PATH=../prefix-gcc-benchmark/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --cflags julea-object)
 LDLIBS  += $(shell PKG_CONFIG_PATH=../prefix-gcc-benchmark/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --libs julea-object)
+CFLAGS  += $(shell PKG_CONFIG_PATH=../prefix-gcc-benchmark/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --cflags julea-kv)
+LDLIBS  += $(shell PKG_CONFIG_PATH=../prefix-gcc-benchmark/lib/pkgconfig:$(PKG_CONFIG_PATH) pkg-config --libs julea-kv)
 
 hdf5-example:
 LDLIBS += -lhdf5

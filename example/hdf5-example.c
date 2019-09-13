@@ -26,18 +26,31 @@
 int
 main(int argc, char** argv)
 {
-	(void)argc;
-	(void)argv;
-
 	hid_t julea_vol_id;
-	printf("XXX 1\n");
+	hid_t fapl;
+	hid_t file;
+
+	// initialize vol-plugin
+
 	julea_vol_id = H5VLregister_connector_by_name("julea", H5P_DEFAULT);
-	printf("XXX 2\n");
 	H5VLinitialize(julea_vol_id, H5P_DEFAULT);
-	printf("XXX 3\n");
+
+	// create / open file
+
+	fapl = H5Pcreate(H5P_FILE_ACCESS);
+	H5Pset_vol(fapl, julea_vol_id, NULL);
+	file = H5Fcreate("julea.h5", H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
+
+	// do sth with file
+
+	// close file
+
+	H5Fclose(file);
+	H5Pclose(fapl);
+
+	// finalize vol-plugin
+
 	H5VLterminate(julea_vol_id);
-	printf("XXX 4\n");
 	H5VLunregister_connector(julea_vol_id);
-	printf("XXX 5\n");
 	return 0;
 }

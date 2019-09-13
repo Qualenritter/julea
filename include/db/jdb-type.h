@@ -49,9 +49,6 @@ typedef enum JDBType JDBType;
 
 union JDBTypeValue;
 
-typedef enum JFrontendDBError JFrontendDBError;
-
-union JDBTypeValue;
 typedef union JDBTypeValue JDBTypeValue;
 
 G_END_DECLS

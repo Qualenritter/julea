@@ -172,7 +172,7 @@ _benchmark_db_schema_ref(void)
 			j_benchmark_timer_start();
 			for (i = 0; i < batch_count; i++)
 			{
-				schema2 = j_db_schema_ref(schema, ERROR_PARAM);
+				schema2 = j_db_schema_ref(schema);
 				CHECK_ERROR(!schema2);
 				ret = schema != schema2;
 				CHECK_ERROR(ret);

@@ -29,6 +29,5 @@
 #include <db/jdb-schema.h>
 #include <db/jdb-selector.h>
 #include <db/jdb-type.h>
-#include <db/jdb-iterator.h>
 
 #endif

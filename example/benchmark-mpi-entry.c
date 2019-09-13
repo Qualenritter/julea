@@ -80,7 +80,7 @@ _benchmark_db_entry_ref(void)
 			j_benchmark_timer_start();
 			for (i = 0; i < batch_count; i++)
 			{
-				entry2 = j_db_entry_ref(entry, ERROR_PARAM);
+				entry2 = j_db_entry_ref(entry);
 				CHECK_ERROR(!entry2);
 				ret = entry != entry2;
 				CHECK_ERROR(ret);
