@@ -17,14 +17,8 @@
  */
 
 #include <hdf5.h>
-#include <H5PLextern.h>
-#include <stdio.h>
-#include <stdlib.h>
 
-#include <stdio.h>
-
-int
-main(int argc, char** argv)
+int main()
 {
 	hid_t julea_vol_id;
 	hid_t fapl;
@@ -41,7 +35,7 @@ main(int argc, char** argv)
 	H5Pset_vol(fapl, julea_vol_id, NULL);
 	file = H5Fcreate("julea.h5", H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
 
-	// do sth with file
+	// XXX do sth with file
 
 	// close file
 
