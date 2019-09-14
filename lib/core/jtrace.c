@@ -45,10 +45,10 @@
  */
 enum JTraceFlags
 {
-	J_TRACE_OFF = 0,
-	J_TRACE_ECHO = 1 << 0,
-	J_TRACE_OTF = 1 << 1,
-	J_TRACE_COMBINED = 1 << 2
+	J_TRACE_OFF     = 0,
+	J_TRACE_ECHO    = 1 << 0,
+	J_TRACE_OTF     = 1 << 1,
+	J_TRACE_SUMMARY = 1 << 2
 };
 
 typedef enum JTraceFlags JTraceFlags;
@@ -58,13 +58,17 @@ struct JTraceStack
 	gchar* name;
 	guint64 enter_time;
 };
+
 typedef struct JTraceStack JTraceStack;
+
 struct JTraceTime
 {
 	gdouble time;
 	guint count;
 };
+
 typedef struct JTraceTime JTraceTime;
+
 /**
  * A trace thread.
  **/
@@ -82,6 +86,7 @@ struct JTraceThread
 	guint function_depth;
 
 	GArray* stack;
+
 #ifdef HAVE_OTF
 	/**
 	 * OTF-specific structure.
@@ -143,12 +148,11 @@ G_LOCK_DEFINE_STATIC(j_trace_otf);
 static
 void j_trace_thread_default_free(gpointer);
 
-static
-GPrivate j_trace_thread_default = G_PRIVATE_INIT(j_trace_thread_default_free);
-static
-GHashTable* j_trace_combined_timers;
+static GPrivate j_trace_thread_default = G_PRIVATE_INIT(j_trace_thread_default_free);
+static GHashTable* j_trace_summary_table = NULL;
 
 G_LOCK_DEFINE_STATIC(j_trace_echo);
+G_LOCK_DEFINE_STATIC(j_trace_summary);
 
 /**
  * Creates a new trace thread.
@@ -407,36 +411,33 @@ j_trace_init(gchar const* name)
 {
 	gchar const* j_trace;
 	gchar const* j_trace_function;
+	g_auto(GStrv) trace_parts = NULL;
+	guint trace_len;
 
 	g_return_if_fail(name != NULL);
 	g_return_if_fail(j_trace_flags == J_TRACE_OFF);
 
-	if ((j_trace = g_getenv("J_TRACE")) == NULL)
+	if ((j_trace = g_getenv("JULEA_TRACE")) == NULL)
 	{
 		return;
 	}
+
+	trace_parts = g_strsplit(j_trace, ",", 0);
+	trace_len = g_strv_length(trace_parts);
+
+	for (guint i = 0; i < trace_len; i++)
 	{
-		g_auto(GStrv) p = NULL;
-		guint i;
-		guint l;
-
-		p = g_strsplit(j_trace, ",", 0);
-		l = g_strv_length(p);
-
-		for (i = 0; i < l; i++)
+		if (g_strcmp0(trace_parts[i], "echo") == 0)
 		{
-			if (g_strcmp0(p[i], "echo") == 0)
-			{
-				j_trace_flags |= J_TRACE_ECHO;
-			}
-			else if (g_strcmp0(p[i], "combined") == 0)
-			{
-				j_trace_flags |= J_TRACE_COMBINED;
-			}
-			else if (g_strcmp0(p[i], "otf") == 0)
-			{
-				j_trace_flags |= J_TRACE_OTF;
-			}
+			j_trace_flags |= J_TRACE_ECHO;
+		}
+		else if (g_strcmp0(trace_parts[i], "otf") == 0)
+		{
+			j_trace_flags |= J_TRACE_OTF;
+		}
+		else if (g_strcmp0(trace_parts[i], "summary") == 0)
+		{
+			j_trace_flags |= J_TRACE_SUMMARY;
 		}
 	}
 
@@ -445,14 +446,9 @@ j_trace_init(gchar const* name)
 		return;
 	}
 
-	if (j_trace_flags & J_TRACE_COMBINED)
-	{
-		j_trace_combined_timers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-	}
-	if ((j_trace_function = g_getenv("J_TRACE_FUNCTION")) != NULL)
+	if ((j_trace_function = g_getenv("JULEA_TRACE_FUNCTION")) != NULL)
 	{
 		g_auto(GStrv) p = NULL;
-		guint i;
 		guint l;
 
 		p = g_strsplit(j_trace_function, ",", 0);
@@ -460,7 +456,7 @@ j_trace_init(gchar const* name)
 
 		j_trace_function_patterns = g_new(GPatternSpec*, l + 1);
 
-		for (i = 0; i < l; i++)
+		for (guint i = 0; i < l; i++)
 		{
 			j_trace_function_patterns[i] = g_pattern_spec_new(p[i]);
 		}
@@ -485,6 +481,11 @@ j_trace_init(gchar const* name)
 		otf_counter_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 	}
 #endif
+
+	if (j_trace_flags & J_TRACE_SUMMARY)
+	{
+		j_trace_summary_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+	}
 
 	g_free(j_trace_name);
 	j_trace_name = g_strdup(name);
@@ -525,17 +526,20 @@ j_trace_fini(void)
 	}
 #endif
 
-	if (j_trace_flags & J_TRACE_COMBINED)
+	if (j_trace_flags & J_TRACE_SUMMARY)
 	{
 		GHashTableIter iter;
 		gchar* key;
 		JTraceTime* value;
-		g_hash_table_iter_init(&iter, j_trace_combined_timers);
+
+		g_hash_table_iter_init(&iter, j_trace_summary_table);
+
 		while (g_hash_table_iter_next(&iter, (gpointer*)&key, (gpointer*)&value))
 		{
-			g_printerr("duration (%f) count (%d) func (%s)\n", value->time, value->count, key);
+			g_printerr("%s %f (%d)\n", key, value->time, value->count);
 		}
-		g_hash_table_unref(j_trace_combined_timers);
+
+		g_hash_table_unref(j_trace_summary_table);
 	}
 
 	j_trace_flags = J_TRACE_OFF;
@@ -655,6 +659,26 @@ j_trace_enter(gchar const* name, gchar const* format, ...)
 	}
 #endif
 
+	if (j_trace_flags & J_TRACE_SUMMARY)
+	{
+		JTraceStack current_stack;
+
+		if (trace_thread->stack->len == 0)
+		{
+			current_stack.name = g_strdup(name);
+		}
+		else
+		{
+			JTraceStack* top_stack;
+
+			top_stack = &g_array_index(trace_thread->stack, JTraceStack, trace_thread->stack->len - 1);
+			current_stack.name = g_strdup_printf("%s/%s", top_stack->name, name);
+		}
+
+		current_stack.enter_time = timestamp;
+		g_array_append_val(trace_thread->stack, current_stack);
+	}
+
 	va_end(args);
 
 	trace_thread->function_depth++;
@@ -755,6 +779,41 @@ j_trace_leave(JTrace* trace)
 		OTF_Writer_writeLeave(otf_writer, timestamp, function_id, trace_thread->otf.process_id, 0);
 	}
 #endif
+
+	if (j_trace_flags & J_TRACE_SUMMARY)
+	{
+		JTraceTime* combined_duration;
+		JTraceStack* top_stack;
+		guint64 duration;
+
+		g_assert(trace_thread->stack->len > 0);
+
+		top_stack = &g_array_index(trace_thread->stack, JTraceStack, trace_thread->stack->len - 1);
+		duration = timestamp - top_stack->enter_time;
+
+		G_LOCK(j_trace_summary);
+
+		combined_duration = g_hash_table_lookup(j_trace_summary_table, top_stack->name);
+
+		if (combined_duration == NULL)
+		{
+			combined_duration = g_new(JTraceTime, 1);
+			combined_duration->time = ((gdouble)duration) / ((gdouble)G_USEC_PER_SEC);
+			combined_duration->count = 1;
+
+			g_hash_table_insert(j_trace_summary_table, g_strdup(top_stack->name), combined_duration);
+		}
+		else
+		{
+			combined_duration->time += ((gdouble)duration) / ((gdouble)G_USEC_PER_SEC);
+			combined_duration->count++;
+		}
+
+		G_UNLOCK(j_trace_summary);
+
+		g_free(top_stack->name);
+		g_array_set_size(trace_thread->stack, trace_thread->stack->len - 1);
+	}
 }
 
 /**

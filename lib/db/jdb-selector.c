@@ -147,35 +147,35 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 
 	switch (type)
 	{
-	case J_DB_TYPE_SINT32:
-		val.val_sint32 = *(gint32 const*)value;
-		break;
-	case J_DB_TYPE_UINT32:
-		val.val_uint32 = *(guint32 const*)value;
-		break;
-	case J_DB_TYPE_FLOAT32:
-		val.val_float32 = *(gfloat const*)value;
-		break;
-	case J_DB_TYPE_SINT64:
-		val.val_sint64 = *(gint64 const*)value;
-		break;
-	case J_DB_TYPE_UINT64:
-		val.val_sint64 = *(gint64 const*)value;
-		break;
-	case J_DB_TYPE_FLOAT64:
-		val.val_float64 = *(gdouble const*)value;
-		break;
-	case J_DB_TYPE_STRING:
-		val.val_string = value;
-		break;
-	case J_DB_TYPE_BLOB:
-		val.val_blob = value;
-		val.val_blob_length = length;
-		break;
-	case J_DB_TYPE_ID:
-	case _J_DB_TYPE_COUNT:
-	default:
-		g_assert_not_reached();
+		case J_DB_TYPE_SINT32:
+			val.val_sint32 = *(gint32 const*)value;
+			break;
+		case J_DB_TYPE_UINT32:
+			val.val_uint32 = *(guint32 const*)value;
+			break;
+		case J_DB_TYPE_FLOAT32:
+			val.val_float32 = *(gfloat const*)value;
+			break;
+		case J_DB_TYPE_SINT64:
+			val.val_sint64 = *(gint64 const*)value;
+			break;
+		case J_DB_TYPE_UINT64:
+			val.val_sint64 = *(gint64 const*)value;
+			break;
+		case J_DB_TYPE_FLOAT64:
+			val.val_float64 = *(gdouble const*)value;
+			break;
+		case J_DB_TYPE_STRING:
+			val.val_string = value;
+			break;
+		case J_DB_TYPE_BLOB:
+			val.val_blob = value;
+			val.val_blob_length = length;
+			break;
+		case J_DB_TYPE_ID:
+		case _J_DB_TYPE_COUNT:
+		default:
+			g_assert_not_reached();
 	}
 
 	if (G_UNLIKELY(!j_bson_append_value(&bson, "_value", type, &val, error)))
