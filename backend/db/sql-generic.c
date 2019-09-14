@@ -278,9 +278,9 @@ freeJSqlCacheSQLPrepared(void* ptr)
 			{
 				j_sql_finalize(thread_variables->sql_backend, p->stmt, NULL);
 			}
-			g_free(p->namespace);
-			g_free(p->name);
 		}
+		g_free(p->namespace);
+		g_free(p->name);
 		g_free(p);
 	}
 }
