@@ -48,6 +48,6 @@ mkdir -p ${basepath}
 )
 }
 
+exec_tests mysql client
 exec_tests sqlite client
 exec_tests sqlite server
-exec_tests mysql client

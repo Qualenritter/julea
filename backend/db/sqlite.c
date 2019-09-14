@@ -408,6 +408,7 @@ backend_init(gchar const* _path)
 	J_TRACE_FUNCTION(NULL);
 
 	path = g_strdup(_path);
+	sql_generic_init();
 	return TRUE;
 }
 static
@@ -416,7 +417,7 @@ backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
 
-	g_private_replace(&thread_variables_global, NULL);
+	sql_generic_fini();
 	g_free(path);
 }
 static

@@ -18,7 +18,8 @@
 
 #include <hdf5.h>
 
-int main()
+int
+main()
 {
 	hid_t julea_vol_id;
 	hid_t fapl;

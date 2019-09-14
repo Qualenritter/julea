@@ -603,6 +603,7 @@ backend_init(gchar const* _path)
 	g_return_val_if_fail(_path != NULL, FALSE);
 
 	path = g_strdup(_path);
+	sql_generic_init();
 	return TRUE;
 }
 static
@@ -610,7 +611,8 @@ void
 backend_fini(void)
 {
 	J_TRACE_FUNCTION(NULL);
-	g_private_replace(&thread_variables_global, NULL); //this should free the main threads private variables
+
+	sql_generic_fini();
 	g_free(path);
 }
 static
