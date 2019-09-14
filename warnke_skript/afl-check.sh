@@ -63,6 +63,11 @@ if [ "$g" == "gcc-asan-mockup" ]; then
 		continue
 	fi
 fi
+if [ "$g" == "clang-asan-mockup" ]; then
+	if [ "$i" == "301" ]; then
+		continue
+	fi
+fi
 
 	rm -rf /mnt2/julea/*
 	(
@@ -81,7 +86,8 @@ fi
 		cat $f \
 			| valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
 			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
-			--gen-suppressions=yes \
+			--suppressions=./warnke_skript/glib_additional_suppression.supp \
+			--gen-suppressions=all \
 			./build-${g}/test-afl/${programname}
 		r=$?
 		kill -9 ${server_pid}
