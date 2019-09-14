@@ -2182,7 +2182,7 @@ backend_reset(gpointer _batch, GError** error)
 	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
 	{
 		//no ddl in transaction - most databases wont support that - continue without any open transaction
-		goto _error;
+		goto _error3;
 	}
 	arr_types_out1 = g_array_new(FALSE, FALSE, sizeof(JDBType));
 	type = J_DB_TYPE_STRING;
