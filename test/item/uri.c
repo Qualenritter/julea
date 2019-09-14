@@ -29,7 +29,7 @@ static
 void
 test_uri_new_free(void)
 {
-	G_GNUC_UNUSED g_autoptr(JURI) uri = NULL;
+	g_autoptr(JURI) uri = NULL;
 
 	uri = j_uri_new("julea://JULEA");
 }

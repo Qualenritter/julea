@@ -49,7 +49,8 @@ struct JKVOperation
 			guint32* value_len;
 			JKVGetFunc func;
 			gpointer data;
-		} get;
+		}
+		get;
 
 		struct
 		{
@@ -57,7 +58,8 @@ struct JKVOperation
 			gpointer* value;
 			guint32 value_len;
 			GDestroyNotify value_destroy;
-		} put;
+		}
+		put;
 	};
 };
 

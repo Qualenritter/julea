@@ -63,7 +63,8 @@ struct JDistributedObjectBackgroundData
 			 * Contains #JDistributedObjectReadBuffer elements.
 			 */
 			JList* buffers;
-		} read;
+		}
+		read;
 
 		/**
 		 * The write part.
@@ -71,7 +72,8 @@ struct JDistributedObjectBackgroundData
 		struct
 		{
 			JList* bytes_written;
-		} write;
+		}
+		write;
 	};
 };
 
@@ -94,7 +96,8 @@ struct JDistributedObjectOperation
 			JDistributedObject* object;
 			gint64* modification_time;
 			guint64* size;
-		} status;
+		}
+		status;
 
 		struct
 		{
@@ -103,7 +106,8 @@ struct JDistributedObjectOperation
 			guint64 length;
 			guint64 offset;
 			guint64* bytes_read;
-		} read;
+		}
+		read;
 
 		struct
 		{
@@ -112,7 +116,8 @@ struct JDistributedObjectOperation
 			guint64 length;
 			guint64 offset;
 			guint64* bytes_written;
-		} write;
+		}
+		write;
 	};
 };
 

@@ -87,7 +87,7 @@ j_cmd_copy(gchar const** arguments)
 			}
 			else if (i == 1)
 			{
-				G_GNUC_UNUSED g_autoptr(JItem) item = NULL;
+				g_autoptr(JItem) item = NULL;
 
 				if (j_uri_get(uri[i], &error))
 				{

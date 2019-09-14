@@ -76,6 +76,9 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(JTrace, j_trace_leave)
 #endif
 #endif
 
+void j_trace_file_begin (gchar const*, JTraceFileOperation);
+void j_trace_file_end (gchar const*, JTraceFileOperation, guint64, guint64);
+
 void j_trace_counter(gchar const*, guint64);
 
 G_END_DECLS
