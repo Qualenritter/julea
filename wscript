@@ -395,8 +395,6 @@ def configure(ctx):
 		check_and_add_flags(ctx, '-fstack-protector-all')
 		check_and_add_flags(ctx, '-fno-omit-frame-pointer')
 		check_and_add_flags(ctx, '-ggdb')
-		check_and_add_flags(ctx, '-export-dynamic')
-		check_and_add_flags(ctx, '-rdynamic')
 		check_and_add_flags(ctx, '-D_FORTIFY_SOURCE=2')
 
 		ctx.define('G_DISABLE_DEPRECATED', 1)

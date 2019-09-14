@@ -22,10 +22,10 @@ ulimit -c unlimited
 
 mkdir -p log
 rm -rf /mnt2/julea/* *.tmp-file
-(export CC=afl-gcc;        export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
-(export CC=afl-gcc;        export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
-(export CC=afl-clang-fast; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-clang-asan --prefix=prefix-clang-asan --libdir=prefix-clang-asan --bindir=prefix-clang-asan --destdir=prefix-clang-asan&& ./waf.sh build && ./waf.sh install)
-(export CC=afl-clang-fast; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-clang-asan-mockup --prefix=prefix-clang-asan-mockup --libdir=prefix-clang-asan-mockup --bindir=prefix-clang-asan-mockup --destdir=prefix-clang-asan-mockup&& ./waf.sh build && ./waf.sh install)
+(export CC=gcc;   export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
+(export CC=gcc;   export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
+(export CC=clang; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-clang-asan --prefix=prefix-clang-asan --libdir=prefix-clang-asan --bindir=prefix-clang-asan --destdir=prefix-clang-asan&& ./waf.sh build && ./waf.sh install)
+(export CC=clang; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-clang-asan-mockup --prefix=prefix-clang-asan-mockup --libdir=prefix-clang-asan-mockup --bindir=prefix-clang-asan-mockup --destdir=prefix-clang-asan-mockup&& ./waf.sh build && ./waf.sh install)
 i=300
 (export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
@@ -81,6 +81,7 @@ fi
 		cat $f \
 			| valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes  \
 			--suppressions=./dependencies/opt/spack/linux-ubuntu19.04-x86_64/gcc-8.3.0/glib-2.56.3-z5nre6mqm5ofqploxeigak3xiuvp7mph/share/glib-2.0/valgrind/glib.supp \
+			--gen-suppressions=yes \
 			./build-${g}/test-afl/${programname}
 		r=$?
 		kill -9 ${server_pid}

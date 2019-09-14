@@ -2257,10 +2257,6 @@ backend_reset(gpointer _batch, GError** error)
 			goto _error3;
 		}
 	} while (TRUE);
-	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
-	{
-		goto _error;
-	}
 	if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt1, error)))
 	{
 		goto _error2;
@@ -2272,7 +2268,11 @@ backend_reset(gpointer _batch, GError** error)
 	if (error_string)
 	{
 		g_set_error(error, J_BACKEND_DB_ERROR, 0, "%s", error_string->str);
-		goto _error;
+		goto _error3;
+	}
+	if (G_UNLIKELY(!_backend_batch_start(batch, error)))
+	{
+		goto _error3;
 	}
 	return TRUE;
 _error:
