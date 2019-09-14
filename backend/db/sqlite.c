@@ -72,12 +72,12 @@ j_sql_prepare(sqlite3* backend_db, const char* sql, void* _stmt, GArray* types_i
 	sqlite3_stmt** stmt = _stmt;
 	(void)types_in;
 	(void)types_out;
-
 	if (G_UNLIKELY(sqlite3_prepare_v3(backend_db, sql, -1, SQLITE_PREPARE_PERSISTENT, stmt, NULL) != SQLITE_OK))
 	{
 		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_PREPARE, "sql prepare failed error was <%s> '%s'", sql, sqlite3_errmsg(backend_db));
 		goto _error;
 	}
+
 	return TRUE;
 _error:
 	j_sql_finalize(backend_db, *stmt, NULL);
@@ -246,38 +246,6 @@ _error:
 
 static
 gboolean
-j_sql_exec(sqlite3* backend_db, const char* sql, GError** error)
-{
-	J_TRACE_FUNCTION(NULL);
-
-	sqlite3_stmt* stmt;
-
-	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
-	{
-		goto _error;
-	}
-	if (G_UNLIKELY(sqlite3_step(stmt) != SQLITE_DONE))
-	{
-		g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
-		goto _error;
-	}
-	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
-	{
-		goto _error;
-	}
-	return TRUE;
-_error:
-	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, NULL)))
-	{
-		goto _error2;
-	}
-	return FALSE;
-_error2:
-	/*something failed very hard*/
-	return FALSE;
-}
-static
-gboolean
 j_sql_step(sqlite3* backend_db, void* _stmt, gboolean* found, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
@@ -302,6 +270,38 @@ j_sql_step(sqlite3* backend_db, void* _stmt, gboolean* found, GError** error)
 	}
 	return TRUE;
 _error:
+	return FALSE;
+}
+static
+gboolean
+j_sql_exec(sqlite3* backend_db, const char* sql, GError** error)
+{
+	J_TRACE_FUNCTION(NULL);
+
+	sqlite3_stmt* stmt;
+	gboolean found;
+
+	if (G_UNLIKELY(!j_sql_prepare(backend_db, sql, &stmt, NULL, NULL, error)))
+	{
+		goto _error2;
+	}
+	if (G_UNLIKELY(!j_sql_step(backend_db, stmt, &found, error)))
+	{
+		goto _error;
+	}
+	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
+	{
+		goto _error2;
+	}
+	return TRUE;
+_error:
+	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, NULL)))
+	{
+		goto _error2;
+	}
+	return FALSE;
+_error2:
+	/*something failed very hard*/
 	return FALSE;
 }
 static
@@ -362,6 +362,7 @@ j_sql_open(void)
 	{
 		goto _error;
 	}
+
 	return backend_db;
 _error:
 	sqlite3_close(backend_db);

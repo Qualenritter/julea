@@ -2084,12 +2084,11 @@ _error3:
 	/*something failed very hard*/
 	return FALSE;
 }
+
 static
 gboolean
 backend_reset(gpointer _batch, GError** error)
 {
-	return TRUE; //FIXME
-
 	J_TRACE_FUNCTION(NULL);
 
 	JDBType type;
@@ -2103,7 +2102,8 @@ backend_reset(gpointer _batch, GError** error)
 	g_autoptr(GArray) arr_types_out2 = NULL;
 	JDBTypeValue value1;
 	JDBTypeValue value2;
-	char sql_strbuf[128];
+	char sql_strbuf[256];
+	char table_name[128];
 
 	g_return_val_if_fail(_batch != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
@@ -2111,6 +2111,11 @@ backend_reset(gpointer _batch, GError** error)
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
 	{
 		goto _error3;
+	}
+	if (G_UNLIKELY(!_backend_batch_execute(batch, error)))
+	{
+		//no ddl in transaction - most databases wont support that - continue without any open transaction
+		goto _error;
 	}
 	arr_types_out1 = g_array_new(FALSE, FALSE, sizeof(JDBType));
 	type = J_DB_TYPE_STRING;
@@ -2121,7 +2126,7 @@ backend_reset(gpointer _batch, GError** error)
 	(void)error;
 	do
 	{
-		sprintf(sql_strbuf, sql_get_table_names, batch->namespace);
+		snprintf(sql_strbuf, sizeof(sql_strbuf), sql_get_table_names, batch->namespace);
 		if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt1, NULL, arr_types_out1, error)))
 		{
 			goto _error3;
@@ -2139,6 +2144,7 @@ backend_reset(gpointer _batch, GError** error)
 		{
 			goto _error2;
 		}
+		strncpy(table_name, value1.val_string, sizeof(table_name));
 		if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt1, error)))
 		{
 			goto _error2;
@@ -2147,8 +2153,7 @@ backend_reset(gpointer _batch, GError** error)
 		{
 			goto _error3;
 		}
-		g_debug("value1.val_string = %s", value1.val_string);
-		sprintf(sql_strbuf, "SELECT COUNT(*) FROM '%s'", value1.val_string);
+		snprintf(sql_strbuf, sizeof(sql_strbuf), "SELECT COUNT(*) FROM '%s'", table_name);
 		if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, sql_strbuf, &stmt2, NULL, arr_types_out2, error)))
 		{
 			goto _error3;
@@ -2159,7 +2164,7 @@ backend_reset(gpointer _batch, GError** error)
 		}
 		if (!found2)
 		{
-			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count not found", value1.val_string);
+			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count not found", table_name);
 			goto _error;
 		}
 		if (G_UNLIKELY(!j_sql_column(thread_variables->sql_backend, stmt2, 0, J_DB_TYPE_UINT32, &value2, error)))
@@ -2168,7 +2173,7 @@ backend_reset(gpointer _batch, GError** error)
 		}
 		if (value2.val_uint32 > 0)
 		{
-			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count %d", value1.val_string, value2.val_uint32);
+			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count %d", table_name, value2.val_uint32);
 			goto _error;
 		}
 		if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt2, error)))
@@ -2179,17 +2184,25 @@ backend_reset(gpointer _batch, GError** error)
 		{
 			goto _error3;
 		}
-		sprintf(sql_strbuf, "DROP TABLE %s", value1.val_string);
+		snprintf(sql_strbuf, sizeof(sql_strbuf), "DROP TABLE '%s'", table_name);
 		if (G_UNLIKELY(!j_sql_exec(thread_variables->sql_backend, sql_strbuf, error)))
 		{
 			goto _error3;
 		}
 	} while (TRUE);
+	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
+	{
+		goto _error;
+	}
 	return TRUE;
 _error:
 	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt2, NULL)))
 	{
 		goto _error2;
+	}
+	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
+	{
+		goto _error;
 	}
 	return FALSE;
 _error2:
@@ -2197,9 +2210,17 @@ _error2:
 	{
 		goto _error3;
 	}
+	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
+	{
+		goto _error;
+	}
 	return FALSE;
 _error3:
 	/*something failed very hard*/
+	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
+	{
+		goto _error;
+	}
 	return FALSE;
 }
 #endif

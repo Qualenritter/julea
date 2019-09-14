@@ -1092,6 +1092,9 @@ test_db_backend_cleanup(void)
 				bson_destroy(namespace_bson[i][j]);
 			}
 			namespace_bson[i][j] = NULL;
+			random_values.namespace = i;
+			random_values.name = j;
+			event_schema_delete();
 		}
 		sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, i);
 		ret = j_internal_reset(namespace_strbuf, batch, &error);

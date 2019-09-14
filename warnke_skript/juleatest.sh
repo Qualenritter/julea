@@ -35,6 +35,7 @@ mkdir -p ${basepath}
 	echo "kill ${server_pid}"
 	kill -9 ${server_pid}
 )
+
 rm -rf ${basepath}
 mkdir -p ${basepath}
 (
@@ -47,5 +48,6 @@ mkdir -p ${basepath}
 )
 }
 
-exec_tests mysql client
+exec_tests sqlite client
 exec_tests sqlite server
+exec_tests mysql client
