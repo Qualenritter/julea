@@ -22,8 +22,10 @@ ulimit -c unlimited
 
 mkdir -p log
 rm -rf /mnt2/julea/* *.tmp-file
-(export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
-(export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
+(export CC=afl-gcc;        export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-gcc-asan --prefix=prefix-gcc-asan --libdir=prefix-gcc-asan --bindir=prefix-gcc-asan --destdir=prefix-gcc-asan&& ./waf.sh build && ./waf.sh install)
+(export CC=afl-gcc;        export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-gcc-asan-mockup --prefix=prefix-gcc-asan-mockup --libdir=prefix-gcc-asan-mockup --bindir=prefix-gcc-asan-mockup --destdir=prefix-gcc-asan-mockup&& ./waf.sh build && ./waf.sh install)
+(export CC=afl-clang-fast; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --out build-clang-asan --prefix=prefix-clang-asan --libdir=prefix-clang-asan --bindir=prefix-clang-asan --destdir=prefix-clang-asan&& ./waf.sh build && ./waf.sh install)
+(export CC=afl-clang-fast; export AFL_USE_ASAN=1; export ASAN_OPTIONS=abort_on_error=1,symbolize=0; ./waf configure --coverage --debug --testmockup --out build-clang-asan-mockup --prefix=prefix-clang-asan-mockup --libdir=prefix-clang-asan-mockup --bindir=prefix-clang-asan-mockup --destdir=prefix-clang-asan-mockup&& ./waf.sh build && ./waf.sh install)
 i=300
 (export LD_LIBRARY_PATH=prefix-gcc-asan/lib/:$LD_LIBRARY_PATH; ./build-gcc-asan/tools/julea-config --user \
   --object-servers="$(hostname)" --kv-servers="$(hostname)" \
@@ -49,7 +51,7 @@ files="$(ls afl/out/*/crashes/* | grep -v README | shuf)"
 for f in ${files}
 do
 
-for g in gcc-asan-mockup gcc-asan
+for g in gcc-asan-mockup gcc-asan clang-asan-mockup clang-asan
 do
 for programname in "julea-test-afl-db-backend" "julea-test-afl-db-client"
 do
@@ -87,11 +89,11 @@ fi
 	r=$?
 	if [ $r -eq 0 ]; then
 		echo "invalid $f $g $i $programname"
+		mv log/x log/$j-${programname}-$g-$i.tmp-file
 	else
 		echo "valid $f $g $i $programname"
-		exit 1
+		mv log/x log/$j-${programname}-$g-$i.crash-file
 	fi
-	mv log/x log/$j-${programname}-$g-$i.tmp-file
 done
 done
 done

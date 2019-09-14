@@ -111,7 +111,10 @@ function julea_run(){
 		echo "export JULEA_CONFIG=~/.config/julea/julea${index}"
 		for a in ${afl_path}/start-files/*.bin; do
 			echo "cat $a | ./build-${name}/test-afl/${programname}"
-			      cat $a | ./build-${name}/test-afl/${programname}
+			(
+				cat $a | ./build-${name}/test-afl/${programname}
+				echo $?
+			)
 		done
 		if [ "${asan}" != "asan" ]
 		then
