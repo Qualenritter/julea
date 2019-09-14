@@ -163,7 +163,7 @@ event_schema_get_field(void)
 	if (ret_expected && ret)
 	{
 		MYABORT_IF(ret != (the_schema_field_type != _J_DB_TYPE_COUNT));
-		MYABORT_IF((type != the_schema_field_type) && (the_schema_field_type != J_DB_TYPE_ID));
+		MYABORT_IF((type != the_schema_field_type) && (the_schema_field_type != J_DB_TYPE_ID) && (type != J_DB_TYPE_ID));
 	}
 	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
 }

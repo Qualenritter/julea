@@ -79,6 +79,10 @@ event_selector_add_field(void)
 	{
 		return;
 	}
+	if (!the_stored_selector->schema->bson_initialized)
+	{
+		return;
+	}
 	ret_expected = TRUE;
 	ret_expected = ret_expected && operator<_J_DB_SELECTOR_OPERATOR_COUNT;
 	sprintf(varname_strbuf, AFL_VARNAME_FORMAT, random_values.var_name);
