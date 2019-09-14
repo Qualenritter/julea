@@ -65,7 +65,7 @@ struct JKVIterator
 
 static
 JMessage*
-fetch_reply(guint32 index, gchar const* namespace, gchar const* prefix)
+fetch_reply (guint32 index, gchar const* namespace, gchar const* prefix)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -116,7 +116,7 @@ fetch_reply(guint32 index, gchar const* namespace, gchar const* prefix)
  * \return A new JKVIterator.
  **/
 JKVIterator*
-j_kv_iterator_new(gchar const* namespace, gchar const* prefix)
+j_kv_iterator_new (gchar const* namespace, gchar const* prefix)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -162,7 +162,7 @@ j_kv_iterator_new(gchar const* namespace, gchar const* prefix)
 }
 
 JKVIterator*
-j_kv_iterator_new_for_index(guint32 index, gchar const* namespace, gchar const* prefix)
+j_kv_iterator_new_for_index (guint32 index, gchar const* namespace, gchar const* prefix)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -211,7 +211,7 @@ j_kv_iterator_new_for_index(guint32 index, gchar const* namespace, gchar const* 
  * \param iterator A JKVIterator.
  **/
 void
-j_kv_iterator_free(JKVIterator* iterator)
+j_kv_iterator_free (JKVIterator* iterator)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -241,7 +241,7 @@ j_kv_iterator_free(JKVIterator* iterator)
  * \return TRUE on success, FALSE if the end of the store is reached.
  **/
 gboolean
-j_kv_iterator_next(JKVIterator* iterator)
+j_kv_iterator_next (JKVIterator* iterator)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -255,7 +255,7 @@ j_kv_iterator_next(JKVIterator* iterator)
 	}
 	else
 	{
-	retry:
+retry:
 		iterator->len = j_message_get_4(iterator->replies[iterator->replies_cur]);
 
 		if (iterator->len > 0)
@@ -286,7 +286,7 @@ j_kv_iterator_next(JKVIterator* iterator)
  * \return A new collection. Should be freed with j_kv_unref().
  **/
 gchar const*
-j_kv_iterator_get(JKVIterator* iterator, gconstpointer* value, guint32* len)
+j_kv_iterator_get (JKVIterator* iterator, gconstpointer* value, guint32* len)
 {
 	J_TRACE_FUNCTION(NULL);
 

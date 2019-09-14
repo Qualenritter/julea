@@ -86,31 +86,31 @@ struct JStatistics
 
 static
 gchar const*
-j_statistics_get_type_name(JStatisticsType type)
+j_statistics_get_type_name (JStatisticsType type)
 {
 	J_TRACE_FUNCTION(NULL);
 
 	switch (type)
 	{
-	case J_STATISTICS_FILES_CREATED:
-		return "files_created";
-	case J_STATISTICS_FILES_DELETED:
-		return "files_deleted";
-	case J_STATISTICS_FILES_STATED:
-		return "files_stated";
-	case J_STATISTICS_SYNC:
-		return "sync";
-	case J_STATISTICS_BYTES_READ:
-		return "bytes_read";
-	case J_STATISTICS_BYTES_WRITTEN:
-		return "bytes_written";
-	case J_STATISTICS_BYTES_RECEIVED:
-		return "bytes_received";
-	case J_STATISTICS_BYTES_SENT:
-		return "bytes_sent";
-	default:
-		g_warn_if_reached();
-		return NULL;
+		case J_STATISTICS_FILES_CREATED:
+			return "files_created";
+		case J_STATISTICS_FILES_DELETED:
+			return "files_deleted";
+		case J_STATISTICS_FILES_STATED:
+			return "files_stated";
+		case J_STATISTICS_SYNC:
+			return "sync";
+		case J_STATISTICS_BYTES_READ:
+			return "bytes_read";
+		case J_STATISTICS_BYTES_WRITTEN:
+			return "bytes_written";
+		case J_STATISTICS_BYTES_RECEIVED:
+			return "bytes_received";
+		case J_STATISTICS_BYTES_SENT:
+			return "bytes_sent";
+		default:
+			g_warn_if_reached();
+			return NULL;
 	}
 }
 
@@ -128,7 +128,7 @@ j_statistics_get_type_name(JStatisticsType type)
  * \return A new statistics. Should be freed with j_statistics_free().
  **/
 JStatistics*
-j_statistics_new(gboolean trace)
+j_statistics_new (gboolean trace)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -159,7 +159,7 @@ j_statistics_new(gboolean trace)
  * \param statistics A statistics.
  **/
 void
-j_statistics_free(JStatistics* statistics)
+j_statistics_free (JStatistics* statistics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -169,7 +169,7 @@ j_statistics_free(JStatistics* statistics)
 }
 
 guint64
-j_statistics_get(JStatistics* statistics, JStatisticsType type)
+j_statistics_get (JStatistics* statistics, JStatisticsType type)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -179,40 +179,40 @@ j_statistics_get(JStatistics* statistics, JStatisticsType type)
 
 	switch (type)
 	{
-	case J_STATISTICS_FILES_CREATED:
-		value = statistics->files_created;
-		break;
-	case J_STATISTICS_FILES_DELETED:
-		value = statistics->files_deleted;
-		break;
-	case J_STATISTICS_FILES_STATED:
-		value = statistics->files_stated;
-		break;
-	case J_STATISTICS_SYNC:
-		value = statistics->sync_count;
-		break;
-	case J_STATISTICS_BYTES_READ:
-		value = statistics->bytes_read;
-		break;
-	case J_STATISTICS_BYTES_WRITTEN:
-		value = statistics->bytes_written;
-		break;
-	case J_STATISTICS_BYTES_RECEIVED:
-		value = statistics->bytes_received;
-		break;
-	case J_STATISTICS_BYTES_SENT:
-		value = statistics->bytes_sent;
-		break;
-	default:
-		g_warn_if_reached();
-		break;
+		case J_STATISTICS_FILES_CREATED:
+			value = statistics->files_created;
+			break;
+		case J_STATISTICS_FILES_DELETED:
+			value = statistics->files_deleted;
+			break;
+		case J_STATISTICS_FILES_STATED:
+			value = statistics->files_stated;
+			break;
+		case J_STATISTICS_SYNC:
+			value = statistics->sync_count;
+			break;
+		case J_STATISTICS_BYTES_READ:
+			value = statistics->bytes_read;
+			break;
+		case J_STATISTICS_BYTES_WRITTEN:
+			value = statistics->bytes_written;
+			break;
+		case J_STATISTICS_BYTES_RECEIVED:
+			value = statistics->bytes_received;
+			break;
+		case J_STATISTICS_BYTES_SENT:
+			value = statistics->bytes_sent;
+			break;
+		default:
+			g_warn_if_reached();
+			break;
 	}
 
 	return value;
 }
 
 void
-j_statistics_add(JStatistics* statistics, JStatisticsType type, guint64 value)
+j_statistics_add (JStatistics* statistics, JStatisticsType type, guint64 value)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -220,33 +220,33 @@ j_statistics_add(JStatistics* statistics, JStatisticsType type, guint64 value)
 
 	switch (type)
 	{
-	case J_STATISTICS_FILES_CREATED:
-		statistics->files_created += value;
-		break;
-	case J_STATISTICS_FILES_DELETED:
-		statistics->files_deleted += value;
-		break;
-	case J_STATISTICS_FILES_STATED:
-		statistics->files_stated += value;
-		break;
-	case J_STATISTICS_SYNC:
-		statistics->sync_count += value;
-		break;
-	case J_STATISTICS_BYTES_READ:
-		statistics->bytes_read += value;
-		break;
-	case J_STATISTICS_BYTES_WRITTEN:
-		statistics->bytes_written += value;
-		break;
-	case J_STATISTICS_BYTES_RECEIVED:
-		statistics->bytes_received += value;
-		break;
-	case J_STATISTICS_BYTES_SENT:
-		statistics->bytes_sent += value;
-		break;
-	default:
-		g_warn_if_reached();
-		break;
+		case J_STATISTICS_FILES_CREATED:
+			statistics->files_created += value;
+			break;
+		case J_STATISTICS_FILES_DELETED:
+			statistics->files_deleted += value;
+			break;
+		case J_STATISTICS_FILES_STATED:
+			statistics->files_stated += value;
+			break;
+		case J_STATISTICS_SYNC:
+			statistics->sync_count += value;
+			break;
+		case J_STATISTICS_BYTES_READ:
+			statistics->bytes_read += value;
+			break;
+		case J_STATISTICS_BYTES_WRITTEN:
+			statistics->bytes_written += value;
+			break;
+		case J_STATISTICS_BYTES_RECEIVED:
+			statistics->bytes_received += value;
+			break;
+		case J_STATISTICS_BYTES_SENT:
+			statistics->bytes_sent += value;
+			break;
+		default:
+			g_warn_if_reached();
+			break;
 	}
 
 	if (statistics->trace)

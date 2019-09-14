@@ -102,7 +102,7 @@ struct JObject
 
 static
 void
-j_object_create_free(gpointer data)
+j_object_create_free (gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -113,7 +113,7 @@ j_object_create_free(gpointer data)
 
 static
 void
-j_object_delete_free(gpointer data)
+j_object_delete_free (gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -124,7 +124,7 @@ j_object_delete_free(gpointer data)
 
 static
 void
-j_object_status_free(gpointer data)
+j_object_status_free (gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -137,7 +137,7 @@ j_object_status_free(gpointer data)
 
 static
 void
-j_object_read_free(gpointer data)
+j_object_read_free (gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -150,7 +150,7 @@ j_object_read_free(gpointer data)
 
 static
 void
-j_object_write_free(gpointer data)
+j_object_write_free (gpointer data)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -163,7 +163,7 @@ j_object_write_free(gpointer data)
 
 static
 gboolean
-j_object_create_exec(JList* operations, JSemantics* semantics)
+j_object_create_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -259,7 +259,7 @@ j_object_create_exec(JList* operations, JSemantics* semantics)
 
 static
 gboolean
-j_object_delete_exec(JList* operations, JSemantics* semantics)
+j_object_delete_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -347,7 +347,7 @@ j_object_delete_exec(JList* operations, JSemantics* semantics)
 
 static
 gboolean
-j_object_read_exec(JList* operations, JSemantics* semantics)
+j_object_read_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -509,7 +509,7 @@ j_object_read_exec(JList* operations, JSemantics* semantics)
 
 static
 gboolean
-j_object_write_exec(JList* operations, JSemantics* semantics)
+j_object_write_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -662,7 +662,7 @@ j_object_write_exec(JList* operations, JSemantics* semantics)
 
 static
 gboolean
-j_object_status_exec(JList* operations, JSemantics* semantics)
+j_object_status_exec (JList* operations, JSemantics* semantics)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -787,7 +787,7 @@ j_object_status_exec(JList* operations, JSemantics* semantics)
  * \return A new object. Should be freed with j_object_unref().
  **/
 JObject*
-j_object_new(gchar const* namespace, gchar const* name)
+j_object_new (gchar const* namespace, gchar const* name)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -822,7 +822,7 @@ j_object_new(gchar const* namespace, gchar const* name)
  * \return A new object. Should be freed with j_object_unref().
  **/
 JObject*
-j_object_new_for_index(guint32 index, gchar const* namespace, gchar const* name)
+j_object_new_for_index (guint32 index, gchar const* namespace, gchar const* name)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -856,7 +856,7 @@ j_object_new_for_index(guint32 index, gchar const* namespace, gchar const* name)
  * \return #object.
  **/
 JObject*
-j_object_ref(JObject* object)
+j_object_ref (JObject* object)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -877,7 +877,7 @@ j_object_ref(JObject* object)
  * \param object An object.
  **/
 void
-j_object_unref(JObject* object)
+j_object_unref (JObject* object)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -905,7 +905,7 @@ j_object_unref(JObject* object)
  * \return A new object. Should be freed with j_object_unref().
  **/
 void
-j_object_create(JObject* object, JBatch* batch)
+j_object_create (JObject* object, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -933,7 +933,7 @@ j_object_create(JObject* object, JBatch* batch)
  * \param batch      A batch.
  **/
 void
-j_object_delete(JObject* object, JBatch* batch)
+j_object_delete (JObject* object, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -964,7 +964,7 @@ j_object_delete(JObject* object, JBatch* batch)
  * \param batch      A batch.
  **/
 void
-j_object_read(JObject* object, gpointer data, guint64 length, guint64 offset, guint64* bytes_read, JBatch* batch)
+j_object_read (JObject* object, gpointer data, guint64 length, guint64 offset, guint64* bytes_read, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -1026,7 +1026,7 @@ j_object_read(JObject* object, gpointer data, guint64 length, guint64 offset, gu
  * \param batch         A batch.
  **/
 void
-j_object_write(JObject* object, gconstpointer data, guint64 length, guint64 offset, guint64* bytes_written, JBatch* batch)
+j_object_write (JObject* object, gconstpointer data, guint64 length, guint64 offset, guint64* bytes_written, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -1081,7 +1081,7 @@ j_object_write(JObject* object, gconstpointer data, guint64 length, guint64 offs
  * \param batch     A batch.
  **/
 void
-j_object_status(JObject* object, gint64* modification_time, guint64* size, JBatch* batch)
+j_object_status (JObject* object, gint64* modification_time, guint64* size, JBatch* batch)
 {
 	J_TRACE_FUNCTION(NULL);
 

@@ -34,7 +34,7 @@
 #include "../../backend/db/jbson.c"
 
 JDBSelector*
-j_db_selector_new(JDBSchema* schema, JDBSelectorMode mode, GError** error)
+j_db_selector_new (JDBSchema* schema, JDBSelectorMode mode, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -71,7 +71,7 @@ _error:
 }
 
 JDBSelector*
-j_db_selector_ref(JDBSelector* selector)
+j_db_selector_ref (JDBSelector* selector)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -83,7 +83,7 @@ j_db_selector_ref(JDBSelector* selector)
 }
 
 void
-j_db_selector_unref(JDBSelector* selector)
+j_db_selector_unref (JDBSelector* selector)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -98,7 +98,7 @@ j_db_selector_unref(JDBSelector* selector)
 }
 
 gboolean
-j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
+j_db_selector_add_field (JDBSelector* selector, gchar const* name, JDBSelectorOperator operator, gconstpointer value, guint64 length, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -109,7 +109,7 @@ j_db_selector_add_field(JDBSelector* selector, gchar const* name, JDBSelectorOpe
 	JDBTypeValue val;
 
 	g_return_val_if_fail(selector != NULL, FALSE);
-	g_return_val_if_fail(operator<_J_DB_SELECTOR_OPERATOR_COUNT, FALSE);
+	g_return_val_if_fail(operator < _J_DB_SELECTOR_OPERATOR_COUNT, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (G_UNLIKELY(selector->bson_count + 1 > 500))
@@ -197,7 +197,7 @@ _error:
 }
 
 gboolean
-j_db_selector_add_selector(JDBSelector* selector, JDBSelector* sub_selector, GError** error)
+j_db_selector_add_selector (JDBSelector* selector, JDBSelector* sub_selector, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
