@@ -321,7 +321,7 @@ void
 event_schema_delete(void)
 {
 	gboolean ret_expected;
-	gboolean ret;
+	gboolean ret = TRUE;
 	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	g_debug("AFL_EVENT_DB_SCHEMA_DELETE %d %d", random_values.namespace, random_values.name);

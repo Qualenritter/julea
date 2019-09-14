@@ -990,6 +990,8 @@ test_db_backend_init(void)
 	guint i;
 	guint j;
 	guint k;
+	gboolean ret;
+	GError* error = NULL;
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	for (i = 0; i < AFL_LIMIT_SCHEMA_STRING_VALUES; i++)
 	{
@@ -1008,9 +1010,15 @@ test_db_backend_init(void)
 			}
 		}
 		sprintf(namespace_strbuf, AFL_NAMESPACE_FORMAT, i);
-		j_internal_reset(namespace_strbuf, batch, NULL);
+		j_internal_reset(namespace_strbuf, batch, &error);
+		ret = j_batch_execute(batch);
+		if (!ret)
+		{
+			g_debug("%p %s", error, error ? error->message : NULL);
+			g_error_free(error);
+			error = NULL;
+		}
 	}
-	j_batch_execute(batch);
 }
 
 static

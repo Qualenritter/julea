@@ -2189,7 +2189,6 @@ backend_reset(gpointer _batch, GError** error)
 	arr_types_out2 = g_array_new(FALSE, FALSE, sizeof(JDBType));
 	type = J_DB_TYPE_UINT32;
 	g_array_append_val(arr_types_out2, type);
-	(void)error;
 	do
 	{
 		snprintf(sql_strbuf, sizeof(sql_strbuf), sql_get_table_names, batch->namespace);
@@ -2237,10 +2236,14 @@ backend_reset(gpointer _batch, GError** error)
 		{
 			goto _error;
 		}
-		if (value2.val_uint32 > 0)
+		if (error)
 		{
-			g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count %d", table_name, value2.val_uint32);
-			goto _error;
+			// if error is NULL, than continue do drop ALL schema, not just until the first error is found
+			if (value2.val_uint32 > 0)
+			{
+				g_set_error(error, J_BACKEND_DB_ERROR, 0, "reset %s count %d", table_name, value2.val_uint32);
+				goto _error;
+			}
 		}
 		if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt2, error)))
 		{
@@ -2259,6 +2262,14 @@ backend_reset(gpointer _batch, GError** error)
 	if (G_UNLIKELY(!_backend_batch_start(batch, NULL)))
 	{
 		goto _error;
+	}
+	if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, stmt1, error)))
+	{
+		goto _error2;
+	}
+	if (G_UNLIKELY(!j_sql_finalize(thread_variables->sql_backend, stmt1, error)))
+	{
+		goto _error3;
 	}
 	return TRUE;
 _error:

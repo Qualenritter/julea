@@ -63,7 +63,8 @@ struct JCommon
 	GModule* db_module;
 };
 
-static JCommon* j_common = NULL;
+static
+JCommon* j_common = NULL;
 
 /**
  * Returns whether JULEA has been initialized.
@@ -74,7 +75,7 @@ static JCommon* j_common = NULL;
  */
 static
 gboolean
-j_is_initialized (void)
+j_is_initialized(void)
 {
 	JCommon* p;
 
@@ -94,7 +95,7 @@ j_is_initialized (void)
  */
 static
 gchar*
-j_get_program_name (gchar const* default_name)
+j_get_program_name(gchar const* default_name)
 {
 	gchar* program_name;
 
@@ -122,7 +123,7 @@ j_get_program_name (gchar const* default_name)
  * \param argv A pointer to \c argv.
  */
 void
-j_init (void)
+j_init(void)
 {
 	JCommon* common;
 	JTrace* trace;
@@ -136,7 +137,7 @@ j_init (void)
 	gchar const* db_backend;
 	gchar const* db_component;
 	gchar const* db_path;
-
+	g_debug("j_init");
 	if (j_is_initialized())
 	{
 		return;
@@ -231,10 +232,12 @@ error:
  * Shuts down JULEA.
  */
 void
-j_fini (void)
+j_fini(void)
 {
 	JCommon* common;
 	JTrace* trace;
+
+	g_debug("j_fini");
 
 	if (!j_is_initialized())
 	{
@@ -299,7 +302,7 @@ j_fini (void)
  * \return The configuration.
  */
 JConfiguration*
-j_configuration (void)
+j_configuration(void)
 {
 	JCommon* common;
 
@@ -318,7 +321,7 @@ j_configuration (void)
  * \return The object backend.
  */
 JBackend*
-j_backend (JBackendType backend)
+j_backend(JBackendType backend)
 {
 	JCommon* common;
 
@@ -328,14 +331,14 @@ j_backend (JBackendType backend)
 
 	switch (backend)
 	{
-		case J_BACKEND_TYPE_OBJECT:
-			return common->object_backend;
-		case J_BACKEND_TYPE_KV:
-			return common->kv_backend;
-		case J_BACKEND_TYPE_DB:
-			return common->db_backend;
-		default:
-			g_assert_not_reached();
+	case J_BACKEND_TYPE_OBJECT:
+		return common->object_backend;
+	case J_BACKEND_TYPE_KV:
+		return common->kv_backend;
+	case J_BACKEND_TYPE_DB:
+		return common->db_backend;
+	default:
+		g_assert_not_reached();
 	}
 
 	return NULL;
