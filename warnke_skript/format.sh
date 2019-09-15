@@ -26,6 +26,8 @@ rm -rf build
 for f in $(git diff --name-only master | grep '\.c$' | grep -v prefix | grep -v spack);do
 	echo $f
 	cd build
+	cat ../$f | sed "s/}/}\n/g" | sed "s/\sif/\nif/g" | sed "s/\sfor/\nfor/g" | sed "s/\swhile/\nwhile/g" | sed "s/\sdo/\ndo/g" | sed "s/J_TRACE_FUNCTION(NULL);/J_TRACE_FUNCTION(NULL);\n/g" | tr '\n' '\r' | sed "s/}[\r\s]*}/}}/g" | tr '\r' '\n'> ../$f.tmp
+	mv ../$f.tmp ../$f
 	clang-tidy -header-filter='.*,-dependencies' -fix -checks='readability-braces-around-statements,readability-else-after-return,readability-isolate-declaration' -p=/src/julea/build ../$f -- \
 		-Iinclude \
 		-I../include \
