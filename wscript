@@ -40,8 +40,10 @@ leveldb_version = '1.20'
 lmdb_version = '0.9.21'
 # Ubuntu 18.04 has libmongoc 1.9.2
 libmongoc_version = '1.9.0'
+# Ubuntu 18.04 has SQLite 3.22.0
 sqlite_version = '3.22.0'
-mysql_version = '8.0.15'
+# Ubuntu 18.04 has mariaDB 10.1
+mariadb_version = '10.1'
 
 
 def check_cfg_rpath(ctx, **kwargs):
@@ -302,7 +304,7 @@ def configure(ctx):
 		check_cfg_rpath(
 			ctx,
 			package='mysqlclient',
-			args=['--cflags', '--libs', 'mysqlclient >= {0}'.format(mysql_version)],
+			args=['--cflags', '--libs', 'mariadb-client >= {0}'.format(mariadb_version)],
 			uselib_store='MYSQL',
 			pkg_config_path=get_pkg_config_path(ctx.options.mysql),
 			mandatory=False
@@ -402,7 +404,32 @@ def configure(ctx):
 		ctx.define('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
 	else:
 		check_and_add_flags(ctx, '-funit-at-a-time')
-		check_and_add_flags(ctx, '-O2')
+		check_and_add_flags(ctx, '-O3')
+		check_and_add_flags(ctx, '-ffast-math')
+		check_and_add_flags(ctx, '-fdevirtualize-speculatively')
+		check_and_add_flags(ctx, '-fassociative-math')
+		check_and_add_flags(ctx, '-freciprocal-math')
+		check_and_add_flags(ctx, '-fno-signed-zeros')
+		check_and_add_flags(ctx, '-fno-trapping-math')
+		check_and_add_flags(ctx, '-fipa-pta')
+		check_and_add_flags(ctx, '-mrecip=all')
+		check_and_add_flags(ctx, '-fgcse-sm')
+		check_and_add_flags(ctx, '-fgcse-las')
+		check_and_add_flags(ctx, '-fgcse-after-reload')
+		check_and_add_flags(ctx, '-march=native')
+		check_and_add_flags(ctx, '-ftree-vectorize')
+		check_and_add_flags(ctx, '-floop-interchange')
+		check_and_add_flags(ctx, '-floop-block')
+		check_and_add_flags(ctx, '-ftree-coalesce-vars')
+		check_and_add_flags(ctx, '-floop-nest-optimize')
+		check_and_add_flags(ctx, '-fgraphite-identity')
+		check_and_add_flags(ctx, '-ftree-loop-ivcanon')
+		check_and_add_flags(ctx, '-fivopts')
+		check_and_add_flags(ctx, '-ffast-math')
+		check_and_add_flags(ctx, '-fdevirtualize-speculatively')
+		check_and_add_flags(ctx, '-ffunction-sections')
+		check_and_add_flags(ctx, '-fdata-sections')
+		check_and_add_flags(ctx, '-Wl,--gc-sections')
 		ctx.define('G_DISABLE_ASSERT', 1)
 		ctx.define('G_DISABLE_CHECKS', 1)
 
