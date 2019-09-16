@@ -303,8 +303,8 @@ def configure(ctx):
 	ctx.env.JULEA_MYSQL = \
 		check_cfg_rpath(
 			ctx,
-			package='mysqlclient',
-			args=['--cflags', '--libs', 'mariadb-client >= {0}'.format(mariadb_version)],
+			package='mariadb',
+			args=['--cflags', '--libs', 'mariadb >= {0}'.format(mariadb_version)],
 			uselib_store='MYSQL',
 			pkg_config_path=get_pkg_config_path(ctx.options.mysql),
 			mandatory=False

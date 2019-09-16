@@ -540,7 +540,7 @@ j_sql_open(void)
 		    "julea", //database name
 		    3306, //port number
 		    "/var/run/mysqld/mysqld.sock", //unix socket
-		    CLIENT_OPTIONAL_RESULTSET_METADATA //client flags
+		    0 //client flags
 		    ))
 	{
 		goto _error;
