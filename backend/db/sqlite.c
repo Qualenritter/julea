@@ -39,6 +39,7 @@
 #define SQL_MODE SQL_MODE_SINGLE_THREAD
 
 #define sql_autoincrement_string " "
+#define sql_uint64_type " UNSIGNED BIGINT "
 #define sql_last_insert_id_string " SELECT last_insert_rowid() "
 #define sql_get_table_names "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%s_%%'"
 
@@ -369,7 +370,6 @@ j_sql_close(sqlite3* backend_db)
 {
 	J_TRACE_FUNCTION(NULL);
 
-
 	sqlite3_close(backend_db);
 }
 static
@@ -402,7 +402,6 @@ gboolean
 backend_init(gchar const* _path)
 {
 	J_TRACE_FUNCTION(NULL);
-
 
 	path = g_strdup(_path);
 	sql_generic_init();
