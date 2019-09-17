@@ -248,6 +248,8 @@ gboolean
 j_sql_step(sqlite3* backend_db, void* _stmt, gboolean* found, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
+	sqlite3_stmt* stmt;
+	gboolean found;
 
 	sqlite3_stmt* stmt = _stmt;
 	guint ret;
@@ -257,17 +259,25 @@ j_sql_step(sqlite3* backend_db, void* _stmt, gboolean* found, GError** error)
 	{
 		if (G_UNLIKELY(ret == SQLITE_CONSTRAINT))
 		{
-			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_CONSTRAINT, "sql constraint failed error was '%s'", sqlite3_errmsg(backend_db));
-			goto _error;
+			goto _error2;
 		}
-		else if (G_UNLIKELY(ret != SQLITE_DONE))
+	if (G_UNLIKELY(!j_sql_step(backend_db, stmt, &found, error)))
 		{
-			g_set_error(error, J_BACKEND_SQL_ERROR, J_BACKEND_SQL_ERROR_STEP, "sql step failed error was '%s'", sqlite3_errmsg(backend_db));
 			goto _error;
 		}
+	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, error)))
+	{
+		goto _error2;
 	}
 	return TRUE;
 _error:
+	if (G_UNLIKELY(!j_sql_finalize(backend_db, stmt, NULL)))
+	{
+		goto _error2;
+	}
+	return FALSE;
+_error2:
+	/*something failed very hard*/
 	return FALSE;
 }
 static
@@ -370,6 +380,7 @@ j_sql_close(sqlite3* backend_db)
 {
 	J_TRACE_FUNCTION(NULL);
 
+
 	sqlite3_close(backend_db);
 }
 static
@@ -402,6 +413,7 @@ gboolean
 backend_init(gchar const* _path)
 {
 	J_TRACE_FUNCTION(NULL);
+
 
 	path = g_strdup(_path);
 	sql_generic_init();

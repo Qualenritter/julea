@@ -43,7 +43,7 @@ struct JDBEntry
         JDBSchema* schema;
         bson_t bson;
         gint ref_count;
-	bson_t id;
+        bson_t id;
 };
 
 struct JDBIterator

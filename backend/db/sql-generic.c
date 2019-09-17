@@ -279,6 +279,7 @@ freeJSqlCacheSQLPrepared(void* ptr)
 				j_sql_finalize(thread_variables->sql_backend, p->stmt, NULL);
 			}
 		}
+		}
 		g_free(p->namespace);
 		g_free(p->name);
 		g_free(p);
@@ -1165,6 +1166,7 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_
 	prepared = getCachePrepared(batch->namespace, name, "_insert", error);
 	if (G_UNLIKELY(!prepared))
 	{
+		g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_ITERATOR_NO_MORE_ELEMENTS, "no more elements");
 		goto _error;
 	}
 	if (!(schema_cache = getCacheSchema(batch, name, error)))
@@ -1200,14 +1202,11 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_
 		{
 			g_string_append_printf(prepared->sql, ", ?");
 		}
-		g_string_append(prepared->sql, " )");
-		if (G_UNLIKELY(!j_sql_prepare(thread_variables->sql_backend, prepared->sql->str, &prepared->stmt, arr_types_in, NULL, error)))
+	if (G_UNLIKELY(!j_sql_reset(thread_variables->sql_backend, prepared_id->stmt, error)))
 		{
 			goto _error;
 		}
-		prepared->initialized = TRUE;
-	}
-	if (G_UNLIKELY(!j_bson_iter_init(&iter, metadata, error)))
+	if (G_UNLIKELY(!j_bson_append_value(id, "_value", J_DB_TYPE_UINT32, &value, error)))
 	{
 		goto _error;
 	}

@@ -49,10 +49,12 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 	{
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_bson_init(&entry->id, error)))
 	{
 		goto _error;
 	}
+
 	entry->ref_count = 1;
 	entry->schema = j_db_schema_ref(schema);
 	if (G_UNLIKELY(!entry->schema))
@@ -241,8 +243,9 @@ j_db_entry_delete(JDBEntry* entry, JDBSelector* selector, JBatch* batch, GError*
 _error:
 	return FALSE;
 }
+
 gboolean
-j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** error)
+j_db_entry_get_id (JDBEntry* entry, gpointer* value, guint64* length, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -259,23 +262,29 @@ j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** er
 	{
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_bson_iter_find(&iter, "_value_type", error)))
 	{
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_bson_iter_value(&iter, J_DB_TYPE_UINT32, &val, error)))
 	{
 		goto _error;
 	}
+
 	type = val.val_uint32;
+
 	if (G_UNLIKELY(!j_bson_iter_init(&iter, &entry->id, error)))
 	{
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_bson_iter_find(&iter, "_value", error)))
 	{
 		goto _error;
 	}
+
 	if (G_UNLIKELY(!j_bson_iter_value(&iter, type, &val, error)))
 	{
 		goto _error;
