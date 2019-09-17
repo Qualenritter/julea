@@ -301,7 +301,7 @@ j_db_insert_exec(JList* operations, JSemantics* semantics)
 }
 
 gboolean
-j_db_internal_insert (gchar const* namespace, gchar const* name, bson_t const* metadata, bson_t* id, JBatch* batch, GError** error)
+j_db_internal_insert(gchar const* namespace, gchar const* name, bson_t const* metadata, bson_t* id, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

@@ -759,7 +759,7 @@ j_backend_db_schema_delete(JBackend* backend, gpointer batch, gchar const* name,
 }
 
 gboolean
-j_backend_db_insert (JBackend* backend, gpointer batch, gchar const* name, bson_t const* metadata, bson_t* id, GError** error)
+j_backend_db_insert(JBackend* backend, gpointer batch, gchar const* name, bson_t const* metadata, bson_t* id, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

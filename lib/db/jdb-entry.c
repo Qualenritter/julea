@@ -245,7 +245,7 @@ _error:
 }
 
 gboolean
-j_db_entry_get_id (JDBEntry* entry, gpointer* value, guint64* length, GError** error)
+j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

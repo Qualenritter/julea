@@ -53,8 +53,7 @@ struct JBackendOperationParam
 {
 	JBackendOperationParamType type;
 
-	// Only for temporary static
-storage
+	// Only for temporary static storage
 	union
 	{
 		struct

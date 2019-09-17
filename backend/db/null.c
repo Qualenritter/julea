@@ -83,7 +83,7 @@ backend_schema_delete(gpointer batch, gchar const* name, GError** error)
 
 static
 gboolean
-backend_insert (gpointer batch, gchar const* name, bson_t const* metadata, bson_t* id, GError** error)
+backend_insert(gpointer batch, gchar const* name, bson_t const* metadata, bson_t* id, GError** error)
 {
 	(void)error;
 	(void)batch;
