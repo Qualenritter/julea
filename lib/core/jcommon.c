@@ -63,8 +63,7 @@ struct JCommon
 	GModule* db_module;
 };
 
-static
-JCommon* j_common = NULL;
+static JCommon* j_common = NULL;
 
 /**
  * Returns whether JULEA has been initialized.
@@ -137,7 +136,7 @@ j_init(void)
 	gchar const* db_backend;
 	gchar const* db_component;
 	gchar const* db_path;
-	g_debug("j_init");
+
 	if (j_is_initialized())
 	{
 		return;
@@ -236,8 +235,6 @@ j_fini(void)
 {
 	JCommon* common;
 	JTrace* trace;
-
-	g_debug("j_fini");
 
 	if (!j_is_initialized())
 	{

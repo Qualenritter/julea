@@ -57,6 +57,7 @@ j_db_entry_new(JDBSchema* schema, GError** error)
 
 	entry->ref_count = 1;
 	entry->schema = j_db_schema_ref(schema);
+
 	if (G_UNLIKELY(!entry->schema))
 	{
 		goto _error;
@@ -289,6 +290,7 @@ j_db_entry_get_id(JDBEntry* entry, gpointer* value, guint64* length, GError** er
 	{
 		goto _error;
 	}
+
 	switch (type)
 	{
 	case J_DB_TYPE_SINT32:
