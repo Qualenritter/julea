@@ -53,7 +53,8 @@ struct JBackendOperationParam
 {
 	JBackendOperationParamType type;
 
-	// Only for temporary static storage
+	// Only for temporary static
+storage
 	union
 	{
 		struct
@@ -108,13 +109,14 @@ gboolean j_backend_operation_unwrap_db_update(JBackend*, gpointer, JBackendOpera
 gboolean j_backend_operation_unwrap_db_delete(JBackend*, gpointer, JBackendOperation*);
 gboolean j_backend_operation_unwrap_db_query(JBackend*, gpointer, JBackendOperation*);
 
-gboolean j_backend_operation_unwrap_reset(JBackend* backend,gpointer,JBackendOperation*);
+gboolean j_backend_operation_unwrap_reset(JBackend* backend, gpointer, JBackendOperation*);
 
 gboolean j_backend_operation_to_message(JMessage* message, JBackendOperationParam* data, guint len);
 gboolean j_backend_operation_from_message(JMessage* message, JBackendOperationParam* data, guint len);
 gboolean j_backend_operation_from_message_static(JMessage* message, JBackendOperationParam* data, guint len);
 
-static const JBackendOperation j_backend_operation_reset = {
+static
+const JBackendOperation j_backend_operation_reset = {
 	.backend_func = j_backend_operation_unwrap_reset,
 	.in_param_count = 1,
 	.out_param_count = 1,
@@ -130,7 +132,8 @@ static const JBackendOperation j_backend_operation_reset = {
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_schema_create = {
+static
+const JBackendOperation j_backend_operation_db_schema_create = {
 	.backend_func = j_backend_operation_unwrap_db_schema_create,
 	.in_param_count = 3,
 	.out_param_count = 1,
@@ -149,7 +152,8 @@ static const JBackendOperation j_backend_operation_db_schema_create = {
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_schema_get = {
+static
+const JBackendOperation j_backend_operation_db_schema_get = {
 	.backend_func = j_backend_operation_unwrap_db_schema_get,
 	.in_param_count = 2,
 	.out_param_count = 2,
@@ -166,7 +170,8 @@ static const JBackendOperation j_backend_operation_db_schema_get = {
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_schema_delete = {
+static
+const JBackendOperation j_backend_operation_db_schema_delete = {
 	.backend_func = j_backend_operation_unwrap_db_schema_delete,
 	.in_param_count = 2,
 	.out_param_count = 1,
@@ -179,7 +184,8 @@ static const JBackendOperation j_backend_operation_db_schema_delete = {
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_insert = {
+static
+const JBackendOperation j_backend_operation_db_insert = {
 	.backend_func = j_backend_operation_unwrap_db_insert,
 	.in_param_count = 3,
 	.out_param_count = 2,
@@ -200,7 +206,8 @@ static const JBackendOperation j_backend_operation_db_insert = {
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_update = {
+static
+const JBackendOperation j_backend_operation_db_update = {
 	.backend_func = j_backend_operation_unwrap_db_update,
 	.in_param_count = 4,
 	.out_param_count = 1,
@@ -217,15 +224,12 @@ static const JBackendOperation j_backend_operation_db_update = {
 		},
 	},
 	.out_param = {
-		{
-			.type = J_BACKEND_OPERATION_PARAM_TYPE_BSON,
-			.bson_initialized = TRUE,
-		},
 		{ .type = J_BACKEND_OPERATION_PARAM_TYPE_ERROR },
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_delete = {
+static
+const JBackendOperation j_backend_operation_db_delete = {
 	.backend_func = j_backend_operation_unwrap_db_delete,
 	.in_param_count = 3,
 	.out_param_count = 1,
@@ -242,7 +246,8 @@ static const JBackendOperation j_backend_operation_db_delete = {
 	},
 };
 
-static const JBackendOperation j_backend_operation_db_query = {
+static
+const JBackendOperation j_backend_operation_db_query = {
 	.backend_func = j_backend_operation_unwrap_db_query,
 	.in_param_count = 3,
 	.out_param_count = 2,
