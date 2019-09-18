@@ -5,6 +5,8 @@ ulimit -c unlimited
 rm -rf build
 ./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
+rm -rf /usr/local/lib/libjulea*
+rm -rf /usr/local/lib/julea
 ./waf.sh install
 . ./scripts/environment.sh
 (
