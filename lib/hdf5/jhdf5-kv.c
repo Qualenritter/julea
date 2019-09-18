@@ -492,8 +492,7 @@ static
 char*
 create_path(const char* name, char* prev_path)
 {
-	static
-const char* seperator = "/";
+	static const char* seperator = "/";
 	char* path = NULL;
 
 	path = (char*)malloc(strlen(prev_path) + strlen(seperator) + strlen(name) + 1);

@@ -55,7 +55,7 @@ for f in $(git diff --name-only master | grep '\.c$' | grep -v prefix | grep -v 
 
 	cd ..
 	clang-format -i $f
-	cat $f | sed "s/static /static\n/g" > $f.tmp
+	cat $f | sed "s/^static /static\n/g" > $f.tmp
 	mv $f.tmp $f
 done
 
