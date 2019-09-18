@@ -245,6 +245,7 @@ _benchmark_db_schema_add_field(const guint n)
 	JDBSchema* schema2;
 	gboolean equals;
 	guint i;
+	guint j;
 	gboolean ret;
 	guint m = 0;
 	guint m2 = 0;
@@ -288,8 +289,8 @@ _benchmark_db_schema_add_field(const guint n)
 					m3++;
 					j_benchmark_timer_start();
 					sprintf(varname, "varname_%d", i);
-					ret = j_db_schema_get_all_fields(schema, &names, &types, ERROR_PARAM);
-					CHECK_ERROR(!ret);
+					j = j_db_schema_get_all_fields(schema, &names, &types, ERROR_PARAM);
+					CHECK_ERROR(!j);
 					current_result_step->schema_get_fields.elapsed_time += j_benchmark_timer_elapsed();
 					g_strfreev(names);
 					g_free(types);

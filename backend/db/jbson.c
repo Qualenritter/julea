@@ -211,7 +211,6 @@ j_bson_append_value(bson_t* bson, const char* name, JDBType type, JDBTypeValue* 
 		}
 		break;
 	case J_DB_TYPE_ID:
-	case _J_DB_TYPE_COUNT:
 	default:
 		g_set_error_literal(error, J_BACKEND_BSON_ERROR, J_BACKEND_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
 		goto _error;
@@ -333,7 +332,6 @@ j_bson_iter_value(bson_iter_t* iter, JDBType type, JDBTypeValue* value, GError**
 		bson_iter_binary(iter, NULL, &value->val_blob_length, (const uint8_t**)&value->val_blob);
 		break;
 	case J_DB_TYPE_ID:
-	case _J_DB_TYPE_COUNT:
 	default:
 		g_set_error_literal(error, J_BACKEND_BSON_ERROR, J_BACKEND_BSON_ERROR_ITER_INVALID_TYPE, "bson iter invalid type");
 		goto _error;

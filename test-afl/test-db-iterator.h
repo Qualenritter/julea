@@ -119,8 +119,9 @@ event_iterator_next(void)
 			case J_BACKEND_DB_ERROR_DB_TYPE_INVALID:
 			case J_BACKEND_DB_ERROR_THREADING_ERROR:
 			case J_BACKEND_DB_ERROR_VARIABLE_NOT_FOUND:
+				break;
 			default: //LCOV_EXCL_LINE
-				 ;
+				MYABORT(); //LCOV_EXCL_LINE
 			}
 		}
 		else if (error->domain == J_DB_ERROR)
@@ -141,8 +142,9 @@ event_iterator_next(void)
 			case J_DB_ERROR_SCHEMA_SERVER:
 			case J_DB_ERROR_TYPE_INVALID:
 			case J_DB_ERROR_VARIABLE_NOT_FOUND:
+				break;
 			default: //LCOV_EXCL_LINE
-				 ;
+				 MYABORT(); //LCOV_EXCL_LINE
 			}
 		}
 	}

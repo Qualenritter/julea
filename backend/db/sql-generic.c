@@ -338,7 +338,7 @@ getCacheSchema(gpointer _batch, gchar const* name, GError** error)
 	bson_t schema;
 	JSqlCacheSQLQueries* cacheQueries = NULL;
 	bson_iter_t iter;
-	char* string_tmp;
+	char const* string_tmp;
 	JDBTypeValue value;
 
 	if (!(cacheQueries = _getCachePrepared(batch->namespace, name, error)))
@@ -705,7 +705,6 @@ backend_schema_create(gpointer _batch, gchar const* name, bson_t const* schema, 
 			case J_DB_TYPE_BLOB:
 				g_string_append(sql, " BLOB");
 				break;
-			case _J_DB_TYPE_COUNT:
 			default:
 				g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_DB_TYPE_INVALID, "db type invalid");
 				goto _error;
@@ -1173,13 +1172,15 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_
 	}
 	if (!prepared->initialized)
 	{
+		gchar* key;
+
 		prepared->sql = g_string_new(NULL);
 		prepared->variables_count = 0;
 		prepared->variables_index = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 		g_string_append_printf(prepared->sql, "INSERT INTO %s_%s (", batch->namespace, name);
 		g_hash_table_iter_init(&schema_iter, schema_cache);
 
-		while (g_hash_table_iter_next(&schema_iter, (gpointer*)&string_tmp, &type_tmp))
+		while (g_hash_table_iter_next(&schema_iter, (gpointer*)&key, &type_tmp))
 		{
 			type = GPOINTER_TO_INT(type_tmp);
 			if (prepared->variables_count)
@@ -1187,9 +1188,9 @@ backend_insert(gpointer _batch, gchar const* name, bson_t const* metadata, bson_
 				g_string_append(prepared->sql, ", ");
 			}
 			prepared->variables_count++;
-			g_string_append_printf(prepared->sql, "%s", string_tmp);
+			g_string_append_printf(prepared->sql, "%s", key);
 			g_array_append_val(arr_types_in, type);
-			g_hash_table_insert(prepared->variables_index, g_strdup(string_tmp), GINT_TO_POINTER(prepared->variables_count));
+			g_hash_table_insert(prepared->variables_index, g_strdup(key), GINT_TO_POINTER(prepared->variables_count));
 		}
 		g_string_append(prepared->sql, ") VALUES (");
 		if (prepared->variables_count)
@@ -1350,7 +1351,6 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 			case J_DB_SELECTOR_MODE_OR:
 				g_string_append(sql, " OR ");
 				break;
-			case _J_DB_SELECTOR_MODE_COUNT:
 			default:
 				g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_OPERATOR_INVALID, "operator invalid");
 				goto _error;
@@ -1432,7 +1432,6 @@ build_selector_query(bson_iter_t* iter, GString* sql, JDBSelectorMode mode, guin
 			case J_DB_SELECTOR_OPERATOR_NE:
 				g_string_append(sql, "!=");
 				break;
-			case _J_DB_SELECTOR_OPERATOR_COUNT:
 			default:
 				g_set_error_literal(error, J_BACKEND_DB_ERROR, J_BACKEND_DB_ERROR_COMPARATOR_INVALID, "comparator invalid");
 				goto _error;
@@ -1463,7 +1462,7 @@ bind_selector_query(bson_iter_t* iter, JSqlCacheSQLPrepared* prepared, guint* va
 	gboolean has_next;
 	gboolean equals;
 	JThreadVariables* thread_variables = NULL;
-	char* string_tmp;
+	char const* string_tmp;
 
 	if (G_UNLIKELY(!(thread_variables = thread_variables_get(error))))
 	{
@@ -1963,7 +1962,7 @@ backend_query(gpointer _batch, gchar const* name, bson_t const* selector, gpoint
 	guint variables_count;
 	guint variables_count2;
 	JDBTypeValue value;
-	const char* string_tmp;
+	char* string_tmp;
 	JSqlCacheSQLPrepared* prepared = NULL;
 	GHashTable* variables_index = NULL;
 	GString* sql = g_string_new(NULL);

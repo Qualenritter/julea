@@ -174,8 +174,8 @@ event_schema_get_fields(void)
 	guint i;
 	guint j;
 	guint k;
+	guint l;
 	gboolean found;
-	gboolean ret;
 	JDBType* types;
 	gchar** names;
 	JDBType* types_cur;
@@ -202,13 +202,15 @@ event_schema_get_fields(void)
 	}
 	ret_expected = ret_expected && k > 0;
 	G_DEBUG_HERE();
-	ret = j_db_schema_get_all_fields(the_stored_schema, &names, &types, &error);
-	if (ret_expected && ret)
+	l = j_db_schema_get_all_fields(the_stored_schema, &names, &types, &error);
+	if (ret_expected && l)
 	{
 		i = 0;
+		k=0;
 		types_cur = types;
 		names_cur = names;
-		while (*names_cur)
+		l++;
+		for(;l>0;l--)
 		{
 			found = FALSE;
 			for (j = 0; j < AFL_LIMIT_SCHEMA_FIELDS; j++)
@@ -231,7 +233,7 @@ event_schema_get_fields(void)
 		g_free(types);
 		g_strfreev(names);
 	}
-	J_AFL_DEBUG_ERROR(ret, ret_expected, error);
+	J_AFL_DEBUG_ERROR(l, ret_expected, error);
 }
 static
 void
