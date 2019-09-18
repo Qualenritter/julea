@@ -61,13 +61,14 @@ echo "ResubmitCommand = ./run-continue.sh" >> ${HOME}/enzo-dev/run/./Hydro/Hydro
 rm ${J_TIMER_DB}*
 
 (
-        cd ${HOME}/julea/example
+	cd ${HOME}/julea/example
 	./hdf5-example
 )
 
 rm ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 sqlite3 ${J_TIMER_DB_RUN}.sqlite "create table if not exists tmp (name TEXT primary key,count INTEGER,timer REAL)"
 
+sync
 echo 3 > /proc/sys/vm/drop_caches
 ENZO_START=$(date +%s.%N)
 mpirun --allow-run-as-root -np ${process_count} ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
@@ -112,7 +113,8 @@ do
 		break
 	fi
 	echo "continue with ${parameter}"
-	echo 3 > /proc/sys/vm/drop_caches 
+	sync
+	echo 3 > /proc/sys/vm/drop_caches
 	ENZO_START=$(date +%s.%N)
 	mpirun --allow-run-as-root -np ${process_count} ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out
 	mv core* /src/julea/enzo-specific/
@@ -121,19 +123,17 @@ kill -9 ${SERVER_PID}
 echo "done"
 }
 
-cd /src/julea/enzo-specific
-(
-	cd ..
-	rm -rf build prefix
-	./waf.sh configure  --out build --prefix=prefix --libdir=prefix --bindir=prefix --destdir=prefix --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
-	./waf.sh build
-	./waf.sh install
-)
-(
-        cd ${HOME}/julea/example
-        make clean
-        make
-)
+cd /src/julea
+rm -rf build prefix
+. ./scripts/environment.sh
+./waf.sh configure  --out build --prefix=prefix --libdir=prefix --bindir=prefix --destdir=prefix --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
+./waf.sh build
+./waf.sh install
+. ./scripts/environment.sh
+cd example
+make clean
+make
+cd enzo-specific
 
 sudo chown -R benjamin:benjamin /home/benjamin/enzo-dev/run
 sudo chown -R benjamin:benjamin /mnt/julea
