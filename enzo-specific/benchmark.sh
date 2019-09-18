@@ -68,8 +68,9 @@ rm ${J_TIMER_DB}*
 rm ${J_TIMER_DB_RUN}.out ${J_TIMER_DB_RUN}.sqlite ${J_TIMER_DB_RUN}.parameter
 sqlite3 ${J_TIMER_DB_RUN}.sqlite "create table if not exists tmp (name TEXT primary key,count INTEGER,timer REAL)"
 
+echo 3 > /proc/sys/vm/drop_caches
 ENZO_START=$(date +%s.%N)
-mpirun --allow-run-as-root -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
+mpirun --allow-run-as-root -np ${process_count} ${HOME}/enzo-dev/src/enzo/enzo.exe ${HOME}/enzo-dev/run/./Hydro/Hydro-2D/ImplosionAMR/ImplosionAMR.enzo.tmp >> ${J_TIMER_DB_RUN}.out
 mv core* /src/julea/enzo-specific/
 while true
 do
@@ -111,8 +112,9 @@ do
 		break
 	fi
 	echo "continue with ${parameter}"
+	echo 3 > /proc/sys/vm/drop_caches 
 	ENZO_START=$(date +%s.%N)
-	mpirun --allow-run-as-root -np 6 ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out
+	mpirun --allow-run-as-root -np ${process_count} ${HOME}/enzo-dev/src/enzo/enzo.exe -r ${parameter} >> ${J_TIMER_DB_RUN}.out
 	mv core* /src/julea/enzo-specific/
 done
 kill -9 ${SERVER_PID}
