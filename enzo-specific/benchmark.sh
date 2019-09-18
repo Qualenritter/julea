@@ -28,7 +28,7 @@ export LD_LIBRARY_PATH=${HOME}/julea/prefix/lib/:$LD_LIBRARY_PATH
 export JULEA_CONFIG=${HOME}/.config/julea/julea-$(hostname)
 export HDF5_VOL_JULEA=$use_julea
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix/lib
-export J_TIMER_DB_RUN="${HOME}/julea/enzo-specific/benchmark-${tmp_dir_type}-${use_julea}-${iteration_limit}-${db_backend}"
+export J_TIMER_DB_RUN="${HOME}/julea/enzo-specific/benchmark-${tmp_dir_type}-${use_julea}-${iteration_limit}-${db_backend}-${process_count}"
 export J_TIMER_DB="$tmpdir/tmp.sqlite"
 #export G_MESSAGES_DEBUG=all
 
