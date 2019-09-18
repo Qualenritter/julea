@@ -1,0 +1,37 @@
+MPI_Init: NumberOfProcessors = 6
+PartitionGrid (on all processors): Layout = 2 3 1
+NumberOfNewGrids = 6
+GridDims[0]:  26 24
+GridDims[1]:  16 18 16
+GridDims[2]:  1
+StartIndex[0]:  0 26
+StartIndex[1]:  0 16 34
+StartIndex[2]:  0
+Grid distribution
+Delete OldGrid
+OldGrid deleted
+LoadBalance: Number of grids moved = 11 out of 17 (1.9138e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 32 (1.872e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 65 (1.0894e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 66 (7.9843e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 65 (1.9833e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 33 (2.033e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 71 (1.5901e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 71 (5.13e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 78 (9.844e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 31 (1.359e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 78 (6.053e-06 seconds elapsed)
+Stopping on CPU time limit.
+LoadBalance: Number of grids moved = 13 out of 21 (1.56e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 34 (1.4417e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 78 (0.000148234 seconds elapsed)
+command: ././run-continue.sh 6 DD0001/implosion_L3x2_0001
+Communication: processor 5 CommunicationTime = 0.012601
+Communication: processor 1 CommunicationTime = 0.002106
+Communication: processor 2 CommunicationTime = 0.011477
+Communication: processor 3 CommunicationTime = 0.012039
+Communication: processor 4 CommunicationTime = 0.011620
+Time     =  0.001917   CycleNumber =      1    Wallclock   = 126.524716
+StopTime =  2.500000   StopCycle   = 100000
+Communication: processor 0 CommunicationTime = 0.001126
+enzo.C:911 Exiting.

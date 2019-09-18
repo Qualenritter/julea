@@ -1,0 +1,159 @@
+MPI_Init: NumberOfProcessors = 6
+PartitionGrid (on all processors): Layout = 2 3 1
+NumberOfNewGrids = 6
+GridDims[0]:  26 24
+GridDims[1]:  16 18 16
+GridDims[2]:  1
+StartIndex[0]:  0 26
+StartIndex[1]:  0 16 34
+StartIndex[2]:  0
+Grid distribution
+Delete OldGrid
+OldGrid deleted
+LoadBalance: Number of grids moved = 11 out of 17 (1.3856e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 32 (1.231e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 65 (1.1278e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 66 (3.7283e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 65 (2.8494e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 33 (1.481e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 71 (3.451e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 71 (3.374e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 78 (1.1135e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 31 (1.447e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 78 (3.689e-06 seconds elapsed)
+Stopping on CPU time limit.
+LoadBalance: Number of grids moved = 13 out of 21 (1.65e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 34 (1.4047e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 78 (0.000141641 seconds elapsed)
+command: ././run-continue.sh 6 DD0001/implosion_L3x2_0001
+Communication: processor 5 CommunicationTime = 0.002581
+Communication: processor 1 CommunicationTime = 0.003475
+Communication: processor 2 CommunicationTime = 0.002203
+Communication: processor 3 CommunicationTime = 0.002169
+Communication: processor 4 CommunicationTime = 0.002152
+Time     =  0.001917   CycleNumber =      1    Wallclock   = 35.981351
+StopTime =  2.500000   StopCycle   = 100000
+Communication: processor 0 CommunicationTime = 0.002522
+enzo.C:911 Exiting.
+MPI_Init: NumberOfProcessors = 6
+PartitionGrid (on all processors): Layout = 2 3 1
+NumberOfNewGrids = 6
+GridDims[0]:  26 24
+GridDims[1]:  16 18 16
+GridDims[2]:  1
+StartIndex[0]:  0 26
+StartIndex[1]:  0 16 34
+StartIndex[2]:  0
+Grid distribution
+Delete OldGrid
+OldGrid deleted
+LoadBalance: Number of grids moved = 13 out of 21 (2.4484e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 34 (1.7242e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 78 (0.0001137 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 78 (0.000129232 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 77 (3.6369e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 34 (2.4261e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 74 (4.0875e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 8 out of 74 (3.8284e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 71 (1.6368e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 3 out of 35 (2.9365e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 73 (5.7984e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 11 out of 19 (1.9591e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 39 (2.822e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 69 (0.000106043 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 78 (6.352e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 79 (4.872e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 7 out of 38 (9.381e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 7 out of 77 (1.006e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 8 out of 79 (5.271e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 1 out of 73 (5.689e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 7 out of 38 (6.75e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 1 out of 72 (4.302e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 24 (2.3505e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 32 (7.115e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 69 (2.9157e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 11 out of 66 (5.6189e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 35 (4.979e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 14 out of 70 (6.7195e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 7 out of 64 (5.9327e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 7 out of 64 (7.9434e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 37 (3.5066e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 8 out of 72 (8.0647e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 24 (2.5582e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 37 (4.7577e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 8 out of 73 (5.5945e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 7 out of 71 (7.7152e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 35 (3.091e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 11 out of 69 (6.1204e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 76 (6.164e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 74 (0.000113071 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 35 (2.7934e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 74 (7.7394e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 23 (2.7267e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 9 out of 31 (5.7334e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 9 out of 68 (4.3389e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 9 out of 112 (7.677e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 34 (2.9765e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 105 (0.000137963 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 160 (7.923e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 163 (5.0708e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 34 (3.9238e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 163 (5.8015e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 23 (2.8301e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 34 (1.8574e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 166 (9.1175e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 11 out of 149 (7.7563e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 13 out of 171 (0.000142544 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 35 (2.0711e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 14 out of 172 (0.000151914 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 183 (0.00020051 seconds elapsed)
+LoadBalance: Number of grids moved = 14 out of 201 (0.000169542 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 37 (1.7552e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 14 out of 190 (0.000178591 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 19 (3.1032e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 8 out of 34 (1.84e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 12 out of 194 (8.5535e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 10 out of 199 (3.0365e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 9 out of 204 (3.7787e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 32 (1.4424e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 26 out of 205 (7.5796e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 25 out of 204 (4.1946e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 20 out of 207 (4.5276e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 33 (1.5034e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 20 out of 200 (7.9496e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 15 out of 19 (2.27e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 33 (2.9412e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 22 out of 204 (8.0498e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 19 out of 205 (4.8014e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 18 out of 206 (9.8543e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 6 out of 31 (1.551e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 20 out of 208 (7.7131e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 13 out of 199 (4.6648e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 13 out of 203 (4.8109e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 2 out of 34 (1.606e-06 seconds elapsed)
+LoadBalance: Number of grids moved = 18 out of 207 (6.0755e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 14 out of 19 (2.1328e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 8 out of 31 (1.7011e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 11 out of 200 (5.7363e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 13 out of 208 (5.8576e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 13 out of 206 (5.9939e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 30 (1.4015e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 22 out of 210 (5.3876e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 17 out of 208 (4.9389e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 18 out of 217 (6.6164e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 4 out of 30 (1.3868e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 18 out of 217 (9.1427e-05 seconds elapsed)
+Stopping on CPU time limit.
+LoadBalance: Number of grids moved = 15 out of 20 (1.9887e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 5 out of 28 (1.703e-05 seconds elapsed)
+LoadBalance: Number of grids moved = 14 out of 223 (6.0193e-05 seconds elapsed)
+Communication: processor 1 CommunicationTime = 0.116530
+Communication: processor 2 CommunicationTime = 0.076101
+command: ././run-continue.sh 6 DD0003/implosion_L3x2_0003
+Communication: processor 3 CommunicationTime = 0.083657
+Communication: processor 4 CommunicationTime = 0.112073
+Communication: processor 5 CommunicationTime = 0.052158
+Time     =  0.012884   CycleNumber =     10    Wallclock   = 127.101639
+StopTime =  2.500000   StopCycle   = 100000
+Communication: processor 0 CommunicationTime = 0.077288
+enzo.C:911 Exiting.

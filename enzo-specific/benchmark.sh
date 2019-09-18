@@ -142,7 +142,6 @@ sudo chown -R benjamin:benjamin /src/julea
 sudo chown -R benjamin:benjamin /root/enzo-dev
 sudo chown -R benjamin:benjamin /root/enzo-dev/src/enzo/enzo.exe
 
-benchmark /dev/shm/warnke/julea	1 100000 mysql  client mem 1
 benchmark /dev/shm/warnke/julea	1 40 mysql  client mem 1
 benchmark /mnt/julea		1 40 mysql  client hdd 1
 benchmark /dev/shm/warnke/julea	0 40 sqlite server mem 1
@@ -156,6 +155,7 @@ benchmark /mnt/julea		0 40 sqlite server hdd 6
 benchmark /dev/shm/warnke/julea	1 40 sqlite server mem 6
 benchmark /mnt/julea		1 40 sqlite server hdd 6
 
+benchmark /dev/shm/warnke/julea	1 100000 mysql  client mem 1
 benchmark /mnt/julea		1 100000 mysql  client hdd 1
 benchmark /dev/shm/warnke/julea	0 100000 sqlite server mem 1
 benchmark /mnt/julea		0 100000 sqlite server hdd 1

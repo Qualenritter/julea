@@ -1,0 +1,12 @@
+MPI_Init: NumberOfProcessors = 1
+Stopping on CPU time limit.
+command: ././run-continue.sh 1 DD0001/implosion_L3x2_0001
+Time     =  0.001917   CycleNumber =      1    Wallclock   = 95.887536
+StopTime =  2.500000   StopCycle   = 100000
+enzo.C:911 Exiting.
+MPI_Init: NumberOfProcessors = 1
+Stopping on CPU time limit.
+command: ././run-continue.sh 1 DD0003/implosion_L3x2_0003
+Time     =  0.007116   CycleNumber =      5    Wallclock   = 202.230392
+StopTime =  2.500000   StopCycle   = 100000
+enzo.C:911 Exiting.
