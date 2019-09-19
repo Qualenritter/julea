@@ -60,7 +60,6 @@ void
 initialize_random_data(const guint m, gint* data)
 {
 	guint i;
-	srand(time(NULL));
 	j_benchmark_timer_start();
 	for (i = 0; i < m; i++)
 	{
@@ -112,8 +111,6 @@ void
 read_data_native(const guint n, const guint m, gint* data)
 {
 	// calculate the max value in all files datasets, and print the file name
-	hsize_t dims_ds[1];
-	hid_t dataspace_ds;
 	hid_t ds;
 	hid_t file;
 	char filenamebuffer[30];
@@ -122,13 +119,11 @@ read_data_native(const guint n, const guint m, gint* data)
 	gint data_max = 0;
 	gint data_max_local = 0;
 	j_benchmark_timer_start();
-	dims_ds[0] = m;
-	dataspace_ds = H5Screate_simple(1, dims_ds, NULL);
 	for (i = 0; i < n; i++)
 	{
 		snprintf(filenamebuffer, sizeof(filenamebuffer), "benchmark_native_%d.h5", i);
-		file = H5Fcreate(filenamebuffer, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_native);
-		ds = H5Dcreate2(file, "temperatures", H5T_NATIVE_INT, dataspace_ds, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		file = H5Fopen(filenamebuffer, H5P_DEFAULT, fapl_native);
+		ds = H5Dopen2(file, "temperatures", H5P_DEFAULT);
 		H5Dread(ds, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 		H5Dclose(ds);
 		H5Fclose(file);
@@ -142,10 +137,9 @@ read_data_native(const guint n, const guint m, gint* data)
 		if ((i == 0) || (data_max_local >= data_max))
 		{
 			data_max = data_max_local;
-			printf("read_data_native found max value (%d) in file (%s)", data_max, filenamebuffer);
+			printf("read_data_native found max value (%d) in file (%s)\n", data_max, filenamebuffer);
 		}
 	}
-	H5Sclose(dataspace_ds);
 	timer_read_native += j_benchmark_timer_elapsed();
 }
 void
@@ -159,7 +153,7 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 	g_autoptr(JBatch) batch = NULL;
 	gint data_max = 0;
 	gint64* data_max_local;
-	guint i = 0;
+	guint i;
 	char* filenamebuffer;
 	void* backend_id;
 	guint64 len;
@@ -174,6 +168,7 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 	j_db_schema_get(julea_db_schema_file, batch, NULL);
 	j_batch_execute(batch);
 	julea_db_iterator_dataset = j_db_iterator_new(julea_db_schema_dataset, NULL, NULL);
+	i = 0;
 	while (j_db_iterator_next(julea_db_iterator_dataset, NULL))
 	{
 		j_db_iterator_get_field(julea_db_iterator_dataset, "max_value_i", &type, (gpointer*)&data_max_local, &len, NULL);
@@ -186,7 +181,7 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 			julea_db_iterator_file = j_db_iterator_new(julea_db_schema_file, julea_db_selector_file, NULL);
 			j_db_iterator_next(julea_db_iterator_file, NULL);
 			j_db_iterator_get_field(julea_db_iterator_file, "name", &type, (gpointer*)&filenamebuffer, &len, NULL);
-			printf("read_data_julea_db found max value (%d) in file (%s)", data_max, filenamebuffer);
+			printf("read_data_julea_db found max value (%d) in file (%s)\n", data_max, filenamebuffer);
 			free(filenamebuffer);
 		}
 		i++;
@@ -199,11 +194,12 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 int
 main()
 {
-	const guint n = 100; //file	count
-	const guint m = 100; //dataset dimensions
+	const guint n = 10000; //file	count
+	const guint m = 10000; //dataset dimensions
 	hid_t julea_vol_id;
 	gint* data;
 
+	srand(12345); //enough randomness for this benchmark if using constant random seed
 	j_benchmark_timer = g_timer_new();
 
 	julea_vol_id = H5VLregister_connector_by_name("julea", H5P_DEFAULT);
@@ -217,6 +213,7 @@ main()
 
 	write_data(n, m, data);
 	read_data_native(n, m, data);
+	read_data_julea_db(n, m, data);
 
 	free(data);
 	H5Pclose(fapl_julea);
@@ -225,11 +222,11 @@ main()
 	H5VLterminate(julea_vol_id);
 	H5VLunregister_connector(julea_vol_id);
 
-	printf("timer_initialize_random_data %f", timer_initialize_random_data);
-	printf("timer_write_julea_vol %f", timer_write_julea_vol);
-	printf("timer_write_native %f", timer_write_native);
-	printf("timer_read_native %f", timer_read_native);
-	printf("timer_read_julea %f", timer_read_julea);
+	printf("timer_initialize_random_data %f\n", timer_initialize_random_data);
+	printf("timer_write_julea_vol %f\n", timer_write_julea_vol);
+	printf("timer_write_native %f\n", timer_write_native);
+	printf("timer_read_julea %f\n", timer_read_julea);
+	printf("timer_read_native %f\n", timer_read_native);
 
 	g_timer_destroy(j_benchmark_timer);
 	return 0;

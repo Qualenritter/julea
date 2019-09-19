@@ -82,8 +82,9 @@ server_pid=$!
 
 sleep 2
 
-cd benchmark_values/warnke-${githash}
-../../example/benchmark-hdf >>benchmark_values_${pretty_backend_name}_${mountmedium} 2>&1
+mypwd=$(pwd)
+cd ${mountpoint}/julea/
+${mypwd}/example/benchmark-hdf >> ${mypwd}/benchmark_values/warnke-${githash}/benchmark_values_${pretty_backend_name}_${mountmedium} 2>&1
 kill ${server_pid}
 )
 }
