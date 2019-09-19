@@ -158,7 +158,7 @@ spack_load_dependencies ()
 			fi
 		done
 	fi
-	export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:$(find dependencies/opt/spack/ -name *.pc | sed "s-/[^/]*\$-/-" | uniq | tr '\n' ':')
+	export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:$(find "$(pwd)" -name *.pc | sed "s-/[^/]*\$-/-" | uniq | tr '\n' ':')
 }
 
 spack_install_dependencies ()

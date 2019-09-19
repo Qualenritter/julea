@@ -129,15 +129,13 @@ read_data_native(const guint n, const guint m, gint* data)
 		H5Dread(ds, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 		H5Dclose(ds);
 		H5Fclose(file);
-		data_max_local = 0;
 		for (j = 0; j < m; j++)
-		{
-			if (data_max_local < data[j])
+		{if((j==0)||(data_max_local < data[j]))
 			{
 				data_max_local = data[j];
 			}
 		}
-		if ((i == 0) || (data_max_local > data_max))
+		if ((i == 0) || (data_max_local >= data_max))
 		{
 			data_max = data_max_local;
 			printf("read_data_native found max value (%d) in file (%s)", data_max, filenamebuffer);
@@ -175,7 +173,7 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 	while (j_db_iterator_next(julea_db_iterator_dataset, NULL))
 	{
 		j_db_iterator_get_field(julea_db_iterator_dataset, "max_value_i", &type, (gpointer*)&data_max_local, &len, NULL);
-		if ((i == 0) || (*data_max_local > data_max))
+		if ((i == 0) || (*data_max_local >= data_max))
 		{
 			data_max = *data_max_local;
 			julea_db_selector_file = j_db_selector_new(julea_db_schema_file, J_DB_SELECTOR_MODE_AND, NULL);
@@ -220,5 +218,11 @@ main()
 
 	H5VLterminate(julea_vol_id);
 	H5VLunregister_connector(julea_vol_id);
+
+printf("timer_initialize_random_data %f",timer_initialize_random_data);
+printf("timer_write_julea_vol %f",timer_write_julea_vol);
+printf("timer_write_native %f",timer_write_native);
+printf("timer_read_native %f",timer_read_native);
+printf("timer_read_julea %f",timer_read_julea);
 	return 0;
 }
