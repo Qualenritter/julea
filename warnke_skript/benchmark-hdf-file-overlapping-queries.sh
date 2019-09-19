@@ -83,7 +83,7 @@ server_pid=$!
 sleep 2
 
 cd benchmark_values/warnke-${githash}
-valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes ../../example/benchmark-hdf >>benchmark_values_${pretty_backend_name}_${mountmedium} 2>&1
+../../example/benchmark-hdf >>benchmark_values_${pretty_backend_name}_${mountmedium} 2>&1
 kill ${server_pid}
 )
 }
