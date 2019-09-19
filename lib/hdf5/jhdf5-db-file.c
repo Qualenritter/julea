@@ -160,8 +160,6 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 
 	g_return_val_if_fail(name != NULL, NULL);
 
-	g_debug("XXX create file '%s'", name);
-
 	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
 	{
 		j_goto_error();
@@ -238,7 +236,6 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 		g_assert(!j_db_iterator_next(iterator, NULL));
 		if (flags & H5F_ACC_TRUNC)
 		{
-			g_debug("truncateing file");
 			if (H5VL_julea_db_group_truncate_file(object))
 			{
 				j_goto_error();
@@ -259,7 +256,6 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	}
 	return object;
 _error:
-	g_debug("file create error %s", name);
 	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
 	return NULL;
@@ -315,7 +311,6 @@ H5VL_julea_db_file_open(const char* name, unsigned flags, hid_t fapl_id, hid_t d
 	g_assert(!j_db_iterator_next(iterator, NULL));
 	return object;
 _error:
-	g_debug("file open error %s", name);
 	H5VL_julea_db_object_unref(object);
 	H5VL_julea_db_error_handler(error);
 	return NULL;

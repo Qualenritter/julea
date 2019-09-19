@@ -3,7 +3,7 @@
 
 CFLAGS += -ggdb -Wall -Wextra
 
-BIN = hello-world hdf5-example benchmark-mpi db-example-with-error-handling db-example
+BIN = hello-world hdf5-example benchmark-mpi db-example-with-error-handling db-example benchmark-hdf
 
 all: $(BIN)
 
@@ -13,6 +13,13 @@ CFLAGS += $(shell pkg-config --cflags julea-db)
 LDLIBS += $(shell pkg-config --libs julea-db)
 CFLAGS += $(shell pkg-config --cflags glib-2.0)
 LDLIBS += $(shell pkg-config --libs glib-2.0)
+
+benchmark-hdf:
+CFLAGS += $(shell pkg-config --cflags julea-db)
+LDLIBS += $(shell pkg-config --libs julea-db)
+CFLAGS += $(shell pkg-config --cflags glib-2.0)
+LDLIBS += $(shell pkg-config --libs glib-2.0)
+LDLIBS += -lhdf5
 
 db-example-with-error-handling:
 CFLAGS += $(shell pkg-config --cflags julea-db)
@@ -27,6 +34,8 @@ CFLAGS += $(shell pkg-config --cflags julea-object)
 LDLIBS += $(shell pkg-config --libs julea-object)
 CFLAGS += $(shell pkg-config --cflags julea-kv)
 LDLIBS += $(shell pkg-config --libs julea-kv)
+CFLAGS += $(shell pkg-config --cflags julea-db)
+LDLIBS += $(shell pkg-config --libs julea-db)
 
 hdf5-example:
 LDLIBS += -lhdf5

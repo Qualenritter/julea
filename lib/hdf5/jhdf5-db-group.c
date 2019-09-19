@@ -223,19 +223,15 @@ H5VL_julea_db_group_create(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
 		file = parent;
-		g_debug("XXX create group '%s' (F '%s')", name, parent->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
-		g_debug("XXX create group '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
-		g_debug("XXX create group '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
-		g_debug("XXX create group '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
@@ -312,19 +308,15 @@ H5VL_julea_db_group_open(void* obj, const H5VL_loc_params_t* loc_params, const c
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
 		file = parent;
-		g_debug("XXX open group '%s' (F '%s')", name, parent->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
-		g_debug("XXX open group '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
-		g_debug("XXX open group '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
-		g_debug("XXX open group '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:

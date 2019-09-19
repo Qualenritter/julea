@@ -110,6 +110,22 @@ H5VL_julea_db_dataset_init(hid_t vipl_id)
 				{
 					j_goto_error();
 				}
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "min_value_f", J_DB_TYPE_FLOAT64, &error))
+				{
+					j_goto_error();
+				}
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "max_value_f", J_DB_TYPE_FLOAT64, &error))
+				{
+					j_goto_error();
+				}
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "min_value_i", J_DB_TYPE_SINT64, &error))
+				{
+					j_goto_error();
+				}
+				if (!j_db_schema_add_field(julea_db_schema_dataset, "max_value_i", J_DB_TYPE_SINT64, &error))
+				{
+					j_goto_error();
+				}
 				{
 					const gchar* index[] = {
 						"file",
@@ -233,20 +249,16 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	switch (parent->type)
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
-		g_debug("XXX create dataset '%s' (F '%s')", name, parent->file.name);
 		file = parent;
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
-		g_debug("XXX create dataset '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
-		g_debug("XXX create dataset '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
-		g_debug("XXX create dataset '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
@@ -264,6 +276,10 @@ H5VL_julea_db_dataset_create(void* obj, const H5VL_loc_params_t* loc_params, con
 	{
 		j_goto_error();
 	}
+	object->dataset.statistics.min_value_i = 0;
+	object->dataset.statistics.max_value_i = 0;
+	object->dataset.statistics.min_value_f = 0;
+	object->dataset.statistics.max_value_f = 0;
 	if (!(object->dataset.name = g_strdup(name)))
 	{
 		j_goto_error();
@@ -355,8 +371,11 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	JHDF5Object_t* parent = obj;
 	JHDF5Object_t* file;
 	JDBType type;
+	guint64 len;
 	guint64 space_id_buf_len;
 	guint64 datatype_id_buf_len;
+	guint64* tmp_ptr_i;
+	gdouble* tmp_ptr_f;
 
 	g_return_val_if_fail(name != NULL, NULL);
 	g_return_val_if_fail(parent != NULL, NULL);
@@ -365,19 +384,15 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
 		file = parent;
-		g_debug("XXX open dataset '%s' (F '%s')", name, parent->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
-		g_debug("XXX open dataset '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
-		g_debug("XXX open dataset '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
-		g_debug("XXX open dataset '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
@@ -423,6 +438,30 @@ H5VL_julea_db_dataset_open(void* obj, const H5VL_loc_params_t* loc_params, const
 	{
 		j_goto_error();
 	}
+	if (!j_db_iterator_get_field(iterator, "min_value_i", &type, (gpointer*)&tmp_ptr_i, &len, &error))
+	{
+		j_goto_error();
+	}
+	object->dataset.statistics.min_value_i = *tmp_ptr_i;
+	g_free(tmp_ptr_i);
+	if (!j_db_iterator_get_field(iterator, "max_value_i", &type, (gpointer*)&tmp_ptr_i, &len, &error))
+	{
+		j_goto_error();
+	}
+	object->dataset.statistics.max_value_i = *tmp_ptr_i;
+	g_free(tmp_ptr_i);
+	if (!j_db_iterator_get_field(iterator, "min_value_f", &type, (gpointer*)&tmp_ptr_f, &len, &error))
+	{
+		j_goto_error();
+	}
+	object->dataset.statistics.min_value_f = *tmp_ptr_f;
+	g_free(tmp_ptr_f);
+	if (!j_db_iterator_get_field(iterator, "max_value_f", &type, (gpointer*)&tmp_ptr_f, &len, &error))
+	{
+		j_goto_error();
+	}
+	object->dataset.statistics.max_value_f = *tmp_ptr_f;
+	g_free(tmp_ptr_f);
 	if (!j_db_iterator_get_field(iterator, "space", &type, &space_id_buf, &space_id_buf_len, &error))
 	{
 		j_goto_error();
@@ -671,6 +710,79 @@ _error:
 	return NULL;
 }
 
+#define calculate_statistics_helper(_buf, _target_extension)                                    \
+	do                                                                                      \
+	{                                                                                       \
+		for (i = 0; i < n; i++)                                                         \
+		{                                                                               \
+			if (_buf < object->dataset.statistics.min_value##_target_extension)     \
+				object->dataset.statistics.min_value##_target_extension = _buf; \
+			if (_buf > object->dataset.statistics.max_value##_target_extension)     \
+				object->dataset.statistics.max_value##_target_extension = _buf; \
+		}                                                                               \
+	} while (0)
+static
+void
+calculate_statistics(JHDF5Object_t* object, const void* buf, gsize bytes, hid_t memory_type)
+{
+	guint i;
+	guint n;
+	guint element_size = H5Tget_size(memory_type);
+	n = bytes / element_size;
+	if (H5Tget_class(memory_type) == H5T_FLOAT)
+	{
+		if (element_size == 4)
+		{
+			calculate_statistics_helper(((gdouble)((const gfloat*)buf)[i]), _f);
+		}
+		else if (element_size == 8)
+		{
+			calculate_statistics_helper(((const gdouble*)buf)[i], _f);
+		}
+	}
+	else if (H5Tget_class(memory_type) == H5T_INTEGER)
+	{
+		if (H5Tget_sign(memory_type) == H5T_SGN_NONE)
+		{
+			if (element_size == 1)
+			{
+				calculate_statistics_helper(((gint8)((const guint8*)buf)[i]), _i);
+			}
+			else if (element_size == 2)
+			{
+				calculate_statistics_helper(((gint16)((const guint16*)buf)[i]), _i);
+			}
+			else if (element_size == 4)
+			{
+				calculate_statistics_helper(((gint32)((const guint32*)buf)[i]), _i);
+			}
+			else if (element_size == 8)
+			{
+				calculate_statistics_helper(((gint64)((const guint64*)buf)[i]), _i);
+			}
+		}
+		else
+		{
+			if (element_size == 1)
+			{
+				calculate_statistics_helper(((const gint8*)buf)[i], _i);
+			}
+			else if (element_size == 2)
+			{
+				calculate_statistics_helper(((const gint16*)buf)[i], _i);
+			}
+			else if (element_size == 4)
+			{
+				calculate_statistics_helper(((const gint32*)buf)[i], _i);
+			}
+			else if (element_size == 8)
+			{
+				calculate_statistics_helper(((const gint64*)buf)[i], _i);
+			}
+		}
+	}
+}
+
 static
 herr_t
 H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id,
@@ -731,18 +843,15 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 		if (mem_space_range == NULL)
 		{
 			mem_space_range = &g_array_index(mem_space_arr, JHDF5IndexRange, mem_space_idx++);
-			g_debug("mem_range arr %ld %ld", mem_space_range->start, mem_space_range->stop);
 		}
 		if (file_space_range == NULL)
 		{
 			file_space_range = &g_array_index(file_space_arr, JHDF5IndexRange, file_space_idx++);
-			g_debug("file_range arr %ld %ld", file_space_range->start, file_space_range->stop);
 		}
 		current_count1 = mem_space_range->stop - mem_space_range->start;
 		current_count2 = file_space_range->stop - file_space_range->start;
 		current_count1 = current_count1 < current_count2 ? current_count1 : current_count2;
-		g_debug("mem_range start=%ld count=%ld", mem_space_range->start, current_count1 + 1);
-		g_debug("file_range start=%ld count=%ld", file_space_range->start, current_count1 + 1);
+		calculate_statistics(object, ((const char*)local_buf) + mem_space_range->start * data_size, data_size * current_count1, mem_space_id);
 		j_distributed_object_write(object->dataset.object, ((const char*)local_buf) + mem_space_range->start * data_size, data_size * current_count1, file_space_range->start * data_size, &bytes_written, batch);
 		if (mem_space_range->start + current_count1 == mem_space_range->stop)
 		{
@@ -819,18 +928,14 @@ H5VL_julea_db_dataset_read(void* obj, hid_t mem_type_id, hid_t mem_space_id, hid
 		if (mem_space_range == NULL)
 		{
 			mem_space_range = &g_array_index(mem_space_arr, JHDF5IndexRange, mem_space_idx++);
-			g_debug("mem_range arr %ld %ld", mem_space_range->start, mem_space_range->stop);
 		}
 		if (file_space_range == NULL)
 		{
 			file_space_range = &g_array_index(file_space_arr, JHDF5IndexRange, file_space_idx++);
-			g_debug("file_range arr %ld %ld", file_space_range->start, file_space_range->stop);
 		}
 		current_count1 = mem_space_range->stop - mem_space_range->start;
 		current_count2 = file_space_range->stop - file_space_range->start;
 		current_count1 = current_count1 < current_count2 ? current_count1 : current_count2;
-		g_debug("mem_range start=%ld count=%ld", mem_space_range->start, current_count1 + 1);
-		g_debug("file_range start=%ld count=%ld", file_space_range->start, current_count1 + 1);
 		j_distributed_object_read(object->dataset.object, ((char*)buf) + mem_space_range->start * data_size, data_size * current_count1, file_space_range->start * data_size, &bytes_read, batch);
 		if (mem_space_range->start + current_count1 == mem_space_range->stop)
 		{
@@ -917,12 +1022,56 @@ H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 {
 	J_TRACE_FUNCTION(NULL);
 
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JBatch) batch = NULL;
 	JHDF5Object_t* object = obj;
+	g_autoptr(JDBEntry) entry = NULL;
+	g_autoptr(JDBSelector) selector = NULL;
 
 	g_return_val_if_fail(object->type == J_HDF5_OBJECT_TYPE_DATASET, 1);
 
+	if (!(batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT)))
+	{
+		j_goto_error();
+	}
+	if (!(selector = j_db_selector_new(julea_db_schema_dataset, J_DB_SELECTOR_MODE_AND, &error)))
+	{
+		j_goto_error();
+	}
+	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, object->backend_id, object->backend_id_len, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_entry_set_field(entry, "min_value_i", &object->dataset.statistics.min_value_i, sizeof(object->dataset.statistics.min_value_i), &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_entry_set_field(entry, "max_value_i", &object->dataset.statistics.max_value_i, sizeof(object->dataset.statistics.max_value_i), &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_entry_set_field(entry, "min_value_f", &object->dataset.statistics.min_value_f, sizeof(object->dataset.statistics.min_value_f), &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_entry_set_field(entry, "max_value_f", &object->dataset.statistics.max_value_f, sizeof(object->dataset.statistics.max_value_f), &error))
+	{
+		j_goto_error();
+	}
+	if (!j_db_entry_update(entry, selector, batch, &error))
+	{
+		j_goto_error();
+	}
+	if (!j_batch_execute(batch))
+	{
+		j_goto_error();
+	}
 	H5VL_julea_db_object_unref(object);
 	return 0;
+_error:
+	H5VL_julea_db_error_handler(error);
+	H5VL_julea_db_object_unref(object);
+	return 1;
 }
 #pragma GCC diagnostic pop
 #endif

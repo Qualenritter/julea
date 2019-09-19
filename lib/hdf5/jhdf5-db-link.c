@@ -251,19 +251,15 @@ H5VL_julea_db_link_get_helper(JHDF5Object_t* parent, JHDF5Object_t* child, const
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
 		file = parent;
-		g_debug("XXX get link '%s' (F '%s')", name, parent->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
-		g_debug("XXX get link '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
-		g_debug("XXX get link '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
-		g_debug("XXX get link '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:
@@ -348,20 +344,16 @@ H5VL_julea_db_link_create_helper(JHDF5Object_t* parent, JHDF5Object_t* child, co
 	switch (parent->type)
 	{
 	case J_HDF5_OBJECT_TYPE_FILE:
-		g_debug("XXX create link '%s' (F '%s')", name, parent->file.name);
 		file = parent;
 		break;
 	case J_HDF5_OBJECT_TYPE_DATASET:
 		file = parent->dataset.file;
-		g_debug("XXX create link '%s' (D '%s') (F '%s')", name, parent->dataset.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_ATTR:
 		file = parent->attr.file;
-		g_debug("XXX create link '%s' (A '%s') (F '%s')", name, parent->attr.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_GROUP:
 		file = parent->group.file;
-		g_debug("XXX create link '%s' (G '%s') (F '%s')", name, parent->group.name, file->file.name);
 		break;
 	case J_HDF5_OBJECT_TYPE_DATATYPE:
 	case J_HDF5_OBJECT_TYPE_SPACE:

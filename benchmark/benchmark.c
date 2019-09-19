@@ -199,7 +199,7 @@ main(int argc, char** argv)
 	}
 
 	// Core
-	benchmark_background_operation();
+	/*	benchmark_background_operation();
 	benchmark_cache();
 	benchmark_memory_chunk();
 	benchmark_message();
@@ -216,8 +216,9 @@ main(int argc, char** argv)
 	benchmark_item();
 
 	// HDF5 client
+*/
 	benchmark_hdf2();
-	benchmark_hdf();
+	//	benchmark_hdf();
 
 	g_timer_destroy(j_benchmark_timer);
 	j_semantics_unref(j_benchmark_semantics);

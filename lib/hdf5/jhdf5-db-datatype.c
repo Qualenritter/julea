@@ -58,82 +58,13 @@ H5VL_julea_db_datatype_convert_type_change(hid_t type_id_from, hid_t type_id_to,
 {
 	J_TRACE_FUNCTION(NULL);
 
-	guint i;
-	size_t size;
-	const char* from_buf_ptr;
-	char* target_buf_ptr;
 	g_assert(H5Tget_class(type_id_from) == H5Tget_class(type_id_to));
 	g_assert(H5Tget_size(type_id_from) == H5Tget_size(type_id_to));
-	size = H5Tget_size(type_id_from);
 	switch (H5Tget_class(type_id_from))
 	{
-	case H5T_FLOAT:
-		if ((H5Tget_order(type_id_from) | H5Tget_order(type_id_to)) == (H5T_ORDER_LE | H5T_ORDER_BE))
-		{
-			from_buf_ptr = from_buf;
-			target_buf_ptr = target_buf;
-			for (i = 0; i < count; i++)
-			{
-				switch (size)
-				{
-				case 1:
-					break;
-				case 2:
-					_bswap16(from_buf_ptr, target_buf_ptr);
-					break;
-				case 4:
-					_bswap32(from_buf_ptr, target_buf_ptr);
-					break;
-				case 8:
-					_bswap64(from_buf_ptr, target_buf_ptr);
-					break;
-				default:
-					g_critical("%s NOT implemented !!", G_STRLOC);
-					abort();
-				}
-				from_buf_ptr += size;
-				target_buf_ptr += size;
-			}
-		}
-		else
-		{
-			g_critical("%s NOT implemented !!", G_STRLOC);
-			abort();
-		}
+	case H5T_FLOAT: // no conversion
 		break;
-	case H5T_INTEGER:
-		if ((H5Tget_order(type_id_from) | H5Tget_order(type_id_to)) == (H5T_ORDER_LE | H5T_ORDER_BE))
-		{
-			from_buf_ptr = from_buf;
-			target_buf_ptr = target_buf;
-			for (i = 0; i < count; i++)
-			{
-				switch (size)
-				{
-				case 1:
-					break;
-				case 2:
-					_bswap16(from_buf_ptr, target_buf_ptr);
-					break;
-				case 4:
-					_bswap32(from_buf_ptr, target_buf_ptr);
-					break;
-				case 8:
-					_bswap64(from_buf_ptr, target_buf_ptr);
-					break;
-				default:
-					g_critical("%s NOT implemented !!", G_STRLOC);
-					abort();
-				}
-				from_buf_ptr += size;
-				target_buf_ptr += size;
-			}
-		}
-		else
-		{
-			g_critical("%s NOT implemented !!", G_STRLOC);
-			abort();
-		}
+	case H5T_INTEGER: // no conversion
 		break;
 	case H5T_STRING:
 		g_critical("%s NOT implemented !!", G_STRLOC);
