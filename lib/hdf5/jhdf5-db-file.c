@@ -194,10 +194,6 @@ H5VL_julea_db_file_create(const char* name, unsigned flags, hid_t fcpl_id,
 	//create new file
 	if (!exist)
 	{
-		if (iterator)
-		{
-			j_db_iterator_unref(iterator);
-		}
 		if (!(object = H5VL_julea_db_object_new(J_HDF5_OBJECT_TYPE_FILE)))
 		{
 			j_goto_error();

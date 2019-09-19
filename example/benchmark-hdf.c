@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #include <hdf5.h>
 #include <glib.h>
 #include <julea-db.h>
@@ -58,11 +59,13 @@ static
 void
 initialize_random_data(const guint m, gint* data)
 {
-	FILE* ptr;
+	guint i;
+	srand(time(NULL));
 	j_benchmark_timer_start();
-	ptr = fopen("/dev/urandom", "rb");
-	fread(&data, sizeof(*data), m, ptr);
-	fclose(ptr);
+	for (i = 0; i < m; i++)
+	{
+		data[i] = rand();
+	}
 	timer_initialize_random_data += j_benchmark_timer_elapsed();
 }
 
@@ -130,7 +133,8 @@ read_data_native(const guint n, const guint m, gint* data)
 		H5Dclose(ds);
 		H5Fclose(file);
 		for (j = 0; j < m; j++)
-		{if((j==0)||(data_max_local < data[j]))
+		{
+			if ((j == 0) || (data_max_local < data[j]))
 			{
 				data_max_local = data[j];
 			}
@@ -180,7 +184,7 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 			j_db_iterator_get_field(julea_db_iterator_dataset, "file", &type, &backend_id, &backend_id_len, NULL);
 			j_db_selector_add_field(julea_db_selector_file, "_id", J_DB_SELECTOR_OPERATOR_EQ, backend_id, backend_id_len, NULL);
 			julea_db_iterator_file = j_db_iterator_new(julea_db_schema_file, julea_db_selector_file, NULL);
-			j_db_iterator_next(julea_db_iterator_file,NULL);
+			j_db_iterator_next(julea_db_iterator_file, NULL);
 			j_db_iterator_get_field(julea_db_iterator_file, "name", &type, (gpointer*)&filenamebuffer, &len, NULL);
 			printf("read_data_julea_db found max value (%d) in file (%s)", data_max, filenamebuffer);
 			free(filenamebuffer);
@@ -200,6 +204,8 @@ main()
 	hid_t julea_vol_id;
 	gint* data;
 
+	j_benchmark_timer = g_timer_new();
+
 	julea_vol_id = H5VLregister_connector_by_name("julea", H5P_DEFAULT);
 	H5VLinitialize(julea_vol_id, H5P_DEFAULT);
 
@@ -207,7 +213,7 @@ main()
 	fapl_julea = H5Pcreate(H5P_FILE_ACCESS);
 	H5Pset_vol(fapl_julea, julea_vol_id, NULL);
 
-	data = malloc(sizeof(*data * m));
+	data = malloc(sizeof(*data) * m);
 
 	write_data(n, m, data);
 	read_data_native(n, m, data);
@@ -219,10 +225,12 @@ main()
 	H5VLterminate(julea_vol_id);
 	H5VLunregister_connector(julea_vol_id);
 
-printf("timer_initialize_random_data %f",timer_initialize_random_data);
-printf("timer_write_julea_vol %f",timer_write_julea_vol);
-printf("timer_write_native %f",timer_write_native);
-printf("timer_read_native %f",timer_read_native);
-printf("timer_read_julea %f",timer_read_julea);
+	printf("timer_initialize_random_data %f", timer_initialize_random_data);
+	printf("timer_write_julea_vol %f", timer_write_julea_vol);
+	printf("timer_write_native %f", timer_write_native);
+	printf("timer_read_native %f", timer_read_native);
+	printf("timer_read_julea %f", timer_read_julea);
+
+	g_timer_destroy(j_benchmark_timer);
 	return 0;
 }

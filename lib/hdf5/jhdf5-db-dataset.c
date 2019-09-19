@@ -851,7 +851,7 @@ H5VL_julea_db_dataset_write(void* obj, hid_t mem_type_id, hid_t mem_space_id, hi
 		current_count1 = mem_space_range->stop - mem_space_range->start;
 		current_count2 = file_space_range->stop - file_space_range->start;
 		current_count1 = current_count1 < current_count2 ? current_count1 : current_count2;
-		calculate_statistics(object, ((const char*)local_buf) + mem_space_range->start * data_size, data_size * current_count1, mem_space_id);
+		calculate_statistics(object, ((const char*)local_buf) + mem_space_range->start * data_size, data_size * current_count1, mem_type_id);
 		j_distributed_object_write(object->dataset.object, ((const char*)local_buf) + mem_space_range->start * data_size, data_size * current_count1, file_space_range->start * data_size, &bytes_written, batch);
 		if (mem_space_range->start + current_count1 == mem_space_range->stop)
 		{
@@ -1039,6 +1039,10 @@ H5VL_julea_db_dataset_close(void* obj, hid_t dxpl_id, void** req)
 		j_goto_error();
 	}
 	if (!j_db_selector_add_field(selector, "_id", J_DB_SELECTOR_OPERATOR_EQ, object->backend_id, object->backend_id_len, &error))
+	{
+		j_goto_error();
+	}
+	if (!(entry = j_db_entry_new(julea_db_schema_dataset, &error)))
 	{
 		j_goto_error();
 	}

@@ -37,6 +37,8 @@ githash=$(git log --pretty=format:'%H' -n 1)
 rm -rf benchmark_values/warnke-${githash}
 mkdir -p benchmark_values/warnke-${githash}
 
+rm -rf build* prefix*
+export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-gcc-benchmark/lib
 ./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 ./waf.sh install
@@ -56,7 +58,6 @@ mountmedium=$4
 pretty_backend_name=$5
 
 (
-rm -rf build* prefix*
 ./warnke_skript/kill.sh
 
 thepath=$(pwd)
@@ -82,7 +83,7 @@ server_pid=$!
 sleep 2
 
 cd benchmark_values/warnke-${githash}
-../../example/benchmark-hdf >>benchmark_values_${pretty_backend_name}_${mountmedium} 2>&1
+valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --error-exitcode=1 --track-origins=yes ../../example/benchmark-hdf >>benchmark_values_${pretty_backend_name}_${mountmedium} 2>&1
 kill ${server_pid}
 )
 }
