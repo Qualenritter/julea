@@ -158,7 +158,8 @@ backend_fini(void)
 {
 }
 
-static JBackend null_backend = {
+static
+JBackend null_backend = {
 	.type = J_BACKEND_TYPE_DB,
 	.component = J_BACKEND_COMPONENT_CLIENT | J_BACKEND_COMPONENT_SERVER,
 	.db = {
@@ -173,8 +174,7 @@ static JBackend null_backend = {
 		.backend_query = backend_query,
 		.backend_iterate = backend_iterate,
 		.backend_batch_start = backend_batch_start,
-		.backend_batch_execute = backend_batch_execute
-	}
+		.backend_batch_execute = backend_batch_execute }
 };
 
 G_MODULE_EXPORT

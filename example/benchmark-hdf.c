@@ -196,8 +196,8 @@ main()
 {
 	const gdouble n = 100; //file	count
 	const gdouble m = 100000; //dataset dimensions
-	const gdouble factor_native=10;
-	const gdouble factor_julea=100;
+	const gdouble factor_native = 10;
+	const gdouble factor_julea = 100;
 	guint i;
 	hid_t julea_vol_id;
 	gint* data;
@@ -215,10 +215,14 @@ main()
 	data = malloc(sizeof(*data) * (guint)m);
 
 	write_data(n, m, data);
-	for(i=0;i<factor_native;i++)
+	for (i = 0; i < factor_native; i++)
+	{
 		read_data_native(n, m, data);
-	for(i=0;i<factor_julea;i++)
+	}
+	for (i = 0; i < factor_julea; i++)
+	{
 		read_data_julea_db(n, m, data);
+	}
 
 	free(data);
 	H5Pclose(fapl_julea);
@@ -228,10 +232,10 @@ main()
 	H5VLunregister_connector(julea_vol_id);
 
 	printf("timer_initialize_random_data %f\n", timer_initialize_random_data);
-	printf("timer_write_julea_vol %f (%f)\n", timer_write_julea_vol,timer_write_julea_vol/(n*factor_julea));
-	printf("timer_write_native %f (%f)\n", timer_write_native,timer_write_native/(n*factor_native));
-	printf("timer_read_julea %f (%f)\n", timer_read_julea,timer_read_julea/(n*factor_julea));
-	printf("timer_read_native %f (%f)\n", timer_read_native,timer_read_native/(n*factor_native));
+	printf("timer_write_julea_vol %f (%f)\n", timer_write_julea_vol, timer_write_julea_vol / (n * factor_julea));
+	printf("timer_write_native %f (%f)\n", timer_write_native, timer_write_native / (n * factor_native));
+	printf("timer_read_julea %f (%f)\n", timer_read_julea, timer_read_julea / (n * factor_julea));
+	printf("timer_read_native %f (%f)\n", timer_read_native, timer_read_native / (n * factor_native));
 
 	g_timer_destroy(j_benchmark_timer);
 	return 0;
