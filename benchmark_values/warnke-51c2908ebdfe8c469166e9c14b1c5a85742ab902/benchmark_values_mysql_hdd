@@ -1,0 +1,23 @@
+read_data_native found max value (2147207997) in file (benchmark_native_0.h5)
+read_data_native found max value (2147309588) in file (benchmark_native_2.h5)
+read_data_native found max value (2147381554) in file (benchmark_native_3.h5)
+read_data_native found max value (2147448482) in file (benchmark_native_4.h5)
+read_data_native found max value (2147455072) in file (benchmark_native_6.h5)
+read_data_native found max value (2147475092) in file (benchmark_native_8.h5)
+read_data_native found max value (2147483534) in file (benchmark_native_41.h5)
+read_data_native found max value (2147483587) in file (benchmark_native_632.h5)
+read_data_native found max value (2147483611) in file (benchmark_native_1749.h5)
+read_data_julea_db found max value (2147207997) in file (benchmark_julea_vol_0.h5)
+read_data_julea_db found max value (2147309588) in file (benchmark_julea_vol_2.h5)
+read_data_julea_db found max value (2147381554) in file (benchmark_julea_vol_3.h5)
+read_data_julea_db found max value (2147448482) in file (benchmark_julea_vol_4.h5)
+read_data_julea_db found max value (2147455072) in file (benchmark_julea_vol_6.h5)
+read_data_julea_db found max value (2147475092) in file (benchmark_julea_vol_8.h5)
+read_data_julea_db found max value (2147483534) in file (benchmark_julea_vol_41.h5)
+read_data_julea_db found max value (2147483587) in file (benchmark_julea_vol_632.h5)
+read_data_julea_db found max value (2147483611) in file (benchmark_julea_vol_1749.h5)
+timer_initialize_random_data 6.995770
+timer_write_julea_vol 3059.559693
+timer_write_native 8.031796
+timer_read_julea 0.014075
+timer_read_native 0.796384
