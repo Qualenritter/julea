@@ -23,11 +23,19 @@
 #include <julea.h>
 #define JULEA_HDF5_DB_NAMESPACE "HDF5_DB"
 static
+gdouble factor_native = 0;
+static
+gdouble factor_julea = 0;
+static
 gdouble timer_initialize_random_data = 0;
 static
 gdouble timer_write_julea_vol = 0;
 static
 gdouble timer_write_native = 0;
+static
+gdouble timer_read_native_sync = 0;
+static
+gdouble timer_read_julea_sync = 0;
 static
 gdouble timer_read_native = 0;
 static
@@ -61,10 +69,12 @@ initialize_random_data(const guint m, gint* data)
 {
 	guint i;
 	j_benchmark_timer_start();
+
 	for (i = 0; i < m; i++)
 	{
 		data[i] = rand();
 	}
+
 	timer_initialize_random_data += j_benchmark_timer_elapsed();
 }
 
@@ -80,6 +90,7 @@ write_data(const guint n, const guint m, gint* data)
 	guint i;
 	dims_ds[0] = m;
 	dataspace_ds = H5Screate_simple(1, dims_ds, NULL);
+
 	for (i = 0; i < n; i++)
 	{
 		initialize_random_data(m, data);
@@ -104,6 +115,7 @@ write_data(const guint n, const guint m, gint* data)
 			timer_write_native += j_benchmark_timer_elapsed();
 		}
 	}
+
 	H5Sclose(dataspace_ds);
 }
 static
@@ -119,6 +131,7 @@ read_data_native(const guint n, const guint m, gint* data)
 	gint data_max = 0;
 	gint data_max_local = 0;
 	j_benchmark_timer_start();
+
 	for (i = 0; i < n; i++)
 	{
 		snprintf(filenamebuffer, sizeof(filenamebuffer), "benchmark_native_%d.h5", i);
@@ -127,6 +140,7 @@ read_data_native(const guint n, const guint m, gint* data)
 		H5Dread(ds, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 		H5Dclose(ds);
 		H5Fclose(file);
+
 		for (j = 0; j < m; j++)
 		{
 			if ((j == 0) || (data_max_local < data[j]))
@@ -134,12 +148,14 @@ read_data_native(const guint n, const guint m, gint* data)
 				data_max_local = data[j];
 			}
 		}
+
 		if ((i == 0) || (data_max_local >= data_max))
 		{
 			data_max = data_max_local;
 			printf("read_data_native found max value (%d) in file (%s)\n", data_max, filenamebuffer);
 		}
 	}
+
 	timer_read_native += j_benchmark_timer_elapsed();
 }
 void
@@ -169,9 +185,11 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 	j_batch_execute(batch);
 	julea_db_iterator_dataset = j_db_iterator_new(julea_db_schema_dataset, NULL, NULL);
 	i = 0;
+
 	while (j_db_iterator_next(julea_db_iterator_dataset, NULL))
 	{
 		j_db_iterator_get_field(julea_db_iterator_dataset, "max_value_i", &type, (gpointer*)&data_max_local, &len, NULL);
+
 		if ((i == 0) || (*data_max_local >= data_max))
 		{
 			data_max = *data_max_local;
@@ -184,21 +202,33 @@ read_data_julea_db(const guint n, const guint m, gint* data)
 			printf("read_data_julea_db found max value (%d) in file (%s)\n", data_max, filenamebuffer);
 			free(filenamebuffer);
 		}
+
 		i++;
 	}
+
 	j_db_iterator_unref(julea_db_iterator_dataset);
 	j_db_schema_unref(julea_db_schema_dataset);
 	j_db_schema_unref(julea_db_schema_file);
 	timer_read_julea += j_benchmark_timer_elapsed();
 }
+static
+void
+print_times(const guint n)
+{
+	printf("timer_initialize_random_data %f\n", timer_initialize_random_data);
+	printf("timer_write_julea_vol %f (%f)\n", timer_write_julea_vol, n / timer_write_julea_vol);
+	printf("timer_write_native %f (%f)\n", timer_write_native, n / timer_write_native);
+	printf("timer_read_julea %f (%f) %f\n", timer_read_julea, n / timer_read_julea * factor_julea, factor_julea);
+	printf("timer_read_native %f (%f) %f\n", timer_read_native, n / timer_read_native * factor_native, factor_native);
+	printf("timer_read_julea_sync %f (%f) %f\n", timer_read_julea_sync, n / timer_read_julea_sync * factor_julea, factor_julea);
+	printf("timer_read_native_sync %f (%f) %f\n", timer_read_native_sync, n / timer_read_native_sync * factor_native, factor_native);
+}
 int
 main()
 {
-	const gdouble n = 100; //file	count
-	const gdouble m = 100000; //dataset dimensions
-	const gdouble factor_native = 10;
-	const gdouble factor_julea = 100;
-	guint i;
+	const gdouble target = 20;
+	const gdouble n = 1000; //file	count
+	const gdouble m = 1000000; //dataset dimensions
 	hid_t julea_vol_id;
 	gint* data;
 
@@ -215,13 +245,35 @@ main()
 	data = malloc(sizeof(*data) * (guint)m);
 
 	write_data(n, m, data);
-	for (i = 0; i < factor_native; i++)
+
+	while (timer_read_native < target && timer_read_native_sync < target * 30)
 	{
+		factor_native++;
+		j_benchmark_timer_start();
+		system("sync");
+		system("echo 3 > /proc/sys/vm/drop_caches");
+		timer_read_native_sync += j_benchmark_timer_elapsed();
 		read_data_native(n, m, data);
+
+		if ((((guint)factor_native) % 100) == 0)
+		{
+			print_times(n);
+		}
 	}
-	for (i = 0; i < factor_julea; i++)
+
+	while (timer_read_julea < target && timer_read_julea_sync < target * 30)
 	{
+		factor_julea++;
+		j_benchmark_timer_start();
+		system("sync");
+		system("echo 3 > /proc/sys/vm/drop_caches");
+		timer_read_julea_sync += j_benchmark_timer_elapsed();
 		read_data_julea_db(n, m, data);
+
+		if ((((guint)factor_julea) % 100) == 0)
+		{
+			print_times(n);
+		}
 	}
 
 	free(data);
@@ -231,11 +283,7 @@ main()
 	H5VLterminate(julea_vol_id);
 	H5VLunregister_connector(julea_vol_id);
 
-	printf("timer_initialize_random_data %f\n", timer_initialize_random_data);
-	printf("timer_write_julea_vol %f (%f)\n", timer_write_julea_vol, timer_write_julea_vol / (n * factor_julea));
-	printf("timer_write_native %f (%f)\n", timer_write_native, timer_write_native / (n * factor_native));
-	printf("timer_read_julea %f (%f)\n", timer_read_julea, timer_read_julea / (n * factor_julea));
-	printf("timer_read_native %f (%f)\n", timer_read_native, timer_read_native / (n * factor_native));
+	print_times(n);
 
 	g_timer_destroy(j_benchmark_timer);
 	return 0;
