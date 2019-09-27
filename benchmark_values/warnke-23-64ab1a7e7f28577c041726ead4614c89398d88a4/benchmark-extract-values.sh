@@ -1,7 +1,7 @@
+rm *.csv tmp *.plot *.pdf
 files=$(find -name "benchmark_values_*" | sort)
 
 #/db/scheme_1/write/db
-rm *.csv tmp *.plot *.pdf
 for f in ${files}
 do
 	for x in $(cat "$f" | grep seconds | sed "s-.*/db/--g" | sed "s- .*--g" | sed "s-^[^/]*/--g" | sort -n | uniq)
@@ -124,6 +124,32 @@ break
 done
 
 
+for f in ${files}
+do
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-client-memory.pdf'
+set title 'graph-entry-client-memory' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Nothing" noenhanced
+set ylabel "operation/second" noenhanced
+plot	'$f-entry-new.csv'	using 1:2 with linespoints lc 1 pt 4 title "new"	,\
+	'$f-entry-ref.csv'	using 1:2 with linespoints lc 2 pt 4 title "ref"	,\
+	'$f-entry-unref.csv'	using 1:2 with linespoints lc 3 pt 4 title "unref"	,\
+	'$f-entry-free.csv'	using 1:2 with linespoints lc 4 pt 4 title "free"
+EOF
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-client-memory.plot
+break
+done
+
+
 for n2 in $(cat tmp | sed "s-/.*--g")
 do
 if ! [[ "$n2" =~ ^[0-9]+$ ]]
@@ -178,12 +204,16 @@ mv gnuplot.plot graph-entry${n2}.plot
 done
 
 
-for f in ${files}
+for n2 in $(cat tmp | sed "s-/.*--g")
 do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
 cat > gnuplot.plot << EOF
 set terminal pdf size 20,20
-set output 'graph-entry-client-memory.pdf'
-set title 'graph-entry-client-memory' noenhanced
+set output 'graph-entry-insert${n2}.pdf'
+set title 'graph-entry-insert${n2}' noenhanced
 set datafile separator ","
 set xtics nomirror rotate by -20
 set auto x
@@ -191,20 +221,402 @@ set size ratio 0.5
 set logscale x
 set logscale y
 set key right outside
-set xlabel "#Nothing" noenhanced
+set xlabel "#Entry" noenhanced
 set ylabel "operation/second" noenhanced
-plot	'$f-entry-new.csv'	using 1:2 with linespoints lc 1 pt 4 title "new"	,\
-	'$f-entry-ref.csv'	using 1:2 with linespoints lc 2 pt 4 title "ref"	,\
-	'$f-entry-unref.csv'	using 1:2 with linespoints lc 3 pt 4 title "unref"	,\
-	'$f-entry-free.csv'	using 1:2 with linespoints lc 4 pt 4 title "free"
 EOF
-cat gnuplot.plot | gnuplot
-mv gnuplot.plot graph-entry-client-memory.plot
-break
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-insert.csv'				using 1:2 with linespoints lc 1 pt  4 dt $i title '${f_short_name}-insert'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-insert-batch.csv'			using 1:2 with linespoints lc 1 pt  6 dt $i title '${f_short_name}-insert-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-insert-batch-index.csv'		using 1:2 with linespoints lc 1 pt  8 dt $i title '${f_short_name}-insert-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-insert-batch-index-atomicity.csv'	using 1:2 with linespoints lc 1 pt 12 dt $i title '${f_short_name}-insert-batch-index-atomicity'"	>> gnuplot.plot
+	i=$(($i + 1))
 done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-insert${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-update${n2}.pdf'
+set title 'graph-entry-update${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-update.csv'				using 1:2 with linespoints lc 2 pt  4 dt $i title '${f_short_name}-update'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch.csv'			using 1:2 with linespoints lc 2 pt  6 dt $i title '${f_short_name}-update-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch-index.csv'		using 1:2 with linespoints lc 2 pt  8 dt $i title '${f_short_name}-update-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch-index-atomicity.csv'	using 1:2 with linespoints lc 2 pt 12 dt $i title '${f_short_name}-update-batch-index-atomicity'"	>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-update${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-delete${n2}.pdf'
+set title 'graph-entry-delete${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-delete.csv'				using 1:2 with linespoints lc 3 pt  4 dt $i title '${f_short_name}-delete'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch.csv'			using 1:2 with linespoints lc 3 pt  6 dt $i title '${f_short_name}-delete-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch-index.csv'		using 1:2 with linespoints lc 3 pt  8 dt $i title '${f_short_name}-delete-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch-index-atomicity.csv'	using 1:2 with linespoints lc 3 pt 12 dt $i title '${f_short_name}-delete-batch-index-atomicity'"	>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-delete${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-select${n2}.pdf'
+set title 'graph-entry-select${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-iterator-single.csv'			using 1:2 with linespoints lc 4 pt  6 dt $i title '${f_short_name}-iterator-single'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-all.csv'				using 1:2 with linespoints lc 5 pt  6 dt $i title '${f_short_name}-iterator-all'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single-index.csv'			using 1:2 with linespoints lc 4 pt  8 dt $i title '${f_short_name}-iterator-single-index'"		>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-all-index.csv'			using 1:2 with linespoints lc 5 pt  8 dt $i title '${f_short_name}-iterator-all-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single-index-atomicity.csv'	using 1:2 with linespoints lc 4 pt 12 dt $i title '${f_short_name}-iterator-single-index-atomicity'"	>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-all-index-atomicity.csv'		using 1:2 with linespoints lc 5 pt 12 dt $i title '${f_short_name}-iterator-all-index-atomicity'"	>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-select${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-normal${n2}.pdf'
+set title 'graph-entry-normal${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-insert.csv'				using 1:2 with linespoints lc 1 pt  4 dt $i title '${f_short_name}-insert'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update.csv'				using 1:2 with linespoints lc 2 pt  4 dt $i title '${f_short_name}-update'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete.csv'				using 1:2 with linespoints lc 3 pt  4 dt $i title '${f_short_name}-delete'"				>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-normal${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-batch${n2}.pdf'
+set title 'graph-entry-batch${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  "'$f-${n2}-entry-insert-batch.csv'			using 1:2 with linespoints lc 1 pt  6 dt $i title '${f_short_name}-insert-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch.csv'			using 1:2 with linespoints lc 2 pt  6 dt $i title '${f_short_name}-update-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch.csv'			using 1:2 with linespoints lc 3 pt  6 dt $i title '${f_short_name}-delete-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single.csv'			using 1:2 with linespoints lc 4 pt  6 dt $i title '${f_short_name}-iterator-single'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-all.csv'				using 1:2 with linespoints lc 5 pt  6 dt $i title '${f_short_name}-iterator-all'"			>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-batch${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-batch-index${n2}.pdf'
+set title 'graph-entry-batch-index${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  "'$f-${n2}-entry-insert-batch-index.csv'		using 1:2 with linespoints lc 1 pt  8 dt $i title '${f_short_name}-insert-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch-index.csv'		using 1:2 with linespoints lc 2 pt  8 dt $i title '${f_short_name}-update-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch-index.csv'		using 1:2 with linespoints lc 3 pt  8 dt $i title '${f_short_name}-delete-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single-index.csv'			using 1:2 with linespoints lc 4 pt  8 dt $i title '${f_short_name}-iterator-single-index'"		>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-all-index.csv'			using 1:2 with linespoints lc 5 pt  8 dt $i title '${f_short_name}-iterator-all-index'"			>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-batch-index${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-batch-index-atomicity${n2}.pdf'
+set title 'graph-entry-batch-index-atomicity${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-insert-batch-index-atomicity.csv'	using 1:2 with linespoints lc 1 pt 12 dt $i title '${f_short_name}-insert-batch-index-atomicity'"	>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch-index-atomicity.csv'	using 1:2 with linespoints lc 2 pt 12 dt $i title '${f_short_name}-update-batch-index-atomicity'"	>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch-index-atomicity.csv'	using 1:2 with linespoints lc 3 pt 12 dt $i title '${f_short_name}-delete-batch-index-atomicity'"	>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single-index-atomicity.csv'	using 1:2 with linespoints lc 4 pt 12 dt $i title '${f_short_name}-iterator-single-index-atomicity'"	>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-all-index-atomicity.csv'		using 1:2 with linespoints lc 5 pt 12 dt $i title '${f_short_name}-iterator-all-index-atomicity'"	>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-batch-index-atomicity${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-xx1-${n2}.pdf'
+set title 'graph-entry-xx1-${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-insert.csv'				using 1:2 with linespoints lc 1 pt  4 dt $i title '${f_short_name}-insert'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update.csv'				using 1:2 with linespoints lc 2 pt  4 dt $i title '${f_short_name}-update'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete.csv'				using 1:2 with linespoints lc 3 pt  4 dt $i title '${f_short_name}-delete'"				>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-insert-batch.csv'			using 1:2 with linespoints lc 1 pt  6 dt $i title '${f_short_name}-insert-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch.csv'			using 1:2 with linespoints lc 2 pt  6 dt $i title '${f_short_name}-update-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch.csv'			using 1:2 with linespoints lc 3 pt  6 dt $i title '${f_short_name}-delete-batch'"			>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-xx1-${n2}.plot
+done
+
+
+for n2 in $(cat tmp | sed "s-/.*--g")
+do
+if ! [[ "$n2" =~ ^[0-9]+$ ]]
+then
+	continue
+fi
+cat > gnuplot.plot << EOF
+set terminal pdf size 20,20
+set output 'graph-entry-xx2-${n2}.pdf'
+set title 'graph-entry-xx2-${n2}' noenhanced
+set datafile separator ","
+set xtics nomirror rotate by -20
+set auto x
+set size ratio 0.5
+set logscale x
+set logscale y
+set key right outside
+set xlabel "#Entry" noenhanced
+set ylabel "operation/second" noenhanced
+EOF
+i=0
+for f in ${files}
+do
+	f_short_name=$(echo $f | sed "s-./benchmark_values_--g" | sed "s/_/-/g")
+	if [ "$i" == "0" ]; then
+		printf "plot" >> gnuplot.plot
+	else
+		printf "," >> gnuplot.plot
+	fi
+	printf  " '$f-${n2}-entry-insert-batch.csv'			using 1:2 with linespoints lc 1 pt  6 dt $i title '${f_short_name}-insert-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch.csv'			using 1:2 with linespoints lc 2 pt  6 dt $i title '${f_short_name}-update-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch.csv'			using 1:2 with linespoints lc 3 pt  6 dt $i title '${f_short_name}-delete-batch'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single.csv'			using 1:2 with linespoints lc 4 pt  6 dt $i title '${f_short_name}-iterator-single'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-insert-batch-index.csv'		using 1:2 with linespoints lc 1 pt  8 dt $i title '${f_short_name}-insert-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-update-batch-index.csv'		using 1:2 with linespoints lc 2 pt  8 dt $i title '${f_short_name}-update-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-entry-delete-batch-index.csv'		using 1:2 with linespoints lc 3 pt  8 dt $i title '${f_short_name}-delete-batch-index'"			>> gnuplot.plot
+	printf  ",'$f-${n2}-iterator-single-index.csv'			using 1:2 with linespoints lc 4 pt  8 dt $i title '${f_short_name}-iterator-single-index'"		>> gnuplot.plot
+	i=$(($i + 1))
+done
+cat gnuplot.plot | gnuplot
+mv gnuplot.plot graph-entry-xx2-${n2}.plot
+done
+
+
+
 
 #find . -size  0 -print0 |xargs -0 rm --
 #rm tmp *.plot
 
 pdfunite *.pdf combined.pdf
-
