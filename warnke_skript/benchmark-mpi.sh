@@ -80,6 +80,7 @@ server_pid=$!
 sleep 2
 
 (
+	export PKG_CONFIG_PATH=$(pwd)/prefix-gcc-benchmark/lib/pkgconfig:${PKG_CONFIG_PATH}
 	cd example
 	make clean
 	make
@@ -91,6 +92,11 @@ mpirun --allow-run-as-root -np ${process_count} ../../example/benchmark-mpi >> b
 kill ${server_pid}
 )
 }
+
+exec_tests null   server /mnt2 mem null 6
+exit
+exec_tests null   server /mnt2 mem null 1
+
 
 exec_tests mysql  client /mnt  hdd mysql 1
 exec_tests sqlite server /mnt  hdd sqlite 1

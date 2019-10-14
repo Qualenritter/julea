@@ -1,0 +1,3385 @@
+Hello world from processor benjamin0, rank 1 out of 6 processors
+argv[0] -> ../../example/benchmark-mpi
+Hello world from processor benjamin0, rank 3 out of 6 processors
+argv[0] -> ../../example/benchmark-mpi
+Hello world from processor benjamin0, rank 2 out of 6 processors
+argv[0] -> ../../example/benchmark-mpi
+Hello world from processor benjamin0, rank 4 out of 6 processors
+argv[0] -> ../../example/benchmark-mpi
+Hello world from processor benjamin0, rank 5 out of 6 processors
+argv[0] -> ../../example/benchmark-mpi
+Hello world from processor benjamin0, rank 0 out of 6 processors
+argv[0] -> ../../example/benchmark-mpi
+/db/6/5/entry/insert 10.000 seconds (216404 / s) [ 2164044 360674 ]
+/db/6/5/entry/update 10.000 seconds (233742 / s) [ 2337426 389571 ]
+/db/6/5/entry/delete 9.259 seconds (233733 / s) [ 2164044 360674 ]
+/db/6/5/entry/insert-batch 10.000 seconds (217647 / s) [ 2176476 362746 ]
+/db/6/5/entry/update-batch 10.000 seconds (235083 / s) [ 2350830 391805 ]
+/db/6/5/entry/delete-batch 9.219 seconds (236089 / s) [ 2176476 362746 ]
+/db/6/5/iterator/single 10.000 seconds (204072 / s) [ 2040720 340120 ]
+/db/6/5/iterator/all 10.000 seconds (202075 / s) [ 2020758 336793 ]
+/db/6/5/entry/insert-batch-index 10.000 seconds (221964 / s) [ 2219640 369940 ]
+/db/6/5/entry/update-batch-index 10.000 seconds (230122 / s) [ 2301228 383538 ]
+/db/6/5/entry/delete-batch-index 9.237 seconds (240305 / s) [ 2219640 369940 ]
+/db/6/5/iterator/single-index 10.000 seconds (208469 / s) [ 2084694 347449 ]
+/db/6/5/iterator/all-index 10.000 seconds (202057 / s) [ 2020572 336762 ]
+/db/6/5/entry/insert-batch-index-atomicity 10.000 seconds (219518 / s) [ 2195178 365863 ]
+/db/6/5/entry/update-batch-index-atomicity 10.000 seconds (227571 / s) [ 2275716 379286 ]
+/db/6/5/entry/delete-batch-index-atomicity 9.273 seconds (236720 / s) [ 2195178 365863 ]
+/db/6/5/iterator/single-index-atomicity 10.000 seconds (201414 / s) [ 2014146 335691 ]
+/db/6/5/iterator/all-index-atomicity 10.000 seconds (203845 / s) [ 2038452 339742 ]
+/db/6/50/entry/insert 10.000 seconds (84899 / s) [ 848994 141499 ]
+/db/6/50/entry/update 10.000 seconds (84229 / s) [ 842298 140383 ]
+/db/6/50/entry/delete 3.565 seconds (238130 / s) [ 848994 141499 ]
+/db/6/50/entry/insert-batch 10.000 seconds (84069 / s) [ 840696 140116 ]
+/db/6/50/entry/update-batch 10.000 seconds (80039 / s) [ 800394 133399 ]
+/db/6/50/entry/delete-batch 3.510 seconds (239498 / s) [ 840696 140116 ]
+/db/6/50/iterator/single 10.000 seconds (89269 / s) [ 892692 148782 ]
+/db/6/50/iterator/all 10.000 seconds (28126 / s) [ 281268 46878 ]
+/db/6/50/entry/insert-batch-index 10.000 seconds (86379 / s) [ 863790 143965 ]
+/db/6/50/entry/update-batch-index 10.000 seconds (81708 / s) [ 817086 136181 ]
+/db/6/50/entry/delete-batch-index 3.642 seconds (237145 / s) [ 863790 143965 ]
+/db/6/50/iterator/single-index 10.000 seconds (86782 / s) [ 867822 144637 ]
+/db/6/50/iterator/all-index 10.000 seconds (27672 / s) [ 276720 46120 ]
+/db/6/50/entry/insert-batch-index-atomicity 10.000 seconds (87509 / s) [ 875094 145849 ]
+/db/6/50/entry/update-batch-index-atomicity 10.000 seconds (85399 / s) [ 853992 142332 ]
+/db/6/50/entry/delete-batch-index-atomicity 3.609 seconds (242475 / s) [ 875094 145849 ]
+/db/6/50/iterator/single-index-atomicity 10.000 seconds (85709 / s) [ 857100 142850 ]
+/db/6/50/iterator/all-index-atomicity 10.000 seconds (26624 / s) [ 266244 44374 ]
+/db/6/500/entry/insert 10.000 seconds (1724 / s) [ 17244 2874 ]
+/db/6/500/entry/update 10.003 seconds (1721 / s) [ 17214 2869 ]
+/db/6/500/entry/delete 0.081 seconds (214138 / s) [ 17244 2874 ]
+/db/6/500/entry/insert-batch 10.001 seconds (1722 / s) [ 17226 2871 ]
+/db/6/500/entry/update-batch 10.002 seconds (1723 / s) [ 17238 2873 ]
+/db/6/500/entry/delete-batch 0.080 seconds (215660 / s) [ 17226 2871 ]
+/db/6/500/iterator/single 10.003 seconds (1747 / s) [ 17478 2913 ]
+/db/6/500/iterator/all 10.010 seconds (376 / s) [ 3768 628 ]
+/db/6/500/entry/insert-batch-index 10.002 seconds (1718 / s) [ 17184 2864 ]
+/db/6/500/entry/update-batch-index 10.003 seconds (1718 / s) [ 17184 2864 ]
+/db/6/500/entry/delete-batch-index 0.084 seconds (204940 / s) [ 17184 2864 ]
+/db/6/500/iterator/single-index 10.001 seconds (1736 / s) [ 17364 2894 ]
+/db/6/500/iterator/all-index 10.005 seconds (377 / s) [ 3768 628 ]
+
+** (process:30109): CRITICAL **: 15:20:11.056: Error receiving data: Connection reset by peer
+
+** (process:30109): CRITICAL **: 15:20:11.059: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.062: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.066: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.069: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.073: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.076: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.080: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.083: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.087: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.090: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.093: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.097: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.100: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.104: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.107: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.111: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.114: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.118: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.121: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.125: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.128: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.132: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.135: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.139: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.142: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.145: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.149: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.152: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.156: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.159: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.163: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.166: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.170: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.173: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.177: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.180: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.183: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.187: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.190: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.194: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.197: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.201: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.204: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.208: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.211: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.215: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.218: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.222: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.225: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.229: Error sending data: Broken pipe
+
+
+** (process:30103): CRITICAL **: 15:20:11.056: Error receiving data: Connection reset by peer
+
+** (process:30103): CRITICAL **: 15:20:11.058: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.062: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.065: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.069: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.072: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.076: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.079: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.083: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.086: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.090: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.093: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.097: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.100: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.104: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.107: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.111: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.114: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.117: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.121: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.124: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.128: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.131: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.135: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.138: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.142: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.145: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.149: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.152: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.156: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.159: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.163: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.166: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.169: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.173: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.176: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.180: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.183: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.187: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.190: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.194: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.197: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.201: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.204: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.207: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.211: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.214: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.218: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.221: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.225: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.228: Error sending data: Broken pipe
+
+
+** (process:30104): CRITICAL **: 15:20:11.056: Error receiving data: Connection reset by peer
+
+** (process:30104): CRITICAL **: 15:20:11.058: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.062: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.065: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.069: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.072: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.076: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.079: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.083: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.086: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.090: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.093: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.097: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.100: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.104: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.107: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.111: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.114: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.117: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.121: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.124: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.128: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.131: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.135: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.138: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.142: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.145: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.149: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.152: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.156: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.159: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.162: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.166: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.169: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.173: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.176: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.180: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.183: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.187: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.190: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.194: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.197: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.201: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.204: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.207: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.211: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.214: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.218: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.221: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.225: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.228: Error sending data: Broken pipe
+
+
+** (process:30105): CRITICAL **: 15:20:11.056: Error receiving data: Connection reset by peer
+
+** (process:30105): CRITICAL **: 15:20:11.059: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.062: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.065: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.069: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.072: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.076: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.079: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.083: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.086: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.090: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.093: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.097: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.100: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.104: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.107: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.111: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.114: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.118: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.121: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.124: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.128: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.131: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.135: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.138: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.142: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.145: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.149: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.152: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.156: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.159: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.163: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.166: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.169: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.173: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.176: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.180: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.183: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.187: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.190: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.194: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.197: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.201: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.204: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.208: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.211: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.215: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.218: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.221: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.225: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.228: Error sending data: Broken pipe
+
+
+** (process:30106): CRITICAL **: 15:20:11.056: Error receiving data: Connection reset by peer
+
+** (process:30106): CRITICAL **: 15:20:11.059: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.063: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.066: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.070: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.073: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.077: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.080: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.084: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.087: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.091: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.094: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.097: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.101: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.104: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.108: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.111: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.115: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.118: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.122: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.125: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.129: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.132: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.136: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.139: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.143: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.146: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.149: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.153: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.156: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.160: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.163: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.167: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.170: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.174: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.177: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.181: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.184: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.188: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.191: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.194: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.198: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.201: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.205: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.208: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.212: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.215: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.219: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.222: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.226: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.229: Error sending data: Broken pipe
+
+
+** (process:30107): CRITICAL **: 15:20:11.056: Error receiving data: Connection reset by peer
+
+** (process:30107): CRITICAL **: 15:20:11.058: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.062: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.065: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.069: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.072: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.076: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.079: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.083: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.086: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.090: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.093: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.097: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.100: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.104: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.107: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.110: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.114: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.117: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.121: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.124: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.128: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.131: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.135: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.138: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.142: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.145: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.149: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.152: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.155: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.159: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.162: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.166: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.169: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.173: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.176: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.180: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.183: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.187: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.190: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.194: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.197: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.200: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.204: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.207: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.211: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.214: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.218: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.221: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.225: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.228: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.232: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.235: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.239: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.242: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.246: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.249: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.252: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.256: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.259: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.263: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.266: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.270: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.273: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.277: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.280: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.284: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.287: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.291: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.294: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.298: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.301: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.305: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.308: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.311: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.315: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.318: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.322: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.325: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.329: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.332: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.336: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.339: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.343: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.346: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.350: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.353: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.356: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.360: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.363: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.367: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.370: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.374: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.377: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.381: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.384: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.388: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.391: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.394: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.398: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.401: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.405: Error sending data: Broken pipe
+
+** (process:3010** (process:30109): CRITICAL **: 15:20:11.232: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.235: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.239: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.242: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.246: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.249: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.253: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.256: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.260: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.263: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.267: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.270: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.274: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.277: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.281: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.284: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.287: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.291: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.294: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.298: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.301: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.305: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.308: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.312: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.315: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.319: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.322: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.326: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.329: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.333: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.336: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.339: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.343: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.346: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.350: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.353: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.357: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.360: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.364: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.367: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.371: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.374: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.378: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.381: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.384: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.388: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.391: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.395: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.398: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.402: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.405: Error sending data: Broken pipe
+
+** (process:3010** (process:30106): CRITICAL **: 15:20:11.233: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.236: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.240: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.243: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.246: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.250: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.253: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.257: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.260: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.264: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.267: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.271: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.274: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.278: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.281: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.285: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.288: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.292: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.295: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.298: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.302: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.305: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.309: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.312: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.316: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.319: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.323: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.326: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.330: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.333: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.337: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.340: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.343: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.347: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.350: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.354: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.357: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.361: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.364: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.368: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.371: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.375: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.378: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.382: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.385: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.388: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.392: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.395: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.399: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.402: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.406: Error sending data: Broken pipe
+
+** (process:3010** (process:30103): CRITICAL **: 15:20:11.232: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.235: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.239: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.242: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.246: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.249: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.253: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.256: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.259: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.263: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.266: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.270: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.273: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.277: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.280: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.284: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.287: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.291: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.294: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.298: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.301: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.305: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.308: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.312: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.315: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.318: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.322: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.325: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.329: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.332: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.336: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.339: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.343: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.346: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.350: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.353: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.357: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.360: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.363: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.367: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.370: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.374: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.377: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.381: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.384: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.388: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.391: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.395: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.398: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.401: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.405: Error sending data: Broken pipe
+
+** (process:3010** (process:30104): CRITICAL **: 15:20:11.232: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.235: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.239: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.242: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.246: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.249: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.252: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.256: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.259: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.263: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.266: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.270: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.273: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.277: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.280: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.284: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.287: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.291: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.294: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.298: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.301: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.305: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.308: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.311: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.315: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.318: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.322: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.325: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.329: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.332: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.336: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.339: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.343: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.346: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.350: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.353: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.356: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.360: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.363: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.367: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.370: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.374: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.377: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.381: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.384: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.388: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.391: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.394: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.398: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.401: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.405: Error sending data: Broken pipe
+
+** (process:3010** (process:30105): CRITICAL **: 15:20:11.232: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.235: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.239: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.242: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.246: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.249: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.253: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.256: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.260: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.263: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.266: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.270: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.273: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.277: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.280: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.284: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.287: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.291: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.294: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.298: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.301: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.305: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.308: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.312: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.315: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.318: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.322: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.325: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.329: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.332: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.336: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.339: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.343: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.346: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.350: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.353: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.357: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.360: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.363: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.367: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.370: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.374: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.377: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.381: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.384: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.388: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.391: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.395: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.398: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.401: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.405: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.408: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.412: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.415: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.419: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.422: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.426: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.429: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.433: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.436: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.440: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.443: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.446: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.450: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.453: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.457: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.460: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.464: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.467: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.471: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.474: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.477: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.481: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.484: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.488: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.491: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.495: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.498: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.502: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.505: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.509: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.512: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.516: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.519: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.522: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.526: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.529: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.533: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.536: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.540: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.543: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.547: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.550: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.554: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.557: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.560: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.564: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.567: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.571: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.574: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.578: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.581: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **:7): CRITICAL **: 15:20:11.408: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.412: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.415: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.419: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.422: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.426: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.429: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.432: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.436: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.439: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.443: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.446: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.450: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.453: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.457: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.460: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.464: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.467: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.470: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.474: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.477: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.481: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.484: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.488: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.491: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.495: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.498: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.502: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.505: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.508: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.512: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.515: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.519: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.522: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.526: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.529: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.533: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.536: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.540: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.543: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.546: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.550: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.553: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.557: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.560: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.564: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.567: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.571: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.574: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.578: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.581: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **:9): CRITICAL **: 15:20:11.409: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.412: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.416: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.419: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.422: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.426: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.429: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.433: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.436: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.440: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.443: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.447: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.450: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.454: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.457: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.460: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.464: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.467: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.471: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.474: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.478: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.481: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.485: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.488: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.491: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.495: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.498: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.502: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.505: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.509: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.512: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.516: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.519: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.523: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.526: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.530: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.533: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.536: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.540: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.543: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.547: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.550: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.554: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.557: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.561: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.564: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.568: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.571: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.574: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.578: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.581: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **:6): CRITICAL **: 15:20:11.409: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.413: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.416: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.420: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.423: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.426: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.430: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.433: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.437: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.440: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.444: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.447: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.451: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.454: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.458: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.461: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.464: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.468: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.471: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.475: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.478: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.482: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.485: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.489: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.492: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.496: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.499: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.502: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.506: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.509: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.513: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.516: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.520: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.523: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.527: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.530: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.534: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.537: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.540: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.544: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.547: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.551: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.554: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.558: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.561: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.565: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.568: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.572: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.575: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.579: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.582: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **:3): CRITICAL **: 15:20:11.408: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.412: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.415: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.419: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.422: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.426: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.429: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.433: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.436: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.439: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.443: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.446: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.450: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.453: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.457: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.460: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.464: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.467: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.471: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.474: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.477: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.481: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.484: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.488: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.491: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.495: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.498: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.502: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.505: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.509: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.512: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.515: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.519: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.522: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.526: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.529: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.533: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.536: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.540: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.543: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.547: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.550: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.553: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.557: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.560: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.564: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.567: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.571: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.574: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.578: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.581: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **:4): CRITICAL **: 15:20:11.408: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.412: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.415: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.419: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.422: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.426: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.429: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.432: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.436: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.439: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.443: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.446: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.450: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.453: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.457: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.460: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.464: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.467: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.471: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.474: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.477: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.481: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.484: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.488: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.491: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.495: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.498: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.502: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.505: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.509: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.512: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.515: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.519: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.522: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.526: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.529: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.533: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.536: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.540: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.543: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.547: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.550: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.553: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.557: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.560: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.564: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.567: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.571: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.574: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.578: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.581: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.585: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.588: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.592: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.595: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.598: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.602: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.605: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.609: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.612: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.616: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.619: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.623: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.626: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.630: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.633: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.636: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.640: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.643: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.647: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.650: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.654: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.657: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.661: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.664: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.668: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.671: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.675: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.678: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.682: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.685: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.688: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.692: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.695: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.699: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.702: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.706: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.709: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.713: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.716: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.720: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.723: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.726: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.730: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.733: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.737: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.740: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.744: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.747: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.751: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.754: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.758: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.761: E 15:20:11.585: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.588: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.592: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.595: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.599: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.602: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.605: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.609: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.612: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.616: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.619: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.623: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.626: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.630: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.633: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.637: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.640: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.644: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.647: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.650: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.654: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.657: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.661: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.664: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.668: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.671: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.675: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.678: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.682: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.685: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.689: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.692: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.695: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.699: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.702: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.706: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.709: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.713: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.716: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.720: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.723: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.727: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.730: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.733: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.737: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.740: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.744: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.747: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.751: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.754: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.758: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.761: E 15:20:11.585: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.588: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.591: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.595: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.598: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.602: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.605: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.609: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.612: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.616: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.619: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.623: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.626: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.629: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.633: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.636: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.640: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.643: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.647: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.650: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.654: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.657: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.661: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.664: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.668: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.671: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.675: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.678: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.681: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.685: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.688: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.692: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.695: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.699: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.702: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.706: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.709: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.713: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.716: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.720: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.723: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.726: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.730: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.733: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.737: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.740: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.744: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.747: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.751: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.754: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.758: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.761: E 15:20:11.585: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.588: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.592: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.595: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.599: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.602: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.606: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.609: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.613: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.616: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.619: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.623: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.626: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.630: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.633: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.637: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.640: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.644: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.647: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.651: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.654: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.658: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.661: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.665: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.668: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.671: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.675: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.678: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.682: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.685: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.689: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.692: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.696: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.699: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.703: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.706: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.710: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.713: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.716: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.720: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.723: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.727: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.730: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.734: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.737: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.741: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.744: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.748: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.751: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.754: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.758: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.761: E 15:20:11.585: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.588: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.592: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.595: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.598: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.602: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.605: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.609: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.612: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.616: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.619: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.623: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.626: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.630: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.633: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.636: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.640: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.643: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.647: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.650: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.654: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.657: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.661: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.664: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.668: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.671: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.675: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.678: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.682: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.685: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.688: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.692: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.695: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.699: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.702: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.706: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.709: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.713: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.716: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.720: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.723: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.727: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.730: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.733: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.737: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.740: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.744: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.747: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.751: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.754: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.758: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.761: E 15:20:11.585: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.589: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.592: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.596: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.599: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.603: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.606: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.610: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.613: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.617: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.620: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.624: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.627: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.630: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.634: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.637: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.641: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.644: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.648: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.651: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.655: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.658: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.662: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.665: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.669: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.672: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.675: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.679: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.682: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.686: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.689: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.693: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.696: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.700: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.703: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.707: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.710: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.714: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.717: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.720: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.724: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.727: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.731: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.734: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.738: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.741: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.745: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.748: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.752: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.755: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.758: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.762: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.765: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.768: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.771: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.775: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.778: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.782: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.785: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.789: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.792: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.796: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.799: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.803: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.806: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.809: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.813: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.816: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.820: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.823: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.827: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.830: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.834: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.837: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.841: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.844: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.847: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.851: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.854: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.858: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.861: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.865: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.868: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.872: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.875: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.879: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.882: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.886: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.889: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.893: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.896: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.899: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.903: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.906: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.910: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.913: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.917: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.920: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.924: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.927: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.931: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.934: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.938: Error sending datrror sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.765: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.768: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.772: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.775: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.778: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.782: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.785: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.789: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.792: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.796: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.799: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.803: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.806: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.810: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.813: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.816: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.820: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.823: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.827: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.830: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.834: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.837: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.841: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.844: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.848: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.851: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.854: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.858: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.861: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.865: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.868: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.872: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.875: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.879: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.882: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.886: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.889: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.893: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.896: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.900: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.903: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.906: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.910: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.913: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.917: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.920: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.924: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.927: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.931: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.934: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.938: Error sending datrror sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.764: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.768: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.771: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.775: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.778: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.782: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.785: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.789: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.792: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.796: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.799: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.803: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.806: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.809: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.813: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.816: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.820: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.823: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.827: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.830: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.834: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.837: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.841: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.844: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.847: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.851: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.854: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.858: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.861: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.865: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.868: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.872: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.875: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.879: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.882: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.886: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.889: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.892: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.896: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.899: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.903: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.906: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.910: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.913: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.917: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.920: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.924: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.927: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.931: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.934: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.938: Error sending datrror sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.765: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.768: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.772: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.775: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.779: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.782: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.786: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.789: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.792: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.796: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.799: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.803: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.806: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.810: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.813: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.817: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.820: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.824: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.827: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.830: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.834: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.837: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.841: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.844: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.848: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.851: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.855: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.858: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.862: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.865: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.869: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.872: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.875: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.879: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.882: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.886: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.889: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.893: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.896: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.900: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.903: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.907: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.910: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.914: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.917: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.921: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.924: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.927: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.931: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.934: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.938: Error sending datrror sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.765: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.768: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.771: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.775: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.778: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.782: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.785: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.789: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.792: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.796: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.799: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.803: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.806: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.810: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.813: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.816: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.820: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.823: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.827: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.830: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.834: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.837: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.841: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.844: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.848: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.851: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.854: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.858: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.861: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.865: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.868: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.872: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.875: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.879: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.882: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.886: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.889: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.893: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.896: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.900: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.903: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.906: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.910: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.913: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.917: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.920: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.924: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.927: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.931: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.934: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.938: Error sending datrror sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.765: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.769: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.772: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.776: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.779: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.783: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.786: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.790: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.793: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.796: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.800: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.803: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.807: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.810: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.814: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.817: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.821: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.824: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.828: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.831: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.835: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.838: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.841: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.845: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.848: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.852: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.855: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.859: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.862: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.866: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.869: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.873: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.876: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.880: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.883: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.886: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.890: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.893: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.897: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.900: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.904: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.907: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.911: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.914: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.918: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.921: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.925: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.928: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.932: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.935: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.938: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.941: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.945: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.948: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.952: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.955: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.958: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.962: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.965: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.969: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.972: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.976: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.979: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.983: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.986: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.990: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.993: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:11.997: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:12.000: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:12.004: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:12.007: Error sending data: Broken pipe
+
+** (process:30105): CRITICAL **: 15:20:12.010: Error sending data: Broken pipe
+a: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.941: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.944: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.948: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.951: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.955: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.958: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.962: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.965: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.969: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.972: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.976: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.979: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.983: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.986: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.990: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.993: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:11.996: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:12.000: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:12.003: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:12.007: Error sending data: Broken pipe
+
+** (process:30107): CRITICAL **: 15:20:12.010: Error sending data: Broken pipe
+a: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.941: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.945: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.948: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.952: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.955: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.959: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.962: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.966: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.969: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.973: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.976: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.980: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.983: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.986: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.990: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.993: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:11.997: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:12.000: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:12.004: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:12.007: Error sending data: Broken pipe
+
+** (process:30109): CRITICAL **: 15:20:12.011: Error sending data: Broken pipe
+a: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.942: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.945: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.949: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.952: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.956: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.959: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.963: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.966: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.970: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.973: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.977: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.980: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.984: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.987: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.990: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.994: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:11.997: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:12.001: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:12.004: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:12.008: Error sending data: Broken pipe
+
+** (process:30106): CRITICAL **: 15:20:12.011: Error sending data: Broken pipe
+a: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.941: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.945: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.948: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.952: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.955: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.958: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.962: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.965: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.969: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.972: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.976: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.979: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.983: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.986: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.990: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.993: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:11.997: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:12.000: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:12.003: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:12.007: Error sending data: Broken pipe
+
+** (process:30103): CRITICAL **: 15:20:12.010: Error sending data: Broken pipe
+a: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.941: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.945: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.948: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.951: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.955: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.958: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.962: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.965: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.969: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.972: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.976: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.979: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.983: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.986: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.990: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.993: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:11.997: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:12.000: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:12.003: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:12.007: Error sending data: Broken pipe
+
+** (process:30104): CRITICAL **: 15:20:12.010: Error sending data: Broken pipe
