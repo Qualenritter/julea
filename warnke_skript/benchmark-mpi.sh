@@ -92,13 +92,14 @@ kill ${server_pid}
 )
 }
 
+exec_tests mysql  client /mnt  hdd mysql 1
+exec_tests sqlite server /mnt  hdd sqlite 1
+exec_tests mysql  client /mnt  hdd mysql 6
+exec_tests sqlite server /mnt  hdd sqlite 6
+
 exec_tests mysql  client /mnt2 mem mysql 6
 exec_tests sqlite server /mnt2 mem sqlite 6
 exec_tests mysql  client /mnt2 mem mysql 1
 exec_tests sqlite server /mnt2 mem sqlite 1
-exec_tests mysql  client /mnt  hdd mysql 6
-exec_tests sqlite server /mnt  hdd sqlite 6
-exec_tests mysql  client /mnt  hdd mysql 1
-exec_tests sqlite server /mnt  hdd sqlite 1
 #mysql --user='root' --password='1234' -e "SET GLOBAL general_log = 'OFF';"
 #mysql --user='root' --password='1234' -e "select * from mysql.general_log;"
