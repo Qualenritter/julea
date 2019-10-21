@@ -119,6 +119,8 @@ gboolean j_internal_reset (gchar const* namespace, JBatch* batch, GError** error
 // Client-side additional internal functions
 bson_t* j_db_selector_get_bson (JDBSelector* selector);
 
+G_GNUC_INTERNAL JBackend* j_db_get_backend (void);
+
 G_END_DECLS
 
 #endif
