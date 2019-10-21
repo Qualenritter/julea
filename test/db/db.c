@@ -57,16 +57,17 @@ test_db_schema_create_delete (void)
 	gchar const* idx_min[] = {"min", NULL};
 	gchar const* idx_max[] = {"max", NULL};
 
+	g_autoptr(GError) error = NULL;
+
 	for (guint i = 0; i < n; i++)
 	{
-		g_autoptr(GError) error = NULL;
 		g_autoptr(JDBSchema) schema = NULL;
 		g_autofree gchar* name = NULL;
 
-		name = g_strdup_printf("test_schema_%d", i);
+		name = g_strdup_printf("test_schema-%d", i);
 
 		// FIXME namespace and name are not properly checked, "-" causes errors
-		schema = j_db_schema_new("test_ns", name, &error);
+		schema = j_db_schema_new("test-ns", name, &error);
 		g_assert_nonnull(schema);
 		g_assert_no_error(error);
 
@@ -108,9 +109,10 @@ test_db_schema_create_delete (void)
 		g_assert_no_error(error);
 
 		// FIXME reference counting is broken, should be outside loop
-		ret = j_batch_execute(batch);
-		g_assert_true(ret);
 	}
+	ret = j_batch_execute(batch);
+	g_assert_true(ret);
+	g_assert_no_error(error);
 }
 
 static
