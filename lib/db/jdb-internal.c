@@ -217,7 +217,7 @@ j_db_internal_schema_create(JDBSchema* j_db_schema, JBatch* batch, GError** erro
 
 	data->unref_func_count = 1;
 	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
-	data->unref_values[0] = j_db_schema;
+	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 
 	op = j_operation_new();
 	op->key = j_db_schema->namespace;
@@ -258,7 +258,7 @@ j_db_internal_schema_get(JDBSchema* j_db_schema, JBatch* batch, GError** error)
 
 	data->unref_func_count = 1;
 	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
-	data->unref_values[0] = j_db_schema;
+	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 
 	op = j_operation_new();
 	op->key = j_db_schema->namespace;
@@ -297,7 +297,7 @@ j_db_internal_schema_delete(JDBSchema* j_db_schema, JBatch* batch, GError** erro
 
 	data->unref_func_count = 1;
 	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
-	data->unref_values[0] = j_db_schema;
+	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 
 	op = j_operation_new();
 	op->key = j_db_schema->namespace;
@@ -339,7 +339,7 @@ j_db_internal_insert(JDBEntry* j_db_entry, JBatch* batch, GError** error)
 
 	data->unref_func_count = 1;
 	data->unref_funcs[0] = (void (*)(void*))j_db_entry_unref;
-	data->unref_values[0] = j_db_entry;
+	data->unref_values[0] = j_db_entry_ref(j_db_entry);
 
 	op = j_operation_new();
 	op->key = j_db_entry->schema->namespace;
@@ -382,8 +382,8 @@ j_db_internal_update(JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* b
 	data->unref_func_count = 2;
 	data->unref_funcs[0] = (void (*)(void*))j_db_entry_unref;
 	data->unref_funcs[1] = (void (*)(void*))j_db_selector_unref;
-	data->unref_values[0] = j_db_entry;
-	data->unref_values[1] = j_db_selector;
+	data->unref_values[0] = j_db_entry_ref(j_db_entry);
+	data->unref_values[1] = j_db_selector_ref(j_db_selector);
 
 	op = j_operation_new();
 	op->key = j_db_entry->schema->namespace;
@@ -424,8 +424,8 @@ j_db_internal_delete(JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* b
 	data->unref_func_count = 2;
 	data->unref_funcs[0] = (void (*)(void*))j_db_entry_unref;
 	data->unref_funcs[1] = (void (*)(void*))j_db_selector_unref;
-	data->unref_values[0] = j_db_entry;
-	data->unref_values[1] = j_db_selector;
+	data->unref_values[0] = j_db_entry_ref(j_db_entry);
+	data->unref_values[1] = j_db_selector_ref(j_db_selector);
 
 	op = j_operation_new();
 	op->key = j_db_entry->schema->namespace;
@@ -456,7 +456,6 @@ j_db_internal_query(JDBSchema* j_db_schema, JDBSelector* j_db_selector, JDBItera
 	JOperation* op;
 	JBackendOperation* data;
 
-	g_return_val_if_fail(j_db_iterator->iterator != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	helper = g_slice_new(JDBIteratorHelper);
@@ -476,9 +475,9 @@ j_db_internal_query(JDBSchema* j_db_schema, JDBSelector* j_db_selector, JDBItera
 	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
 	data->unref_funcs[1] = (void (*)(void*))j_db_selector_unref;
 	data->unref_funcs[2] = (void (*)(void*))j_db_iterator_unref;
-	data->unref_values[0] = j_db_schema;
-	data->unref_values[1] = j_db_selector;
-	data->unref_values[2] = j_db_iterator;
+	data->unref_values[0] = j_db_schema_ref(j_db_schema);
+	data->unref_values[1] = j_db_selector_ref(j_db_selector);
+	data->unref_values[2] = j_db_iterator_ref(j_db_iterator);
 
 	op = j_operation_new();
 	op->key = j_db_schema->namespace;

@@ -28,7 +28,7 @@
 
 static
 void
-test_db_schema_new_free (void)
+test_db_schema_new_free(void)
 {
 	guint const n = 100000;
 
@@ -45,17 +45,17 @@ test_db_schema_new_free (void)
 
 static
 void
-test_db_schema_create_delete (void)
+test_db_schema_create_delete(void)
 {
 	guint const n = 1000;
 
 	g_autoptr(JBatch) batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
 	gboolean ret;
 
-	gchar const* idx_file[] = {"file", NULL};
-	gchar const* idx_name[] = {"name", NULL};
-	gchar const* idx_min[] = {"min", NULL};
-	gchar const* idx_max[] = {"max", NULL};
+	gchar const* idx_file[] = { "file", NULL };
+	gchar const* idx_name[] = { "name", NULL };
+	gchar const* idx_min[] = { "min", NULL };
+	gchar const* idx_max[] = { "max", NULL };
 
 	g_autoptr(GError) error = NULL;
 
@@ -64,10 +64,10 @@ test_db_schema_create_delete (void)
 		g_autoptr(JDBSchema) schema = NULL;
 		g_autofree gchar* name = NULL;
 
-		name = g_strdup_printf("test_schema-%d", i);
+		name = g_strdup_printf("test_schema_%d", i);
 
 		// FIXME namespace and name are not properly checked, "-" causes errors
-		schema = j_db_schema_new("test-ns", name, &error);
+		schema = j_db_schema_new("test_ns", name, &error);
 		g_assert_nonnull(schema);
 		g_assert_no_error(error);
 
@@ -107,9 +107,8 @@ test_db_schema_create_delete (void)
 		ret = j_db_schema_delete(schema, batch, &error);
 		g_assert_true(ret);
 		g_assert_no_error(error);
-
-		// FIXME reference counting is broken, should be outside loop
 	}
+
 	ret = j_batch_execute(batch);
 	g_assert_true(ret);
 	g_assert_no_error(error);
@@ -117,7 +116,7 @@ test_db_schema_create_delete (void)
 
 static
 void
-schema_create (void)
+schema_create(void)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -140,35 +139,47 @@ schema_create (void)
 
 	schema = j_db_schema_new("adios2", "variables", &error);
 	g_assert_nonnull(schema);
+	g_assert_no_error(error);
 	success = j_db_schema_add_field(schema, "file", J_DB_TYPE_STRING, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_field(schema, "name", J_DB_TYPE_STRING, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_field(schema, "dimensions", J_DB_TYPE_UINT64, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_field(schema, "min", J_DB_TYPE_FLOAT64, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_field(schema, "max", J_DB_TYPE_FLOAT64, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	success = j_db_schema_add_index(schema, idx_file, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_index(schema, idx_name, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_index(schema, idx_min, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_schema_add_index(schema, idx_max, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	success = j_db_schema_create(schema, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
 	g_assert_true(success);
+	g_assert_no_error(error);
 }
 
 static
 void
-entry_insert (void)
+entry_insert(void)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -185,31 +196,43 @@ entry_insert (void)
 
 	schema = j_db_schema_new("adios2", "variables", &error);
 	g_assert_nonnull(schema);
+	g_assert_no_error(error);
 	success = j_db_schema_get(schema, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
+	g_assert_true(success);
+	g_assert_no_error(error);
 
 	entry = j_db_entry_new(schema, &error);
 	g_assert_nonnull(entry);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "file", file, strlen(file), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "name", name, strlen(name), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "dimensions", &dim, sizeof(dim), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "min", &min, sizeof(min), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "max", &max, sizeof(max), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_insert(entry, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
 	g_assert_true(success);
+	g_assert_no_error(error);
 }
 
 static
 void
-iterator_get (void)
+iterator_get(void)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -229,35 +252,45 @@ iterator_get (void)
 
 	schema = j_db_schema_new("adios2", "variables", &error);
 	g_assert_nonnull(schema);
+	g_assert_no_error(error);
 	success = j_db_schema_get(schema, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, &error);
 	g_assert_nonnull(selector);
+	g_assert_no_error(error);
 	success = j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file, strlen(file), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	iterator = j_db_iterator_new(schema, selector, &error);
 	g_assert_nonnull(iterator);
+	g_assert_no_error(error);
 
 	while (j_db_iterator_next(iterator, NULL))
 	{
 		success = j_db_iterator_get_field(iterator, "name", &type, (gpointer*)&name, &len, &error);
 		g_assert_true(success);
+		g_assert_no_error(error);
 		success = j_db_iterator_get_field(iterator, "dimensions", &type, (gpointer*)&dim, &len, &error);
 		g_assert_true(success);
+		g_assert_no_error(error);
 		success = j_db_iterator_get_field(iterator, "min", &type, (gpointer*)&min, &len, &error);
 		g_assert_true(success);
+		g_assert_no_error(error);
 		success = j_db_iterator_get_field(iterator, "max", &type, (gpointer*)&max, &len, &error);
 		g_assert_true(success);
+		g_assert_no_error(error);
 	}
 }
 
 static
 void
-entry_update (void)
+entry_update(void)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -274,33 +307,44 @@ entry_update (void)
 
 	schema = j_db_schema_new("adios2", "variables", &error);
 	g_assert_nonnull(schema);
+	g_assert_no_error(error);
 	success = j_db_schema_get(schema, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, &error);
 	g_assert_nonnull(selector);
+	g_assert_no_error(error);
 	success = j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file, strlen(file), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	entry = j_db_entry_new(schema, &error);
 	g_assert_nonnull(entry);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "min", &min, sizeof(min), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_set_field(entry, "max", &max, sizeof(max), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_entry_update(entry, selector, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
 	g_assert_true(success);
+	g_assert_no_error(error);
 }
 
 static
 void
-entry_delete (void)
+entry_delete(void)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -315,28 +359,38 @@ entry_delete (void)
 
 	schema = j_db_schema_new("adios2", "variables", &error);
 	g_assert_nonnull(schema);
+	g_assert_no_error(error);
 	success = j_db_schema_get(schema, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
+	g_assert_true(success);
+	g_assert_no_error(error);
 
 	selector = j_db_selector_new(schema, J_DB_SELECTOR_MODE_AND, &error);
 	g_assert_nonnull(selector);
+	g_assert_no_error(error);
 	success = j_db_selector_add_field(selector, "file", J_DB_SELECTOR_OPERATOR_EQ, file, strlen(file), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_db_selector_add_field(selector, "name", J_DB_SELECTOR_OPERATOR_EQ, name, strlen(name), &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 
 	entry = j_db_entry_new(schema, &error);
 	g_assert_nonnull(entry);
+	g_assert_no_error(error);
 	success = j_db_entry_delete(entry, selector, batch, &error);
 	g_assert_true(success);
+	g_assert_no_error(error);
 	success = j_batch_execute(batch);
 	g_assert_true(success);
+	g_assert_no_error(error);
 }
 
 static
 void
-test_db_all (void)
+test_db_all(void)
 {
 	schema_create();
 	entry_insert();
@@ -346,7 +400,7 @@ test_db_all (void)
 }
 
 void
-test_db (void)
+test_db(void)
 {
 	g_test_add_func("/db/schema/new_free", test_db_schema_new_free);
 	g_test_add_func("/db/schema/create_delete", test_db_schema_create_delete);
