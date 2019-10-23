@@ -34,7 +34,7 @@
 #include "../../backend/db/jbson.c"
 
 JDBIterator*
-j_db_iterator_new (JDBSchema* schema, JDBSelector* selector, GError** error)
+j_db_iterator_new(JDBSchema* schema, JDBSelector* selector, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -74,7 +74,7 @@ j_db_iterator_new (JDBSchema* schema, JDBSelector* selector, GError** error)
 	iterator->valid = FALSE;
 	iterator->bson_valid = FALSE;
 	batch = j_batch_new_for_template(J_SEMANTICS_TEMPLATE_DEFAULT);
-	ret2 = j_db_internal_query(schema->namespace, schema->name, j_db_selector_get_bson(selector), &iterator->iterator, batch, error);
+	ret2 = j_db_internal_query(schema, selector, iterator, batch, error);
 	ret = ret2 && j_batch_execute(batch);
 	j_batch_unref(batch);
 
@@ -90,7 +90,7 @@ j_db_iterator_new (JDBSchema* schema, JDBSelector* selector, GError** error)
 _error:
 	if (ret2)
 	{
-		while (j_db_internal_iterate(iterator->iterator, NULL, NULL))
+		while (j_db_internal_iterate(iterator, NULL))
 		{
 			/*do nothing*/
 		}
@@ -102,7 +102,7 @@ _error:
 }
 
 JDBIterator*
-j_db_iterator_ref (JDBIterator* iterator)
+j_db_iterator_ref(JDBIterator* iterator)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -114,7 +114,7 @@ j_db_iterator_ref (JDBIterator* iterator)
 }
 
 void
-j_db_iterator_unref (JDBIterator* iterator)
+j_db_iterator_unref(JDBIterator* iterator)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -144,7 +144,7 @@ j_db_iterator_unref (JDBIterator* iterator)
 }
 
 gboolean
-j_db_iterator_next (JDBIterator* iterator, GError** error)
+j_db_iterator_next(JDBIterator* iterator, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -157,7 +157,7 @@ j_db_iterator_next (JDBIterator* iterator, GError** error)
 		j_bson_destroy(&iterator->bson);
 	}
 
-	if (G_UNLIKELY(!j_db_internal_iterate(iterator->iterator, &iterator->bson, error)))
+	if (G_UNLIKELY(!j_db_internal_iterate(iterator, error)))
 	{
 		goto _error;
 	}
@@ -174,7 +174,7 @@ _error:
 }
 
 gboolean
-j_db_iterator_get_field (JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error)
+j_db_iterator_get_field(JDBIterator* iterator, gchar const* name, JDBType* type, gpointer* value, guint64* length, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -211,56 +211,56 @@ j_db_iterator_get_field (JDBIterator* iterator, gchar const* name, JDBType* type
 
 	switch (*type)
 	{
-		case J_DB_TYPE_SINT32:
-			*value = g_new(gint32, 1);
-			*((gint32*)*value) = val.val_sint32;
-			*length = sizeof(gint32);
-			break;
-		case J_DB_TYPE_UINT32:
-			*value = g_new(guint32, 1);
-			*((guint32*)*value) = val.val_uint32;
-			*length = sizeof(guint32);
-			break;
-		case J_DB_TYPE_FLOAT32:
-			*value = g_new(gfloat, 1);
-			*((gfloat*)*value) = val.val_float32;
-			*length = sizeof(gfloat);
-			break;
-		case J_DB_TYPE_SINT64:
-			*value = g_new(gint64, 1);
-			*((gint64*)*value) = val.val_sint64;
-			*length = sizeof(gint64);
-			break;
-		case J_DB_TYPE_UINT64:
-			*value = g_new(guint64, 1);
-			*((guint64*)*value) = val.val_uint64;
-			*length = sizeof(guint64);
-			break;
-		case J_DB_TYPE_FLOAT64:
-			*value = g_new(gdouble, 1);
-			*((gdouble*)*value) = val.val_float64;
-			*length = sizeof(gdouble);
-			break;
-		case J_DB_TYPE_STRING:
-			*value = g_strdup(val.val_string);
-			*length = strlen(val.val_string);
-			break;
-		case J_DB_TYPE_BLOB:
-			if (val.val_blob && val.val_blob_length)
-			{
-				*value = g_new(gchar, val.val_blob_length);
-				memcpy(*value, val.val_blob, val.val_blob_length);
-				*length = val.val_blob_length;
-			}
-			else
-			{
-				*value = NULL;
-				*length = 0;
-			}
-			break;
-		case J_DB_TYPE_ID:
-		default:
-			g_assert_not_reached();
+	case J_DB_TYPE_SINT32:
+		*value = g_new(gint32, 1);
+		*((gint32*)*value) = val.val_sint32;
+		*length = sizeof(gint32);
+		break;
+	case J_DB_TYPE_UINT32:
+		*value = g_new(guint32, 1);
+		*((guint32*)*value) = val.val_uint32;
+		*length = sizeof(guint32);
+		break;
+	case J_DB_TYPE_FLOAT32:
+		*value = g_new(gfloat, 1);
+		*((gfloat*)*value) = val.val_float32;
+		*length = sizeof(gfloat);
+		break;
+	case J_DB_TYPE_SINT64:
+		*value = g_new(gint64, 1);
+		*((gint64*)*value) = val.val_sint64;
+		*length = sizeof(gint64);
+		break;
+	case J_DB_TYPE_UINT64:
+		*value = g_new(guint64, 1);
+		*((guint64*)*value) = val.val_uint64;
+		*length = sizeof(guint64);
+		break;
+	case J_DB_TYPE_FLOAT64:
+		*value = g_new(gdouble, 1);
+		*((gdouble*)*value) = val.val_float64;
+		*length = sizeof(gdouble);
+		break;
+	case J_DB_TYPE_STRING:
+		*value = g_strdup(val.val_string);
+		*length = strlen(val.val_string);
+		break;
+	case J_DB_TYPE_BLOB:
+		if (val.val_blob && val.val_blob_length)
+		{
+			*value = g_new(gchar, val.val_blob_length);
+			memcpy(*value, val.val_blob, val.val_blob_length);
+			*length = val.val_blob_length;
+		}
+		else
+		{
+			*value = NULL;
+			*length = 0;
+		}
+		break;
+	case J_DB_TYPE_ID:
+	default:
+		g_assert_not_reached();
 	}
 
 	return TRUE;

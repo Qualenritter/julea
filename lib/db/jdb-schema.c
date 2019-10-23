@@ -34,7 +34,7 @@
 #include "../../backend/db/jbson.c"
 
 JDBSchema*
-j_db_schema_new (gchar const* namespace, gchar const* name, GError** error)
+j_db_schema_new(gchar const* namespace, gchar const* name, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -61,7 +61,7 @@ j_db_schema_new (gchar const* namespace, gchar const* name, GError** error)
 }
 
 JDBSchema*
-j_db_schema_ref (JDBSchema* schema)
+j_db_schema_ref(JDBSchema* schema)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -73,7 +73,7 @@ j_db_schema_ref (JDBSchema* schema)
 }
 
 void
-j_db_schema_unref (JDBSchema* schema)
+j_db_schema_unref(JDBSchema* schema)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -111,7 +111,7 @@ j_db_schema_unref (JDBSchema* schema)
 }
 
 gboolean
-j_db_schema_add_field (JDBSchema* schema, gchar const* name, JDBType type, GError** error)
+j_db_schema_add_field(JDBSchema* schema, gchar const* name, JDBType type, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -158,7 +158,7 @@ _error:
 }
 
 gboolean
-j_db_schema_get_field (JDBSchema* schema, gchar const* name, JDBType* type, GError** error)
+j_db_schema_get_field(JDBSchema* schema, gchar const* name, JDBType* type, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -196,7 +196,7 @@ _error:
 }
 
 guint32
-j_db_schema_get_all_fields (JDBSchema* schema, gchar*** names, JDBType** types, GError** error)
+j_db_schema_get_all_fields(JDBSchema* schema, gchar*** names, JDBType** types, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -259,7 +259,6 @@ _error:
 		for (i = 0; i < count; i++)
 		{
 			g_free((*names)[i]);
-
 		}
 	}
 
@@ -272,7 +271,7 @@ _error:
 }
 
 gboolean
-j_db_schema_add_index (JDBSchema* schema, gchar const** names, GError** error)
+j_db_schema_add_index(JDBSchema* schema, gchar const** names, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -400,7 +399,7 @@ _error:
 }
 
 gboolean
-j_db_schema_create (JDBSchema* schema, JBatch* batch, GError** error)
+j_db_schema_create(JDBSchema* schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -420,7 +419,7 @@ j_db_schema_create (JDBSchema* schema, JBatch* batch, GError** error)
 
 	schema->server_side = TRUE;
 
-	if (G_UNLIKELY(!j_db_internal_schema_create(schema->namespace, schema->name, &schema->bson, batch, error)))
+	if (G_UNLIKELY(!j_db_internal_schema_create(schema, batch, error)))
 	{
 		goto _error;
 	}
@@ -432,7 +431,7 @@ _error:
 }
 
 gboolean
-j_db_schema_get (JDBSchema* schema, JBatch* batch, GError** error)
+j_db_schema_get(JDBSchema* schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -445,7 +444,7 @@ j_db_schema_get (JDBSchema* schema, JBatch* batch, GError** error)
 	schema->server_side = TRUE;
 	schema->bson_initialized = TRUE;
 
-	if (G_UNLIKELY(!j_db_internal_schema_get(schema->namespace, schema->name, &schema->bson, batch, error)))
+	if (G_UNLIKELY(!j_db_internal_schema_get(schema, batch, error)))
 	{
 		goto _error;
 	}
@@ -457,7 +456,7 @@ _error:
 }
 
 gboolean
-j_db_schema_delete (JDBSchema* schema, JBatch* batch, GError** error)
+j_db_schema_delete(JDBSchema* schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -465,7 +464,7 @@ j_db_schema_delete (JDBSchema* schema, JBatch* batch, GError** error)
 	g_return_val_if_fail(batch != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	if (G_UNLIKELY(!j_db_internal_schema_delete(schema->namespace, schema->name, batch, error)))
+	if (G_UNLIKELY(!j_db_internal_schema_delete(schema, batch, error)))
 	{
 		goto _error;
 	}
@@ -477,7 +476,7 @@ _error:
 }
 
 gboolean
-j_db_schema_equals (JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GError** error)
+j_db_schema_equals(JDBSchema* schema1, JDBSchema* schema2, gboolean* equal, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

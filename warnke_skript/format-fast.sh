@@ -19,6 +19,6 @@
 for f in $(git diff --name-only HEAD | grep -e '\.h$' -e '\.c$' | grep -v not-formatted-header.h | grep -v prefix | grep -v spack);do
 	echo $f
 	clang-format -i $f
-	cat $f | sed "s/static /static\n/g" > $f.tmp
+	cat $f | sed "s/^static /static\n/g" > $f.tmp
 	mv $f.tmp $f
 done

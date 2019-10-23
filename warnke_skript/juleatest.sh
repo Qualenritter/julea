@@ -88,7 +88,7 @@ mkdir -p ${basepath}
 ) &> log/test-script-${db_backend}-${db_component}.log
 }
 
-exec_tests sqlite client
 exec_tests mysql client
 exec_tests sqlite server
+exec_tests sqlite client
 find log -type d -empty -delete
