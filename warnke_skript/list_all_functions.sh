@@ -2,9 +2,9 @@
 rm -rf functions_names*
 rm -rf build* prefix*
 
-./waf.sh configure --out build_debug --debug
+./waf.sh configure --out build_debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf) --debug
 ./waf.sh build
-./waf.sh configure --out build_release
+./waf.sh configure --out build_release --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 
 for f in $(find * -name "*.c" | grep -v "test" | grep -v "benchmark" | grep -v "dependencies")

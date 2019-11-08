@@ -39,7 +39,7 @@ mkdir -p benchmark_values/warnke-${githash}
 
 rm -rf build* prefix*
 export HDF5_PLUGIN_PATH=${HOME}/julea/prefix-gcc-benchmark/lib
-./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark 
+./waf.sh configure --out build-gcc-benchmark --prefix=prefix-gcc-benchmark --libdir=prefix-gcc-benchmark --bindir=prefix-gcc-benchmark --destdir=prefix-gcc-benchmark  --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
 ./waf.sh build
 ./waf.sh install
 . ./scripts/environment.sh
