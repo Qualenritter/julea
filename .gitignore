@@ -21,8 +21,10 @@ html/
 build*/
 prefix*/
 waf-extras/*.pyc
+waf-extras/__pycache__/
 .lock-waf*
 .waf-*/
+.waf3-*/
 
 # AFL generated files
 afl

@@ -18,7 +18,7 @@ spack_clone ()
 {
 	local spack_commit
 
-	spack_commit='b0abbfecb8595c8901855e679be0bbea64089fe8'
+	spack_commit='ba69ebc5f7831562f0fb83fac6ea68e023bb907f'
 
 	test -n "${SPACK_DIR}" || return 1
 
@@ -82,12 +82,6 @@ spack_load ()
 	test -n "${spack_pkg}" || return 1
 
 	spack load --dependencies "${spack_pkg}"
-
-	# FIXME https://github.com/spack/spack/pull/12838
-	if test "${spack_pkg}" = 'mariadb'
-	then
-		export PKG_CONFIG_PATH="$(spack location --install-dir mariadb)/share/pkgconfig:${PKG_CONFIG_PATH}"
-	fi
 }
 
 spack_get_dependencies ()
@@ -120,7 +114,6 @@ spack_get_dependencies ()
 		# Optional dependencies
 		dependencies="${dependencies} lmdb"
 		dependencies="${dependencies} sqlite"
-		dependencies="${dependencies} mariadb"
 	fi
 
 	if test "${mode}" = 'load' -o "${mode}" = 'install-full'
@@ -129,6 +122,7 @@ spack_get_dependencies ()
 		dependencies="${dependencies} leveldb"
 		dependencies="${dependencies} libmongoc"
 		dependencies="${dependencies} hdf5@develop~mpi"
+		dependencies="${dependencies} mariadb-c-client"
 
 		#dependencies="${dependencies} mpi"
 		#dependencies="${dependencies} otf"
@@ -139,24 +133,32 @@ spack_get_dependencies ()
 
 spack_load_dependencies ()
 {
-	local minimal_pkgs
-
-	minimal_pkgs="$(spack_get_dependencies install-minimal)"
-
-	if spack_init
+	if test -z "${JULEA_SPACK_DEPENDENCIES_LOADED}"
 	then
-		for dependency in $(spack_get_dependencies load)
-		do
-			if test "${minimal_pkgs#*${dependency}}" != "${minimal_pkgs}"
-			then
-				spack_load "${dependency}"
-			else
-				if ! spack_load "${dependency}"
+		local minimal_pkgs
+
+		minimal_pkgs="$(spack_get_dependencies install-minimal)"
+
+		if spack_init
+		then
+			for dependency in $(spack_get_dependencies load)
+			do
+				if test "${minimal_pkgs#*${dependency}}" != "${minimal_pkgs}"
 				then
-					echo "Dependency ${dependency} cannot be loaded. If you have not installed it, you can ignore the error above." >&2
+					spack_load "${dependency}"
+				else
+					if ! spack_load "${dependency}"
+					then
+						echo "Dependency ${dependency} cannot be loaded. If you have not installed it, you can ignore the error above." >&2
+					fi
 				fi
-			fi
-		done
+			done
+
+			# FIXME this could be more clever by storing the actual dependencies loaded
+			JULEA_SPACK_DEPENDENCIES_LOADED=1
+
+			export JULEA_SPACK_DEPENDENCIES_LOADED
+		fi
 	fi
 	export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:$(find "$(pwd)" -name *.pc | sed "s-/[^/]*\$-/-" | uniq | tr '\n' ':')
 }

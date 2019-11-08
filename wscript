@@ -42,8 +42,8 @@ lmdb_version = '0.9.21'
 libmongoc_version = '1.9.0'
 # Ubuntu 18.04 has SQLite 3.22.0
 sqlite_version = '3.22.0'
-# Ubuntu 18.04 has MariaDB 10.1
-mariadb_version = '10.1'
+# Ubuntu 18.04 has MariaDB Connector/C 3.0.3
+mariadb_version = '3.0.3'
 
 
 def check_cfg_rpath(ctx, **kwargs):
@@ -256,6 +256,7 @@ def configure(ctx):
 			mandatory=False
 		)
 
+	# Ubuntu's package does not ship a pkg-config file
 	if not ctx.env.JULEA_LEVELDB:
 		ctx.env.JULEA_LEVELDB = \
 			check_cc_rpath(
@@ -303,12 +304,25 @@ def configure(ctx):
 	ctx.env.JULEA_MARIADB = \
 		check_cfg_rpath(
 			ctx,
-			package='mariadb',
-			args=['--cflags', '--libs', 'mariadb >= {0}'.format(mariadb_version)],
+			package='libmariadb',
+			args=['--cflags', '--libs', 'libmariadb >= {0}'.format(mariadb_version)],
 			uselib_store='MARIADB',
 			pkg_config_path=get_pkg_config_path(ctx.options.mariadb),
 			mandatory=False
 		)
+
+	# Ubuntu's package does not ship a pkg-config file
+	if not ctx.env.JULEA_MARIADB:
+		ctx.env.JULEA_MARIADB = \
+			check_cfg_rpath(
+				ctx,
+				path='mariadb_config',
+				package='',
+				args=['--cflags', '--libs'],
+				uselib_store='MARIADB',
+				msg='Checking for mariadb_config',
+				mandatory=False
+			)
 
 	# stat.st_mtim.tv_nsec
 	ctx.check_cc(
@@ -452,7 +466,14 @@ def configure(ctx):
 def build(ctx):
 	# Headers
 	include_dir = ctx.path.find_dir('include')
-	ctx.install_files('${INCLUDEDIR}/julea', include_dir.ant_glob('**/*.h', excl='**/*-internal.h'), cwd=include_dir, relative_trick=True)
+	include_excl = ['**/*-internal.h']
+
+	if not ctx.env.JULEA_HDF:
+		include_excl.append('**/julea-hdf5.h')
+		include_excl.append('**/jhdf5.h')
+		include_excl.append('**/jhdf5-*.h')
+
+	ctx.install_files('${INCLUDEDIR}/julea', include_dir.ant_glob('**/*.h', excl=include_excl), cwd=include_dir, relative_trick=True)
 
 	use_julea_core = ['M', 'GLIB']
 	use_julea_lib = use_julea_core + ['GIO', 'GOBJECT', 'LIBBSON', 'OTF']
@@ -462,6 +483,7 @@ def build(ctx):
 	use_julea_db = use_julea_core + ['lib/julea', 'lib/julea-db']
 	use_julea_item = use_julea_core + ['lib/julea', 'lib/julea-item']
 	use_julea_hdf = use_julea_core + ['lib/julea'] + ['lib/julea-hdf5'] if ctx.env.JULEA_HDF else []
+	use_julea_hdf_db = use_julea_core + ['lib/julea'] + ['lib/julea-hdf5-db'] if ctx.env.JULEA_HDF else []
 
 	include_julea_core = ['include', 'include/core']
 
@@ -479,6 +501,7 @@ def build(ctx):
 
 	if ctx.env.JULEA_HDF:
 		clients.append('hdf5')
+		clients.append('hdf5-db')
 
 	for client in clients:
 		use_extra = []
@@ -488,6 +511,12 @@ def build(ctx):
 			use_extra.append('lib/julea-object')
 		elif client == 'hdf5':
 			use_extra.append('HDF5')
+			use_extra.append('SQLITE')
+			use_extra.append('lib/julea-kv')
+			use_extra.append('lib/julea-object')
+			use_extra.append('lib/julea-db')
+		elif client == 'hdf5-db':
+			use_extra.append('HDF5DB')
 			use_extra.append('SQLITE')
 			use_extra.append('lib/julea-kv')
 			use_extra.append('lib/julea-object')
@@ -507,7 +536,7 @@ def build(ctx):
 	ctx.program(
 		source=ctx.path.ant_glob('test/**/*.c'),
 		target='test/julea-test',
-		use=use_julea_object + use_julea_kv + use_julea_db + use_julea_item + use_julea_hdf,
+		use=use_julea_object + use_julea_kv + use_julea_db + use_julea_item + use_julea_hdf + use_julea_hdf_db,
 		includes=include_julea_core + ['test'],
 		rpath=get_rpath(ctx),
 		install_path=None
@@ -527,7 +556,7 @@ def build(ctx):
 	ctx.program(
 		source=ctx.path.ant_glob('benchmark/**/*.c'),
 		target='benchmark/julea-benchmark',
-		use=use_julea_object + use_julea_kv + use_julea_item + use_julea_hdf + use_julea_db,
+		use=use_julea_object + use_julea_kv + use_julea_item + use_julea_hdf + use_julea_hdf_db + use_julea_db,
 		includes=include_julea_core + ['benchmark'],
 		rpath=get_rpath(ctx),
 		install_path=None
@@ -613,7 +642,6 @@ def build(ctx):
 		db_backends.append('sqlite')
 	if ctx.env.JULEA_MARIADB:
 		db_backends.append('mysql')
-
 
 	for backend in db_backends:
 		use_extra = []
