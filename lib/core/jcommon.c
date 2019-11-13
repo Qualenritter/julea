@@ -55,7 +55,7 @@ static gboolean j_inited = FALSE;
  */
 static
 gchar*
-j_get_program_name(gchar const* default_name)
+j_get_program_name (gchar const* default_name)
 {
 	gchar* program_name;
 
@@ -85,7 +85,7 @@ static void __attribute__((destructor)) j_fini (void);
  */
 static
 void
-j_init(void)
+j_init (void)
 {
 	JTrace* trace;
 	g_autofree gchar* basename = NULL;
@@ -134,7 +134,7 @@ error:
  */
 static
 void
-j_fini(void)
+j_fini (void)
 {
 	JTrace* trace;
 

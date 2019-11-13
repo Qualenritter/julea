@@ -4,7 +4,7 @@ ulimit -c unlimited
 ./warnke_skript/kill.sh
 rm -rf build log
 mkdir -p log
-./waf.sh configure --debug --hdf=$(echo $CMAKE_PREFIX_PATH | sed -e 's/:/\n/g' | grep hdf)
+./waf.sh configure --debug --hdf=./dependencies/opt/spack/linux-ubuntu19.10-skylake/gcc-9.2.1/hdf5-develop-74x32jyjg556bshs4gbayh5uis3hg37c/
 ./waf.sh build
 rm -rf /usr/local/lib/libjulea*
 rm -rf /usr/local/lib/julea

@@ -127,7 +127,7 @@ spack_get_dependencies ()
 	then
 		# Optional dependencies
 		dependencies="${dependencies} leveldb"
-		dependencies="${dependencies} libmongoc"
+#		dependencies="${dependencies} libmongoc"
 		dependencies="${dependencies} hdf5@develop~mpi"
 		dependencies="${dependencies} mariadb-c-client"
 
