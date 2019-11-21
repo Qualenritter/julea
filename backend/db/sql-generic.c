@@ -127,6 +127,9 @@ _thread_variables_fini(void* ptr, gboolean has_lock)
 	}
 }
 static
+JThreadVariables*
+thread_variables_get(GError** error);
+static
 void
 sql_generic_fini(void)
 {
