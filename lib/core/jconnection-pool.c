@@ -280,11 +280,6 @@ j_connection_pool_pop(JBackendType backend, guint index)
 
 	g_return_val_if_fail(j_connection_pool != NULL, NULL);
 
-	if (JULEA_TEST_MOCKUP)
-	{
-		return (void*)TRUE;
-	}
-
 	switch (backend)
 	{
 	case J_BACKEND_TYPE_OBJECT:
@@ -310,11 +305,6 @@ j_connection_pool_push(JBackendType backend, guint index, gpointer connection)
 
 	g_return_if_fail(j_connection_pool != NULL);
 	g_return_if_fail(connection != NULL);
-
-	if (JULEA_TEST_MOCKUP)
-	{
-		return;
-	}
 
 	switch (backend)
 	{

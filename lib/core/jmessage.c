@@ -42,8 +42,6 @@
  * @{
  **/
 
-#if (JULEA_TEST_MOCKUP == 0)
-
 enum JMessageSemantics
 {
 	J_MESSAGE_SEMANTICS_ATOMICITY_BATCH = 1 << 0,
@@ -1121,8 +1119,6 @@ j_message_get_semantics(JMessage* message)
 
 	return semantics;
 }
-
-#endif
 
 /**
  * @}

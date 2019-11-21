@@ -135,13 +135,21 @@ sql_generic_fini(void)
 	JThreadVariables* thread_variables;
 	guint i;
 
+	JThreadVariables* current_thread_variable;
+
+	current_thread_variable = thread_variables_get(NULL);//store and release the current thread backend connection at last
+
 	G_LOCK(all_thread_variables);
 
 	for (i = 0; i < all_thread_variables->len; i++)
 	{
 		thread_variables = g_array_index(all_thread_variables, JThreadVariables*, i);
-		_thread_variables_fini(thread_variables, TRUE);
+	       _thread_variables_fini(thread_variables, TRUE);
+	       if(thread_variables!=current_thread_variable)
+		       _thread_variables_fini(thread_variables, TRUE);
 	}
+
+	_thread_variables_fini(current_thread_variable, TRUE);
 
 	g_array_unref(all_thread_variables);
 	all_thread_variables = NULL;
