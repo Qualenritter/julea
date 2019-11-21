@@ -68,7 +68,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	gpointer batch = NULL;
 	GError* error = NULL;
 
-	if (db_backend == NULL || JULEA_TEST_MOCKUP)
+	if (db_backend == NULL)
 	{
 		message = j_message_new(type, 0);
 	}
@@ -79,7 +79,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 	{
 		data = j_list_iterator_get(iter_send);
 
-		if (db_backend != NULL && !JULEA_TEST_MOCKUP)
+		if (db_backend != NULL)
 		{
 			if (!batch)
 			{
@@ -105,7 +105,7 @@ j_backend_db_func_exec(JList* operations, JSemantics* semantics, JMessageType ty
 		}
 	}
 
-	if (db_backend != NULL && !JULEA_TEST_MOCKUP)
+	if (db_backend != NULL)
 	{
 		if (data != NULL)
 		{
@@ -157,6 +157,7 @@ j_backend_db_func_free(gpointer _data)
 				(*data->unref_funcs[i])(data->unref_values[i]);
 			}
 		}
+
 		g_slice_free(JBackendOperation, data);
 	}
 }
@@ -199,7 +200,7 @@ j_db_schema_create_exec(JList* operations, JSemantics* semantics)
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_CREATE);
 }
 gboolean
-j_db_internal_schema_create(JDBSchema* j_db_schema, JBatch* batch, GError** error)
+j_db_internal_schema_create (JDBSchema* j_db_schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -216,7 +217,7 @@ j_db_internal_schema_create(JDBSchema* j_db_schema, JBatch* batch, GError** erro
 	data->out_param[0].ptr_const = error;
 
 	data->unref_func_count = 1;
-	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_schema_unref;
 	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 
 	op = j_operation_new();
@@ -240,7 +241,7 @@ j_db_schema_get_exec(JList* operations, JSemantics* semantics)
 }
 
 gboolean
-j_db_internal_schema_get(JDBSchema* j_db_schema, JBatch* batch, GError** error)
+j_db_internal_schema_get (JDBSchema* j_db_schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -257,7 +258,7 @@ j_db_internal_schema_get(JDBSchema* j_db_schema, JBatch* batch, GError** error)
 	data->out_param[1].ptr_const = error;
 
 	data->unref_func_count = 1;
-	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_schema_unref;
 	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 
 	op = j_operation_new();
@@ -280,7 +281,7 @@ j_db_schema_delete_exec(JList* operations, JSemantics* semantics)
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_SCHEMA_DELETE);
 }
 gboolean
-j_db_internal_schema_delete(JDBSchema* j_db_schema, JBatch* batch, GError** error)
+j_db_internal_schema_delete (JDBSchema* j_db_schema, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -296,7 +297,7 @@ j_db_internal_schema_delete(JDBSchema* j_db_schema, JBatch* batch, GError** erro
 	data->out_param[0].ptr_const = error;
 
 	data->unref_func_count = 1;
-	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_schema_unref;
 	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 
 	op = j_operation_new();
@@ -320,7 +321,7 @@ j_db_insert_exec(JList* operations, JSemantics* semantics)
 }
 
 gboolean
-j_db_internal_insert(JDBEntry* j_db_entry, JBatch* batch, GError** error)
+j_db_internal_insert (JDBEntry* j_db_entry, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -338,7 +339,7 @@ j_db_internal_insert(JDBEntry* j_db_entry, JBatch* batch, GError** error)
 	data->out_param[1].ptr_const = error;
 
 	data->unref_func_count = 1;
-	data->unref_funcs[0] = (void (*)(void*))j_db_entry_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_entry_unref;
 	data->unref_values[0] = j_db_entry_ref(j_db_entry);
 
 	op = j_operation_new();
@@ -362,7 +363,7 @@ j_db_update_exec(JList* operations, JSemantics* semantics)
 }
 
 gboolean
-j_db_internal_update(JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* batch, GError** error)
+j_db_internal_update (JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -380,8 +381,8 @@ j_db_internal_update(JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* b
 	data->out_param[0].ptr_const = error;
 
 	data->unref_func_count = 2;
-	data->unref_funcs[0] = (void (*)(void*))j_db_entry_unref;
-	data->unref_funcs[1] = (void (*)(void*))j_db_selector_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_entry_unref;
+	data->unref_funcs[1] = (GDestroyNotify)j_db_selector_unref;
 	data->unref_values[0] = j_db_entry_ref(j_db_entry);
 	data->unref_values[1] = j_db_selector_ref(j_db_selector);
 
@@ -405,7 +406,7 @@ j_db_delete_exec(JList* operations, JSemantics* semantics)
 	return j_backend_db_func_exec(operations, semantics, J_MESSAGE_DB_DELETE);
 }
 gboolean
-j_db_internal_delete(JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* batch, GError** error)
+j_db_internal_delete (JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -422,8 +423,8 @@ j_db_internal_delete(JDBEntry* j_db_entry, JDBSelector* j_db_selector, JBatch* b
 	data->out_param[0].ptr_const = error;
 
 	data->unref_func_count = 2;
-	data->unref_funcs[0] = (void (*)(void*))j_db_entry_unref;
-	data->unref_funcs[1] = (void (*)(void*))j_db_selector_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_entry_unref;
+	data->unref_funcs[1] = (GDestroyNotify)j_db_selector_unref;
 	data->unref_values[0] = j_db_entry_ref(j_db_entry);
 	data->unref_values[1] = j_db_selector_ref(j_db_selector);
 
@@ -448,7 +449,7 @@ j_db_query_exec(JList* operations, JSemantics* semantics)
 }
 
 gboolean
-j_db_internal_query(JDBSchema* j_db_schema, JDBSelector* j_db_selector, JDBIterator* j_db_iterator, JBatch* batch, GError** error)
+j_db_internal_query (JDBSchema* j_db_schema, JDBSelector* j_db_selector, JDBIterator* j_db_iterator, JBatch* batch, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 
@@ -472,9 +473,9 @@ j_db_internal_query(JDBSchema* j_db_schema, JDBSelector* j_db_selector, JDBItera
 	data->out_param[1].ptr_const = error;
 
 	data->unref_func_count = 3;
-	data->unref_funcs[0] = (void (*)(void*))j_db_schema_unref;
-	data->unref_funcs[1] = (void (*)(void*))j_db_selector_unref;
-	data->unref_funcs[2] = (void (*)(void*))j_db_iterator_unref;
+	data->unref_funcs[0] = (GDestroyNotify)j_db_schema_unref;
+	data->unref_funcs[1] = (GDestroyNotify)j_db_selector_unref;
+	data->unref_funcs[2] = (GDestroyNotify)j_db_iterator_unref;
 	data->unref_values[0] = j_db_schema_ref(j_db_schema);
 	data->unref_values[1] = j_db_selector_ref(j_db_selector);
 	data->unref_values[2] = j_db_iterator_ref(j_db_iterator);
@@ -491,7 +492,7 @@ j_db_internal_query(JDBSchema* j_db_schema, JDBSelector* j_db_selector, JDBItera
 }
 
 gboolean
-j_db_internal_iterate(JDBIterator* j_db_iterator, GError** error)
+j_db_internal_iterate (JDBIterator* j_db_iterator, GError** error)
 {
 	J_TRACE_FUNCTION(NULL);
 

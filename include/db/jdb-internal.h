@@ -33,7 +33,10 @@
 
 #include <julea.h>
 
-#include <julea-db.h>
+#include <db/jdb-entry.h>
+#include <db/jdb-iterator.h>
+#include <db/jdb-schema.h>
+#include <db/jdb-selector.h>
 
 G_BEGIN_DECLS
 

@@ -121,7 +121,7 @@ j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendO
 	char str_buf[16];
 	const char* key;
 	bson_t* bson = data->out_param[0].ptr;
-	bson_t* tmp;
+	bson_t tmp[1];
 
 	bson_init(bson);
 	ret = j_backend_db_query(backend, batch, data->in_param[1].ptr, data->in_param[2].ptr, &iter, data->out_param[1].ptr);
@@ -133,7 +133,7 @@ j_backend_operation_unwrap_db_query(JBackend* backend, gpointer batch, JBackendO
 	do
 	{
 		bson_uint32_to_string(i, &key, str_buf, sizeof(str_buf));
-		tmp = bson_new();
+		bson_init(tmp);
 		ret = j_backend_db_iterate(backend, iter, tmp, data->out_param[1].ptr);
 		i++;
 		if (ret)

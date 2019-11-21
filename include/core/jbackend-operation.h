@@ -91,7 +91,7 @@ struct JBackendOperation
 	JBackendOperationParam out_param[20];
 	//refcounting objects which are required for transmission - unref those after use
 	guint unref_func_count;
-	void (*unref_funcs[20])(gpointer value);
+	GDestroyNotify unref_funcs[20];
 	gpointer unref_values[20];
 };
 

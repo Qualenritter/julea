@@ -31,6 +31,8 @@ out = 'build'
 # CentOS 7 has GLib 2.42, CentOS 7.6 has GLib 2.56
 # Ubuntu 18.04 has GLib 2.56
 glib_version = '2.56'
+# Ubuntu 18.04 has libfabric 1.5.3
+libfabric_version = '1.5.3'
 # Ubuntu 18.04 has libbson 1.9.2
 libbson_version = '1.9.0'
 
@@ -157,6 +159,7 @@ def options(ctx):
 	ctx.add_option('--coverage', action='store_true', default=False, help='Enable coverage analysis')
 
 	ctx.add_option('--glib', action='store', default=None, help='GLib prefix')
+	ctx.add_option('--libfabric', action='store', default=None, help='libfabric prefix')
 	ctx.add_option('--leveldb', action='store', default=None, help='LevelDB prefix')
 	ctx.add_option('--lmdb', action='store', default=None, help='LMDB prefix')
 	ctx.add_option('--libbson', action='store', default=None, help='libbson prefix')
@@ -198,6 +201,15 @@ def configure(ctx):
 			uselib_store=module.upper(),
 			pkg_config_path=get_pkg_config_path(ctx.options.glib)
 		)
+
+	check_cfg_rpath(
+		ctx,
+		package='libfabric',
+		args=['--cflags', '--libs', 'libfabric >= {0}'.format(libfabric_version)],
+		uselib_store='LIBFABRIC',
+		pkg_config_path=get_pkg_config_path(ctx.options.libfabric),
+		mandatory=False
+	)
 
 	check_cfg_rpath(
 		ctx,
@@ -376,6 +388,8 @@ def configure(ctx):
 		check_and_add_flags(ctx, '--coverage', True, ['cflags', 'ldflags'])
 
 	if ctx.options.debug:
+		check_and_add_flags(ctx, ['-Og', '-g'])
+
 		check_and_add_flags(ctx, [
 			'-Waggregate-return',
 			'-Wcast-align',
@@ -407,15 +421,12 @@ def configure(ctx):
 			'-Wuninitialized',
 			'-Wwrite-strings'
 		], False)
-		check_and_add_flags(ctx, '-funit-at-a-time')
-		check_and_add_flags(ctx, '-fstack-protector-all')
-		check_and_add_flags(ctx, '-fno-omit-frame-pointer')
-		check_and_add_flags(ctx, '-ggdb')
-		check_and_add_flags(ctx, '-D_FORTIFY_SOURCE=2')
 
 		ctx.define('G_DISABLE_DEPRECATED', 1)
 		ctx.define('GLIB_VERSION_MIN_REQUIRED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
 		ctx.define('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_{0}'.format(glib_version.replace('.', '_')), quote=False)
+
+		ctx.define('JULEA_DEBUG', 1)
 	else:
 		check_and_add_flags(ctx, '-funit-at-a-time')
 		check_and_add_flags(ctx, '-O3')
@@ -448,14 +459,6 @@ def configure(ctx):
 		ctx.define('G_DISABLE_CHECKS', 1)
 
 	ctx.define('G_LOG_USE_STRUCTURED', 1)
-
-	if ctx.options.debug:
-		ctx.define('JULEA_DEBUG', 1)
-
-	if ctx.options.testmockup:
-		ctx.define('JULEA_TEST_MOCKUP', 1)
-	else:
-		ctx.define('JULEA_TEST_MOCKUP', 0)
 
 	backend_path = Utils.subst_vars('${LIBDIR}/julea/backend', ctx.env)
 	ctx.define('JULEA_BACKEND_PATH', backend_path)
@@ -636,7 +639,7 @@ def build(ctx):
 			install_path='${LIBDIR}/julea/backend/kv'
 		)
 
-	db_backends = ['null']
+	db_backends = ['null', 'memory']
 
 	if ctx.env.JULEA_SQLITE:
 		db_backends.append('sqlite')

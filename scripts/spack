@@ -51,6 +51,12 @@ spack_init ()
 
 	test -f "${spack_env}" || return 1
 
+	# FIXME work around https://github.com/spack/spack/pull/13716
+	if test -f /etc/profile.d/modules.sh
+	then
+		. /etc/profile.d/modules.sh
+	fi
+
 	. "${spack_env}"
 
 	return 0
@@ -127,9 +133,13 @@ spack_get_dependencies ()
 	then
 		# Optional dependencies
 		dependencies="${dependencies} leveldb"
-#		dependencies="${dependencies} libmongoc"
+		dependencies="${dependencies} mongo-c-driver"
 		dependencies="${dependencies} hdf5@develop~mpi"
 		dependencies="${dependencies} mariadb-c-client"
+
+		# FIXME move to minimal
+		# FIXME set fabrics
+		dependencies="${dependencies} libfabric"
 
 		#dependencies="${dependencies} mpi"
 		#dependencies="${dependencies} otf"
@@ -184,6 +194,7 @@ spack_install_dependencies ()
 
 		for dependency in $(spack_get_dependencies "${mode}")
 		do
+			# FIXME ignore errors?
 			spack_install "${dependency}"
 		done
 	fi
